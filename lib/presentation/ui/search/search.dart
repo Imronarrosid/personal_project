@@ -11,6 +11,7 @@ class SearchPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         toolbarHeight: 80,
+        backgroundColor: COLOR_white_fff5f5f5,
         title: TextField(
           decoration: InputDecoration(
             prefixIcon: const Icon(Icons.search),

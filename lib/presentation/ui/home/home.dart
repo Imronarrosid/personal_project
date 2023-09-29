@@ -1,12 +1,17 @@
+import 'package:camera/camera.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:personal_project/constant/color.dart';
+import 'package:personal_project/domain/services/app/app_service.dart';
 import 'package:personal_project/presentation/l10n/stings.g.dart';
+import 'package:personal_project/presentation/router/route_utils.dart';
 import 'package:personal_project/presentation/ui/message/message.dart';
-import 'package:personal_project/presentation/ui/post/post.dart';
+import 'package:personal_project/presentation/ui/upload/upload.dart';
 import 'package:personal_project/presentation/ui/profile/profile.dart';
 import 'package:personal_project/presentation/ui/search/search.dart';
 import 'package:personal_project/presentation/ui/video/video.dart';
+import 'package:provider/provider.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -20,12 +25,13 @@ class _HomePageState extends State<HomePage> {
   List<Widget> pages = <Widget>[
     const VideoPage(),
     const SearchPage(),
-    const PostPage(),
+    const MessagePage(),
     const MessagePage(),
     const ProfilePage(),
   ];
   @override
   Widget build(BuildContext context) {
+    final appService = Provider.of<AppService>(context);
     return Scaffold(
       body: pages[selectedindex],
       bottomNavigationBar: BottomNavigationBar(
@@ -35,21 +41,30 @@ class _HomePageState extends State<HomePage> {
         backgroundColor: COLOR_black_ff121212,
         items: [
           BottomNavigationBarItem(
-              icon: const Icon(Icons.home_outlined), label: LocaleKeys.label_home.tr()),
+              icon: const Icon(Icons.home_outlined),
+              label: LocaleKeys.label_home.tr()),
           BottomNavigationBarItem(
-              icon: const Icon(Icons.search_rounded), label: LocaleKeys.label_search.tr()),
-          const BottomNavigationBarItem(
-              icon: Icon(Icons.add), label: ''),
+              icon: const Icon(Icons.search_rounded),
+              label: LocaleKeys.label_search.tr()),
+          const BottomNavigationBarItem(icon: Icon(Icons.add), label: ''),
           BottomNavigationBarItem(
-              icon: const Icon(Icons.message), label: LocaleKeys.label_message.tr()),
+              icon: const Icon(Icons.message),
+              label: LocaleKeys.label_message.tr()),
           BottomNavigationBarItem(
-              icon: const Icon(Icons.person_2_outlined), label: LocaleKeys.label_profile.tr()),
+              icon: const Icon(Icons.person_2_outlined),
+              label: LocaleKeys.label_profile.tr()),
         ],
         currentIndex: selectedindex,
-        onTap: (value) {
-          setState(() {
-            selectedindex = value;
-          });
+        onTap: (value) async {
+          if (value == 2) {
+            // Navigator.push(context, MaterialPageRoute(builder: (context)=>UploadPage()));
+            await availableCameras().then(
+                (value) => context.push(APP_PAGE.upload.toPath, extra: value));
+          } else {
+            setState(() {
+              selectedindex = value;
+            });
+          }
         },
       ),
     );

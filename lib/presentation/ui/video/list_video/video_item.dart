@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:go_router/go_router.dart';
 import 'package:personal_project/constant/color.dart';
 import 'package:personal_project/constant/dimens.dart';
 import 'package:personal_project/presentation/assets/images.dart';
+import 'package:personal_project/presentation/router/route_utils.dart';
 
 class VideoItem extends StatelessWidget {
   const VideoItem({super.key});
@@ -20,7 +22,12 @@ class VideoItem extends StatelessWidget {
             bottom: 0,
             child: Column(
               children: [
-                CircleAvatar(),
+                GestureDetector(
+                  onTap: (){
+            GoRouter.of(context).push(Uri(path: APP_PAGE.upload.toPath).toString());
+                    
+                  },
+                  child: CircleAvatar()),
                 const SizedBox(
                   height: Dimens.DIMENS_36,
                 ),
