@@ -1,6 +1,9 @@
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:personal_project/constant/color.dart';
+import 'package:personal_project/presentation/ui/upload/bloc/camera_bloc.dart';
 
 class UploadPage extends StatefulWidget {
   final List<CameraDescription>? cameras;
@@ -15,6 +18,7 @@ class _UploadPageState extends State<UploadPage> {
   bool _isRearCameraSelected = true;
   double _previousScale = 1.0;
   double _zoomLevel = 1.0;
+  bool isCameraInitialized = false;
 
   Future takePicture() async {
     if (!_cameraController.value.isInitialized) {
@@ -41,7 +45,7 @@ class _UploadPageState extends State<UploadPage> {
   @override
   void initState() {
     super.initState();
-    initCamera(widget.cameras![0]);
+    initCamera(context, widget.cameras![0]);
     debugPrint(widget.cameras.toString());
   }
 
@@ -51,13 +55,18 @@ class _UploadPageState extends State<UploadPage> {
     super.dispose();
   }
 
-  Future initCamera(CameraDescription cameraDescription) async {
+  Future initCamera(
+      BuildContext context, CameraDescription cameraDescription) async {
     _cameraController =
         CameraController(cameraDescription, ResolutionPreset.high);
     try {
       await _cameraController.initialize().then((_) {
-        // if (!mounted) return;
-        setState(() {});
+        if (!mounted) return;
+        if (_cameraController.value.isInitialized == true) {
+          BlocProvider.of<CameraBloc>(context).add(OpenRearCameraEvent(
+              isCameraInitialized: _cameraController.value.isInitialized));
+        }
+        debugPrint('init ${_cameraController.value.isInitialized}');
       });
     } on CameraException catch (e) {
       debugPrint("camera error $e");
@@ -71,48 +80,66 @@ class _UploadPageState extends State<UploadPage> {
     double scaleChange = newScale - _previousScale;
 
     // Determine if it's a pinch-in or pinch-out.
-    
-      if (scaleChange > 0) {
-        // Pinch-out (zoom in) detected.
-        // You can add your zoom-in logic here.
-        // do something after 5 seconds
-        _zoomLevel += 0.03;
-        if (_zoomLevel > 10.0) {
-          _zoomLevel = 10.0;
-        }
-        //Update zoom
-        _cameraController.setZoomLevel(_zoomLevel);
-      } else if (scaleChange < 0) {
-        // Pinch-in (zoom out) detected.
-        // You can add your zoom-out logic here.
-        _zoomLevel -= 0.03;
-        if (_zoomLevel < 1.0) {
-          _zoomLevel = 1.0;
-        }
-        _cameraController.setZoomLevel(_zoomLevel);
+
+    if (scaleChange > 0) {
+      // Pinch-out (zoom in) detected.
+      // You can add your zoom-in logic here.
+      // do something after 5 seconds
+      _zoomLevel += 0.03;
+      if (_zoomLevel > 10.0) {
+        _zoomLevel = 10.0;
       }
-   
+      //Update zoom
+      _cameraController.setZoomLevel(_zoomLevel);
+    } else if (scaleChange < 0) {
+      // Pinch-in (zoom out) detected.
+      // You can add your zoom-out logic here.
+      _zoomLevel -= 0.03;
+      if (_zoomLevel < 1.0) {
+        _zoomLevel = 1.0;
+      }
+      _cameraController.setZoomLevel(_zoomLevel);
+    }
 
     debugPrint(_zoomLevel.toString());
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Post')),
-      backgroundColor: COLOR_black_ff121212,
-      body: SafeArea(
-          child: Stack(
-        children: [
-          (_cameraController.value.isInitialized)
-              ? GestureDetector(
-                  onScaleUpdate: _onScaleUpdate,
-                  child: CameraPreview(_cameraController))
-              : Container(
-                  color: Colors.black,
-                  child: const Center(child: CircularProgressIndicator())),
-        ],
-      )),
+    return WillPopScope(
+      onWillPop: () async {
+        BlocProvider.of<CameraBloc>(context).add(CloseCamera());
+        return true;
+      },
+      child: Scaffold(
+        appBar: AppBar(title: const Text('Post')),
+        backgroundColor: COLOR_black_ff121212,
+        body: SafeArea(
+            child: Stack(
+          children: [
+            BlocBuilder<CameraBloc, CameraState>(
+              builder: (context, state) {
+                debugPrint('state $state');
+                debugPrint(_cameraController.value.isInitialized.toString());
+                if (state is RearCameraInitialized) {
+                  return GestureDetector(
+                      onScaleUpdate: _onScaleUpdate,
+                      child: CameraPreview(_cameraController));
+                }
+                return const Center(
+                  child: CircularProgressIndicator(),
+                );
+              },
+            ),
+            IconButton(
+                onPressed: () {
+                  BlocProvider.of<CameraBloc>(context).add(CloseCamera());
+                  context.pop();
+                },
+                icon: const Icon(Icons.close))
+          ],
+        )),
+      ),
     );
   }
 }

@@ -1,12 +1,14 @@
 import 'package:camera/camera.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:personal_project/constant/color.dart';
 import 'package:personal_project/domain/services/app/app_service.dart';
 import 'package:personal_project/presentation/l10n/stings.g.dart';
 import 'package:personal_project/presentation/router/route_utils.dart';
 import 'package:personal_project/presentation/ui/message/message.dart';
+import 'package:personal_project/presentation/ui/upload/bloc/camera_bloc.dart';
 import 'package:personal_project/presentation/ui/upload/upload.dart';
 import 'package:personal_project/presentation/ui/profile/profile.dart';
 import 'package:personal_project/presentation/ui/search/search.dart';
@@ -58,6 +60,7 @@ class _HomePageState extends State<HomePage> {
         onTap: (value) async {
           if (value == 2) {
             // Navigator.push(context, MaterialPageRoute(builder: (context)=>UploadPage()));
+            // BlocProvider.of<CameraBloc>(context).add(const OpenRearCameraEvent());
             await availableCameras().then(
                 (value) => context.push(APP_PAGE.upload.toPath, extra: value));
           } else {

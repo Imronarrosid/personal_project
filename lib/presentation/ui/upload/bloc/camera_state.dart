@@ -1,26 +1,28 @@
 part of 'camera_bloc.dart';
 
-
 sealed class CameraState extends Equatable {
   const CameraState();
-  
+
   @override
   List<Object> get props => [];
 }
 
-final class CameraInitial extends CameraState {}
-final class RearCameraInitialized extends CameraState{
-  final CameraController cameraController;
-  const RearCameraInitialized({required this.cameraController});
+final class CameraInitial extends CameraState {
   @override
-  // TODO: implement props
-  List<Object> get props => [cameraController];
+  List<Object> get props => [];
 }
-final class FrontCameraInitialized extends CameraState{
-  final CameraController cameraController;
-  const FrontCameraInitialized({required this.cameraController});
+
+final class RearCameraInitialized extends CameraState {
+  @override
+  List<Object> get props => [];
 }
-final class CameraError{
+
+final class FrontCameraInitialized extends CameraState {}
+
+final class CameraError extends CameraState{
   final String error;
-  CameraError(this.error);
+  const CameraError(this.error);
+
+  @override
+  List<Object> get props => [];
 }

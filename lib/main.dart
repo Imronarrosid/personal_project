@@ -76,22 +76,19 @@ class _MyAppState extends State<MyApp> {
       child: Builder(builder: (context) {
         final GoRouter goRouter =
             Provider.of<AppRouter>(context, listen: false).router;
-        return RepositoryProvider<CameraRepository>(
-            create: (context) => CameraRepository(cameras: cameras),
-            child: BlocProvider<CameraBloc>(
-                create: (context) => CameraBloc(
-                    cameraRepository:
-                        RepositoryProvider.of<CameraRepository>(context)),
-                child: MaterialApp.router(
-                  debugShowCheckedModeBanner: false,
-                  locale: context.locale,
-                  supportedLocales: context.supportedLocales,
-                  localizationsDelegates: context.localizationDelegates,
-                  title: "Gametok",
-                  routeInformationProvider: goRouter.routeInformationProvider,
-                  routeInformationParser: goRouter.routeInformationParser,
-                  routerDelegate: goRouter.routerDelegate,
-                )));
+        return BlocProvider<CameraBloc>(
+          create: (context) => CameraBloc(),
+          child: MaterialApp.router(
+            debugShowCheckedModeBanner: false,
+            locale: context.locale,
+            supportedLocales: context.supportedLocales,
+            localizationsDelegates: context.localizationDelegates,
+            title: "Gametok",
+            routeInformationProvider: goRouter.routeInformationProvider,
+            routeInformationParser: goRouter.routeInformationParser,
+            routerDelegate: goRouter.routerDelegate,
+          ),
+        );
       }),
     );
   }

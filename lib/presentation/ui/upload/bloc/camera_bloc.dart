@@ -8,26 +8,18 @@ part 'camera_event.dart';
 part 'camera_state.dart';
 
 class CameraBloc extends Bloc<CameraEvent, CameraState> {
-  CameraBloc({required CameraRepository cameraRepository})
-      : _cameraRepository = cameraRepository,
-        super(CameraInitial()) {
+  CameraBloc() : super(CameraInitial()) {
     on<OpenRearCameraEvent>((event, emit) async {
-      // TODO: implement event handler
-      emit(CameraInitial());
-      await _cameraRepository.rearCamera().initialize();
-      if (_cameraRepository.rearCamera().value.isInitialized) {
-        emit(RearCameraInitialized(
-            cameraController: _cameraRepository.rearCamera()));
+      if (event.isCameraInitialized) {
+        emit(RearCameraInitialized());
       }
-        debugPrint('OpenRearCameraEvent()');
+    });
+    on<CloseCamera>((event, emit) {
+      emit(CameraInitial());
     });
     on<OpenFrontCameraEvent>((event, emit) {
       emit(CameraInitial());
-      emit(FrontCameraInitialized(
-          cameraController: _cameraRepository.openFrontCamera()));
+      emit(FrontCameraInitialized());
     });
   }
-  final CameraRepository _cameraRepository;
-
-  
 }
