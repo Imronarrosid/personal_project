@@ -1,7 +1,10 @@
 {
     "title_video": "Vidio",
+    "title_upload": "Unggah",
     "label_home": "Beranda",
     "label_search": "Cari",
     "label_message": "Pesan",
-    "label_profile": "Profil"
+    "label_profile": "Profil",
+    "label_60_second": "60d",
+    "label_flash": "Flash"
 }

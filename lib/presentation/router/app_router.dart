@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -6,6 +8,7 @@ import 'package:personal_project/presentation/router/route_utils.dart';
 import 'package:personal_project/presentation/ui/home/home.dart';
 import 'package:personal_project/presentation/ui/onboarding/onboarding.dart';
 import 'package:personal_project/presentation/ui/upload/upload.dart';
+import 'package:personal_project/presentation/ui/video_preview/video_previe_page.dart';
 
 class AppRouter {
   late final AppService appService;
@@ -17,7 +20,9 @@ class AppRouter {
     refreshListenable: appService,
     routerNeglect: true,
     debugLogDiagnostics: true,
-    initialLocation: appService.onboarding? APP_PAGE.onBoarding.toPath:APP_PAGE.home.toPath,
+    initialLocation: appService.onboarding
+        ? APP_PAGE.onBoarding.toPath
+        : APP_PAGE.home.toPath,
     routes: <GoRoute>[
       GoRoute(
           path: APP_PAGE.home.toPath,
@@ -38,9 +43,25 @@ class AppRouter {
         path: APP_PAGE.upload.toPath,
         name: APP_PAGE.upload.toName,
         pageBuilder: (context, state) {
-          final List<CameraDescription> camera = state.extra as List<CameraDescription>;
-            return MaterialPage(child: UploadPage(cameras: camera,));},
+          final List<CameraDescription> camera =
+              state.extra as List<CameraDescription>;
+          return MaterialPage(
+              child: UploadPage(
+            cameras: camera,
+          ));
+        },
       ),
+      GoRoute(
+          path: APP_PAGE.videoPreview.toPath,
+          name: APP_PAGE.videoPreview.toName,
+          pageBuilder: (context, state) {
+            File videoFile = state.extra as File;
+            return MaterialPage(
+                child: VideoPreviewPage(
+              videoFile: videoFile,
+            ));
+          }),
+
       GoRoute(
         path: APP_PAGE.onBoarding.toPath,
         name: APP_PAGE.onBoarding.toName,
@@ -54,6 +75,5 @@ class AppRouter {
       // ),
     ],
     // errorBuilder: (context, state) => ErrorPage(error: state.error.toString()),
-  
   );
 }

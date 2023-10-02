@@ -13,6 +13,7 @@ import 'package:personal_project/presentation/l10n/l10n.dart';
 import 'package:personal_project/presentation/router/app_router.dart';
 import 'package:personal_project/presentation/ui/home/home.dart';
 import 'package:personal_project/presentation/ui/upload/bloc/camera_bloc.dart';
+import 'package:personal_project/presentation/ui/video_preview/bloc/video_preview_bloc.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -76,8 +77,15 @@ class _MyAppState extends State<MyApp> {
       child: Builder(builder: (context) {
         final GoRouter goRouter =
             Provider.of<AppRouter>(context, listen: false).router;
-        return BlocProvider<CameraBloc>(
-          create: (context) => CameraBloc(),
+        return MultiBlocProvider(
+          providers: [
+            BlocProvider<CameraBloc>(
+              create: (context) => CameraBloc(),
+            ),
+            BlocProvider(
+              create: (context) => VideoPreviewBloc(),
+            ),
+          ],
           child: MaterialApp.router(
             debugShowCheckedModeBanner: false,
             locale: context.locale,

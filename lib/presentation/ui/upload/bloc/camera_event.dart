@@ -15,7 +15,25 @@ class OpenRearCameraEvent extends CameraEvent {
   List<Object> get props => [isCameraInitialized];
 }
 
-class OpenFrontCameraEvent extends CameraEvent {
+class ChangeCameraEvent extends CameraEvent {
+  @override
+  List<Object> get props => [];
+}
+
+class FlashEvent extends CameraEvent {
+  @override
+  List<Object> get props => [];
+}
+class CameraRecordingEvent extends CameraEvent {
+  @override
+  List<Object> get props => [];
+}
+class StopCameraRecordingEvent extends CameraEvent {
+  @override
+  List<Object> get props => [];
+}
+
+class OpenCameraEvent extends CameraEvent {
   @override
   List<Object> get props => [];
 }

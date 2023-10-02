@@ -12,14 +12,43 @@ final class CameraInitial extends CameraState {
   List<Object> get props => [];
 }
 
-final class RearCameraInitialized extends CameraState {
+final class CameraInitialized extends CameraState {
+  @override
+  List<Object> get props => [];
+}
+
+final class RearCameraSelected extends CameraState {
+  @override
+  List<Object> get props => [];
+}
+
+final class FrontCameraSelected extends CameraState {
   @override
   List<Object> get props => [];
 }
 
 final class FrontCameraInitialized extends CameraState {}
 
-final class CameraError extends CameraState{
+final class FlashInitialized extends CameraState {
+  @override
+  List<Object> get props => [];
+}
+
+final class FlashOff extends CameraState {
+  @override
+  List<Object> get props => [];
+}
+
+final class CameraRecording extends CameraState {
+  @override
+  List<Object> get props => [];
+}
+final class CameraRecordingStoped extends CameraState {
+  @override
+  List<Object> get props => [];
+}
+
+final class CameraError extends CameraState {
   final String error;
   const CameraError(this.error);
 

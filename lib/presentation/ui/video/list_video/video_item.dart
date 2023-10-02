@@ -6,6 +6,7 @@ import 'package:personal_project/constant/dimens.dart';
 import 'package:personal_project/presentation/assets/images.dart';
 import 'package:personal_project/presentation/router/route_utils.dart';
 
+
 class VideoItem extends StatelessWidget {
   const VideoItem({super.key});
 
@@ -28,7 +29,7 @@ class VideoItem extends StatelessWidget {
                     
                   },
                   child: CircleAvatar()),
-                const SizedBox(
+                 SizedBox(
                   height: Dimens.DIMENS_36,
                 ),
                 Icon(
@@ -40,7 +41,7 @@ class VideoItem extends StatelessWidget {
                   '10',
                   style: TextStyle(color: COLOR_white_fff5f5f5),
                 ),
-                const SizedBox(
+                 SizedBox(
                   height: Dimens.DIMENS_12,
                 ),
                 Icon(
@@ -52,7 +53,7 @@ class VideoItem extends StatelessWidget {
                   '10',
                   style: TextStyle(color: COLOR_white_fff5f5f5),
                 ),
-                const SizedBox(
+                 SizedBox(
                   height: Dimens.DIMENS_12,
                 ),
                 Icon(
@@ -64,7 +65,7 @@ class VideoItem extends StatelessWidget {
                   '10',
                   style: TextStyle(color: COLOR_white_fff5f5f5),
                 ),
-                const SizedBox(
+                 SizedBox(
                   height: Dimens.DIMENS_36,
                 ),
                 CircleAvatar()
@@ -94,3 +95,6 @@ class VideoItem extends StatelessWidget {
     );
   }
 }
+
+
+

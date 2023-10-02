@@ -1,6 +1,6 @@
 // ignore_for_file: camel_case_types
 
-enum APP_PAGE { splash, login, home, upload, error, onBoarding }
+enum APP_PAGE { splash, login, home, upload, error, onBoarding, videoPreview }
 
 extension AppPageExtension on APP_PAGE {
   String get toPath {
@@ -17,6 +17,8 @@ extension AppPageExtension on APP_PAGE {
         return "/error";
       case APP_PAGE.onBoarding:
         return "/start";
+      case APP_PAGE.videoPreview:
+        return "/video-preview";
       default:
         return "/";
     }
@@ -36,6 +38,8 @@ extension AppPageExtension on APP_PAGE {
         return "ERROR";
       case APP_PAGE.onBoarding:
         return "START";
+      case APP_PAGE.videoPreview:
+        return "VIDEO_PREVIEW";
       default:
         return "HOME";
     }
