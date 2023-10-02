@@ -4,6 +4,7 @@ import 'package:camera/camera.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:gal/gal.dart';
 import 'package:go_router/go_router.dart';
 import 'package:personal_project/constant/color.dart';
 import 'package:personal_project/constant/dimens.dart';
@@ -33,7 +34,7 @@ class _UploadPageState extends State<UploadPage>
   bool isCameraInitialized = false;
   bool isFlashoN = false;
   int endTime = DateTime.now().millisecondsSinceEpoch + 1000 * 60 * 60;
-
+  String firstVideoPath = '';
   List<String> listVideoPath = [];
 
   Future takePicture() async {
@@ -146,30 +147,47 @@ class _UploadPageState extends State<UploadPage>
   }
 
   String getOutputPath() {
-    String dateTime = DateTime.now().toLocal().toString();
-    String outputFilePath =
-        '/storage/emulated/0/Movies/gametok/merged_video$dateTime.mp4';
-    return outputFilePath;
+    String dateTime = DateTime(
+      DateTime.now().year,
+      DateTime.now().month,
+      DateTime.now().day,
+      DateTime.now().hour,
+      DateTime.now().minute,
+      DateTime.now().second,
+    ).toString();
+    String outputPath =
+        '/data/user/0/com.example.personal_project/cache/merged_video$dateTime.mp4'
+            .replaceAll(' ', '')
+            .replaceAll(':', '');
+
+    debugPrint('getUoutpuPath test$outputPath');
+    return outputPath;
   }
 
   Future<void> _stopRecording() async {
     _animationController.stop();
-    _animationController.reverse(from: 0.0);
     try {
-      if (listVideoPath.length > 1) {
+      if (firstVideoPath != '') {
         await _cameraController.stopVideoRecording().then((value) {
           listVideoPath.add(value.path);
 
           debugPrint('path video${value.path}');
+          mergeVideos(
+                  firstPath: firstVideoPath,
+                  secondPath: value.path,
+                  outputPath: getOutputPath())
+              .then((value) {
+            context.push(APP_PAGE.videoPreview.toPath, extra: File(value));
+          });
         });
-        await mergeVideos(listVideoPath, getOutputPath()).then((value) {
-          context.push(APP_PAGE.videoPreview.toPath,
-              extra: File(getOutputPath()));
-        });
-      } else {
-        await _cameraController.stopVideoRecording().then((value) {
+        debugPrint('path video${listVideoPath[0]}');
+      } else if (firstVideoPath == '') {
+        var videoPath =
+            await _cameraController.stopVideoRecording().then((value) {
           context.push(APP_PAGE.videoPreview.toPath, extra: File(value.path));
+          firstVideoPath = value.path;
         });
+        debugPrint(videoPath);
       }
     } on CameraException catch (e) {
       debugPrint(e.toString());
@@ -194,25 +212,43 @@ class _UploadPageState extends State<UploadPage>
 //   }
 // }
 
-  Future<void> mergeVideos(
-      List<String> videoPaths, String outputFilePath) async {
+  Future<String> mergeVideos(
+      {required String firstPath,
+      required String secondPath,
+      required String outputPath}) async {
     final FlutterFFmpeg _flutterFFmpeg = FlutterFFmpeg();
 
     // Build FFmpeg command to concatenate videos
-    String inputArgs = videoPaths.map((path) => '-i $path').join(' ');
-    String filterComplex = 'concat=n=${videoPaths.length}:v=1:a=1 [v] [a]';
+    // String inputArgs = firstVideoPaths.map((path) => '-i $path').join(' ');
+    // String filterComplex = 'concat=n=${firstVideoPaths.length}:v=1:a=1 [v] [a]';
+    // String outputArgs =
+    //     '-map [v] -map [a] -c:v libx264 -c:a aac -strict experimental -b:a 192k -shortest $outputFilePath';
+
+    // String command = '$inputArgs -filter_complex $filterComplex $outputArgs';
+
+    // int rc = await _flutterFFmpeg.execute(command).then((value) {
+    //   if (value == 0) {
+    //     listVideoPath.add(outputFilePath);
+    //   }
+    //   return value;
+    // });
+
+    // if (rc == 0) {
+    //   print('Video merging successful');
+    // } else {
+    //   print('Video merging failed');
+    // }
+    String inputArgs = '-i $firstPath -i $secondPath';
     String outputArgs =
-        '-map [v] -map [a] -c:v libx264 -c:a aac -strict experimental -b:a 192k -shortest $outputFilePath';
+        '-filter_complex "concat=n=2:v=1:a=1 [v] [a]" -map "[v]" -map "[a]" -c:a aac -strict experimental -b:a 192k $outputPath';
 
-    String command = '$inputArgs -filter_complex $filterComplex $outputArgs';
+    String command = '$inputArgs $outputArgs';
+    await _flutterFFmpeg.execute(command).then((value) {
+      firstVideoPath = outputPath;
+    });
+    await Gal.putVideo(outputPath);
 
-    int rc = await _flutterFFmpeg.execute(command);
-
-    if (rc == 0) {
-      print('Video merging successful');
-    } else {
-      print('Video merging failed');
-    }
+    return outputPath;
   }
 
   @override
@@ -251,9 +287,7 @@ class _UploadPageState extends State<UploadPage>
                 builder: (context, state) {
                   debugPrint('state $state');
                   debugPrint(_cameraController.value.isInitialized.toString());
-                  if (state is CameraInitialized ||
-                      state is CameraRecording ||
-                      state is CameraRecordingStoped) {
+                  if (state is CameraInitialized || state is CameraRecording) {
                     return GestureDetector(
                         onScaleUpdate: _onScaleUpdate,
                         child: CameraPreview(_cameraController));
@@ -385,10 +419,14 @@ class _UploadPageState extends State<UploadPage>
                                                   : _animationController.value);
                                     }
 
-                                    if (_cameraController.value.isRecordingVideo) {
+                                    if (_cameraController
+                                        .value.isRecordingVideo) {
                                       _cameraController.pauseVideoRecording();
-                                    }else{
+                                    } else if (_cameraController
+                                        .value.isRecordingPaused) {
                                       _cameraController.resumeVideoRecording();
+                                    } else {
+                                      _cameraController.startVideoRecording();
                                     }
                                   },
                                   child: Stack(
@@ -472,11 +510,6 @@ class _UploadPageState extends State<UploadPage>
                                 return GestureDetector(
                                   onTap: () async {
                                     await _stopRecording();
-
-                                    if (mounted) {
-                                      BlocProvider.of<CameraBloc>(context)
-                                          .add(StopCameraRecordingEvent());
-                                    }
                                   },
                                   child: Container(
                                     width: Dimens.DIMENS_28,

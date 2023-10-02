@@ -309,6 +309,14 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  gal:
+    dependency: "direct main"
+    description:
+      name: gal
+      sha256: "2132ff8cb3ba8ce9cbcacbf63ceb86bfe354ebe69997b4e14b3ef7bdd21af82e"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.1.1"
   go_router:
     dependency: "direct main"
     description:
