@@ -9,7 +9,7 @@ part 'camera_state.dart';
 
 class CameraBloc extends Bloc<CameraEvent, CameraState> {
   CameraBloc() : super(CameraInitial()) {
-    bool _isRearCameraSelected = true;
+    // bool _isRearCameraSelected = true;
     on<OpenRearCameraEvent>((event, emit) async {
       if (event.isCameraInitialized) {
         emit(CameraInitialized());

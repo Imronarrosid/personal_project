@@ -5,12 +5,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:personal_project/constant/color.dart';
+import 'package:personal_project/domain/reporsitory/auth_reposotory.dart';
 import 'package:personal_project/domain/reporsitory/camera_repository.dart';
 import 'package:personal_project/domain/services/app/app_service.dart';
 import 'package:personal_project/domain/services/auth/auth_service.dart';
 import 'package:personal_project/firebase_options.dart';
 import 'package:personal_project/presentation/l10n/l10n.dart';
 import 'package:personal_project/presentation/router/app_router.dart';
+import 'package:personal_project/presentation/ui/auth/bloc/auth_bloc.dart';
 import 'package:personal_project/presentation/ui/home/home.dart';
 import 'package:personal_project/presentation/ui/upload/bloc/camera_bloc.dart';
 import 'package:personal_project/presentation/ui/video_preview/bloc/video_preview_bloc.dart';
@@ -77,24 +79,30 @@ class _MyAppState extends State<MyApp> {
       child: Builder(builder: (context) {
         final GoRouter goRouter =
             Provider.of<AppRouter>(context, listen: false).router;
-        return MultiBlocProvider(
-          providers: [
-            BlocProvider<CameraBloc>(
-              create: (context) => CameraBloc(),
+        return RepositoryProvider(
+          create: (context) => AuthRepository(),
+          child: MultiBlocProvider(
+            providers: [
+              BlocProvider<CameraBloc>(
+                create: (context) => CameraBloc(),
+              ),
+              BlocProvider(
+                create: (context) => VideoPreviewBloc(),
+              ),
+              BlocProvider(
+                  create: (context) =>
+                      AuthBloc(RepositoryProvider.of<AuthRepository>(context)))
+            ],
+            child: MaterialApp.router(
+              debugShowCheckedModeBanner: false,
+              locale: context.locale,
+              supportedLocales: context.supportedLocales,
+              localizationsDelegates: context.localizationDelegates,
+              title: "Gametok",
+              routeInformationProvider: goRouter.routeInformationProvider,
+              routeInformationParser: goRouter.routeInformationParser,
+              routerDelegate: goRouter.routerDelegate,
             ),
-            BlocProvider(
-              create: (context) => VideoPreviewBloc(),
-            ),
-          ],
-          child: MaterialApp.router(
-            debugShowCheckedModeBanner: false,
-            locale: context.locale,
-            supportedLocales: context.supportedLocales,
-            localizationsDelegates: context.localizationDelegates,
-            title: "Gametok",
-            routeInformationProvider: goRouter.routeInformationProvider,
-            routeInformationParser: goRouter.routeInformationParser,
-            routerDelegate: goRouter.routerDelegate,
           ),
         );
       }),

@@ -7,6 +7,7 @@ import 'package:personal_project/constant/color.dart';
 import 'package:personal_project/domain/services/app/app_service.dart';
 import 'package:personal_project/presentation/l10n/stings.g.dart';
 import 'package:personal_project/presentation/router/route_utils.dart';
+import 'package:personal_project/presentation/ui/auth/bloc/auth_bloc.dart';
 import 'package:personal_project/presentation/ui/message/message.dart';
 import 'package:personal_project/presentation/ui/upload/bloc/camera_bloc.dart';
 import 'package:personal_project/presentation/ui/upload/upload.dart';
@@ -35,40 +36,58 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     final appService = Provider.of<AppService>(context);
     return Scaffold(
-      body: pages[selectedindex],
-      bottomNavigationBar: BottomNavigationBar(
-        unselectedItemColor: COLOR_white_fff5f5f5.withOpacity(0.6),
-        selectedItemColor: COLOR_white_fff5f5f5,
-        type: BottomNavigationBarType.fixed,
-        backgroundColor: COLOR_black_ff121212,
-        items: [
-          BottomNavigationBarItem(
-              icon: const Icon(Icons.home_outlined),
-              label: LocaleKeys.label_home.tr()),
-          BottomNavigationBarItem(
-              icon: const Icon(Icons.search_rounded),
-              label: LocaleKeys.label_search.tr()),
-          const BottomNavigationBarItem(icon: Icon(Icons.add), label: ''),
-          BottomNavigationBarItem(
-              icon: const Icon(Icons.message),
-              label: LocaleKeys.label_message.tr()),
-          BottomNavigationBarItem(
-              icon: const Icon(Icons.person_2_outlined),
-              label: LocaleKeys.label_profile.tr()),
+      body: Stack(
+        children: [
+          Scaffold(
+            body: pages[selectedindex],
+            bottomNavigationBar: BottomNavigationBar(
+              unselectedItemColor: COLOR_white_fff5f5f5.withOpacity(0.6),
+              selectedItemColor: COLOR_white_fff5f5f5,
+              type: BottomNavigationBarType.fixed,
+              backgroundColor: COLOR_black_ff121212,
+              items: [
+                BottomNavigationBarItem(
+                    icon: const Icon(Icons.home_outlined),
+                    label: LocaleKeys.label_home.tr()),
+                BottomNavigationBarItem(
+                    icon: const Icon(Icons.search_rounded),
+                    label: LocaleKeys.label_search.tr()),
+                const BottomNavigationBarItem(icon: Icon(Icons.add), label: ''),
+                BottomNavigationBarItem(
+                    icon: const Icon(Icons.message),
+                    label: LocaleKeys.label_message.tr()),
+                BottomNavigationBarItem(
+                    icon: const Icon(Icons.person_2_outlined),
+                    label: LocaleKeys.label_profile.tr()),
+              ],
+              currentIndex: selectedindex,
+              onTap: (value) async {
+                if (value == 2) {
+                  // Navigator.push(context, MaterialPageRoute(builder: (context)=>UploadPage()));
+                  // BlocProvider.of<CameraBloc>(context).add(const OpenRearCameraEvent());
+                  await availableCameras().then((value) =>
+                      context.push(APP_PAGE.upload.toPath, extra: value));
+                } else {
+                  setState(() {
+                    selectedindex = value;
+                  });
+                }
+              },
+            ),
+          ),
+          BlocBuilder<AuthBloc, AuthState>(
+            builder: (context, state) {
+              if (state == LoginProcessing()) {
+                return Container(
+                  color: Colors.black38,
+                  child:
+                      Align(alignment: Alignment.center, child: Text('Test')),
+                );
+              }
+              return Container();
+            },
+          ),
         ],
-        currentIndex: selectedindex,
-        onTap: (value) async {
-          if (value == 2) {
-            // Navigator.push(context, MaterialPageRoute(builder: (context)=>UploadPage()));
-            // BlocProvider.of<CameraBloc>(context).add(const OpenRearCameraEvent());
-            await availableCameras().then(
-                (value) => context.push(APP_PAGE.upload.toPath, extra: value));
-          } else {
-            setState(() {
-              selectedindex = value;
-            });
-          }
-        },
       ),
     );
   }

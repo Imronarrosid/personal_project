@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:personal_project/domain/services/app/app_service.dart';
 import 'package:personal_project/presentation/router/route_utils.dart';
+import 'package:personal_project/presentation/ui/add_details/add_details_page.dart';
 import 'package:personal_project/presentation/ui/home/home.dart';
 import 'package:personal_project/presentation/ui/onboarding/onboarding.dart';
 import 'package:personal_project/presentation/ui/upload/upload.dart';
@@ -58,6 +59,16 @@ class AppRouter {
             File videoFile = state.extra as File;
             return MaterialPage(
                 child: VideoPreviewPage(
+              videoFile: videoFile,
+            ));
+          }),
+      GoRoute(
+          path: APP_PAGE.addDetails.toPath,
+          name: APP_PAGE.addDetails.toName,
+          pageBuilder: (context, state) {
+            File videoFile = state.extra as File;
+            return MaterialPage(
+                child: AddDetailsPage(
               videoFile: videoFile,
             ));
           }),

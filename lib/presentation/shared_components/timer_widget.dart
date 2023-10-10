@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
@@ -7,8 +9,8 @@ import 'package:personal_project/presentation/l10n/stings.g.dart';
 
 class CountDownTimer extends StatefulWidget {
   final AnimationController controller;
-  final void Function() onEnd;
-  const CountDownTimer({super.key, required this.controller, required this.onEnd});
+  const CountDownTimer(
+      {super.key, required this.controller});
 
   @override
   State<CountDownTimer> createState() => _CountDownTimerState();
@@ -20,7 +22,7 @@ class _CountDownTimerState extends State<CountDownTimer>
 
   String get timerString {
     Duration duration = widget.controller.duration! * widget.controller.value;
-    if(widget.controller.value == 0.0){
+    if (widget.controller.value == 0.0) {
       return LocaleKeys.label_60_second.tr();
     }
     return '${duration.inMinutes}:${(duration.inSeconds % 60).toString().padLeft(2, '0')}';
@@ -34,6 +36,8 @@ class _CountDownTimerState extends State<CountDownTimer>
     //   vsync: this,
     //   duration: Duration(seconds: 5),
     // );
+
+    
   }
 
   @override
@@ -138,9 +142,11 @@ class CustomTimerPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(CustomTimerPainter old) {
-    return animation.value != old.animation.value ||
-        color != old.color ||
-        backgroundColor != old.backgroundColor;
+  bool shouldRepaint(CustomTimerPainter oldDelegate) {
+    return animation.value != oldDelegate.animation.value ||
+        color != oldDelegate.color ||
+        backgroundColor != oldDelegate.backgroundColor;
   }
 }
+
+

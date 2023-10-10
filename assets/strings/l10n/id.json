@@ -1,10 +1,21 @@
 {
     "title_video": "Vidio",
     "title_upload": "Unggah",
+    "title_profile": "Profil",
     "label_home": "Beranda",
     "label_search": "Cari",
     "label_message": "Pesan",
     "label_profile": "Profil",
     "label_60_second": "60d",
-    "label_flash": "Flash"
+    "label_flash": "Flash",
+    "label_next": "Lanjutkan",
+    "label_oke": "Oke",
+    "label_delete": "Hapus",
+    "label_cancel": "Batal",
+    "label_signin": "Masuk ke GameTok",
+    "label_login": "Masuk",
+    "label_signin_with_google": "Masuk dengan Google",
+    "message_delete_video": "Hapus vidio?",
+    "message_write_something": "Tulis sesuatu",
+    "message_login_first": "Masuk terlabih dahulu"
 }

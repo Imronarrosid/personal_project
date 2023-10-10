@@ -29,13 +29,13 @@ class _UploadPageState extends State<UploadPage>
   late AnimationController _animationController;
 
   bool _isRearCameraSelected = true;
-  double _previousScale = 1.0;
+  final double _previousScale = 1.0;
   double _zoomLevel = 1.0;
   bool isCameraInitialized = false;
   bool isFlashoN = false;
-  int endTime = DateTime.now().millisecondsSinceEpoch + 1000 * 60 * 60;
   String firstVideoPath = '';
   List<String> listVideoPath = [];
+  int duration = 60;
 
   Future takePicture() async {
     if (!_cameraController.value.isInitialized) {
@@ -67,8 +67,35 @@ class _UploadPageState extends State<UploadPage>
 
     _animationController = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 60),
+      duration: Duration(seconds: duration),
     );
+
+    // _animationController.addListener(() {
+    //   if (_animationController.value >= 0.0) {
+    //     debugPrint('end time');
+    //     _cameraController.stopVideoRecording().then((value) {
+    //       context.push(APP_PAGE.videoPreview.toPath,extra: File(value.path));
+    //     });
+    //   }
+    //   debugPrint(_animationController.value.toString());
+    //  });
+    _animationController.addListener(() async {
+      if (_animationController.value == 0.0 &&
+          _cameraController.value.isRecordingVideo) {
+        debugPrint('end time');
+        try {
+          // await _cameraController.stopVideoRecording().then((value) {
+          //   GoRouter.of(context)
+          //       .push(APP_PAGE.videoPreview.toPath, extra: File(value.path));
+          //       BlocProvider.of<CameraBloc>(context).add(StopCameraRecordingEvent());
+          // });
+          _stopRecording();
+        } on CameraException catch (e) {
+          debugPrint(e.toString());
+        }
+      }
+      debugPrint(_animationController.value.toString());
+    });
   }
 
   @override
@@ -107,15 +134,14 @@ class _UploadPageState extends State<UploadPage>
     if (scaleChange > 0) {
       // Pinch-out (zoom in) detected.
       // You can add your zoom-in logic here.
-      // do something after 5 seconds
       _zoomLevel += 0.03;
       if (_zoomLevel > 10.0 && _isRearCameraSelected) {
         _zoomLevel = 10.0;
-      } else {
+      } else if (!_isRearCameraSelected) {
         _zoomLevel = 4.0;
       }
-      //Update zoom
       _cameraController.setZoomLevel(_zoomLevel);
+      //Update zoom
     } else if (scaleChange < 0) {
       // Pinch-in (zoom out) detected.
       // You can add your zoom-out logic here.
@@ -126,7 +152,7 @@ class _UploadPageState extends State<UploadPage>
       _cameraController.setZoomLevel(_zoomLevel);
     }
 
-    debugPrint(_zoomLevel.toString());
+    debugPrint('zoom$_zoomLevel');
   }
 
   _flashButton() {
@@ -146,49 +172,21 @@ class _UploadPageState extends State<UploadPage>
     _isRearCameraSelected = !_isRearCameraSelected;
   }
 
-  String getOutputPath() {
-    String dateTime = DateTime(
-      DateTime.now().year,
-      DateTime.now().month,
-      DateTime.now().day,
-      DateTime.now().hour,
-      DateTime.now().minute,
-      DateTime.now().second,
-    ).toString();
-    String outputPath =
-        '/data/user/0/com.example.personal_project/cache/merged_video$dateTime.mp4'
-            .replaceAll(' ', '')
-            .replaceAll(':', '');
-
-    debugPrint('getUoutpuPath test$outputPath');
-    return outputPath;
-  }
-
   Future<void> _stopRecording() async {
     _animationController.stop();
     try {
-      if (firstVideoPath != '') {
-        await _cameraController.stopVideoRecording().then((value) {
-          listVideoPath.add(value.path);
+      await _cameraController.stopVideoRecording().then((value) {
+        debugPrint('path video${value.path}');
+        //NAVIGATIONG TO VIDEO PREVIEW
+        context.push(APP_PAGE.videoPreview.toPath, extra: File(value.path));
 
-          debugPrint('path video${value.path}');
-          mergeVideos(
-                  firstPath: firstVideoPath,
-                  secondPath: value.path,
-                  outputPath: getOutputPath())
-              .then((value) {
-            context.push(APP_PAGE.videoPreview.toPath, extra: File(value));
-          });
-        });
-        debugPrint('path video${listVideoPath[0]}');
-      } else if (firstVideoPath == '') {
-        var videoPath =
-            await _cameraController.stopVideoRecording().then((value) {
-          context.push(APP_PAGE.videoPreview.toPath, extra: File(value.path));
-          firstVideoPath = value.path;
-        });
-        debugPrint(videoPath);
-      }
+        //STOP CAMERA RECORDING THROUGH BLOC
+        BlocProvider.of<CameraBloc>(context).add(StopCameraRecordingEvent());
+
+        //STOP ANIMATION
+        _animationController.reverse(from: 0.0);
+        _animationController.stop();
+      });
     } on CameraException catch (e) {
       debugPrint(e.toString());
     }
@@ -259,292 +257,358 @@ class _UploadPageState extends State<UploadPage>
         BlocProvider.of<CameraBloc>(context).add(CloseCamera());
         return true;
       },
-      child: Scaffold(
-        backgroundColor: COLOR_black,
-        extendBodyBehindAppBar: true,
-        appBar: PreferredSize(
-          preferredSize: Size(size.width, Dimens.DIMENS_105),
-          child: BlocBuilder<CameraBloc, CameraState>(
-            builder: (context, state) {
-              if (state is! CameraRecording) {
-                return AppBar(
-                  centerTitle: true,
-                  elevation: 0,
-                  title: Text(LocaleKeys.title_upload.tr()),
-                  backgroundColor: Colors.transparent,
-                  toolbarHeight: Dimens.DIMENS_105,
-                );
-              }
-              return Container();
-            },
-          ),
-        ),
-        body: Stack(
-          children: [
-            Padding(
-              padding: EdgeInsets.only(top: Dimens.DIMENS_70),
-              child: BlocBuilder<CameraBloc, CameraState>(
-                builder: (context, state) {
-                  debugPrint('state $state');
-                  debugPrint(_cameraController.value.isInitialized.toString());
-                  if (state is CameraInitialized || state is CameraRecording) {
-                    return GestureDetector(
-                        onScaleUpdate: _onScaleUpdate,
-                        child: CameraPreview(_cameraController));
-                  }
-                  return const Center(
-                    child: CircularProgressIndicator(),
-                  );
-                },
-              ),
-            ),
-            BlocBuilder<CameraBloc, CameraState>(
+      child: BlocListener<CameraBloc, CameraState>(
+        listener: (context, state) async {
+          try {
+            if (state is CameraRecordingStoped &&
+                _cameraController.value.isRecordingVideo) {
+              XFile? videoFile = await _cameraController.stopVideoRecording();
+              File(videoFile.path).delete();
+
+              _animationController.reverse(from: 0.0);
+              _animationController.stop();
+            }
+          } on CameraException catch (e) {
+            debugPrint(e.toString());
+          }
+        },
+        child: Scaffold(
+          backgroundColor: COLOR_black,
+          extendBodyBehindAppBar: true,
+          appBar: PreferredSize(
+            preferredSize: Size(size.width, Dimens.DIMENS_105),
+            child: BlocBuilder<CameraBloc, CameraState>(
               builder: (context, state) {
                 if (state is! CameraRecording) {
-                  return Align(
-                    alignment: Alignment.centerRight,
-                    child: SizedBox(
-                      width: Dimens.DIMENS_50,
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          GestureDetector(
-                            onTap: _changeCamera,
-                            child: const Icon(Icons.loop),
-                          ),
-                          BlocBuilder<CameraBloc, CameraState>(
-                            builder: (context, state) {
-                              if (_isRearCameraSelected) {
-                                return Column(children: [
-                                  GestureDetector(
-                                    onTap: _flashButton,
-                                    child: isFlashoN
-                                        ? Icon(
-                                            Icons.flash_on,
-                                            size: Dimens.DIMENS_36,
-                                            color: COLOR_white_fff5f5f5,
-                                          )
-                                        : Icon(
-                                            Icons.flash_off,
-                                            size: Dimens.DIMENS_36,
-                                            color: COLOR_white_fff5f5f5,
-                                          ),
-                                  ),
-                                  Text(
-                                    LocaleKeys.label_flash.tr(),
-                                    style: TextStyle(
-                                        color: COLOR_white_fff5f5f5,
-                                        fontSize: FontSize.FONT_SIZE_12),
-                                  )
-                                ]);
-                              }
-                              return Container();
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
+                  return AppBar(
+                    centerTitle: true,
+                    elevation: 0,
+                    title: Text(LocaleKeys.title_upload.tr()),
+                    backgroundColor: Colors.transparent,
+                    toolbarHeight: Dimens.DIMENS_105,
                   );
                 }
                 return Container();
               },
             ),
-            Padding(
-              padding: EdgeInsets.only(bottom: Dimens.DIMENS_98),
-              child: Align(
-                alignment: Alignment.bottomCenter,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    SizedBox(
-                      width: Dimens.DIMENS_98,
-                      height: Dimens.DIMENS_50,
-                      child: CountDownTimer(
-                          controller: _animationController, onEnd: () {}),
-                    ),
-                    SizedBox(
-                      width: size.width,
-                      child: Row(
-                        children: [
-                          BlocBuilder<CameraBloc, CameraState>(
-                            builder: (context, state) {
-                              if (state is CameraRecording) {
-                                return Row(
-                                  children: [
-                                    SizedBox(
-                                      width: (size.width * 0.5) -
-                                          (Dimens.DIMENS_70 * 0.5) -
-                                          78,
+          ),
+          body: Stack(
+            children: [
+              Padding(
+                padding: EdgeInsets.only(top: Dimens.DIMENS_70),
+                child: BlocBuilder<CameraBloc, CameraState>(
+                  builder: (context, state) {
+                    debugPrint('state $state');
+                    debugPrint(
+                        _cameraController.value.isInitialized.toString());
+                    if (state is CameraInitialized ||
+                        state is CameraRecording ||
+                        state is CameraRecordingStoped) {
+                      return GestureDetector(
+                          onScaleUpdate: _onScaleUpdate,
+                          child: CameraPreview(_cameraController));
+                    }
+                    return const Center(
+                      child: CircularProgressIndicator(),
+                    );
+                  },
+                ),
+              ),
+              BlocBuilder<CameraBloc, CameraState>(
+                builder: (context, state) {
+                  if (state is! CameraRecording) {
+                    return Align(
+                      alignment: Alignment.centerRight,
+                      child: SizedBox(
+                        width: Dimens.DIMENS_50,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            GestureDetector(
+                              onTap: _changeCamera,
+                              child: const Icon(Icons.loop),
+                            ),
+                            BlocBuilder<CameraBloc, CameraState>(
+                              builder: (context, state) {
+                                if (_isRearCameraSelected) {
+                                  return Column(children: [
+                                    GestureDetector(
+                                      onTap: _flashButton,
+                                      child: isFlashoN
+                                          ? Icon(
+                                              Icons.flash_on,
+                                              size: Dimens.DIMENS_36,
+                                              color: COLOR_white_fff5f5f5,
+                                            )
+                                          : Icon(
+                                              Icons.flash_off,
+                                              size: Dimens.DIMENS_36,
+                                              color: COLOR_white_fff5f5f5,
+                                            ),
                                     ),
-                                    Container(
-                                      width: Dimens.DIMENS_28,
-                                      height: Dimens.DIMENS_28,
+                                    Text(
+                                      LocaleKeys.label_flash.tr(),
+                                      style: TextStyle(
+                                          color: COLOR_white_fff5f5f5,
+                                          fontSize: FontSize.FONT_SIZE_12),
+                                    )
+                                  ]);
+                                }
+                                return Container();
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }
+                  return Container();
+                },
+              ),
+              Padding(
+                padding: EdgeInsets.only(bottom: Dimens.DIMENS_98),
+                child: Align(
+                  alignment: Alignment.bottomCenter,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      SizedBox(
+                        width: Dimens.DIMENS_98,
+                        height: Dimens.DIMENS_50,
+                        child: CountDownTimer(
+                          controller: _animationController,
+                        ),
+                      ),
+                      SizedBox(
+                        width: size.width,
+                        child: Row(
+                          children: [
+                            BlocBuilder<CameraBloc, CameraState>(
+                              builder: (context, state) {
+                                if (state is CameraRecording) {
+                                  return CancelRecordButonWidget(
+                                    size: size,
+                                    cameraController: _cameraController,
+                                    animationController: _animationController,
+                                  );
+                                }
+                                //left white space for centering record button
+                                return SizedBox(
+                                  width: (size.width * 0.5) -
+                                      (Dimens.DIMENS_70 * 0.5),
+                                );
+                              },
+                            ),
+                            BlocBuilder<CameraBloc, CameraState>(
+                              builder: (context, state) {
+                                if (state is CameraRecording) {
+                                  debugPrint('camera recoding$state');
+                                  return PauseAndResumeRecordButton(
+                                      animationController: _animationController,
+                                      cameraController: _cameraController);
+                                }
+                                return GestureDetector(
+                                  onTap: () {
+                                    _animationController.reverse(
+                                        from: _animationController.value == 0.0
+                                            ? 1.0
+                                            : _animationController.value);
+                                    BlocProvider.of<CameraBloc>(context)
+                                        .add(CameraRecordingEvent());
+                                    try {
+                                      _cameraController.startVideoRecording();
+                                    } on CameraException catch (e) {
+                                      debugPrint(e.toString());
+                                    }
+                                  },
+                                  child: Container(
+                                    width: Dimens.DIMENS_70,
+                                    height: Dimens.DIMENS_70,
+                                    decoration: BoxDecoration(
+                                        borderRadius:
+                                            BorderRadius.circular(100),
+                                        border: Border.all(
+                                            color: COLOR_white_fff5f5f5,
+                                            width: 3.0)),
+                                    padding: EdgeInsets.all(3),
+                                    child: Container(
                                       decoration: BoxDecoration(
-                                          color: COLOR_black,
+                                          color: COLOR_red,
+                                          borderRadius:
+                                              BorderRadius.circular(100)),
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                            SizedBox(
+                              width: Dimens.DIMENS_50,
+                            ),
+                            BlocBuilder<CameraBloc, CameraState>(
+                              builder: (context, state) {
+                                if (state is CameraRecording) {
+                                  return GestureDetector(
+                                    onTap: () async {
+                                      await _stopRecording();
+                                    },
+                                    child: Container(
+                                      width: Dimens.DIMENS_34,
+                                      height: Dimens.DIMENS_34,
+                                      decoration: BoxDecoration(
+                                          color: COLOR_red,
                                           borderRadius:
                                               BorderRadius.circular(50)),
                                       child: Icon(
-                                        Icons.close_rounded,
+                                        Icons.check_rounded,
                                         color: COLOR_white_fff5f5f5,
                                       ),
                                     ),
-                                    SizedBox(
-                                      width: Dimens.DIMENS_50,
-                                    )
-                                  ],
-                                );
-                              }
-                              return SizedBox(
-                                width: (size.width * 0.5) -
-                                    (Dimens.DIMENS_70 * 0.5),
-                              );
-                            },
-                          ),
-                          BlocBuilder<CameraBloc, CameraState>(
-                            builder: (context, state) {
-                              if (state is CameraRecording) {
-                                debugPrint(
-                                    'camera recoding' + state.toString());
-                                return GestureDetector(
-                                  onTap: () {
-                                    debugPrint(
-                                        'camera recoding' + state.toString());
-                                    if (_animationController.isAnimating)
-                                      _animationController.stop();
-                                    else {
-                                      _animationController.reverse(
-                                          from:
-                                              _animationController.value == 0.0
-                                                  ? 1.0
-                                                  : _animationController.value);
-                                    }
-
-                                    if (_cameraController
-                                        .value.isRecordingVideo) {
-                                      _cameraController.pauseVideoRecording();
-                                    } else if (_cameraController
-                                        .value.isRecordingPaused) {
-                                      _cameraController.resumeVideoRecording();
-                                    } else {
-                                      _cameraController.startVideoRecording();
-                                    }
-                                  },
-                                  child: Stack(
-                                    children: [
-                                      SizedBox(
-                                        width: Dimens.DIMENS_70,
-                                        height: Dimens.DIMENS_70,
-                                        child: Container(
-                                          width: Dimens.DIMENS_70,
-                                          height: Dimens.DIMENS_70,
-                                          decoration: BoxDecoration(
-                                            color: COLOR_white_fff5f5f5
-                                                .withOpacity(0.5),
-                                            borderRadius:
-                                                BorderRadius.circular(100),
-                                          ),
-                                          child: Align(
-                                            alignment: Alignment.center,
-                                            child: Container(
-                                              width: Dimens.DIMENS_24,
-                                              height: Dimens.DIMENS_24,
-                                              decoration: BoxDecoration(
-                                                  color: COLOR_red,
-                                                  borderRadius:
-                                                      BorderRadius.circular(5)),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                      Positioned.fill(
-                                        child: CustomPaint(
-                                            painter: CustomTimerPainter(
-                                          animation: _animationController,
-                                          backgroundColor: Colors.white,
-                                          color: COLOR_red,
-                                        )),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              }
-                              return GestureDetector(
-                                onTap: () {
-                                  _animationController.reverse(
-                                      from: _animationController.value == 0.0
-                                          ? 1.0
-                                          : _animationController.value);
-                                  BlocProvider.of<CameraBloc>(context)
-                                      .add(CameraRecordingEvent());
-                                  try {
-                                    _cameraController.startVideoRecording();
-                                  } on CameraException catch (e) {
-                                    debugPrint(e.toString());
-                                  }
-                                },
-                                child: Container(
-                                  width: Dimens.DIMENS_70,
-                                  height: Dimens.DIMENS_70,
+                                  );
+                                }
+                                return Container(
+                                  width: 40,
+                                  height: 40,
                                   decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(100),
-                                      border: Border.all(
-                                          color: COLOR_white_fff5f5f5,
-                                          width: 3.0)),
-                                  padding: EdgeInsets.all(3),
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                        color: COLOR_red,
-                                        borderRadius:
-                                            BorderRadius.circular(100)),
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                          SizedBox(
-                            width: Dimens.DIMENS_50,
-                          ),
-                          BlocBuilder<CameraBloc, CameraState>(
-                            builder: (context, state) {
-                              if (state is CameraRecording) {
-                                return GestureDetector(
-                                  onTap: () async {
-                                    await _stopRecording();
-                                  },
-                                  child: Container(
-                                    width: Dimens.DIMENS_28,
-                                    height: Dimens.DIMENS_28,
-                                    decoration: BoxDecoration(
-                                        color: COLOR_red,
-                                        borderRadius:
-                                            BorderRadius.circular(50)),
-                                    child: Icon(
-                                      Icons.check_rounded,
-                                      color: COLOR_white_fff5f5f5,
-                                    ),
-                                  ),
+                                      color: COLOR_red,
+                                      borderRadius: BorderRadius.circular(
+                                          Dimens.DIMENS_12)),
                                 );
-                              }
-                              return Container(
-                                width: 40,
-                                height: 40,
-                                decoration: BoxDecoration(
-                                    color: COLOR_red,
-                                    borderRadius: BorderRadius.circular(
-                                        Dimens.DIMENS_12)),
-                              );
-                            },
-                          )
-                        ],
+                              },
+                            )
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class PauseAndResumeRecordButton extends StatelessWidget {
+  const PauseAndResumeRecordButton({
+    super.key,
+    required AnimationController animationController,
+    required CameraController cameraController,
+  })  : _animationController = animationController,
+        _cameraController = cameraController;
+
+  final AnimationController _animationController;
+  final CameraController _cameraController;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () async {
+        if (_animationController.isAnimating) {
+          _animationController.stop();
+          await _cameraController.pauseVideoRecording();
+        } else {
+          await _cameraController.resumeVideoRecording();
+          debugPrint('resume recording');
+
+          _animationController.reverse(
+              from: _animationController.value == 0.0
+                  ? 1.0
+                  : _animationController.value);
+        }
+
+        // if (_cameraController
+        //     .value.isRecordingVideo) {
+        //   await _cameraController
+        //       .pauseVideoRecording();
+        //   debugPrint('pause recording');
+        //   debugPrint(_cameraController.value.toString());
+        // } else if (!_cameraController.value.isRecordingVideo){
+        //   debugPrint('resume recording');
+        //   await _cameraController
+        //       .resumeVideoRecording();
+        // }
+      },
+      child: Stack(
+        children: [
+          SizedBox(
+            width: Dimens.DIMENS_70,
+            height: Dimens.DIMENS_70,
+            child: Container(
+              width: Dimens.DIMENS_70,
+              height: Dimens.DIMENS_70,
+              decoration: BoxDecoration(
+                color: COLOR_white_fff5f5f5.withOpacity(0.5),
+                borderRadius: BorderRadius.circular(100),
+              ),
+              child: Align(
+                alignment: Alignment.center,
+                child: Container(
+                  width: Dimens.DIMENS_24,
+                  height: Dimens.DIMENS_24,
+                  decoration: BoxDecoration(
+                      color: COLOR_red, borderRadius: BorderRadius.circular(5)),
                 ),
               ),
             ),
-          ],
-        ),
+          ),
+          Positioned.fill(
+            child: CustomPaint(
+              painter: CustomTimerPainter(
+                animation: _animationController,
+                backgroundColor: Colors.white,
+                color: COLOR_red,
+              ),
+            ),
+          ),
+        ],
       ),
+    );
+  }
+}
+
+class CancelRecordButonWidget extends StatelessWidget {
+  const CancelRecordButonWidget({
+    super.key,
+    required this.size,
+    required this.cameraController,
+    required this.animationController,
+  });
+
+  final Size size;
+  final CameraController cameraController;
+  final AnimationController animationController;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        SizedBox(
+          width: (size.width * 0.5) -
+              (Dimens.DIMENS_70 * 0.5) -
+              (Dimens.DIMENS_50 + Dimens.DIMENS_34),
+        ),
+        GestureDetector(
+          onTap: () async {
+            BlocProvider.of<CameraBloc>(context)
+                .add(StopCameraRecordingEvent());
+          },
+          child: Container(
+            width: Dimens.DIMENS_34,
+            height: Dimens.DIMENS_34,
+            decoration: BoxDecoration(
+                color: COLOR_black, borderRadius: BorderRadius.circular(50)),
+            child: Icon(
+              Icons.close_rounded,
+              color: COLOR_white_fff5f5f5,
+            ),
+          ),
+        ),
+        SizedBox(
+          width: Dimens.DIMENS_50,
+        )
+      ],
     );
   }
 }
