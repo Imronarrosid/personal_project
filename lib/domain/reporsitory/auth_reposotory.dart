@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:personal_project/domain/model/user.dart';
 import 'package:personal_project/domain/usecase/auth_usecase_type.dart';
@@ -13,10 +16,12 @@ class AuthRepository implements AuthUseCaseType {
 
   FirebaseFirestore firestore = FirebaseFirestore.instance;
 
+  static final Completer<bool> _googleUserCompleter = Completer<bool>();
+  Future<bool> isGoogleUserNotEmpty = _googleUserCompleter.future;
 
 
-
-  bool isGoogleLoginCompleted = false;
+  static final Completer<bool> _authCompleter = Completer<bool>();
+  Future<bool> isAuthenticated = _authCompleter.future;
 
   /// Whether or not the current environment is web
   /// Should only be overridden for testing purposes. Otherwise,
@@ -66,7 +71,10 @@ class AuthRepository implements AuthUseCaseType {
   /// Store user to firestore
   Future _createUser(User user) async {
     FirebaseFirestore firestore = FirebaseFirestore.instance;
-    firestore.collection('users').doc(user.id).set(user.toJson());
+    var doc = await firestore.collection('users').doc(user.id).get();
+    if (!doc.exists) {
+      firestore.collection('users').doc(user.id).set(user.toJson());
+    }
   }
 
   @override
@@ -84,8 +92,7 @@ class AuthRepository implements AuthUseCaseType {
       final googleUser = await _googleSignIn.signIn();
 
       if (googleUser != null) {
-
-        isGoogleLoginCompleted  = true;
+        _googleUserCompleter.complete(true);
 
         final googleAuth = await googleUser.authentication;
         credential = firebase_auth.GoogleAuthProvider.credential(
@@ -93,21 +100,19 @@ class AuthRepository implements AuthUseCaseType {
           idToken: googleAuth.idToken,
         );
         await _firebaseAuth.signInWithCredential(credential);
+        _authCompleter.complete(true);
 
         firebase_auth.User? user = currentUser;
 
-        var doc = await firestore.collection('users').doc(user!.uid).get();
-
         User newUser = User(
-            id: user.uid,
+            id: user!.uid,
             userName: user.displayName,
             email: user.email,
             photo: user.photoURL);
 
         // Store user data to firebase if [user.uid] not exist.
-        if (!doc.exists) {
-          await _createUser(newUser);
-        }
+
+        await _createUser(newUser);
       }
     } on PlatformException catch (e) {
       throw e.toString();

@@ -80,8 +80,9 @@ class _HomePageState extends State<HomePage> {
               if (state == LoginProcessing()) {
                 return Container(
                   color: Colors.black38,
-                  child:
-                      Align(alignment: Alignment.center, child: Text('Test')),
+                  child: const Align(
+                      alignment: Alignment.center,
+                      child: CircularProgressIndicator()),
                 );
               }
               return Container();

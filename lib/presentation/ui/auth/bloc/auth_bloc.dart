@@ -15,15 +15,21 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
             : NotAuthenticated()) {
     on<LogInWithGoogle>((event, emit) async {
       try {
-        await authRepository.logInWithGoogle().whenComplete(() {
-          debugPrint('login completed');
-          emit(Authenticated());
-        });
+        authRepository.logInWithGoogle();
       } catch (e) {
         debugPrint(e.toString());
       }
 
-      if (authRepository.currentUser != null) {}
+      bool isGoogleUserNotEmpty = await authRepository.isGoogleUserNotEmpty;
+      debugPrint('isGooleUserIsempty $isGoogleUserNotEmpty');
+      if (isGoogleUserNotEmpty) {
+        emit(LoginProcessing());
+      }
+      bool isAuthenticated = await authRepository.isAuthenticated;
+      debugPrint('isAuthenticated $isAuthenticated');
+      if (isAuthenticated) {
+        emit(Authenticated());
+      }
     });
   }
   final AuthRepository authRepository;
