@@ -20,5 +20,8 @@ abstract class  LocaleKeys {
   static const message_delete_video = 'message_delete_video';
   static const message_write_something = 'message_write_something';
   static const message_login_first = 'message_login_first';
+  static const message_uploading = 'message_uploading';
+  static const message_uploaded = 'message_uploaded';
+  static const message_login_success = 'message_login_success';
 
 }

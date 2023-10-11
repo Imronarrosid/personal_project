@@ -7,6 +7,8 @@ import 'package:personal_project/constant/color.dart';
 import 'package:personal_project/domain/services/app/app_service.dart';
 import 'package:personal_project/presentation/l10n/stings.g.dart';
 import 'package:personal_project/presentation/router/route_utils.dart';
+import 'package:personal_project/presentation/shared_components/custom_snackbar.dart';
+import 'package:personal_project/presentation/ui/add_details/bloc/upload_bloc.dart';
 import 'package:personal_project/presentation/ui/auth/bloc/auth_bloc.dart';
 import 'package:personal_project/presentation/ui/message/message.dart';
 import 'package:personal_project/presentation/ui/upload/bloc/camera_bloc.dart';
@@ -39,7 +41,27 @@ class _HomePageState extends State<HomePage> {
       body: Stack(
         children: [
           Scaffold(
-            body: pages[selectedindex],
+            body: MultiBlocListener(
+              listeners: [
+                BlocListener<UploadBloc, UploadState>(
+                  listener: (context, state) {
+                    if (state is Uploading) {
+                      showUploadingSnackBar(context);
+                    } else if (state is VideoUploaded) {
+                      showUploadedSnackBar(context);
+                    }
+                  },
+                ),
+                BlocListener<AuthBloc, AuthState>(
+                  listener: (context, state) {
+                    if (state is Authenticated) {
+                      showLoginSuccessSnackBar(context);
+                    }
+                  },
+                ),
+              ],
+              child: pages[selectedindex],
+            ),
             bottomNavigationBar: BottomNavigationBar(
               unselectedItemColor: COLOR_white_fff5f5f5.withOpacity(0.6),
               selectedItemColor: COLOR_white_fff5f5f5,

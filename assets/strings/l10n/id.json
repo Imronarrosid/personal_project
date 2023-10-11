@@ -17,5 +17,8 @@
     "label_signin_with_google": "Masuk dengan Google",
     "message_delete_video": "Hapus vidio?",
     "message_write_something": "Tulis sesuatu",
-    "message_login_first": "Masuk terlabih dahulu"
+    "message_login_first": "Masuk terlabih dahulu",
+    "message_uploading": "Sedang mengupload",
+    "message_uploaded": "Upload sukses",
+    "message_login_success": "Login sukses"
 }
