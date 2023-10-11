@@ -7,11 +7,13 @@ import 'package:go_router/go_router.dart';
 import 'package:personal_project/constant/color.dart';
 import 'package:personal_project/domain/reporsitory/auth_reposotory.dart';
 import 'package:personal_project/domain/reporsitory/camera_repository.dart';
+import 'package:personal_project/domain/reporsitory/video_repository.dart';
 import 'package:personal_project/domain/services/app/app_service.dart';
 import 'package:personal_project/domain/services/auth/auth_service.dart';
 import 'package:personal_project/firebase_options.dart';
 import 'package:personal_project/presentation/l10n/l10n.dart';
 import 'package:personal_project/presentation/router/app_router.dart';
+import 'package:personal_project/presentation/ui/add_details/bloc/upload_bloc.dart';
 import 'package:personal_project/presentation/ui/auth/bloc/auth_bloc.dart';
 import 'package:personal_project/presentation/ui/home/home.dart';
 import 'package:personal_project/presentation/ui/upload/bloc/camera_bloc.dart';
@@ -79,8 +81,15 @@ class _MyAppState extends State<MyApp> {
       child: Builder(builder: (context) {
         final GoRouter goRouter =
             Provider.of<AppRouter>(context, listen: false).router;
-        return RepositoryProvider(
-          create: (context) => AuthRepository(),
+        return MultiRepositoryProvider(
+          providers: [
+            RepositoryProvider(
+              create: (context) => AuthRepository(),
+            ),
+            RepositoryProvider(
+              create: (context) => VideRepository(),
+            ),
+          ],
           child: MultiBlocProvider(
             providers: [
               BlocProvider<CameraBloc>(
@@ -90,8 +99,15 @@ class _MyAppState extends State<MyApp> {
                 create: (context) => VideoPreviewBloc(),
               ),
               BlocProvider(
-                  create: (context) =>
-                      AuthBloc(RepositoryProvider.of<AuthRepository>(context)))
+                create: (context) => AuthBloc(
+                  RepositoryProvider.of<AuthRepository>(context),
+                ),
+              ),
+              BlocProvider(
+                create: (context) => UploadBloc(
+                  RepositoryProvider.of<VideRepository>(context),
+                ),
+              ),
             ],
             child: MaterialApp.router(
               debugShowCheckedModeBanner: false,

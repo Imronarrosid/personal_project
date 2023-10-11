@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:personal_project/domain/model/video_model.dart';
 import 'package:personal_project/domain/services/firebase/firebase_service.dart';
 import 'package:personal_project/domain/usecase/vide_usecase_type.dart';
@@ -45,14 +47,11 @@ class VideRepository implements VideoUseCaseType {
   @override
   uploapVideo({required String songName, caption, videoPath}) async {
     try {
-      String uid = FirebaseServices.firebaseAuth.currentUser!.uid;
-      DocumentSnapshot userDoc = await FirebaseServices.firebaseFirestore
-          .collection('user')
-          .doc(uid)
-          .get();
+      String uid = firebaseAuth.currentUser!.uid;
+      DocumentSnapshot userDoc =
+          await firebaseFirestore.collection('users').doc(uid).get();
       //Get id
-      var allDocs =
-          await FirebaseServices.firebaseFirestore.collection('videos').get();
+      var allDocs = await firebaseFirestore.collection('videos').get();
       int len = allDocs.docs.length;
       String videoUrl =
           await _uploadToStorage("video $len", await _compressVideo(videoPath));
@@ -60,23 +59,28 @@ class VideRepository implements VideoUseCaseType {
           await _uploadThumnailesToStorage("video $len", videoPath);
 
       Video video = Video(
-          username: (userDoc.data()! as Map<String, dynamic>)['username'],
+          username: (userDoc.data()! as Map<String, dynamic>)['name'],
           uid: uid,
           id: "video$len",
           songName: songName,
           caption: caption,
           thumnail: thumnail,
           videoUrl: videoUrl,
-          profileImg: (userDoc.data()! as Map<String, dynamic>)['profileImg'],
+          profileImg: (userDoc.data()! as Map<String, dynamic>)['photo'],
           likes: [],
           commentCount: 0,
           shareCount: 0);
 
-      await FirebaseServices.firebaseFirestore
+      await firebaseFirestore
           .collection('videos')
           .doc('video$len')
-          .set(video.toJson());
+          .set(video.toJson())
+          .then((_) {
+        debugPrint('uploaded');
+      });
     } catch (e) {
+      debugPrint(e.toString());
+      throw Exception(e.toString());
       // Get.snackbar('Upload video error', e.toString());
     }
   }

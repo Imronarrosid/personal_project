@@ -6,11 +6,11 @@ import 'package:personal_project/domain/usecase/user_usecase_type.dart';
 class UserRepository implements UserUseCaseType {
   @override
   Future<Map<String, dynamic>> getUserData(String uid) async {
-    var myVideos = await FirebaseServices.firebaseFirestore
+    var myVideos = await firebaseFirestore
         .collection('videos')
         .where('uid', isEqualTo: uid)
         .get();
-    DocumentSnapshot userDoc = await FirebaseServices.firebaseFirestore
+    DocumentSnapshot userDoc = await firebaseFirestore
         .collection('users')
         .doc(uid)
         .get();
@@ -25,12 +25,12 @@ class UserRepository implements UserUseCaseType {
     for (var item in myVideos.docs) {
       likes += (item.data()['likes'] as List).length;
     }
-    var followerDoc = await FirebaseServices.firebaseFirestore
+    var followerDoc = await firebaseFirestore
         .collection('users')
         .doc(uid)
         .collection('followers')
         .get();
-    var followingDoc = await FirebaseServices.firebaseFirestore
+    var followingDoc = await firebaseFirestore
         .collection('users')
         .doc(uid)
         .collection('following')
@@ -39,7 +39,7 @@ class UserRepository implements UserUseCaseType {
     followers = followerDoc.docs.length;
     following = followingDoc.docs.length;
 
-    await FirebaseServices.firebaseFirestore
+    await firebaseFirestore
         .collection('users')
         .doc(uid)
         .collection('followers')
@@ -68,20 +68,20 @@ class UserRepository implements UserUseCaseType {
   @override
   Future<void> followUser(
       {required String currentUserUid, required String uid}) async {
-    var doc = await FirebaseServices.firebaseFirestore
+    var doc = await firebaseFirestore
         .collection('users')
         .doc(uid)
         .collection('followers')
         .doc(currentUserUid)
         .get();
     if (!doc.exists) {
-      await FirebaseServices.firebaseFirestore
+      await firebaseFirestore
           .collection('users')
           .doc(uid)
           .collection('followers')
           .doc(currentUserUid)
           .set({});
-      await FirebaseServices.firebaseFirestore
+      await firebaseFirestore
           .collection('users')
           .doc(currentUserUid)
           .collection('following')
@@ -92,13 +92,13 @@ class UserRepository implements UserUseCaseType {
       //   (value) => (int.parse(value) + 1).toString(),
       // );
     } else {
-      await FirebaseServices.firebaseFirestore
+      await firebaseFirestore
           .collection('users')
           .doc(currentUserUid)
           .collection('following')
           .doc(uid)
           .delete();
-      await FirebaseServices.firebaseFirestore
+      await firebaseFirestore
           .collection('users')
           .doc(uid)
           .collection('followers')
@@ -111,7 +111,7 @@ class UserRepository implements UserUseCaseType {
   @override
   Future<List<String>> getUserVideoThumnails(String uid) async {
     List<String> thumbnails = [];
-    var myVideos = await FirebaseServices.firebaseFirestore
+    var myVideos = await firebaseFirestore
         .collection('videos')
         .where('uid', isEqualTo: uid)
         .get();
