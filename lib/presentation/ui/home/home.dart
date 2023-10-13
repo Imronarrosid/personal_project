@@ -38,6 +38,7 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     final appService = Provider.of<AppService>(context);
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       body: Stack(
         children: [
           Scaffold(
@@ -56,6 +57,11 @@ class _HomePageState extends State<HomePage> {
                   listener: (context, state) {
                     if (state is Authenticated) {
                       showLoginSuccessSnackBar(context);
+                    }else if(state is AuthError){
+                      showLoginErrorSnackBar(context);
+                    }
+                    else if(state is NoInternet){
+                      showLoginErrorSnackBar(context);
                     }
                   },
                 ),

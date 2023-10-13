@@ -8,7 +8,9 @@ import 'package:personal_project/constant/dimens.dart';
 import 'package:personal_project/constant/font_size.dart';
 import 'package:personal_project/presentation/assets/images.dart';
 import 'package:personal_project/presentation/l10n/stings.g.dart';
+import 'package:personal_project/presentation/shared_components/custom_snackbar.dart';
 import 'package:personal_project/presentation/ui/auth/bloc/auth_bloc.dart';
+import 'package:personal_project/utils/check_network.dart';
 
 void showAuthBottomSheetFunc(BuildContext context) {
   showModalBottomSheet(
@@ -70,9 +72,13 @@ void showAuthBottomSheetFunc(BuildContext context) {
                     child: InkWell(
                       splashColor: COLOR_grey,
                       borderRadius: BorderRadius.circular(50),
-                      onTap: () {
-                        BlocProvider.of<AuthBloc>(context)
-                            .add(LogInWithGoogle());
+                      onTap: () async {
+                        if (await checkNetwork() && context.mounted) {
+                          BlocProvider.of<AuthBloc>(context)
+                              .add(LogInWithGoogle());
+                        } else {
+                          showNoInternetSnackBar(context);
+                        }
                       },
                       child: Container(
                         height: Dimens.DIMENS_50,

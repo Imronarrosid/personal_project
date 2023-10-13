@@ -175,13 +175,19 @@ class _UploadPageState extends State<UploadPage>
   Future<void> _stopRecording() async {
     _animationController.stop();
     try {
-      await _cameraController.stopVideoRecording().then((value) {
+      await _cameraController.stopVideoRecording().then((value) async {
         debugPrint('path video${value.path}');
-        //NAVIGATIONG TO VIDEO PREVIEW
-        context.push(APP_PAGE.videoPreview.toPath, extra: File(value.path));
 
-        //STOP CAMERA RECORDING THROUGH BLOC
-        BlocProvider.of<CameraBloc>(context).add(StopCameraRecordingEvent());
+        _cameraController.dispose();
+        //NAVIGATIONG TO VIDEO PREVIEW
+        await context.push(APP_PAGE.videoPreview.toPath,
+            extra: File(value.path));
+
+        if (mounted && _isRearCameraSelected) {
+          initCamera(context, widget.cameras![0]);
+        } else if (mounted && !_isRearCameraSelected) {
+          initCamera(context, widget.cameras![1]);
+        }
 
         //STOP ANIMATION
         _animationController.reverse(from: 0.0);
@@ -260,7 +266,7 @@ class _UploadPageState extends State<UploadPage>
       child: BlocListener<CameraBloc, CameraState>(
         listener: (context, state) async {
           try {
-            if (state is CameraRecordingStoped &&
+            if (state is CameraRecordingCanceled &&
                 _cameraController.value.isRecordingVideo) {
               XFile? videoFile = await _cameraController.stopVideoRecording();
               File(videoFile.path).delete();
@@ -303,7 +309,7 @@ class _UploadPageState extends State<UploadPage>
                         _cameraController.value.isInitialized.toString());
                     if (state is CameraInitialized ||
                         state is CameraRecording ||
-                        state is CameraRecordingStoped) {
+                        state is CameraRecordingCanceled) {
                       return GestureDetector(
                           onScaleUpdate: _onScaleUpdate,
                           child: CameraPreview(_cameraController));
@@ -592,7 +598,7 @@ class CancelRecordButonWidget extends StatelessWidget {
         GestureDetector(
           onTap: () async {
             BlocProvider.of<CameraBloc>(context)
-                .add(StopCameraRecordingEvent());
+                .add(CancelCameraRecordingEvent());
           },
           child: Container(
             width: Dimens.DIMENS_34,

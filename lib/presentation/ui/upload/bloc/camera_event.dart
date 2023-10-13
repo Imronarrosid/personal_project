@@ -28,7 +28,7 @@ class CameraRecordingEvent extends CameraEvent {
   @override
   List<Object> get props => [];
 }
-class StopCameraRecordingEvent extends CameraEvent {
+class CancelCameraRecordingEvent extends CameraEvent {
   @override
   List<Object> get props => [];
 }

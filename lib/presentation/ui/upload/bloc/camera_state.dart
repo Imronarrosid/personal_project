@@ -43,7 +43,7 @@ final class CameraRecording extends CameraState {
   @override
   List<Object> get props => [];
 }
-final class CameraRecordingStoped extends CameraState {
+final class CameraRecordingCanceled extends CameraState {
   @override
   List<Object> get props => [];
 }

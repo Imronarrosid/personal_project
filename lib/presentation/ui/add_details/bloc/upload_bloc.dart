@@ -9,11 +9,15 @@ class UploadBloc extends Bloc<UploadEvent, UploadState> {
   UploadBloc(this.videoRepository) : super(UploadInitial()) {
     on<UploadVideoEvent>((event, emit) async {
       emit(Uploading());
-      await videoRepository.uploapVideo(
-          songName: 'tidak diketahui',
-          caption: event.caption,
-          videoPath: event.videoPath);
-      emit(VideoUploaded());
+      try {
+        await videoRepository.uploapVideo(
+            songName: 'tidak diketahui',
+            caption: event.caption,
+            videoPath: event.videoPath);
+        emit(VideoUploaded());
+      } catch (e) {
+        emit(UploadError(e.toString()));
+      }
     });
   }
   VideRepository videoRepository;

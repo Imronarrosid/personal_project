@@ -20,10 +20,10 @@ class ProfilePage extends StatelessWidget {
         child: BlocBuilder<AuthBloc, AuthState>(
           builder: (context, state) {
             debugPrint(state.toString());
-            if (state is NotAuthenticated) {
-              return const NotAuthenticatedPage();
+            if (state is Authenticated) {
+              return Container();
             }
-            return Container();
+            return const NotAuthenticatedPage();
           },
         ),
       ),

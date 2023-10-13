@@ -9,6 +9,61 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:personal_project/domain/model/user.dart';
 import 'package:personal_project/domain/usecase/auth_usecase_type.dart';
 
+class LogInWithGoogleFailure implements Exception {
+  /// {@macro log_in_with_google_failure}
+  const LogInWithGoogleFailure([
+    this.message = 'An unknown exception occurred.',
+  ]);
+
+  /// Create an authentication message
+  /// from a firebase authentication exception code.
+  factory LogInWithGoogleFailure.fromCode(String code) {
+    switch (code) {
+      case 'account-exists-with-different-credential':
+        return const LogInWithGoogleFailure(
+          'Account exists with different credentials.',
+        );
+      case 'invalid-credential':
+        return const LogInWithGoogleFailure(
+          'The credential received is malformed or has expired.',
+        );
+      case 'operation-not-allowed':
+        return const LogInWithGoogleFailure(
+          'Operation is not allowed.  Please contact support.',
+        );
+      case 'user-disabled':
+        return const LogInWithGoogleFailure(
+          'This user has been disabled. Please contact support for help.',
+        );
+      case 'user-not-found':
+        return const LogInWithGoogleFailure(
+          'Email is not found, please create an account.',
+        );
+      case 'wrong-password':
+        return const LogInWithGoogleFailure(
+          'Incorrect password, please try again.',
+        );
+      case 'invalid-verification-code':
+        return const LogInWithGoogleFailure(
+          'The credential verification code received is invalid.',
+        );
+      case 'invalid-verification-id':
+        return const LogInWithGoogleFailure(
+          'The credential verification ID received is invalid.',
+        );
+      case 'network-request-failed':
+        return const LogInWithGoogleFailure(
+          'Network error',
+        );
+      default:
+        return const LogInWithGoogleFailure();
+    }
+  }
+
+  /// The associated error message.
+  final String message;
+}
+
 class AuthRepository implements AuthUseCaseType {
   final firebase_auth.FirebaseAuth _firebaseAuth =
       firebase_auth.FirebaseAuth.instance;
@@ -18,7 +73,6 @@ class AuthRepository implements AuthUseCaseType {
 
   static final Completer<bool> _googleUserCompleter = Completer<bool>();
   Future<bool> isGoogleUserNotEmpty = _googleUserCompleter.future;
-
 
   static final Completer<bool> _authCompleter = Completer<bool>();
   Future<bool> isAuthenticated = _authCompleter.future;
@@ -89,7 +143,8 @@ class AuthRepository implements AuthUseCaseType {
         credential = userCredential.credential!;
       }
 
-      final googleUser = await _googleSignIn.signIn();
+      final googleUser =
+          await _googleSignIn.signIn();
 
       if (googleUser != null) {
         _googleUserCompleter.complete(true);
@@ -100,9 +155,14 @@ class AuthRepository implements AuthUseCaseType {
           idToken: googleAuth.idToken,
         );
         await _firebaseAuth.signInWithCredential(credential);
-        _authCompleter.complete(true);
 
         firebase_auth.User? user = currentUser;
+
+        if (user != null) {
+          _authCompleter.complete(true);
+        } else {
+          _authCompleter.complete(false);
+        }
 
         User newUser = User(
             id: user!.uid,
@@ -114,8 +174,8 @@ class AuthRepository implements AuthUseCaseType {
 
         await _createUser(newUser);
       }
-    } on PlatformException catch (e) {
-      throw e.toString();
+    } catch (e) {
+      debugPrint(e.toString());
     }
   }
 
