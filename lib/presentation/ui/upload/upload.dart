@@ -98,13 +98,6 @@ class _UploadPageState extends State<UploadPage>
     });
   }
 
-  @override
-  void dispose() {
-    _cameraController.dispose();
-    _animationController.dispose();
-    super.dispose();
-  }
-
   Future initCamera(
       BuildContext context, CameraDescription cameraDescription) async {
     _cameraController =
@@ -178,17 +171,10 @@ class _UploadPageState extends State<UploadPage>
       await _cameraController.stopVideoRecording().then((value) async {
         debugPrint('path video${value.path}');
 
-        _cameraController.dispose();
         //NAVIGATIONG TO VIDEO PREVIEW
-        await context.push(APP_PAGE.videoPreview.toPath,
-            extra: File(value.path));
+        context.push(APP_PAGE.videoPreview.toPath, extra: File(value.path));
 
-        if (mounted && _isRearCameraSelected) {
-          initCamera(context, widget.cameras![0]);
-        } else if (mounted && !_isRearCameraSelected) {
-          initCamera(context, widget.cameras![1]);
-        }
-
+        BlocProvider.of<CameraBloc>(context).add(StopCameraRecordingEvent());
         //STOP ANIMATION
         _animationController.reverse(from: 0.0);
         _animationController.stop();
@@ -309,6 +295,7 @@ class _UploadPageState extends State<UploadPage>
                         _cameraController.value.isInitialized.toString());
                     if (state is CameraInitialized ||
                         state is CameraRecording ||
+                        state is CameraRecordingStoped ||
                         state is CameraRecordingCanceled) {
                       return GestureDetector(
                           onScaleUpdate: _onScaleUpdate,
@@ -493,6 +480,13 @@ class _UploadPageState extends State<UploadPage>
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _cameraController.dispose();
+    _animationController.dispose();
+    super.dispose();
   }
 }
 
