@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:personal_project/domain/model/preview_model.dart';
 import 'package:personal_project/domain/services/app/app_service.dart';
 import 'package:personal_project/presentation/router/route_utils.dart';
 import 'package:personal_project/presentation/ui/add_details/add_details_page.dart';
@@ -56,10 +57,10 @@ class AppRouter {
           path: APP_PAGE.videoPreview.toPath,
           name: APP_PAGE.videoPreview.toName,
           pageBuilder: (context, state) {
-            File videoFile = state.extra as File;
+            PreviewData previewData = state.extra as PreviewData;
             return MaterialPage(
                 child: VideoPreviewPage(
-              videoFile: videoFile,
+              previewData: previewData,
             ));
           }),
       GoRoute(

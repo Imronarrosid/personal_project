@@ -53,6 +53,14 @@ dependencies:
   video_compress: ^3.1.2
   google_sign_in: ^6.1.5
   firebase_storage: ^11.2.8
+  path_provider: ^2.1.1
+  file_manager: ^1.0.2
+  file_picker: ^6.0.0
+  video_thumbnail: ^0.5.3
+  permission_handler: ^11.0.1
+  file_selector: ^1.0.1
+  image_picker: ^1.0.4
+  video_editor: ^3.0.0
 
 dev_dependencies:
   flutter_test:

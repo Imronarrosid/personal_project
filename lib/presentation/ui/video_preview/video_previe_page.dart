@@ -6,14 +6,15 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:personal_project/constant/color.dart';
 import 'package:personal_project/constant/font_size.dart';
+import 'package:personal_project/domain/model/preview_model.dart';
 import 'package:personal_project/presentation/l10n/stings.g.dart';
 import 'package:personal_project/presentation/router/route_utils.dart';
 import 'package:personal_project/presentation/ui/video_preview/bloc/video_preview_bloc.dart';
 import 'package:video_player/video_player.dart';
 
 class VideoPreviewPage extends StatefulWidget {
-  final File videoFile;
-  const VideoPreviewPage({super.key, required this.videoFile});
+  final PreviewData previewData;
+  const VideoPreviewPage({super.key, required this.previewData});
 
   @override
   State<VideoPreviewPage> createState() => _VideoPreviewPageState();
@@ -24,7 +25,7 @@ class _VideoPreviewPageState extends State<VideoPreviewPage> {
 
   @override
   void initState() {
-    _videoPlayerController = VideoPlayerController.file(widget.videoFile)
+    _videoPlayerController = VideoPlayerController.file(widget.previewData.file)
       ..initialize().then((value) {
         BlocProvider.of<VideoPreviewBloc>(context)
             .add(InitVideoPlayer(controller: _videoPlayerController));
@@ -39,8 +40,11 @@ class _VideoPreviewPageState extends State<VideoPreviewPage> {
     Size size = MediaQuery.of(context).size;
     return WillPopScope(
       onWillPop: () async {
-        if (!await _showDialog(context, widget.videoFile)) {
-          return false;
+        //if file is from camera will show dialog first
+        if (widget.previewData.isFromCamera) {
+          if (!await _showDialog(context, widget.previewData.file)) {
+            return false;
+          }
         }
         _videoPlayerController.dispose();
 
@@ -62,7 +66,7 @@ class _VideoPreviewPageState extends State<VideoPreviewPage> {
                   onPressed: () async {
                     _videoPlayerController.pause();
                     await context.push(APP_PAGE.addDetails.toPath,
-                        extra: widget.videoFile);
+                        extra: widget.previewData);
 
                     _videoPlayerController.play();
                   },

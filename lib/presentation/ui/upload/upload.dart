@@ -6,14 +6,23 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gal/gal.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:personal_project/constant/color.dart';
 import 'package:personal_project/constant/dimens.dart';
 import 'package:personal_project/constant/font_size.dart';
+import 'package:personal_project/data/repository/file_repository.dart';
+import 'package:personal_project/domain/model/preview_model.dart';
 import 'package:personal_project/presentation/l10n/stings.g.dart';
 import 'package:personal_project/presentation/router/route_utils.dart';
 import 'package:personal_project/presentation/shared_components/timer_widget.dart';
+import 'package:personal_project/presentation/ui/files/bloc/files_bloc.dart';
+import 'package:personal_project/presentation/ui/files/files_page.dart';
 import 'package:personal_project/presentation/ui/upload/bloc/camera_bloc.dart';
 import 'package:flutter_ffmpeg/flutter_ffmpeg.dart';
+import 'package:file_selector/file_selector.dart';
+import 'package:personal_project/utils/pick_video.dart';
+import 'package:video_player/video_player.dart';
 
 class UploadPage extends StatefulWidget {
   final List<CameraDescription>? cameras;
@@ -172,7 +181,8 @@ class _UploadPageState extends State<UploadPage>
         debugPrint('path video${value.path}');
 
         //NAVIGATIONG TO VIDEO PREVIEW
-        context.push(APP_PAGE.videoPreview.toPath, extra: File(value.path));
+        context.push(APP_PAGE.videoPreview.toPath,
+            extra: PreviewData(file: File(value.path), isFromCamera: true));
 
         BlocProvider.of<CameraBloc>(context).add(StopCameraRecordingEvent());
         //STOP ANIMATION
@@ -458,13 +468,26 @@ class _UploadPageState extends State<UploadPage>
                                     ),
                                   );
                                 }
-                                return Container(
-                                  width: 40,
-                                  height: 40,
-                                  decoration: BoxDecoration(
-                                      color: COLOR_red,
-                                      borderRadius: BorderRadius.circular(
-                                          Dimens.DIMENS_12)),
+                                return GestureDetector(
+                                  onTap: () async {
+                                    File video = await pickVideo();
+
+                                    if (await isMoreThan3minutes(video)) {
+                                      /// show dialog duration more than 3 minutes
+                                    } else {
+                                      await context.push(APP_PAGE.videoPreview.toPath,extra: PreviewData(file: video, isFromCamera: false));
+
+
+                                    }
+                                  },
+                                  child: Container(
+                                    width: 40,
+                                    height: 40,
+                                    decoration: BoxDecoration(
+                                        color: COLOR_red,
+                                        borderRadius: BorderRadius.circular(
+                                            Dimens.DIMENS_12)),
+                                  ),
                                 );
                               },
                             )

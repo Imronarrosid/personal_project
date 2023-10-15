@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:personal_project/constant/color.dart';
+import 'package:personal_project/data/repository/file_repository.dart';
 import 'package:personal_project/domain/reporsitory/auth_reposotory.dart';
 import 'package:personal_project/domain/reporsitory/camera_repository.dart';
 import 'package:personal_project/domain/reporsitory/video_repository.dart';
@@ -15,6 +16,7 @@ import 'package:personal_project/presentation/l10n/l10n.dart';
 import 'package:personal_project/presentation/router/app_router.dart';
 import 'package:personal_project/presentation/ui/add_details/bloc/upload_bloc.dart';
 import 'package:personal_project/presentation/ui/auth/bloc/auth_bloc.dart';
+import 'package:personal_project/presentation/ui/files/bloc/files_bloc.dart';
 import 'package:personal_project/presentation/ui/home/home.dart';
 import 'package:personal_project/presentation/ui/upload/bloc/camera_bloc.dart';
 import 'package:personal_project/presentation/ui/video_preview/bloc/video_preview_bloc.dart';
@@ -89,6 +91,9 @@ class _MyAppState extends State<MyApp> {
             RepositoryProvider(
               create: (context) => VideRepository(),
             ),
+            RepositoryProvider(
+              create: (context) => FileRepository(),
+            )
           ],
           child: MultiBlocProvider(
             providers: [
@@ -108,6 +113,9 @@ class _MyAppState extends State<MyApp> {
                   RepositoryProvider.of<VideRepository>(context),
                 ),
               ),
+              BlocProvider(
+                  create: (context) =>
+                      FilesBloc(RepositoryProvider.of<FileRepository>(context)))
             ],
             child: MaterialApp.router(
               debugShowCheckedModeBanner: false,
