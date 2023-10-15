@@ -8,6 +8,7 @@ enum APP_PAGE {
   error,
   onBoarding,
   videoPreview,
+  videoEditor,
   addDetails
 }
 
@@ -28,6 +29,8 @@ extension AppPageExtension on APP_PAGE {
         return "/start";
       case APP_PAGE.videoPreview:
         return "/video-preview";
+      case APP_PAGE.videoEditor:
+        return "/video-editor";
       case APP_PAGE.addDetails:
         return "/add-details";
       default:
@@ -51,6 +54,8 @@ extension AppPageExtension on APP_PAGE {
         return "START";
       case APP_PAGE.videoPreview:
         return "VIDEO_PREVIEW";
+      case APP_PAGE.videoEditor:
+        return "VIDEO_EDITOR";
       case APP_PAGE.addDetails:
         return "ADD-DETAILS";
       default:

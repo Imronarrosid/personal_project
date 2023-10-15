@@ -10,6 +10,7 @@ import 'package:personal_project/presentation/ui/add_details/add_details_page.da
 import 'package:personal_project/presentation/ui/home/home.dart';
 import 'package:personal_project/presentation/ui/onboarding/onboarding.dart';
 import 'package:personal_project/presentation/ui/upload/upload.dart';
+import 'package:personal_project/presentation/ui/video_editor/video_editor_page.dart';
 import 'package:personal_project/presentation/ui/video_preview/video_previe_page.dart';
 
 class AppRouter {
@@ -61,6 +62,16 @@ class AppRouter {
             return MaterialPage(
                 child: VideoPreviewPage(
               previewData: previewData,
+            ));
+          }),
+      GoRoute(
+          path: APP_PAGE.videoEditor.toPath,
+          name: APP_PAGE.videoEditor.toName,
+          pageBuilder: (context, state) {
+            File file = state.extra as File;
+            return MaterialPage(
+                child: VideoEditor(
+              file: file,
             ));
           }),
       GoRoute(

@@ -19,7 +19,6 @@ import 'package:personal_project/presentation/shared_components/timer_widget.dar
 import 'package:personal_project/presentation/ui/files/bloc/files_bloc.dart';
 import 'package:personal_project/presentation/ui/files/files_page.dart';
 import 'package:personal_project/presentation/ui/upload/bloc/camera_bloc.dart';
-import 'package:flutter_ffmpeg/flutter_ffmpeg.dart';
 import 'package:file_selector/file_selector.dart';
 import 'package:personal_project/utils/pick_video.dart';
 import 'package:video_player/video_player.dart';
@@ -181,9 +180,10 @@ class _UploadPageState extends State<UploadPage>
         debugPrint('path video${value.path}');
 
         //NAVIGATIONG TO VIDEO PREVIEW
-        context.push(APP_PAGE.videoPreview.toPath,
-            extra: PreviewData(file: File(value.path), isFromCamera: true));
+        // context.push(APP_PAGE.videoPreview.toPath,
+        //     extra: PreviewData(file: File(value.path), isFromCamera: true));
 
+        context.push(APP_PAGE.videoEditor.toPath, extra: File(value.path));
         BlocProvider.of<CameraBloc>(context).add(StopCameraRecordingEvent());
         //STOP ANIMATION
         _animationController.reverse(from: 0.0);
@@ -211,45 +211,6 @@ class _UploadPageState extends State<UploadPage>
 //     print('Video concatenation failed');
 //   }
 // }
-
-  Future<String> mergeVideos(
-      {required String firstPath,
-      required String secondPath,
-      required String outputPath}) async {
-    final FlutterFFmpeg _flutterFFmpeg = FlutterFFmpeg();
-
-    // Build FFmpeg command to concatenate videos
-    // String inputArgs = firstVideoPaths.map((path) => '-i $path').join(' ');
-    // String filterComplex = 'concat=n=${firstVideoPaths.length}:v=1:a=1 [v] [a]';
-    // String outputArgs =
-    //     '-map [v] -map [a] -c:v libx264 -c:a aac -strict experimental -b:a 192k -shortest $outputFilePath';
-
-    // String command = '$inputArgs -filter_complex $filterComplex $outputArgs';
-
-    // int rc = await _flutterFFmpeg.execute(command).then((value) {
-    //   if (value == 0) {
-    //     listVideoPath.add(outputFilePath);
-    //   }
-    //   return value;
-    // });
-
-    // if (rc == 0) {
-    //   print('Video merging successful');
-    // } else {
-    //   print('Video merging failed');
-    // }
-    String inputArgs = '-i $firstPath -i $secondPath';
-    String outputArgs =
-        '-filter_complex "concat=n=2:v=1:a=1 [v] [a]" -map "[v]" -map "[a]" -c:a aac -strict experimental -b:a 192k $outputPath';
-
-    String command = '$inputArgs $outputArgs';
-    await _flutterFFmpeg.execute(command).then((value) {
-      firstVideoPath = outputPath;
-    });
-    await Gal.putVideo(outputPath);
-
-    return outputPath;
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -475,9 +436,11 @@ class _UploadPageState extends State<UploadPage>
                                     if (await isMoreThan3minutes(video)) {
                                       /// show dialog duration more than 3 minutes
                                     } else {
-                                      await context.push(APP_PAGE.videoPreview.toPath,extra: PreviewData(file: video, isFromCamera: false));
-
-
+                                      await context.push(
+                                          APP_PAGE.videoPreview.toPath,
+                                          extra: PreviewData(
+                                              file: video,
+                                              isFromCamera: false));
                                     }
                                   },
                                   child: Container(
