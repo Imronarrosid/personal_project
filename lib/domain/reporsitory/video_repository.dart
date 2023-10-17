@@ -9,7 +9,7 @@ import 'package:video_compress/video_compress.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 
-class VideRepository implements VideoUseCaseType {
+class VideoRepository implements VideoUseCaseType {
   FirebaseStorage firebaseStorage = FirebaseStorage.instance;
 
   _compressVideo(String videoPath) async {
@@ -69,7 +69,7 @@ class VideRepository implements VideoUseCaseType {
           profileImg: (userDoc.data()! as Map<String, dynamic>)['photo'],
           likes: [],
           commentCount: 0,
-          shareCount: 0);
+          shareCount: 0, createdAt: FieldValue.serverTimestamp());
 
       await firebaseFirestore
           .collection('videos')
@@ -83,5 +83,31 @@ class VideRepository implements VideoUseCaseType {
       throw Exception(e.toString());
       // Get.snackbar('Upload video error', e.toString());
     }
+  }
+
+  Future<List<DocumentSnapshot>> getListVideo({required int limit}) async {
+    List<DocumentSnapshot> listDocs = [];
+    QuerySnapshot querySnapshot;
+    if (listDocs.isEmpty) {
+      querySnapshot = await firebaseFirestore
+          .collection('videos')
+          .orderBy('createdAt', descending: true)
+          .limit(limit)
+          .get();
+    } else {
+      querySnapshot = await firebaseFirestore
+          .collection('videos')
+          .orderBy('createdAt', descending: true)
+          .startAfterDocument(listDocs.last)
+          .limit(limit)
+          .get();
+    }
+    if (querySnapshot.docs.length < limit) {
+      listDocs.addAll(querySnapshot.docs);
+      // setState(() {
+      //   _hasMore = false;
+      // });
+    }
+    return listDocs;
   }
 }

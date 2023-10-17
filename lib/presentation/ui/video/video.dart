@@ -13,6 +13,7 @@ class VideoPage extends StatelessWidget {
     Size size = MediaQuery.of(context).size;
     return Scaffold(
       backgroundColor: COLOR_black_ff121212,
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         foregroundColor: COLOR_white_fff5f5f5,

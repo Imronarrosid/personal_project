@@ -88,7 +88,7 @@ class _MyAppState extends State<MyApp> {
               create: (context) => AuthRepository(),
             ),
             RepositoryProvider(
-              create: (context) => VideRepository(),
+              create: (context) => VideoRepository(),
             ),
             RepositoryProvider(
               create: (context) => FileRepository(),
@@ -109,7 +109,7 @@ class _MyAppState extends State<MyApp> {
               ),
               BlocProvider(
                 create: (context) => UploadBloc(
-                  RepositoryProvider.of<VideRepository>(context),
+                  RepositoryProvider.of<VideoRepository>(context),
                 ),
               ),],
             child: MaterialApp.router(

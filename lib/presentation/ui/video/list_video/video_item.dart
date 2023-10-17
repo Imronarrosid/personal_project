@@ -3,12 +3,13 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:personal_project/constant/color.dart';
 import 'package:personal_project/constant/dimens.dart';
+import 'package:personal_project/domain/model/video_model.dart';
 import 'package:personal_project/presentation/assets/images.dart';
 import 'package:personal_project/presentation/router/route_utils.dart';
 
-
 class VideoItem extends StatelessWidget {
-  const VideoItem({super.key});
+  final Video videoData;
+  const VideoItem({super.key, required this.videoData});
 
   @override
   Widget build(BuildContext context) {
@@ -24,12 +25,12 @@ class VideoItem extends StatelessWidget {
             child: Column(
               children: [
                 GestureDetector(
-                  onTap: (){
-            GoRouter.of(context).push(Uri(path: APP_PAGE.upload.toPath).toString());
-                    
-                  },
-                  child: CircleAvatar()),
-                 SizedBox(
+                    onTap: () {
+                      GoRouter.of(context)
+                          .push(Uri(path: APP_PAGE.upload.toPath).toString());
+                    },
+                    child: CircleAvatar()),
+                SizedBox(
                   height: Dimens.DIMENS_38,
                 ),
                 Icon(
@@ -41,7 +42,7 @@ class VideoItem extends StatelessWidget {
                   '10',
                   style: TextStyle(color: COLOR_white_fff5f5f5),
                 ),
-                 SizedBox(
+                SizedBox(
                   height: Dimens.DIMENS_12,
                 ),
                 Icon(
@@ -53,7 +54,7 @@ class VideoItem extends StatelessWidget {
                   '10',
                   style: TextStyle(color: COLOR_white_fff5f5f5),
                 ),
-                 SizedBox(
+                SizedBox(
                   height: Dimens.DIMENS_12,
                 ),
                 Icon(
@@ -65,7 +66,7 @@ class VideoItem extends StatelessWidget {
                   '10',
                   style: TextStyle(color: COLOR_white_fff5f5f5),
                 ),
-                 SizedBox(
+                SizedBox(
                   height: Dimens.DIMENS_38,
                 ),
                 CircleAvatar()
@@ -78,7 +79,7 @@ class VideoItem extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                '@name',
+                videoData.username,
                 style: TextStyle(
                     color: COLOR_white_fff5f5f5, fontSize: Dimens.DIMENS_16),
               ),
@@ -95,6 +96,3 @@ class VideoItem extends StatelessWidget {
     );
   }
 }
-
-
-

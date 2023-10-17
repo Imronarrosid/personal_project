@@ -9,21 +9,22 @@ class Video {
       thumnail,
       videoUrl,
       profileImg;
+  final dynamic createdAt;
   final List likes;
   final int commentCount, shareCount;
-  Video({
-    required this.username,
-    required this.uid,
-    required this.id,
-    required this.songName,
-    required this.caption,
-    required this.thumnail,
-    required this.videoUrl,
-    required this.profileImg,
-    required this.likes,
-    required this.commentCount,
-    required this.shareCount,
-  });
+  Video(
+      {required this.username,
+      required this.uid,
+      required this.id,
+      required this.songName,
+      required this.caption,
+      required this.thumnail,
+      required this.videoUrl,
+      required this.profileImg,
+      required this.likes,
+      required this.commentCount,
+      required this.shareCount,
+      required this.createdAt});
 
   Map<String, dynamic> toJson() => {
         "username": username,
@@ -36,7 +37,8 @@ class Video {
         "songName": songName,
         "caption": caption,
         "videoUrl": videoUrl,
-        "thumnail": thumnail
+        "thumnail": thumnail,
+        "createdAt": createdAt
       };
   static Video fromSnap(DocumentSnapshot snapshot) {
     var snap = snapshot.data() as Map<String, dynamic>;
@@ -53,6 +55,7 @@ class Video {
       caption: snap["caption"],
       videoUrl: snap["videoUrl"],
       thumnail: snap["thumnail"],
+      createdAt: snap["creaatedAt"],
     );
   }
 }

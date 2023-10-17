@@ -20,5 +20,5 @@ class UploadBloc extends Bloc<UploadEvent, UploadState> {
       }
     });
   }
-  VideRepository videoRepository;
+  VideoRepository videoRepository;
 }
