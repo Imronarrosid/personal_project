@@ -243,16 +243,17 @@ class _UploadPageState extends State<UploadPage>
             preferredSize: Size(size.width, Dimens.DIMENS_105),
             child: BlocBuilder<CameraBloc, CameraState>(
               builder: (context, state) {
-                if (state is! CameraRecording) {
-                  return AppBar(
-                    centerTitle: true,
-                    elevation: 0,
-                    title: Text(LocaleKeys.title_upload.tr()),
-                    backgroundColor: Colors.transparent,
-                    toolbarHeight: Dimens.DIMENS_105,
-                  );
+                if (state is CameraRecording ||
+                    state is CameraRecordingPaused) {
+                  return Container();
                 }
-                return Container();
+                return AppBar(
+                  centerTitle: true,
+                  elevation: 0,
+                  title: Text(LocaleKeys.title_upload.tr()),
+                  backgroundColor: Colors.transparent,
+                  toolbarHeight: Dimens.DIMENS_105,
+                );
               },
             ),
           ),
@@ -268,6 +269,7 @@ class _UploadPageState extends State<UploadPage>
                     if (state is CameraInitialized ||
                         state is CameraRecording ||
                         state is CameraRecordingStoped ||
+                        state is CameraRecordingPaused ||
                         state is CameraRecordingCanceled) {
                       return GestureDetector(
                           onScaleUpdate: _onScaleUpdate,
@@ -281,19 +283,42 @@ class _UploadPageState extends State<UploadPage>
               ),
               BlocBuilder<CameraBloc, CameraState>(
                 builder: (context, state) {
-                  if (state is! CameraRecording) {
-                    return Align(
-                      alignment: Alignment.centerRight,
-                      child: SizedBox(
-                        width: Dimens.DIMENS_45,
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            GestureDetector(
-                              onTap: _changeCamera,
-                              child: const Icon(Icons.loop),
+                  if (state is CameraRecording ||
+                      state is CameraRecordingPaused) {
+                    return Container();
+                  }
+                  return Align(
+                    alignment: Alignment.centerRight,
+                    child: SizedBox(
+                      width: Dimens.DIMENS_45,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          GestureDetector(
+                            onTap: _changeCamera,
+                            child: Column(
+                              children: [
+                                Icon(
+                                  Icons.loop,
+                                  size: Dimens.DIMENS_38,
+                                  color: COLOR_white_fff5f5f5,
+                                ),
+                                Text(
+                                  LocaleKeys.label_rotate.tr(),
+                                  style: TextStyle(
+                                      color: COLOR_white_fff5f5f5,
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: 10),
+                                )
+                              ],
                             ),
-                            BlocBuilder<CameraBloc, CameraState>(
+                          ),
+                          SizedBox(
+                            height: Dimens.DIMENS_3,
+                          ),
+                          SizedBox(
+                            height: Dimens.DIMENS_50,
+                            child: BlocBuilder<CameraBloc, CameraState>(
                               builder: (context, state) {
                                 if (_isRearCameraSelected) {
                                   return Column(children: [
@@ -315,19 +340,19 @@ class _UploadPageState extends State<UploadPage>
                                       LocaleKeys.label_flash.tr(),
                                       style: TextStyle(
                                           color: COLOR_white_fff5f5f5,
-                                          fontSize: FontSize.FONT_SIZE_12),
+                                          fontWeight: FontWeight.w500,
+                                          fontSize: 10),
                                     )
                                   ]);
                                 }
                                 return Container();
                               },
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
-                    );
-                  }
-                  return Container();
+                    ),
+                  );
                 },
               ),
               Padding(
@@ -350,7 +375,8 @@ class _UploadPageState extends State<UploadPage>
                           children: [
                             BlocBuilder<CameraBloc, CameraState>(
                               builder: (context, state) {
-                                if (state is CameraRecording) {
+                                if (state is CameraRecording ||
+                                    state is CameraRecordingPaused) {
                                   return CancelRecordButonWidget(
                                     size: size,
                                     cameraController: _cameraController,
@@ -366,7 +392,8 @@ class _UploadPageState extends State<UploadPage>
                             ),
                             BlocBuilder<CameraBloc, CameraState>(
                               builder: (context, state) {
-                                if (state is CameraRecording) {
+                                if (state is CameraRecording ||
+                                    state is CameraRecordingPaused) {
                                   debugPrint('camera recoding$state');
                                   return PauseAndResumeRecordButton(
                                       animationController: _animationController,
@@ -411,7 +438,8 @@ class _UploadPageState extends State<UploadPage>
                             ),
                             BlocBuilder<CameraBloc, CameraState>(
                               builder: (context, state) {
-                                if (state is CameraRecording) {
+                                if (state is CameraRecording ||
+                                    state is CameraRecordingPaused) {
                                   return GestureDetector(
                                     onTap: () async {
                                       await _stopRecording();
@@ -434,18 +462,30 @@ class _UploadPageState extends State<UploadPage>
                                   onTap: () async {
                                     await pickVideo(context);
                                   },
-                                  child: Container(
-                                      alignment: Alignment.center,
-                                      width: Dimens.DIMENS_50,
-                                      height: Dimens.DIMENS_45,
-                                      decoration: BoxDecoration(
-                                          color: Colors.transparent,
-                                          borderRadius:
-                                              BorderRadius.circular(8)),
-                                      child: Image.asset(
-                                        Images.IC_GALLERY_2,
+                                  child: Column(
+                                    children: [
+                                      Container(
+                                        alignment: Alignment.center,
                                         width: Dimens.DIMENS_50,
-                                      )),
+                                        height: Dimens.DIMENS_45,
+                                        decoration: BoxDecoration(
+                                            color: Colors.transparent,
+                                            borderRadius:
+                                                BorderRadius.circular(8)),
+                                        child: Image.asset(
+                                          Images.IC_GALLERY_2,
+                                          width: Dimens.DIMENS_50,
+                                        ),
+                                      ),
+                                      Text(
+                                        'Galeri',
+                                        style: TextStyle(
+                                            color: COLOR_white_fff5f5f5,
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.w400),
+                                      )
+                                    ],
+                                  ),
                                 );
                               },
                             )
@@ -498,6 +538,7 @@ class PauseAndResumeRecordButton extends StatelessWidget {
                   ? 1.0
                   : _animationController.value);
         }
+        BlocProvider.of<CameraBloc>(context).add(PauseCameraRecordingEvent());
 
         // if (_cameraController
         //     .value.isRecordingVideo) {
@@ -523,14 +564,29 @@ class PauseAndResumeRecordButton extends StatelessWidget {
                 color: COLOR_white_fff5f5f5.withOpacity(0.5),
                 borderRadius: BorderRadius.circular(100),
               ),
-              child: Align(
-                alignment: Alignment.center,
-                child: Container(
-                  width: Dimens.DIMENS_20,
-                  height: Dimens.DIMENS_20,
-                  decoration: BoxDecoration(
-                      color: COLOR_red, borderRadius: BorderRadius.circular(5)),
-                ),
+              child: BlocBuilder<CameraBloc, CameraState>(
+                builder: (context, state) {
+                  return Align(
+                    alignment: Alignment.center,
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      child: Container(
+                        width: _cameraController.value.isRecordingPaused
+                            ? Dimens.DIMENS_45
+                            : Dimens.DIMENS_20,
+                        height: _cameraController.value.isRecordingPaused
+                            ? Dimens.DIMENS_45
+                            : Dimens.DIMENS_20,
+                        decoration: BoxDecoration(
+                            color: COLOR_red,
+                            borderRadius: BorderRadius.circular(
+                                _cameraController.value.isRecordingPaused
+                                    ? 100
+                                    : 5)),
+                      ),
+                    ),
+                  );
+                },
               ),
             ),
           ),

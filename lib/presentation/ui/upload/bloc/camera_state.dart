@@ -51,6 +51,10 @@ final class CameraRecordingStoped extends CameraState {
   @override
   List<Object> get props => [];
 }
+final class CameraRecordingPaused extends CameraState {
+  @override
+  List<Object> get props => [];
+}
 
 final class CameraError extends CameraState {
   final String error;

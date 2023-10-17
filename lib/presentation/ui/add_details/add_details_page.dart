@@ -85,8 +85,8 @@ class AddDetailsPage extends StatelessWidget {
                           child: UnconstrainedBox(
                             child: SvgPicture.asset(
                               Images.IC_UPLOAD,
-                              width: Dimens.DIMENS_20,
-                              height: Dimens.DIMENS_20,
+                              width: Dimens.DIMENS_24,
+                              height: Dimens.DIMENS_24,
                             ),
                           ),
                         ),

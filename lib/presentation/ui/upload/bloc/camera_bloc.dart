@@ -40,6 +40,15 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
       emit(CameraRecordingCanceled());
     });
 
+    bool isRecordingPaused = false;
+    on<PauseCameraRecordingEvent>((event, emit) {
+
+      isRecordingPaused
+          ? emit(CameraRecording())
+          : emit(CameraRecordingPaused());
+      isRecordingPaused = !isRecordingPaused;
+    });
+
     on<OpenCameraEvent>((event, emit) {
       emit(CameraInitial());
       emit(FrontCameraInitialized());

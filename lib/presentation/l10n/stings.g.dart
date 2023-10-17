@@ -11,6 +11,7 @@ abstract class  LocaleKeys {
   static const label_profile = 'label_profile';
   static const label_60_second = 'label_60_second';
   static const label_flash = 'label_flash';
+  static const label_rotate = 'label_rotate';
   static const label_next = 'label_next';
   static const label_oke = 'label_oke';
   static const label_delete = 'label_delete';

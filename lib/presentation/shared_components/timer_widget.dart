@@ -9,8 +9,7 @@ import 'package:personal_project/presentation/l10n/stings.g.dart';
 
 class CountDownTimer extends StatefulWidget {
   final AnimationController controller;
-  const CountDownTimer(
-      {super.key, required this.controller});
+  const CountDownTimer({super.key, required this.controller});
 
   @override
   State<CountDownTimer> createState() => _CountDownTimerState();
@@ -36,8 +35,6 @@ class _CountDownTimerState extends State<CountDownTimer>
     //   vsync: this,
     //   duration: Duration(seconds: 5),
     // );
-
-    
   }
 
   @override
@@ -77,8 +74,15 @@ class _CountDownTimerState extends State<CountDownTimer>
                                   children: <Widget>[
                                     Text(
                                       timerString,
-                                      style: TextStyle(
-                                          fontSize: 11.0, color: Colors.white),
+                                      style: widget.controller.value == 0.0
+                                          ? TextStyle(
+                                              fontSize: 14.0,
+                                              color: COLOR_white_fff5f5f5,
+                                              fontWeight: FontWeight.w500)
+                                          : TextStyle(
+                                              color: COLOR_white_fff5f5f5,
+                                              fontSize: 11.0,
+                                            ),
                                     ),
                                   ],
                                 ),
@@ -148,5 +152,3 @@ class CustomTimerPainter extends CustomPainter {
         backgroundColor != oldDelegate.backgroundColor;
   }
 }
-
-
