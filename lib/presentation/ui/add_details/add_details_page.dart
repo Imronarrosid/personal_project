@@ -52,50 +52,6 @@ class AddDetailsPage extends StatelessWidget {
             backgroundColor: Colors.transparent,
             elevation: 0,
             centerTitle: true,
-            actions: [
-              Builder(builder: (context) {
-                return Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Material(
-                    child: Container(
-                      width: Dimens.DIMENS_60,
-                      decoration: BoxDecoration(
-                          color: COLOR_grey,
-                          borderRadius: BorderRadius.circular(8)),
-                      child: Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          splashColor: COLOR_white_fff5f5f5,
-                          onTap: () {
-                            var isUserEmpty =
-                                RepositoryProvider.of<AuthRepository>(context)
-                                    .currentUser;
-                            if (isUserEmpty == null) {
-                              showAuthBottomSheetFunc(context);
-                            } else {
-                              //will upload videos
-                              BlocProvider.of<UploadBloc>(context).add(
-                                UploadVideoEvent(
-                                    videoPath: videoFile.path,
-                                    caption: textEditingController.text),
-                              );
-                              debugPrint('Uploading');
-                            }
-                          },
-                          child: UnconstrainedBox(
-                            child: SvgPicture.asset(
-                              Images.IC_UPLOAD,
-                              width: Dimens.DIMENS_24,
-                              height: Dimens.DIMENS_24,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                );
-              }),
-            ],
           ),
           body: Container(
             width: size.width,

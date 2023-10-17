@@ -246,28 +246,35 @@ class _VideoEditorState extends State<VideoEditor> {
                                     ],
                                   ),
                                 ),
-                                ValueListenableBuilder(
-                                  valueListenable: _isExporting,
-                                  builder: (_, bool export, Widget? child) =>
-                                      AnimatedSize(
-                                    duration: kThemeAnimationDuration,
-                                    child: export ? child : null,
-                                  ),
-                                  child: AlertDialog(
-                                    title: ValueListenableBuilder(
-                                      valueListenable: _exportingProgress,
-                                      builder: (_, double value, __) => Text(
-                                        "Exporting video ${(value * 100).ceil()}%",
-                                        style: const TextStyle(fontSize: 12),
-                                      ),
-                                    ),
-                                  ),
-                                )
                               ],
                             ),
                           ),
                         )
                       ],
+                    ),
+                    ValueListenableBuilder(
+                      valueListenable: _isExporting,
+                      builder: (_, bool export, Widget? child) => AnimatedSize(
+                        duration: kThemeAnimationDuration,
+                        child: export ? child : null,
+                      ),
+                      child: Container(
+                        alignment: Alignment.center,
+                        width: MediaQuery.of(context).size.width,
+                        height: MediaQuery.of(context).size.height,
+                        decoration: const BoxDecoration(
+                          color: Colors.black38
+                        ),
+                        child: AlertDialog(
+                          title: ValueListenableBuilder(
+                            valueListenable: _exportingProgress,
+                            builder: (_, double value, __) => Text(
+                              "${LocaleKeys.message_wait.tr()} ${(value * 100).ceil()}%",
+                              style: const TextStyle(fontSize: 12),
+                            ),
+                          ),
+                        ),
+                      ),
                     )
                   ],
                 ),

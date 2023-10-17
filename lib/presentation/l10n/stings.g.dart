@@ -22,6 +22,7 @@ abstract class  LocaleKeys {
   static const label_free = 'label_free';
   static const label_sconds = 'label_sconds';
   static const message_delete_video = 'message_delete_video';
+  static const message_wait = 'message_wait';
   static const message_write_something = 'message_write_something';
   static const message_login_first = 'message_login_first';
   static const message_uploading = 'message_uploading';
