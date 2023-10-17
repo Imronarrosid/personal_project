@@ -4,6 +4,7 @@ abstract class  LocaleKeys {
   static const title_video = 'title_video';
   static const title_upload = 'title_upload';
   static const title_profile = 'title_profile';
+  static const title_crop = 'title_crop';
   static const label_home = 'label_home';
   static const label_search = 'label_search';
   static const label_message = 'label_message';
@@ -17,6 +18,8 @@ abstract class  LocaleKeys {
   static const label_signin = 'label_signin';
   static const label_login = 'label_login';
   static const label_signin_with_google = 'label_signin_with_google';
+  static const label_free = 'label_free';
+  static const label_sconds = 'label_sconds';
   static const message_delete_video = 'message_delete_video';
   static const message_write_something = 'message_write_something';
   static const message_login_first = 'message_login_first';

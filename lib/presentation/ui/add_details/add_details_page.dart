@@ -85,8 +85,8 @@ class AddDetailsPage extends StatelessWidget {
                           child: UnconstrainedBox(
                             child: SvgPicture.asset(
                               Images.IC_UPLOAD,
-                              width: Dimens.DIMENS_24,
-                              height: Dimens.DIMENS_24,
+                              width: Dimens.DIMENS_20,
+                              height: Dimens.DIMENS_20,
                             ),
                           ),
                         ),
@@ -152,7 +152,7 @@ class AddDetailsPage extends StatelessWidget {
                 height: Dimens.DIMENS_28,
               ),
               Container(
-                height: Dimens.DIMENS_36,
+                height: Dimens.DIMENS_38,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
                     color: COLOR_black_ff121212,
@@ -179,7 +179,7 @@ class AddDetailsPage extends StatelessWidget {
                       }
                     },
                     child: SizedBox(
-                      height: Dimens.DIMENS_36,
+                      height: Dimens.DIMENS_38,
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [

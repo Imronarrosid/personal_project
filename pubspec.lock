@@ -225,11 +225,11 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.0"
-  ffmpeg_kit_flutter_min:
+  ffmpeg_kit_flutter_min_gpl:
     dependency: "direct main"
     description:
-      name: ffmpeg_kit_flutter_min
-      sha256: "123bfbc0e0b9e7cf6d32d8ba8e08b666d66af0f52c07683dd2305fbfc13f494a"
+      name: ffmpeg_kit_flutter_min_gpl
+      sha256: "3d7d3a7a6413c9bd7ced7b773aca2fece734e4f8f06e9bffe0fa3b850773dab8"
       url: "https://pub.dev"
     source: hosted
     version: "6.0.3"
@@ -241,6 +241,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.2.1"
+  ffmpeg_wasm:
+    dependency: "direct main"
+    description:
+      name: ffmpeg_wasm
+      sha256: "015959a0ef40601035e8498e819b8c90b240273acd90126fe38e4b03c9f64259"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.1"
   file:
     dependency: transitive
     description:
@@ -453,6 +461,14 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  font_awesome_flutter:
+    dependency: "direct main"
+    description:
+      name: font_awesome_flutter
+      sha256: "52671aea66da73b58d42ec6d0912b727a42248dd9a7c76d6c20f275783c48c08"
+      url: "https://pub.dev"
+    source: hosted
+    version: "10.6.0"
   fraction:
     dependency: "direct main"
     description:
@@ -469,6 +485,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.1"
+  get_thumbnail_video:
+    dependency: "direct main"
+    description:
+      name: get_thumbnail_video
+      sha256: "22058c1055dbcdcbaee4f80d52197deeb83fd04ae78839e9a656a5bfb58ed95a"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.6.1"
   glob:
     dependency: transitive
     description:
@@ -1034,14 +1058,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.1.2"
-  video_editor:
+  video_editor_2:
     dependency: "direct main"
     description:
-      name: video_editor
-      sha256: "263be52e052118389f372f055f59c2fda5c7beecfdb706b899d2e05be8740c22"
+      name: video_editor_2
+      sha256: b3388edd31d6e788e532a49aaaa98483290ce3f60b449bce1338bf0aa7cbe4f0
       url: "https://pub.dev"
     source: hosted
-    version: "3.0.0"
+    version: "3.0.2"
   video_player:
     dependency: "direct main"
     description:
@@ -1082,14 +1106,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.1"
-  video_thumbnail:
-    dependency: "direct main"
-    description:
-      name: video_thumbnail
-      sha256: "3455c189d3f0bb4e3fc2236475aa84fe598b9b2d0e08f43b9761f5bc44210016"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.5.3"
   watcher:
     dependency: transitive
     description:

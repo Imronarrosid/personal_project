@@ -25,11 +25,11 @@ class NotAuthenticatedPage extends StatelessWidget {
           ),
         ),
         SizedBox(
-          height: Dimens.DIMENS_24,
+          height: Dimens.DIMENS_20,
         ),
         Text(LocaleKeys.message_login_first.tr()),
         SizedBox(
-          height: Dimens.DIMENS_24,
+          height: Dimens.DIMENS_20,
         ),
         InkWell(
           onTap: () {
@@ -38,7 +38,7 @@ class NotAuthenticatedPage extends StatelessWidget {
           child: Container(
             alignment: Alignment.center,
             width: Dimens.DIMENS_250,
-            height: Dimens.DIMENS_36,
+            height: Dimens.DIMENS_38,
             decoration: BoxDecoration(
                 color: COLOR_black_ff121212,
                 borderRadius: BorderRadius.circular(8)),

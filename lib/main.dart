@@ -16,7 +16,6 @@ import 'package:personal_project/presentation/l10n/l10n.dart';
 import 'package:personal_project/presentation/router/app_router.dart';
 import 'package:personal_project/presentation/ui/add_details/bloc/upload_bloc.dart';
 import 'package:personal_project/presentation/ui/auth/bloc/auth_bloc.dart';
-import 'package:personal_project/presentation/ui/files/bloc/files_bloc.dart';
 import 'package:personal_project/presentation/ui/home/home.dart';
 import 'package:personal_project/presentation/ui/upload/bloc/camera_bloc.dart';
 import 'package:personal_project/presentation/ui/video_preview/bloc/video_preview_bloc.dart';
@@ -112,11 +111,7 @@ class _MyAppState extends State<MyApp> {
                 create: (context) => UploadBloc(
                   RepositoryProvider.of<VideRepository>(context),
                 ),
-              ),
-              BlocProvider(
-                  create: (context) =>
-                      FilesBloc(RepositoryProvider.of<FileRepository>(context)))
-            ],
+              ),],
             child: MaterialApp.router(
               debugShowCheckedModeBanner: false,
               locale: context.locale,

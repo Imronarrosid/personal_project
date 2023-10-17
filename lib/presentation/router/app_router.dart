@@ -68,7 +68,7 @@ class AppRouter {
           path: APP_PAGE.videoEditor.toPath,
           name: APP_PAGE.videoEditor.toName,
           pageBuilder: (context, state) {
-            File file = state.extra as File;
+            XFile file = state.extra as XFile;
             return MaterialPage(
                 child: VideoEditor(
               file: file,

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -5,9 +6,10 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:personal_project/domain/model/preview_model.dart';
 import 'package:personal_project/presentation/router/route_utils.dart';
+import 'package:personal_project/presentation/ui/video_editor/video_editor_page.dart';
 import 'package:video_player/video_player.dart';
 
-Future<File> pickVideo() async {
+Future<void> pickVideo(BuildContext context) async {
   // final status =
   //     await Permission.storage.request();
   // if (status.isGranted && mounted) {
@@ -16,19 +18,35 @@ Future<File> pickVideo() async {
   //   showFileBottomSheet(context);
   // }
   final ImagePicker picker = ImagePicker();
-
+  // Show loading indicator
+  Timer(const Duration(milliseconds: 1000), () {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return const Center(
+          child:
+              CircularProgressIndicator(), // You can use a custom loading widget
+        );
+      },
+      barrierDismissible: false, // Prevent users from dismissing the dialog
+    );
+  });
   final XFile? galleryVideo =
       await picker.pickVideo(source: ImageSource.gallery);
-
-  return File(galleryVideo!.path);
+  if (context.mounted && galleryVideo != null) {
+    context.pop(); // Pop loading indicator
+    context.push(APP_PAGE.videoEditor.toPath, extra: galleryVideo);
+  } else if (context.mounted && galleryVideo == null) {
+    context.pop(); // pop loading indicator
+  }
 }
 
 // Future toPickVideo(BuildContext context, {required File video}) async {
 //   if (await isMoreThan3minutes(video)) {
-//     /// show dialog duration more than 3 minutes 
-//     /// 
-    
-//     // if dialog true 
+//     /// show dialog duration more than 3 minutes
+//     ///
+
+//     // if dialog true
 //     // to preview page
 
 //   } else if (!await isMoreThan3minutes(video) && context.mounted) {

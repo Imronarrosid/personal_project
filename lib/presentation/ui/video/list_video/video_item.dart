@@ -30,12 +30,12 @@ class VideoItem extends StatelessWidget {
                   },
                   child: CircleAvatar()),
                  SizedBox(
-                  height: Dimens.DIMENS_36,
+                  height: Dimens.DIMENS_38,
                 ),
                 Icon(
                   Icons.favorite,
                   color: COLOR_white_fff5f5f5,
-                  size: Dimens.DIMENS_36,
+                  size: Dimens.DIMENS_38,
                 ),
                 Text(
                   '10',
@@ -59,14 +59,14 @@ class VideoItem extends StatelessWidget {
                 Icon(
                   Icons.reply,
                   color: COLOR_white_fff5f5f5,
-                  size: Dimens.DIMENS_36,
+                  size: Dimens.DIMENS_38,
                 ),
                 Text(
                   '10',
                   style: TextStyle(color: COLOR_white_fff5f5f5),
                 ),
                  SizedBox(
-                  height: Dimens.DIMENS_36,
+                  height: Dimens.DIMENS_38,
                 ),
                 CircleAvatar()
               ],

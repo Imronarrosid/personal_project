@@ -4,6 +4,8 @@ import 'package:camera/camera.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:gal/gal.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
@@ -13,11 +15,10 @@ import 'package:personal_project/constant/dimens.dart';
 import 'package:personal_project/constant/font_size.dart';
 import 'package:personal_project/data/repository/file_repository.dart';
 import 'package:personal_project/domain/model/preview_model.dart';
+import 'package:personal_project/presentation/assets/images.dart';
 import 'package:personal_project/presentation/l10n/stings.g.dart';
 import 'package:personal_project/presentation/router/route_utils.dart';
 import 'package:personal_project/presentation/shared_components/timer_widget.dart';
-import 'package:personal_project/presentation/ui/files/bloc/files_bloc.dart';
-import 'package:personal_project/presentation/ui/files/files_page.dart';
 import 'package:personal_project/presentation/ui/upload/bloc/camera_bloc.dart';
 import 'package:file_selector/file_selector.dart';
 import 'package:personal_project/utils/pick_video.dart';
@@ -183,7 +184,7 @@ class _UploadPageState extends State<UploadPage>
         // context.push(APP_PAGE.videoPreview.toPath,
         //     extra: PreviewData(file: File(value.path), isFromCamera: true));
 
-        context.push(APP_PAGE.videoEditor.toPath, extra: File(value.path));
+        context.push(APP_PAGE.videoEditor.toPath, extra: value);
         BlocProvider.of<CameraBloc>(context).add(StopCameraRecordingEvent());
         //STOP ANIMATION
         _animationController.reverse(from: 0.0);
@@ -284,7 +285,7 @@ class _UploadPageState extends State<UploadPage>
                     return Align(
                       alignment: Alignment.centerRight,
                       child: SizedBox(
-                        width: Dimens.DIMENS_50,
+                        width: Dimens.DIMENS_45,
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
@@ -301,12 +302,12 @@ class _UploadPageState extends State<UploadPage>
                                       child: isFlashoN
                                           ? Icon(
                                               Icons.flash_on,
-                                              size: Dimens.DIMENS_36,
+                                              size: Dimens.DIMENS_38,
                                               color: COLOR_white_fff5f5f5,
                                             )
                                           : Icon(
                                               Icons.flash_off,
-                                              size: Dimens.DIMENS_36,
+                                              size: Dimens.DIMENS_38,
                                               color: COLOR_white_fff5f5f5,
                                             ),
                                     ),
@@ -338,7 +339,7 @@ class _UploadPageState extends State<UploadPage>
                     children: [
                       SizedBox(
                         width: Dimens.DIMENS_98,
-                        height: Dimens.DIMENS_50,
+                        height: Dimens.DIMENS_45,
                         child: CountDownTimer(
                           controller: _animationController,
                         ),
@@ -406,7 +407,7 @@ class _UploadPageState extends State<UploadPage>
                               },
                             ),
                             SizedBox(
-                              width: Dimens.DIMENS_50,
+                              width: Dimens.DIMENS_45,
                             ),
                             BlocBuilder<CameraBloc, CameraState>(
                               builder: (context, state) {
@@ -431,26 +432,20 @@ class _UploadPageState extends State<UploadPage>
                                 }
                                 return GestureDetector(
                                   onTap: () async {
-                                    File video = await pickVideo();
-
-                                    if (await isMoreThan3minutes(video)) {
-                                      /// show dialog duration more than 3 minutes
-                                    } else {
-                                      await context.push(
-                                          APP_PAGE.videoPreview.toPath,
-                                          extra: PreviewData(
-                                              file: video,
-                                              isFromCamera: false));
-                                    }
+                                    await pickVideo(context);
                                   },
                                   child: Container(
-                                    width: 40,
-                                    height: 40,
-                                    decoration: BoxDecoration(
-                                        color: COLOR_red,
-                                        borderRadius: BorderRadius.circular(
-                                            Dimens.DIMENS_12)),
-                                  ),
+                                      alignment: Alignment.center,
+                                      width: Dimens.DIMENS_50,
+                                      height: Dimens.DIMENS_45,
+                                      decoration: BoxDecoration(
+                                          color: Colors.transparent,
+                                          borderRadius:
+                                              BorderRadius.circular(8)),
+                                      child: Image.asset(
+                                        Images.IC_GALLERY_2,
+                                        width: Dimens.DIMENS_50,
+                                      )),
                                 );
                               },
                             )
@@ -531,8 +526,8 @@ class PauseAndResumeRecordButton extends StatelessWidget {
               child: Align(
                 alignment: Alignment.center,
                 child: Container(
-                  width: Dimens.DIMENS_24,
-                  height: Dimens.DIMENS_24,
+                  width: Dimens.DIMENS_20,
+                  height: Dimens.DIMENS_20,
                   decoration: BoxDecoration(
                       color: COLOR_red, borderRadius: BorderRadius.circular(5)),
                 ),
@@ -573,7 +568,7 @@ class CancelRecordButonWidget extends StatelessWidget {
         SizedBox(
           width: (size.width * 0.5) -
               (Dimens.DIMENS_70 * 0.5) -
-              (Dimens.DIMENS_50 + Dimens.DIMENS_34),
+              (Dimens.DIMENS_45 + Dimens.DIMENS_34),
         ),
         GestureDetector(
           onTap: () async {
@@ -592,7 +587,7 @@ class CancelRecordButonWidget extends StatelessWidget {
           ),
         ),
         SizedBox(
-          width: Dimens.DIMENS_50,
+          width: Dimens.DIMENS_45,
         )
       ],
     );

@@ -53,7 +53,7 @@ void showAuthBottomSheetFunc(BuildContext context) {
                   ),
                 ),
                 SizedBox(
-                  height: Dimens.DIMENS_50,
+                  height: Dimens.DIMENS_45,
                 ),
                 Text(
                   LocaleKeys.label_signin.tr(),
@@ -65,7 +65,7 @@ void showAuthBottomSheetFunc(BuildContext context) {
                   height: Dimens.DIMENS_70,
                 ),
                 Padding(
-                  padding: EdgeInsets.symmetric(horizontal: Dimens.DIMENS_24),
+                  padding: EdgeInsets.symmetric(horizontal: Dimens.DIMENS_20),
                   child: Material(
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(50)),
@@ -81,7 +81,7 @@ void showAuthBottomSheetFunc(BuildContext context) {
                         }
                       },
                       child: Container(
-                        height: Dimens.DIMENS_50,
+                        height: Dimens.DIMENS_45,
                         padding: EdgeInsets.symmetric(
                             horizontal: Dimens.DIMENS_8,
                             vertical: Dimens.DIMENS_8),

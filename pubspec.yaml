@@ -55,13 +55,15 @@ dependencies:
   path_provider: ^2.1.1
   file_manager: ^1.0.2
   file_picker: ^6.0.0
-  video_thumbnail: ^0.5.3
   permission_handler: ^11.0.1
   file_selector: ^1.0.1
   image_picker: ^1.0.4
-  video_editor: ^3.0.0
-  ffmpeg_kit_flutter_min: ^6.0.3
   fraction: ^5.0.2
+  video_editor_2: ^3.0.2
+  ffmpeg_kit_flutter_min_gpl: ^6.0.3
+  ffmpeg_wasm: ^1.0.1
+  get_thumbnail_video: ^0.6.1
+  font_awesome_flutter: ^10.6.0
 
 dev_dependencies:
   flutter_test:

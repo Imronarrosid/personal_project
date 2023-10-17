@@ -1,37 +1,68 @@
-import 'package:flutter/material.dart';
-import 'package:fraction/fraction.dart';
-import 'package:video_editor/video_editor.dart';
+import 'dart:math';
 
-class CropPage extends StatelessWidget {
-  const CropPage({super.key, required this.controller});
+import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:fraction/fraction.dart';
+import 'package:personal_project/constant/color.dart';
+import 'package:personal_project/constant/dimens.dart';
+import 'package:personal_project/constant/font_size.dart';
+import 'package:personal_project/presentation/l10n/stings.g.dart';
+import 'package:video_editor_2/video_editor.dart';
+
+class CropScreen extends StatelessWidget {
+  const CropScreen({super.key, required this.controller});
 
   final VideoEditorController controller;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: COLOR_black_ff121212,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 30),
+          padding: EdgeInsets.symmetric(vertical: Dimens.DIMENS_24),
           child: Column(children: [
-            Row(children: [
-              Expanded(
-                child: IconButton(
-                  onPressed: () =>
-                      controller.rotate90Degrees(RotateDirection.left),
-                  icon: const Icon(Icons.rotate_left),
-                ),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: Dimens.DIMENS_15),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  IconButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      icon: FaIcon(
+                        FontAwesomeIcons.xmark,
+                        size: Dimens.DIMENS_34,
+                      ),
+                      color: COLOR_white_fff5f5f5),
+                  Expanded(
+                    child: Text(
+                      LocaleKeys.title_crop.tr(),
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: FontSize.FONT_SIZE_18,
+                          color: COLOR_white_fff5f5f5),
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () {
+                      // WAY 1: validate crop parameters set in the crop view
+                      controller.applyCacheCrop();
+                      // WAY 2: update manually with Offset values
+                      // controller.updateCrop(const Offset(0.2, 0.2), const Offset(0.8, 0.8));
+                      Navigator.pop(context);
+                    },
+                    icon:
+                        FaIcon(FontAwesomeIcons.check, size: Dimens.DIMENS_34),
+                    color: const CropGridStyle().selectedBoundariesColor,
+                  ),
+                ],
               ),
-              Expanded(
-                child: IconButton(
-                  onPressed: () =>
-                      controller.rotate90Degrees(RotateDirection.right),
-                  icon: const Icon(Icons.rotate_right),
-                ),
-              )
-            ]),
-            const SizedBox(height: 15),
+            ),
+            SizedBox(height: Dimens.DIMENS_20),
             Expanded(
               child: CropGridViewer.edit(
                 controller: controller,
@@ -42,27 +73,16 @@ class CropPage extends StatelessWidget {
             const SizedBox(height: 15),
             Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
               Expanded(
-                flex: 2,
-                child: IconButton(
-                  onPressed: () => Navigator.pop(context),
-                  icon: const Center(
-                    child: Text(
-                      "cancel",
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                ),
-              ),
-              Expanded(
                 flex: 4,
                 child: AnimatedBuilder(
                   animation: controller,
                   builder: (_, __) => Column(
                     children: [
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
                           IconButton(
+                            color: COLOR_white_fff5f5f5,
                             onPressed: () =>
                                 controller.preferredCropAspectRatio = controller
                                     .preferredCropAspectRatio
@@ -71,11 +91,15 @@ class CropPage extends StatelessWidget {
                                     .toDouble(),
                             icon: controller.preferredCropAspectRatio != null &&
                                     controller.preferredCropAspectRatio! < 1
-                                ? const Icon(
-                                    Icons.panorama_vertical_select_rounded)
+                                ? Icon(
+                                    Icons.panorama_vertical_select_rounded,
+                                    color: const CropGridStyle()
+                                        .selectedBoundariesColor,
+                                  )
                                 : const Icon(Icons.panorama_vertical_rounded),
                           ),
                           IconButton(
+                            color: COLOR_white_fff5f5f5,
                             onPressed: () =>
                                 controller.preferredCropAspectRatio = controller
                                     .preferredCropAspectRatio
@@ -84,13 +108,32 @@ class CropPage extends StatelessWidget {
                                     .toDouble(),
                             icon: controller.preferredCropAspectRatio != null &&
                                     controller.preferredCropAspectRatio! > 1
-                                ? const Icon(
-                                    Icons.panorama_horizontal_select_rounded)
+                                ? Icon(
+                                    Icons.panorama_horizontal_select_rounded,
+                                    color: const CropGridStyle()
+                                        .selectedBoundariesColor,
+                                  )
                                 : const Icon(Icons.panorama_horizontal_rounded),
+                          ),
+                          IconButton(
+                            color: COLOR_white_fff5f5f5,
+                            onPressed: () => controller
+                                .rotate90Degrees(RotateDirection.left),
+                            icon: const FaIcon(FontAwesomeIcons.rotateLeft),
+                          ),
+                          IconButton(
+                            color: COLOR_white_fff5f5f5,
+                            onPressed: () => controller
+                                .rotate90Degrees(RotateDirection.right),
+                            icon: const FaIcon(FontAwesomeIcons.rotateRight),
                           ),
                         ],
                       ),
+                      SizedBox(
+                        height: Dimens.DIMENS_8,
+                      ),
                       Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
                           _buildCropButton(context, null),
                           _buildCropButton(context, 1.toFraction()),
@@ -103,28 +146,8 @@ class CropPage extends StatelessWidget {
                   ),
                 ),
               ),
-              Expanded(
-                flex: 2,
-                child: IconButton(
-                  onPressed: () {
-                    // WAY 1: validate crop parameters set in the crop view
-                    controller.applyCacheCrop();
-                    // WAY 2: update manually with Offset values
-                    // controller.updateCrop(const Offset(0.2, 0.2), const Offset(0.8, 0.8));
-                    Navigator.pop(context);
-                  },
-                  icon: Center(
-                    child: Text(
-                      "done",
-                      style: TextStyle(
-                        color: const CropGridStyle().selectedBoundariesColor,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
             ]),
+            const SizedBox(height: 15),
           ]),
         ),
       ),
@@ -136,20 +159,47 @@ class CropPage extends StatelessWidget {
         controller.preferredCropAspectRatio! > 1) f = f?.inverse();
 
     return Flexible(
-      child: TextButton(
-        style: ElevatedButton.styleFrom(
-          elevation: 0,
-          backgroundColor: controller.preferredCropAspectRatio == f?.toDouble()
-              ? Colors.grey.shade800
-              : null,
-          foregroundColor: controller.preferredCropAspectRatio == f?.toDouble()
-              ? Colors.white
-              : null,
-          textStyle: Theme.of(context).textTheme.bodySmall,
+      child: Theme(
+        data: ThemeData(
+          primarySwatch: createMaterialColor(
+              COLOR_white_fff5f5f5), // Define your primary color
         ),
-        onPressed: () => controller.preferredCropAspectRatio = f?.toDouble(),
-        child: Text(f == null ? 'free' : '${f.numerator}:${f.denominator}'),
+        child: TextButton(
+          style: ElevatedButton.styleFrom(
+            elevation: 0,
+            backgroundColor:
+                controller.preferredCropAspectRatio == f?.toDouble()
+                    ? const CropGridStyle().selectedBoundariesColor
+                    : null,
+            foregroundColor:
+                controller.preferredCropAspectRatio == f?.toDouble()
+                    ? COLOR_black_ff121212
+                    : null,
+            textStyle: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+          onPressed: () => controller.preferredCropAspectRatio = f?.toDouble(),
+          child: Text(
+            f == null
+                ? LocaleKeys.label_free.tr()
+                : '${f.numerator}:${f.denominator}',
+          ),
+        ),
       ),
     );
   }
+}
+
+MaterialColor createMaterialColor(Color color) {
+  return MaterialColor(color.value, <int, Color>{
+    50: color.withOpacity(0.1),
+    100: color.withOpacity(0.2),
+    200: color.withOpacity(0.3),
+    300: color.withOpacity(0.4),
+    400: color.withOpacity(0.5),
+    500: color.withOpacity(0.6),
+    600: color.withOpacity(0.7),
+    700: color.withOpacity(0.8),
+    800: color.withOpacity(0.9),
+    900: color,
+  });
 }
