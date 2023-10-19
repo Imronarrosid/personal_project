@@ -37,5 +37,6 @@
                  android:maxSdkVersion="29" />
     <!-- Gal: For supporting API <= 29 :Gal-->
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    
 
 </manifest>

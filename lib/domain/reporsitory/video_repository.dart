@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:personal_project/domain/model/user.dart';
 import 'package:personal_project/domain/model/video_model.dart';
 import 'package:personal_project/domain/services/firebase/firebase_service.dart';
 import 'package:personal_project/domain/usecase/vide_usecase_type.dart';
@@ -11,6 +12,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 
 class VideoRepository implements VideoUseCaseType {
   FirebaseStorage firebaseStorage = FirebaseStorage.instance;
+  List<DocumentSnapshot> _listDocs = [];
 
   _compressVideo(String videoPath) async {
     var comressedVideo = await VideoCompress.compressVideo(videoPath,
@@ -69,7 +71,8 @@ class VideoRepository implements VideoUseCaseType {
           profileImg: (userDoc.data()! as Map<String, dynamic>)['photo'],
           likes: [],
           commentCount: 0,
-          shareCount: 0, createdAt: FieldValue.serverTimestamp());
+          shareCount: 0,
+          createdAt: FieldValue.serverTimestamp());
 
       await firebaseFirestore
           .collection('videos')
@@ -87,27 +90,48 @@ class VideoRepository implements VideoUseCaseType {
 
   Future<List<DocumentSnapshot>> getListVideo({required int limit}) async {
     List<DocumentSnapshot> listDocs = [];
+
     QuerySnapshot querySnapshot;
-    if (listDocs.isEmpty) {
-      querySnapshot = await firebaseFirestore
-          .collection('videos')
-          .orderBy('createdAt', descending: true)
-          .limit(limit)
-          .get();
-    } else {
-      querySnapshot = await firebaseFirestore
-          .collection('videos')
-          .orderBy('createdAt', descending: true)
-          .startAfterDocument(listDocs.last)
-          .limit(limit)
-          .get();
-    }
-    if (querySnapshot.docs.length < limit) {
+    try {
+      if (_listDocs.isEmpty) {
+        querySnapshot = await firebaseFirestore
+            .collection('videos')
+            .orderBy('createdAt', descending: true)
+            .limit(limit)
+            .get();
+      } else {
+        querySnapshot = await firebaseFirestore
+            .collection('videos')
+            .orderBy('createdAt', descending: true)
+            .startAfterDocument(_listDocs.last)
+            .limit(limit)
+            .get();
+      }
+      ///List to get last documet
+      _listDocs.addAll(querySnapshot.docs);
+
+      //list that send to infinity list package
       listDocs.addAll(querySnapshot.docs);
       // setState(() {
       //   _hasMore = false;
       // });
+      for (var element in querySnapshot.docs) {
+        debugPrint(Video.fromSnap(element).videoUrl);
+      }
+      for (var element in _listDocs) {
+        debugPrint('_LISTDOCS' + Video.fromSnap(element).videoUrl);
+      }
+      debugPrint('DOCUMENTSNAP ${querySnapshot.docs}');
+    } catch (e) {
+      debugPrint(e.toString());
     }
     return listDocs;
+  }
+
+  Future<User> getVideoOwnerData(String uid) async {
+    DocumentSnapshot docs =
+        await firebaseFirestore.collection('users').doc(uid).get();
+
+    return User(id: docs['uid'], userName: docs['name'], photo: docs['photo']);
   }
 }

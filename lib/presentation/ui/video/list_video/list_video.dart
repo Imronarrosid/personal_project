@@ -1,3 +1,7 @@
+import 'dart:async';
+import 'dart:isolate';
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
@@ -13,7 +17,7 @@ class ListVideo extends StatefulWidget {
 }
 
 class _ListVideoState extends State<ListVideo> {
-  static const _pageSize = 20;
+  static const _pageSize = 1;
 
   final PagingController<int, Video> _pagingController =
       PagingController(firstPageKey: 0);
@@ -26,10 +30,13 @@ class _ListVideoState extends State<ListVideo> {
   void initState() {
     _pagingController.addPageRequestListener((pageKey) {
       videoRepository = RepositoryProvider.of<VideoRepository>(context);
-      _fetchPage(pageKey);
-      
+      try {
+        _fetchPage(pageKey);
+      } catch (e) {
+        debugPrint('Fetch data:$e');
+      }
     });
-    
+
     super.initState();
   }
 
@@ -39,7 +46,7 @@ class _ListVideoState extends State<ListVideo> {
       final newItems = await videoRepository.getListVideo(limit: _pageSize);
       final isLastPage = newItems.length < _pageSize;
 
-      debugPrint(newItems.toString());
+      debugPrint('new items'+newItems.toString());
 
       for (var element in newItems) {
         listVideo.add(Video.fromSnap(element));
@@ -63,10 +70,13 @@ class _ListVideoState extends State<ListVideo> {
         pagingController: _pagingController,
         pageController: _controller,
         scrollDirection: Axis.vertical,
+        addAutomaticKeepAlives: false,
         builderDelegate: PagedChildBuilderDelegate<Video>(
           itemBuilder: (context, item, index) => VideoItem(
             videoData: item,
           ),
+          newPageErrorIndicatorBuilder: (_) => CircularProgressIndicator(),
+          noMoreItemsIndicatorBuilder: (_) => Text('Tidak Ada video lagi')
         ),
       ),
     );

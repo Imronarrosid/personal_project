@@ -18,6 +18,7 @@ import 'package:personal_project/presentation/ui/add_details/bloc/upload_bloc.da
 import 'package:personal_project/presentation/ui/auth/bloc/auth_bloc.dart';
 import 'package:personal_project/presentation/ui/home/home.dart';
 import 'package:personal_project/presentation/ui/upload/bloc/camera_bloc.dart';
+import 'package:personal_project/presentation/ui/video/list_video/bloc/video_player_bloc.dart';
 import 'package:personal_project/presentation/ui/video_preview/bloc/video_preview_bloc.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -111,7 +112,8 @@ class _MyAppState extends State<MyApp> {
                 create: (context) => UploadBloc(
                   RepositoryProvider.of<VideoRepository>(context),
                 ),
-              ),],
+              ),
+            ],
             child: MaterialApp.router(
               debugShowCheckedModeBanner: false,
               locale: context.locale,

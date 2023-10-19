@@ -1,0 +1,20 @@
+part of 'video_player_bloc.dart';
+
+sealed class VideoPlayerEvent extends Equatable {
+  const VideoPlayerEvent();
+
+  @override
+  List<Object> get props => [];
+}
+
+class InitVideoPlayer extends VideoPlayerEvent {
+  final VideoPlayerController controller;
+  final String ownerUid;
+
+  const InitVideoPlayer({required this.controller, required this.ownerUid});
+
+  @override
+  List<Object> get props => [controller, ownerUid];
+}
+
+class StopVideoPriviewEvent extends VideoPlayerEvent {}
