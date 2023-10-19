@@ -12,7 +12,8 @@ import 'package:firebase_storage/firebase_storage.dart';
 
 class VideoRepository implements VideoUseCaseType {
   FirebaseStorage firebaseStorage = FirebaseStorage.instance;
-  List<DocumentSnapshot> _listDocs = [];
+  final List<DocumentSnapshot> _listDocs = [];
+  late User videoOwnerData;
 
   _compressVideo(String videoPath) async {
     var comressedVideo = await VideoCompress.compressVideo(videoPath,
@@ -107,6 +108,7 @@ class VideoRepository implements VideoUseCaseType {
             .limit(limit)
             .get();
       }
+
       ///List to get last documet
       _listDocs.addAll(querySnapshot.docs);
 
@@ -131,7 +133,8 @@ class VideoRepository implements VideoUseCaseType {
   Future<User> getVideoOwnerData(String uid) async {
     DocumentSnapshot docs =
         await firebaseFirestore.collection('users').doc(uid).get();
-
+    videoOwnerData =
+        User(id: docs['uid'], userName: docs['name'], photo: docs['photo']);
     return User(id: docs['uid'], userName: docs['name'], photo: docs['photo']);
   }
 }

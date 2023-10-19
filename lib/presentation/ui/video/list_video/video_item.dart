@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
 import 'package:personal_project/constant/color.dart';
 import 'package:personal_project/constant/dimens.dart';
@@ -26,8 +27,13 @@ class _VideoItemState extends State<VideoItem> {
 
   @override
   void initState() {
-    _videoPlayerController =
-        VideoPlayerController.networkUrl(Uri.parse(widget.videoData.videoUrl));
+    try {
+      _videoPlayerController = VideoPlayerController.networkUrl(
+          Uri.parse(widget.videoData.videoUrl));
+      debugPrint('InitState');
+    } catch (e) {
+      debugPrint(e.toString());
+    }
     super.initState();
   }
 
@@ -35,11 +41,21 @@ class _VideoItemState extends State<VideoItem> {
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
     return BlocProvider(
-      create: (context) =>
-          VideoPlayerBloc(RepositoryProvider.of<VideoRepository>(context))
-            ..add(InitVideoPlayer(
+      create: (context) {
+        if (_videoPlayerController.value.isInitialized) {
+          return VideoPlayerBloc(
+              repository: RepositoryProvider.of<VideoRepository>(context),
+              videoPlayerController: _videoPlayerController);
+        }
+        return VideoPlayerBloc(
+            videoPlayerController: _videoPlayerController,
+            repository: RepositoryProvider.of<VideoRepository>(context))
+          ..add(
+            InitVideoPlayer(
                 controller: _videoPlayerController,
-                ownerUid: widget.videoData.uid)),
+                ownerUid: widget.videoData.uid),
+          );
+      },
       child: Container(
         padding: EdgeInsets.only(bottom: 10),
         width: size.width,
@@ -59,15 +75,25 @@ class _VideoItemState extends State<VideoItem> {
                         height: _videoPlayerController.value.size.height,
                         child: VideoPlayer(_videoPlayerController)),
                   );
+                } else if (state is VideoPlayerInitial) {
+                  return Container();
                 }
                 return Container(
-                  width: size.width,
-                  height: size.height,
-                  alignment: Alignment.center,
-                  child: Image.network(
-                    widget.videoData.thumnail,
-                    width: size.width,
-                    fit: BoxFit.contain,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Tidak dapat menampilkan video',
+                        style: TextStyle(color: COLOR_white_fff5f5f5),
+                      ),
+                      SizedBox(
+                        height: Dimens.DIMENS_12,
+                      ),
+                      FaIcon(
+                        FontAwesomeIcons.circleExclamation,
+                        color: COLOR_white_fff5f5f5,
+                      ),
+                    ],
                   ),
                 );
               },

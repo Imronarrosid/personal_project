@@ -19,3 +19,5 @@ final class VideoPlayerIntialized extends VideoPlayerState {
   @override
   List<Object> get props => [ownerData];
 }
+
+final class VideoPlayerError extends VideoPlayerState {}

@@ -71,11 +71,13 @@ class _ListVideoState extends State<ListVideo> {
         pageController: _controller,
         scrollDirection: Axis.vertical,
         addAutomaticKeepAlives: false,
+        physics: const BouncingScrollPhysics(),
         builderDelegate: PagedChildBuilderDelegate<Video>(
           itemBuilder: (context, item, index) => VideoItem(
             videoData: item,
           ),
-          newPageErrorIndicatorBuilder: (_) => CircularProgressIndicator(),
+          newPageProgressIndicatorBuilder: (_)=>CircularProgressIndicator(),
+          newPageErrorIndicatorBuilder: (_) => Text('eror'),
           noMoreItemsIndicatorBuilder: (_) => Text('Tidak Ada video lagi')
         ),
       ),
