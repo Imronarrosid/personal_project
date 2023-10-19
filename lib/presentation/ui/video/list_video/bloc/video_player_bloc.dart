@@ -19,19 +19,14 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
       User ownerData = await repository.getVideoOwnerData(event.ownerUid);
       try {
         debugPrint('init video playre ${event.controller.value.isInitialized}');
-        if (!videoPlayerController.value.isInitialized) {
-          await videoPlayerController.initialize().then((value) async {
-            await repository.getVideoOwnerData(event.ownerUid);
-            if (event.controller.value.isInitialized) {
-              emit(VideoPlayerIntialized(ownerData: ownerData));
-              event.controller.play();
-              debugPrint('Is initialized');
-            }
-          });
-        } else {
-          emit(VideoPlayerIntialized(ownerData: ownerData));
-          event.controller.play();
-        }
+        await event.controller.initialize().then((value) async {
+          await repository.getVideoOwnerData(event.ownerUid);
+          if (event.controller.value.isInitialized) {
+            emit(VideoPlayerIntialized(ownerData: ownerData));
+            event.controller.play();
+            debugPrint('Is initialized');
+          }
+        });
       } catch (e) {
         emit(VideoPlayerError());
         debugPrint(e.toString());
