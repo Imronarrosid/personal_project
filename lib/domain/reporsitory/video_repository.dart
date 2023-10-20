@@ -12,7 +12,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 
 class VideoRepository implements VideoUseCaseType {
   FirebaseStorage firebaseStorage = FirebaseStorage.instance;
-  final List<DocumentSnapshot> _listDocs = [];
+  final List<DocumentSnapshot> allDocs = [];
   late User videoOwnerData;
 
   _compressVideo(String videoPath) async {
@@ -94,7 +94,7 @@ class VideoRepository implements VideoUseCaseType {
 
     QuerySnapshot querySnapshot;
     try {
-      if (_listDocs.isEmpty) {
+      if (allDocs.isEmpty) {
         querySnapshot = await firebaseFirestore
             .collection('videos')
             .orderBy('createdAt', descending: true)
@@ -104,13 +104,13 @@ class VideoRepository implements VideoUseCaseType {
         querySnapshot = await firebaseFirestore
             .collection('videos')
             .orderBy('createdAt', descending: true)
-            .startAfterDocument(_listDocs.last)
+            .startAfterDocument(allDocs.last)
             .limit(limit)
             .get();
       }
 
       ///List to get last documet
-      _listDocs.addAll(querySnapshot.docs);
+      allDocs.addAll(querySnapshot.docs);
 
       //list that send to infinity list package
       listDocs.addAll(querySnapshot.docs);
@@ -120,7 +120,7 @@ class VideoRepository implements VideoUseCaseType {
       for (var element in querySnapshot.docs) {
         debugPrint(Video.fromSnap(element).videoUrl);
       }
-      for (var element in _listDocs) {
+      for (var element in allDocs) {
         debugPrint('_LISTDOCS' + Video.fromSnap(element).videoUrl);
       }
       debugPrint('DOCUMENTSNAP ${querySnapshot.docs}');

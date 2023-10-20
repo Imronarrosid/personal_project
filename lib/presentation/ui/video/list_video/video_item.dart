@@ -13,7 +13,9 @@ import 'package:personal_project/domain/reporsitory/video_repository.dart';
 import 'package:personal_project/presentation/assets/images.dart';
 import 'package:personal_project/presentation/router/route_utils.dart';
 import 'package:personal_project/presentation/ui/video/list_video/bloc/video_player_bloc.dart';
+import 'package:video_cached_player/video_cached_player.dart';
 import 'package:video_player/video_player.dart';
+import 'package:visibility_detector/visibility_detector.dart';
 
 class VideoItem extends StatefulWidget {
   final Video videoData;
@@ -40,6 +42,7 @@ class _VideoItemState extends State<VideoItem> {
 
   @override
   Widget build(BuildContext context) {
+    debugPrint('Its Rebuild' + widget.videoData.caption);
     Size size = MediaQuery.of(context).size;
     return RepositoryProvider(
       create: (context) => VideoPlayerRepository(),
@@ -66,10 +69,27 @@ class _VideoItemState extends State<VideoItem> {
                     return FittedBox(
                       fit: BoxFit.contain,
                       child: SizedBox(
-                          width: state.videoPlayerController!.value.size.width,
-                          height:
-                              state.videoPlayerController!.value.size.height,
-                          child: VideoPlayer(state.videoPlayerController!)),
+                        width: state.videoPlayerController!.value.size.width,
+                        height: state.videoPlayerController!.value.size.height,
+                        child: VisibilityDetector(
+                            key: Key(
+                                'visible-video-key-${widget.videoData.createdAt}'),
+                            onVisibilityChanged: (info) {
+                              final controller = state.videoPlayerController!;
+                              var visiblePercentage =
+                                  info.visibleFraction * 100;
+                              if (visiblePercentage < 5) {
+                                controller.pause();
+                              } else {
+                                if (!controller.value.isPlaying) {
+                                  controller.seekTo(Duration.zero);
+                                  controller.play();
+                                }
+                              }
+                            },
+                            child: CachedVideoPlayer(
+                                state.videoPlayerController!)),
+                      ),
                     );
                   } else if (state is VideoPlayerInitial) {
                     return Container();

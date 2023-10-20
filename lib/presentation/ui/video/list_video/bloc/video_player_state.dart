@@ -13,7 +13,7 @@ final class VideoPreviewInitial extends VideoPlayerState {}
 
 final class VideoPlayerIntialized extends VideoPlayerState {
   final User? ownerData;
-  final VideoPlayerController? videoPlayerController;
+  final CachedVideoPlayerController? videoPlayerController;
   const VideoPlayerIntialized({this.videoPlayerController, this.ownerData});
 
   @override

@@ -8,7 +8,7 @@ sealed class VideoPlayerEvent extends Equatable {
 }
 
 class InitVideoPlayer extends VideoPlayerEvent {
-  final VideoPlayerController controller;
+  final CachedVideoPlayerController controller;
   final String ownerUid;
 
   const InitVideoPlayer({required this.controller, required this.ownerUid});
@@ -18,6 +18,7 @@ class InitVideoPlayer extends VideoPlayerEvent {
 }
 
 class StopVideoPriviewEvent extends VideoPlayerEvent {}
+
 class InitVideoPlayerEvent extends VideoPlayerEvent {
   final String url;
 

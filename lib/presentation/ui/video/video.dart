@@ -2,13 +2,14 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:personal_project/constant/color.dart';
 import 'package:personal_project/presentation/l10n/stings.g.dart';
+import 'package:personal_project/presentation/shared_components/keep_alive_page.dart';
 
 import 'list_video/list_video.dart';
 
 class VideoPage extends StatelessWidget {
-  const VideoPage({super.key});
-
+  VideoPage({super.key});
   @override
+  final pageStorageBucket = PageStorageBucket();
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
     return Scaffold(
@@ -22,7 +23,11 @@ class VideoPage extends StatelessWidget {
       body: Container(
         width: size.width,
         height: size.height,
-        child: ListVideo(),
+        child: PageStorage(
+            bucket: pageStorageBucket,
+            child: const ListVideo(
+              key: PageStorageKey<String>('ListVideo'),
+            )),
       ),
     );
   }

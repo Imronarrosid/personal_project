@@ -28,7 +28,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   int selectedindex = 0;
   List<Widget> pages = <Widget>[
-    const VideoPage(),
+    VideoPage(),
     const SearchPage(),
     const MessagePage(),
     const MessagePage(),
@@ -57,10 +57,9 @@ class _HomePageState extends State<HomePage> {
                   listener: (context, state) {
                     if (state is Authenticated) {
                       showLoginSuccessSnackBar(context);
-                    }else if(state is AuthError){
+                    } else if (state is AuthError) {
                       showLoginErrorSnackBar(context);
-                    }
-                    else if(state is NoInternet){
+                    } else if (state is NoInternet) {
                       showLoginErrorSnackBar(context);
                     }
                   },

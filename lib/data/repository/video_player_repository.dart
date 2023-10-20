@@ -1,15 +1,19 @@
-import 'package:video_player/video_player.dart';
+import 'package:video_cached_player/video_cached_player.dart';
 
 class VideoPlayerRepository {
-  VideoPlayerController? _controller;
+  CachedVideoPlayerController? _controller;
 
   initVideoPlayer(String url) async {
-    _controller = VideoPlayerController.networkUrl(Uri.parse(url));
+    try {
+      _controller = CachedVideoPlayerController.network(url);
 
-    await _controller!.initialize();
+      await _controller!.initialize();
 
-    return _controller;
+      return _controller;
+    } catch (e) {
+      rethrow;
+    }
   }
 
-  VideoPlayerController? get controller => _controller;
+  CachedVideoPlayerController? get controller => _controller;
 }
