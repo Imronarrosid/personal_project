@@ -19,28 +19,28 @@ class ListVideo extends StatefulWidget {
 
 class _ListVideoState extends State<ListVideo> {
   static const _pageSize = 1;
-
-  final PagingController<int, Video> _pagingController =
-      PagingController(firstPageKey: 0);
+  int currentIndex = 0;
+  late final PagingController<int, Video> _pagingController;
 
   late VideoRepository videoRepository;
 
   final PageController _controller = PageController();
   final double snapThreshold = 100.0;
-  @override
-  void initState() {
-    _pagingController.addPageRequestListener((pageKey) {
-      videoRepository = RepositoryProvider.of<VideoRepository>(context);
-      try {
-        _fetchPage(pageKey);
-      } catch (e) {
-        debugPrint('Fetch data:$e');
-      }
-    });
-    debugPrint('Fetch data:');
 
-    super.initState();
-  }
+  // @override
+  // void initState() {
+  //   // _pagingController.addPageRequestListener((pageKey) {
+  //   //   videoRepository = RepositoryProvider.of<VideoRepository>(context);
+  //   //   try {
+  //   //     _fetchPage(pageKey);
+  //   //   } catch (e) {
+  //   //     debugPrint('Fetch data:$e');
+  //   //   }
+  //   // });
+  //   debugPrint('Fetch data:');
+
+  //   super.initState();
+  // }
 
   Future<void> _fetchPage(int pageKey) async {
     try {
@@ -59,13 +59,35 @@ class _ListVideoState extends State<ListVideo> {
         final nextPageKey = pageKey + newItems.length;
         _pagingController.appendPage(listVideo, nextPageKey);
       }
+      if (videoRepository.allDocs.isEmpty) {
+        _pagingController.appendPage(
+            videoRepository.currentLoadedVideo, pageKey + newItems.length);
+      }
     } catch (error) {
       _pagingController.error = error;
     }
   }
 
   @override
+  void initState() {
+    videoRepository = RepositoryProvider.of<VideoRepository>(context);
+    _pagingController =
+        PagingController(firstPageKey: videoRepository.currentPageIndex);
+    _pagingController.addPageRequestListener((pageKey) {
+      debugPrint(videoRepository.currentPageIndex.toString());
+      try {
+        _fetchPage(pageKey);
+      } catch (e) {
+        debugPrint('Fetch data:$e');
+      }
+    });
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    debugPrint('REbuild');
+
     return SizedBox(
       height: MediaQuery.of(context).size.height,
       child: RefreshIndicator(
@@ -75,6 +97,7 @@ class _ListVideoState extends State<ListVideo> {
         child: PagedPageView<int, Video>(
           pagingController: _pagingController,
           pageController: _controller,
+          onPageChanged: (index) => videoRepository.currentPageIndex = index,
           scrollDirection: Axis.vertical,
           physics: const BouncingScrollPhysics(),
           builderDelegate: PagedChildBuilderDelegate<Video>(
@@ -95,6 +118,11 @@ class _ListVideoState extends State<ListVideo> {
   @override
   void dispose() {
     videoRepository.allDocs.clear();
+    videoRepository.currentLoadedVideo
+        .addAll(_pagingController.value.itemList!);
+    for (var element in _pagingController.value.itemList!) {
+      debugPrint(element.caption);
+    }
     super.dispose();
   }
 }

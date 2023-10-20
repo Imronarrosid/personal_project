@@ -14,6 +14,8 @@ class VideoRepository implements VideoUseCaseType {
   FirebaseStorage firebaseStorage = FirebaseStorage.instance;
   final List<DocumentSnapshot> allDocs = [];
   late User videoOwnerData;
+  final List<Video> currentLoadedVideo = [];
+  int currentPageIndex = 0;
 
   _compressVideo(String videoPath) async {
     var comressedVideo = await VideoCompress.compressVideo(videoPath,

@@ -23,11 +23,7 @@ class VideoPage extends StatelessWidget {
       body: Container(
         width: size.width,
         height: size.height,
-        child: PageStorage(
-            bucket: pageStorageBucket,
-            child: const ListVideo(
-              key: PageStorageKey<String>('ListVideo'),
-            )),
+        child: const KeepAlivePage(child: ListVideo()),
       ),
     );
   }
