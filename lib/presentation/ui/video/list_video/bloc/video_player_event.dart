@@ -18,3 +18,11 @@ class InitVideoPlayer extends VideoPlayerEvent {
 }
 
 class StopVideoPriviewEvent extends VideoPlayerEvent {}
+class InitVideoPlayerEvent extends VideoPlayerEvent {
+  final String url;
+
+  const InitVideoPlayerEvent({required this.url});
+
+  @override
+  List<Object> get props => [url];
+}

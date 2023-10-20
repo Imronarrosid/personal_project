@@ -12,12 +12,12 @@ final class VideoPlayerInitial extends VideoPlayerState {}
 final class VideoPreviewInitial extends VideoPlayerState {}
 
 final class VideoPlayerIntialized extends VideoPlayerState {
-  final User ownerData;
-
-  const VideoPlayerIntialized({required this.ownerData});
+  final User? ownerData;
+  final VideoPlayerController? videoPlayerController;
+  const VideoPlayerIntialized({this.videoPlayerController, this.ownerData});
 
   @override
-  List<Object> get props => [ownerData];
+  List<Object> get props => [videoPlayerController!, ownerData!];
 }
 
 final class VideoPlayerError extends VideoPlayerState {}

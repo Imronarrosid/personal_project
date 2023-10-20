@@ -70,7 +70,6 @@ class _ListVideoState extends State<ListVideo> {
         pagingController: _pagingController,
         pageController: _controller,
         scrollDirection: Axis.vertical,
-        addAutomaticKeepAlives: false,
         physics: const BouncingScrollPhysics(),
         builderDelegate: PagedChildBuilderDelegate<Video>(
           itemBuilder: (context, item, index) => VideoItem(
