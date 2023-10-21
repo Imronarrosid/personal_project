@@ -27,7 +27,12 @@ class VideoItem extends StatefulWidget {
   State<VideoItem> createState() => _VideoItemState();
 }
 
-class _VideoItemState extends State<VideoItem> {
+class _VideoItemState extends State<VideoItem>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _animationController = AnimationController(
+    duration: const Duration(milliseconds: 300),
+    vsync: this,
+  );
   // late VideoPlayerController _videoPlayerController;
 
   // @override
@@ -64,33 +69,74 @@ class _VideoItemState extends State<VideoItem> {
             height: size.height,
             alignment: Alignment.center,
             child: BlocBuilder<VideoPlayerBloc, VideoPlayerState>(
+              buildWhen: (previous, current) {
+                if (current is VideoPaused) {
+                  return false;
+                }
+                return true;
+              },
               builder: (context, state) {
                 if (state is VideoPlayerIntialized) {
+                  final CachedVideoPlayerController? controller =
+                      state.videoPlayerController;
                   return FittedBox(
                     fit: BoxFit.contain,
                     child: SizedBox(
                       width: state.videoPlayerController!.value.size.width,
                       height: state.videoPlayerController!.value.size.height,
-                      child: VisibilityDetector(
-                          key: Key(
-                              'visible-video-key-${widget.videoData.createdAt}'),
-                          onVisibilityChanged: (info) {
-                            final CachedVideoPlayerController? controller =
-                                state.videoPlayerController;
-                            var visiblePercentage = info.visibleFraction * 100;
-                            if (visiblePercentage < 5) {
-                              if (controller != null) {
-                                controller.pause();
+                      child: Stack(
+                        children: [
+                          VisibilityDetector(
+                            key: Key(
+                                'visible-video-key-${widget.videoData.createdAt}'),
+                            onVisibilityChanged: (info) {
+                              final CachedVideoPlayerController? controller =
+                                  state.videoPlayerController;
+                              var visiblePercentage =
+                                  info.visibleFraction * 100;
+                              if (visiblePercentage < 5) {
+                                if (controller != null) {
+                                  controller.pause();
+                                }
+                              } else {
+                                // Point the controller is initialized
+                                if (controller != null) {
+                                  controller.play();
+                                }
                               }
-                            } else {
-                              // Point the controller is initialized
-                              if (controller != null) {
-                                controller.play();
+                            },
+                            child: GestureDetector(
+                                onTap: () {
+                                  BlocProvider.of<VideoPlayerBloc>(context)
+                                      .add(PauseVideo());
+                                },
+                                child: CachedVideoPlayer(
+                                    state.videoPlayerController!)),
+                          ),
+                          BlocBuilder<VideoPlayerBloc, VideoPlayerState>(
+                            builder: (context, state) {
+                              if (state is VideoPaused) {
+                                return Align(
+                                  alignment: Alignment.center,
+                                  child: AnimatedOpacity(
+                                    opacity: state.opacity!,
+                                    duration: kThemeAnimationDuration,
+                                    child: GestureDetector(
+                                      onTap: controller!.play,
+                                      child: FaIcon(
+                                        FontAwesomeIcons.play,
+                                        size: state.size,
+                                        color: COLOR_white_fff5f5f5,
+                                      ),
+                                    ),
+                                  ),
+                                );
                               }
-                            }
-                          },
-                          child:
-                              CachedVideoPlayer(state.videoPlayerController!)),
+                              return Container();
+                            },
+                          ),
+                        ],
+                      ),
                     ),
                   );
                 } else if (state is VideoPlayerInitial) {
@@ -225,6 +271,12 @@ class _VideoItemState extends State<VideoItem> {
           Align(
             alignment: Alignment.bottomCenter,
             child: BlocBuilder<VideoPlayerBloc, VideoPlayerState>(
+              buildWhen: (previous, current) {
+                if (current is VideoPaused) {
+                  return false;
+                }
+                return true;
+              },
               builder: (context, state) {
                 if (state is VideoPlayerIntialized) {
                   return SizedBox(
@@ -232,8 +284,8 @@ class _VideoItemState extends State<VideoItem> {
                     child: CachedVideoProgressIndicator(
                       state.videoPlayerController!,
                       padding: EdgeInsets.zero,
-                      colors:
-                          VideoProgressColors(playedColor: COLOR_white_fff5f5f5),
+                      colors: VideoProgressColors(
+                          playedColor: COLOR_white_fff5f5f5),
                       allowScrubbing: true,
                     ),
                   );

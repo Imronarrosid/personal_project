@@ -28,3 +28,13 @@ final class VideoPlayerError extends VideoPlayerState {
   @override
   List<Object> get props => [error!];
 }
+
+final class VideoPaused extends VideoPlayerState {
+  final double? opacity;
+  final double? size;
+
+  const VideoPaused({this.size, this.opacity});
+
+  @override
+  List<Object> get props => [opacity!, size!];
+}

@@ -17,7 +17,7 @@ class InitVideoPlayer extends VideoPlayerEvent {
   List<Object> get props => [controller, ownerUid];
 }
 
-class StopVideoPriviewEvent extends VideoPlayerEvent {}
+class PauseVideo extends VideoPlayerEvent {}
 
 class InitVideoPlayerEvent extends VideoPlayerEvent {
   final String url;
