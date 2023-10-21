@@ -20,4 +20,11 @@ final class VideoPlayerIntialized extends VideoPlayerState {
   List<Object> get props => [videoPlayerController!, ownerData!];
 }
 
-final class VideoPlayerError extends VideoPlayerState {}
+final class VideoPlayerError extends VideoPlayerState {
+  final String? error;
+
+  const VideoPlayerError({this.error});
+
+  @override
+  List<Object> get props => [error!];
+}

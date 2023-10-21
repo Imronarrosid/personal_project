@@ -14,50 +14,22 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
     required this.videoPlayerRepository,
     required this.videoRepository,
   }) : super(VideoPlayerInitial()) {
-    on<InitVideoPlayer>((event, emit) async {
-      debugPrint('InitVideoPlayer');
-      User ownerData = await videoRepository.getVideoOwnerData(event.ownerUid);
-      try {
-        debugPrint('init video playre ${event.controller.value.isInitialized}');
-        await event.controller.initialize().then((value) async {
-          await videoRepository.getVideoOwnerData(event.ownerUid);
-          if (event.controller.value.isInitialized) {
-            emit(VideoPlayerIntialized(ownerData: ownerData));
-            event.controller.play();
-            debugPrint('Is initialized');
-          }
-        });
-      } catch (e) {
-        emit(VideoPlayerError());
-        debugPrint(e.toString());
-      }
-    });
-    on<StopVideoPriviewEvent>((event, emit) {
-      emit(VideoPreviewInitial());
-    });
     on<InitVideoPlayerEvent>((event, emit) async {
+      debugPrint('init v player event');
       CachedVideoPlayerController? controller;
       try {
         if (videoPlayerRepository.controller == null) {
           controller = await videoPlayerRepository.initVideoPlayer(event.url);
           if (controller!.value.isInitialized) {
             emit(VideoPlayerIntialized(videoPlayerController: controller));
-            controller.play();
-          }
-        } else {
-          if (controller!.value.isInitialized) {
-            emit(VideoPlayerIntialized(videoPlayerController: controller));
-            controller.play();
           }
         }
       } catch (e) {
-        emit(VideoPlayerError());
+        emit(VideoPlayerError(error: e.toString()));
         debugPrint(e.toString());
       }
     });
   }
   final VideoRepository videoRepository;
   final VideoPlayerRepository videoPlayerRepository;
-
- 
 }
