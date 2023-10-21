@@ -79,10 +79,13 @@ class _ListVideoState extends State<ListVideo> {
                           );
                         },
                         newPageProgressIndicatorBuilder: (_) =>
-                            CircularProgressIndicator(),
-                        newPageErrorIndicatorBuilder: (_) => Text('eror'),
-                        noMoreItemsIndicatorBuilder: (_) =>
-                            Text('Tidak Ada video lagi')),
+                            const Center(child: CircularProgressIndicator()),
+                        newPageErrorIndicatorBuilder: (_) => const Text('eror'),
+                        noMoreItemsIndicatorBuilder: (_) => Center(
+                                child: Text(
+                              'Tidak Ada video baru lagi',
+                              style: TextStyle(color: COLOR_white_fff5f5f5),
+                            ))),
                   ),
                 );
               }
