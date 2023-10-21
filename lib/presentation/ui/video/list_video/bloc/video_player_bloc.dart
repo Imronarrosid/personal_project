@@ -28,14 +28,16 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
         debugPrint(e.toString());
       }
     });
-    
   }
   final VideoRepository videoRepository;
   final VideoPlayerRepository videoPlayerRepository;
 
   @override
   Future<void> close() {
-    debugPrint('video player closed');
+    if (videoPlayerRepository.controller != null) {
+      videoPlayerRepository.controller?.dispose();
+    }
+    debugPrint('disposes v p bloc');
     return super.close();
   }
 }
