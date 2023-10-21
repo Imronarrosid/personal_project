@@ -73,7 +73,10 @@ class _HomePageState extends State<HomePage> {
                     ],
                     child: BlocBuilder<HomeCubit, HomeState>(
                       builder: (context, state) {
-                        return pages.elementAt(state.index);
+                        return IndexedStack(
+                          index: state.index,
+                          children: pages,
+                        );
                       },
                     ),
                   ),

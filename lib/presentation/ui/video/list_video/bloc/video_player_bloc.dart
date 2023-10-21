@@ -6,7 +6,6 @@ import 'package:personal_project/domain/model/user.dart';
 import 'package:personal_project/domain/reporsitory/video_repository.dart';
 import 'package:video_cached_player/video_cached_player.dart';
 
-
 part 'video_player_event.dart';
 part 'video_player_state.dart';
 
@@ -60,9 +59,5 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
   final VideoRepository videoRepository;
   final VideoPlayerRepository videoPlayerRepository;
 
-  @override
-  Future<void> close() {
-    videoPlayerRepository.controller!.pause();
-    return super.close();
-  }
+ 
 }
