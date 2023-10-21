@@ -21,6 +21,7 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
         controller = await videoPlayerRepository.initVideoPlayer(event.url);
         if (controller!.value.isInitialized) {
           emit(VideoPlayerIntialized(videoPlayerController: controller));
+          controller.setLooping(true);
           controller.play();
         }
       } catch (e) {
@@ -36,8 +37,8 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
   Future<void> close() {
     if (videoPlayerRepository.controller != null) {
       videoPlayerRepository.controller?.dispose();
+      debugPrint('dispose video player bloc');
     }
-    debugPrint('disposes v p bloc');
     return super.close();
   }
 }
