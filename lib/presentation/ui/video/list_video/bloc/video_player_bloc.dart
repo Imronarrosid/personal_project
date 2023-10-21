@@ -18,18 +18,24 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
       debugPrint('init v player event');
       CachedVideoPlayerController? controller;
       try {
-        if (videoPlayerRepository.controller == null) {
-          controller = await videoPlayerRepository.initVideoPlayer(event.url);
-          if (controller!.value.isInitialized) {
-            emit(VideoPlayerIntialized(videoPlayerController: controller));
-          }
+        controller = await videoPlayerRepository.initVideoPlayer(event.url);
+        if (controller!.value.isInitialized) {
+          emit(VideoPlayerIntialized(videoPlayerController: controller));
+          controller.play();
         }
       } catch (e) {
         emit(VideoPlayerError(error: e.toString()));
         debugPrint(e.toString());
       }
     });
+    
   }
   final VideoRepository videoRepository;
   final VideoPlayerRepository videoPlayerRepository;
+
+  @override
+  Future<void> close() {
+    debugPrint('video player closed');
+    return super.close();
+  }
 }

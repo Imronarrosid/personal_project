@@ -75,12 +75,11 @@ class _VideoItemState extends State<VideoItem> {
                           key: Key(
                               'visible-video-key-${widget.videoData.createdAt}'),
                           onVisibilityChanged: (info) {
-                            final controller = state.videoPlayerController!;
+                            final CachedVideoPlayerController controller =
+                                state.videoPlayerController!;
                             var visiblePercentage = info.visibleFraction * 100;
                             if (visiblePercentage < 5) {
                               controller.pause();
-                              controller.dispose();
-                              debugPrint('dispose controller when not needed');
                             } else {
                               // Point the controller is initialized
                               controller.play();

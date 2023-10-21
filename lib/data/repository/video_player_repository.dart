@@ -15,5 +15,4 @@ class VideoPlayerRepository {
     }
   }
 
-  CachedVideoPlayerController? get controller => _controller;
 }

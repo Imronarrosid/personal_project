@@ -73,8 +73,10 @@ class _ListVideoState extends State<ListVideo> {
                         itemBuilder: (context, item, index) {
                           return RepositoryProvider(
                             create: (context) => VideoPlayerRepository(),
-                            child: VideoItem(
-                              videoData: item,
+                            child: KeepAlivePage(
+                              child: VideoItem(
+                                videoData: item,
+                              ),
                             ),
                           );
                         },
