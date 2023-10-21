@@ -221,6 +221,26 @@ class _VideoItemState extends State<VideoItem> {
               }
               return Container();
             },
+          ),
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: BlocBuilder<VideoPlayerBloc, VideoPlayerState>(
+              builder: (context, state) {
+                if (state is VideoPlayerIntialized) {
+                  return SizedBox(
+                    height: 2,
+                    child: CachedVideoProgressIndicator(
+                      state.videoPlayerController!,
+                      padding: EdgeInsets.zero,
+                      colors:
+                          VideoProgressColors(playedColor: COLOR_white_fff5f5f5),
+                      allowScrubbing: true,
+                    ),
+                  );
+                }
+                return Container();
+              },
+            ),
           )
         ]),
       ),
