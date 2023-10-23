@@ -62,8 +62,10 @@ class CommentRepository {
     return listDocs;
   }
 
-  postComment({required String commentText, required String postId}) async {
+  Future<Comment> postComment(
+      {required String commentText, required String postId}) async {
     String uid = firebaseAuth.currentUser!.uid;
+    late Comment comment;
     try {
       if (commentText.isNotEmpty) {
         var allDocs = await firebaseFirestore
@@ -73,7 +75,7 @@ class CommentRepository {
             .get();
         int len = allDocs.docs.length;
 
-        Comment comment = Comment(
+        comment = Comment(
             comment: commentText.trim(),
             likes: [],
             uid: uid,
@@ -97,9 +99,10 @@ class CommentRepository {
     } catch (e) {
       debugPrint(e.toString());
     }
+    return comment;
   }
 
-  Future<void>likeComment({required String id, postId}) async {
+  Future<void> likeComment({required String id, postId}) async {
     var uid = firebaseAuth.currentUser!.uid;
     debugPrint(postId + id);
     DocumentSnapshot doc = await firebaseFirestore

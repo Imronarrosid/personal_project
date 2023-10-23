@@ -10,3 +10,12 @@ sealed class CommentState extends Equatable {
 final class CommentInitial extends CommentState {}
 
 final class AddComentState extends CommentState {}
+
+final class ComentAddedState extends CommentState {
+  final Comment comment;
+
+  const ComentAddedState({required this.comment});
+
+  @override
+  List<Object> get props => [comment];
+}
