@@ -282,8 +282,8 @@ class CommentItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final CommentRepository repository =
         RepositoryProvider.of<CommentRepository>(context);
-    final userUid =
-        RepositoryProvider.of<AuthRepository>(context).currentUser!.uid;
+    final authRepository = RepositoryProvider.of<AuthRepository>(context);
+    final userUid = authRepository.currentUser?.uid;
     return BlocProvider(
       create: (context) =>
           LikeCommentCubit(RepositoryProvider.of<CommentRepository>(context)),
@@ -390,10 +390,14 @@ class CommentItem extends StatelessWidget {
           trailing: Column(
             children: [
               InkWell(onTap: () {
-                BlocProvider.of<LikeCommentCubit>(context).likeComment(
-                    postId: postId,
-                    commentId: comment.id,
-                    isLiked: comment.likes.contains(userUid));
+                if (authRepository.currentUser != null) {
+                  BlocProvider.of<LikeCommentCubit>(context).likeComment(
+                      postId: postId,
+                      commentId: comment.id,
+                      isLiked: comment.likes.contains(userUid));
+                } else {
+                  showAuthBottomSheetFunc(context);
+                }
               }, child: BlocBuilder<LikeCommentCubit, LikeCommentState>(
                 builder: (context, state) {
                   if (state is CommentLiked) {
