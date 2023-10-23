@@ -114,7 +114,6 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                             backgroundColor: Colors.white,
                             foregroundColor: COLOR_black_ff121212,
                             elevation: 0,
-
                             shape: const RoundedRectangleBorder(
                               borderRadius: BorderRadius.only(
                                 topLeft: Radius.circular(10),
@@ -134,53 +133,57 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                           ),
 
                           SliverFillRemaining(
-                              child: ListView(
-                            children: [
-                              BlocBuilder<CommentBloc, CommentState>(
-                                builder: (context, state) {
-                                  return ListView.builder(
-                                      shrinkWrap: true,
-                                      reverse: true,
-                                      itemCount: _newCommentItems.length,
-                                      physics:
-                                          const NeverScrollableScrollPhysics(),
-                                      itemBuilder: ((context, index) {
-                                        return CommentItem(
-                                            comment: _newCommentItems[index],
-                                            postId: widget.postId);
-                                      }));
-                                },
-                              ),
-                              BlocBuilder<CommentsPagingBloc,
-                                  CommentsPagingState>(
-                                builder: (context, state) {
-                                  if (state is CommentsPagingInitialized) {
-                                    return Expanded(
-                                      child: PagedListView<int, Comment>(
-                                        pagingController: state.controller!,
-                                        shrinkWrap: true,
-                                        physics:
-                                            const NeverScrollableScrollPhysics(),
-                                        builderDelegate:
-                                            PagedChildBuilderDelegate(
-                                                itemBuilder: (
-                                          context,
-                                          item,
-                                          index,
-                                        ) {
-                                          return CommentItem(
-                                            comment: item,
-                                            postId: widget.postId,
+                            child:SingleChildScrollView(
+                                child: Column(
+                                  children: [
+                                    BlocBuilder<CommentBloc, CommentState>(
+                                      builder: (context, state) {
+                                        return ListView.builder(
+                                          reverse: true,
+                                          shrinkWrap: true,
+                                          controller: _scrollController,
+                                          itemCount: _newCommentItems.length,
+                                          physics:
+                                              const NeverScrollableScrollPhysics(),
+                                          itemBuilder: ((context, index) {
+                                            return CommentItem(
+                                                comment: _newCommentItems[index],
+                                                postId: widget.postId);
+                                          }),
+                                        );
+                                      },
+                                    ),
+                                    BlocBuilder<CommentsPagingBloc,
+                                        CommentsPagingState>(
+                                      builder: (context, state) {
+                                        if (state is CommentsPagingInitialized) {
+                                          return PagedListView<int, Comment>(
+                                            pagingController: state.controller!,
+                                            shrinkWrap: true,
+                                            physics:
+                                                const NeverScrollableScrollPhysics(),
+                                            builderDelegate:
+                                                PagedChildBuilderDelegate(
+                                                    itemBuilder: (
+                                              context,
+                                              item,
+                                              index,
+                                            ) {
+                                              return CommentItem(
+                                                comment: item,
+                                                postId: widget.postId,
+                                              );
+                                            }),
                                           );
-                                        }),
-                                      ),
-                                    );
-                                  }
-                                  return Container();
-                                },
-                              ),
-                            ],
-                          )),
+                                        }
+                                        return Container();
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              
+                            ),
+                          ),
 
                           // Add more slivers as needed
                         ],
