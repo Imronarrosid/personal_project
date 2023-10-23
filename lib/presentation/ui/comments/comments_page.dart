@@ -30,6 +30,8 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
 
   final TextEditingController _textEditingController = TextEditingController();
 
+  final List<Comment> _newCommentItems = [];
+
   @override
   void initState() {
     super.initState();
@@ -60,14 +62,9 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
         ],
         child: BlocListener<CommentBloc, CommentState>(
           listener: (context, state) {
-            final repo =
-                RepositoryProvider.of<ComentsPagingRepository>(context);
             if (state is ComentAddedState) {
               Comment commentToMove = state.comment;
-              repo.moveItemToFirstIndex(
-                  repo.currentLoadedComments, commentToMove);
-
-              repo.controller!.refresh();
+              _newCommentItems.add(commentToMove);
             }
           },
           child: DraggableScrollableSheet(
@@ -136,27 +133,53 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                             // Customize your SliverAppBar here
                           ),
 
-                          SliverFillRemaining(child: BlocBuilder<
-                              CommentsPagingBloc, CommentsPagingState>(
-                            builder: (context, state) {
-                              if (state is CommentsPagingInitialized) {
-                                return PagedListView<int, Comment>(
-                                  pagingController: state.controller!,
-                                  builderDelegate:
-                                      PagedChildBuilderDelegate(itemBuilder: (
-                                    context,
-                                    item,
-                                    index,
-                                  ) {
-                                    return CommentItem(
-                                      comment: item,
-                                      postId: widget.postId,
+                          SliverFillRemaining(
+                              child: ListView(
+                            children: [
+                              BlocBuilder<CommentBloc, CommentState>(
+                                builder: (context, state) {
+                                  return ListView.builder(
+                                      shrinkWrap: true,
+                                      reverse: true,
+                                      itemCount: _newCommentItems.length,
+                                      physics:
+                                          const NeverScrollableScrollPhysics(),
+                                      itemBuilder: ((context, index) {
+                                        return CommentItem(
+                                            comment: _newCommentItems[index],
+                                            postId: widget.postId);
+                                      }));
+                                },
+                              ),
+                              BlocBuilder<CommentsPagingBloc,
+                                  CommentsPagingState>(
+                                builder: (context, state) {
+                                  if (state is CommentsPagingInitialized) {
+                                    return Expanded(
+                                      child: PagedListView<int, Comment>(
+                                        pagingController: state.controller!,
+                                        shrinkWrap: true,
+                                        physics:
+                                            const NeverScrollableScrollPhysics(),
+                                        builderDelegate:
+                                            PagedChildBuilderDelegate(
+                                                itemBuilder: (
+                                          context,
+                                          item,
+                                          index,
+                                        ) {
+                                          return CommentItem(
+                                            comment: item,
+                                            postId: widget.postId,
+                                          );
+                                        }),
+                                      ),
                                     );
-                                  }),
-                                );
-                              }
-                              return Container();
-                            },
+                                  }
+                                  return Container();
+                                },
+                              ),
+                            ],
                           )),
 
                           // Add more slivers as needed

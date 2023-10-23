@@ -50,9 +50,7 @@ class ComentsPagingRepository {
         controller!.appendLastPage(listComments);
       } else {
         final nextPageKey = pageKey + newItems.length;
-        controller!.appendPage(
-            currentLoadedComments.isEmpty ? listComments : currentLoadedComments,
-            nextPageKey);
+        controller!.appendPage(listComments, nextPageKey);
       }
     } catch (error) {
       controller!.error = error;
