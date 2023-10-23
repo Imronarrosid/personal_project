@@ -11,7 +11,7 @@ class CommentBloc extends Bloc<CommentEvent, CommentState> {
       emit(AddComentState());
     });
     on<PostCommentEvent>((event, emit) {
-      repository.postComment(event.comment);
+      repository.postComment( commentText: event.comment, postId: event.postId);
     });
   }
   final CommentRepository repository;

@@ -216,8 +216,7 @@ class _VideoItemState extends State<VideoItem>
                               height: Dimens.DIMENS_12,
                             ),
                             RepositoryProvider(
-                              create: (context) =>
-                                  CommentRepository(postId: videoData.id),
+                              create: (context) => CommentRepository(),
                               child: GestureDetector(
                                 onTap: () {
                                   MediaQuery.of(context)
@@ -231,7 +230,9 @@ class _VideoItemState extends State<VideoItem>
                                       builder: (context) {
                                         debugPrint(
                                             'bottomInset${MediaQuery.of(context).viewInsets.bottom}');
-                                        return CommentBottomSheet(postId: widget.videoData.id,);
+                                        return CommentBottomSheet(
+                                          postId: widget.videoData.id,
+                                        );
                                       });
                                 },
                                 child: Icon(

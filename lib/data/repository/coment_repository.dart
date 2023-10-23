@@ -1,17 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:personal_project/domain/model/comment_model.dart';
+import 'package:personal_project/domain/model/user.dart';
 import 'package:personal_project/domain/services/firebase/firebase_service.dart';
 
 class CommentRepository {
-  final String postId;
-
-  CommentRepository({required this.postId});
-
-  getCommentOwnerData(){
-
-  }
-  getComment() async {
+  final List<DocumentSnapshot> allDocs = [];
+  getCommentOwnerData() {}
+  getComment(String postId) async {
     firebaseFirestore
         .collection('videos')
         .doc(postId)
@@ -27,7 +23,46 @@ class CommentRepository {
     });
   }
 
-  postComment(String commentText) async {
+  Future<List<DocumentSnapshot>> getListCommentsDocs(
+      {required String postId, required int limit}) async {
+    List<DocumentSnapshot> listDocs = [];
+
+    QuerySnapshot querySnapshot;
+    try {
+      if (allDocs.isEmpty) {
+        querySnapshot = await firebaseFirestore
+            .collection('videos')
+            .doc(postId)
+            .collection('comments')
+            .orderBy('datePublished', descending: true)
+            .limit(limit)
+            .get();
+      } else {
+        querySnapshot = await firebaseFirestore
+            .collection('videos')
+            .doc(postId)
+            .collection('comments')
+            .orderBy('datePublished', descending: true)
+            .startAfterDocument(allDocs.last)
+            .limit(limit)
+            .get();
+      }
+
+      ///List to get last documet
+      allDocs.addAll(querySnapshot.docs);
+
+      //list that send to infinity list package
+      listDocs.addAll(querySnapshot.docs);
+      // setState(() {
+      //   _hasMore = false;
+      // });
+    } catch (e) {
+      debugPrint(e.toString());
+    }
+    return listDocs;
+  }
+
+  postComment({required String commentText, required String postId}) async {
     String uid = firebaseAuth.currentUser!.uid;
     try {
       if (commentText.isNotEmpty) {
@@ -64,8 +99,9 @@ class CommentRepository {
     }
   }
 
-  likeComment(String id) async {
+  Future<void>likeComment({required String id, postId}) async {
     var uid = firebaseAuth.currentUser!.uid;
+    debugPrint(postId + id);
     DocumentSnapshot doc = await firebaseFirestore
         .collection('videos')
         .doc(postId)
@@ -92,5 +128,12 @@ class CommentRepository {
         'likes': FieldValue.arrayUnion([uid]),
       });
     }
+  }
+
+  Future<User> getVideoOwnerData(String uid) async {
+    DocumentSnapshot docs =
+        await firebaseFirestore.collection('users').doc(uid).get();
+
+    return User(id: docs['uid'], userName: docs['name'], photo: docs['photo']);
   }
 }

@@ -10,10 +10,11 @@ sealed class CommentEvent extends Equatable {
 class AddComentEvent extends CommentEvent {}
 
 class PostCommentEvent extends CommentEvent {
+  final String postId;
   final String comment;
 
-  const PostCommentEvent({required this.comment});
+  const PostCommentEvent({required this.postId, required this.comment});
 
   @override
-  List<Object> get props => [comment];
+  List<Object> get props => [postId, comment];
 }

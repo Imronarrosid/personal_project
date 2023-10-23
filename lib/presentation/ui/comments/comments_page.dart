@@ -1,26 +1,63 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:personal_project/constant/color.dart';
 import 'package:personal_project/constant/dimens.dart';
 import 'package:personal_project/data/repository/coment_repository.dart';
+import 'package:personal_project/data/repository/coments_paging_repository.dart';
+import 'package:personal_project/domain/model/comment_model.dart';
 import 'package:personal_project/domain/reporsitory/auth_reposotory.dart';
 import 'package:personal_project/presentation/ui/auth/auth.dart';
 import 'package:personal_project/presentation/ui/comments/bloc/comment_bloc.dart';
+import 'package:personal_project/presentation/ui/comments/bloc/comments_paging_bloc.dart';
+import 'package:personal_project/presentation/ui/comments/cubit/like_comment_cubit.dart';
+import 'package:timeago/timeago.dart' as tago;
 
-class CommentBottomSheet extends StatelessWidget {
+class CommentBottomSheet extends StatefulWidget {
   final String postId;
-  final ScrollController _scrollController = ScrollController();
-  final TextEditingController _textEditingController = TextEditingController();
 
   CommentBottomSheet({super.key, required this.postId});
+
+  @override
+  State<CommentBottomSheet> createState() => _CommentBottomSheetState();
+}
+
+class _CommentBottomSheetState extends State<CommentBottomSheet> {
+  late PagingController _pagingController;
+  final ScrollController _scrollController = ScrollController();
+
+  final TextEditingController _textEditingController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
-    return RepositoryProvider(
-      create: (context) => CommentRepository(postId: postId),
-      child: BlocProvider(
-        create: (context) =>
-            CommentBloc(RepositoryProvider.of<CommentRepository>(context)),
+    return MultiRepositoryProvider(
+      providers: [
+        RepositoryProvider(
+          create: (context) => CommentRepository(),
+        ),
+        RepositoryProvider(
+          create: (context) => ComentsPagingRepository(),
+        ),
+      ],
+      child: MultiBlocProvider(
+        providers: [
+          BlocProvider(
+            create: (context) =>
+                CommentBloc(RepositoryProvider.of<CommentRepository>(context)),
+          ),
+          BlocProvider(
+            create: (context) => CommentsPagingBloc(
+                RepositoryProvider.of<ComentsPagingRepository>(context))
+              ..add(InitCommentsPagingEvent(postId: widget.postId)),
+          ),
+        ],
         child: DraggableScrollableSheet(
           initialChildSize:
               0.5, // Initial height as a fraction of the screen height
@@ -87,15 +124,28 @@ class CommentBottomSheet extends StatelessWidget {
                           // Customize your SliverAppBar here
                         ),
 
-                        SliverFillRemaining(
-                          child: ListView.builder(
-                            controller: _scrollController,
-                            itemBuilder: (context, index) => ListTile(
-                              title: Text('List Item $index'),
-                            ),
-                            itemCount: 10,
-                          ),
-                        ),
+                        SliverFillRemaining(child: BlocBuilder<
+                            CommentsPagingBloc, CommentsPagingState>(
+                          builder: (context, state) {
+                            if (state is CommentsPagingInitialized) {
+                              return PagedListView<int, Comment>(
+                                pagingController: state.controller!,
+                                builderDelegate:
+                                    PagedChildBuilderDelegate(itemBuilder: (
+                                  context,
+                                  item,
+                                  index,
+                                ) {
+                                  return CommentItem(
+                                    comment: item,
+                                    postId: widget.postId,
+                                  );
+                                }),
+                              );
+                            }
+                            return Container();
+                          },
+                        )),
 
                         // Add more slivers as needed
                       ],
@@ -174,6 +224,7 @@ class CommentBottomSheet extends StatelessWidget {
                                             .text.isNotEmpty) {
                                           BlocProvider.of<CommentBloc>(context)
                                               .add(PostCommentEvent(
+                                                  postId: widget.postId,
                                                   comment:
                                                       _textEditingController
                                                           .text));
@@ -202,6 +253,156 @@ class CommentBottomSheet extends StatelessWidget {
             );
           },
         ),
+      ),
+    );
+  }
+}
+
+class CommentItem extends StatelessWidget {
+  final String postId;
+  final Comment comment;
+  const CommentItem({super.key, required this.comment, required this.postId});
+
+  @override
+  Widget build(BuildContext context) {
+    final CommentRepository repository =
+        RepositoryProvider.of<CommentRepository>(context);
+    final userUid =
+        RepositoryProvider.of<AuthRepository>(context).currentUser!.uid;
+    return BlocProvider(
+      create: (context) =>
+          LikeCommentCubit(RepositoryProvider.of<CommentRepository>(context)),
+      child: Builder(
+        builder: (context) {
+          return ListTile(
+            leading: FutureBuilder(
+                future: repository.getVideoOwnerData(comment.uid),
+                builder: (context, snapshot) {
+                  var data = snapshot.data;
+                  return snapshot.hasData
+                      ? CircleAvatar(
+                          backgroundColor: Colors.black,
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(50),
+                            child: CachedNetworkImage(
+                              imageUrl: data!.photo!,
+                            ),
+                          ),
+                        )
+                      : const CircleAvatar();
+                }),
+            title: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // FutureBuilder(
+                //     future: _checkVerified(comment.uid),
+                //     initialData: false,
+                //     builder: (_, AsyncSnapshot<bool> snapshot) {
+                //       bool isVerified = snapshot.data!;
+                //       return snapshot.hasData
+                //           ? Row(
+                //               children: [
+                //                 Text(
+                //                   '',
+                //                   style: const TextStyle(
+                //                       fontSize: 20,
+                //                       color: Colors.black,
+                //                       fontWeight: FontWeight.w500),
+                //                 ),
+                //                 isVerified
+                //                     ? Image.asset(
+                //                         'assets/images/blue_check.png',
+                //                         fit: BoxFit.cover,
+                //                         width: 15,
+                //                         height: 15,
+                //                       )
+                //                     : Container(
+                //                         height: 15,
+                //                       )
+                //               ],
+                //             )
+                //           : Container(
+                //               height: 20,
+                //             );
+                //     }),
+
+                FutureBuilder(
+                    future: repository.getVideoOwnerData(comment.uid),
+                    builder: (_, snapshot) {
+                      var data = snapshot.data;
+                      return snapshot.hasData
+                          ? Text(
+                              data!.userName!,
+                              style: const TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.w500),
+                            )
+                          : Container(
+                              height: 16,
+                            );
+                    }),
+                SizedBox(
+                  height: Dimens.DIMENS_8,
+                ),
+                Text(
+                  comment.comment,
+                  style: TextStyle(
+                      height: 0.5, color: COLOR_black_ff121212.withOpacity(0.6)),
+                ),
+                SizedBox(
+                  height: Dimens.DIMENS_3,
+                ),
+              ],
+            ),
+            subtitle: Row(
+              children: [
+                Text(
+                  tago
+                      .format(
+                          DateTime.parse(comment.datePublished.toDate().toString()),
+                          locale: 'id')
+                      .toString(),
+                  style: const TextStyle(fontSize: 12, color: Colors.grey),
+                ),
+                const SizedBox(
+                  width: 10,
+                ),
+              ],
+            ),
+            trailing: Column(
+              children: [
+                InkWell(onTap: () {
+                  BlocProvider.of<LikeCommentCubit>(context)
+                      .likeComment(postId: postId, commentId: comment.id,isLiked:comment.likes.contains(userUid));
+                }, child: BlocBuilder<LikeCommentCubit, LikeCommentState>(
+                  builder: (context, state) {
+                    if (state is CommentLiked) {
+                      return const Icon(
+                        Icons.favorite,
+                        color: Colors.red,
+                      );
+                    } else if (state is UnilkedComment) {
+                      return const Icon(Icons.favorite_border_outlined);
+                    }
+                    return comment.likes.contains(userUid)
+                        ? const Icon(
+                            Icons.favorite,
+                            color: Colors.red,
+                          )
+                        : const Icon(Icons.favorite_border_outlined);
+                  },
+                )),
+                Text(
+                  comment.likes.length.toString(),
+                  style: const TextStyle(fontSize: 12, color: Colors.grey),
+                ),
+              ],
+            ),
+          );
+        }
       ),
     );
   }
