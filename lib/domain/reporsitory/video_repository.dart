@@ -29,7 +29,10 @@ class VideoRepository implements VideoUseCaseType {
   }
 
   _uploadToStorage(String id, File videoFile) async {
-    Reference ref = firebaseStorage.ref().child('videos').child(id);
+    Reference ref = firebaseStorage
+        .ref()
+        .child('videos')
+        .child('video${FieldValue.serverTimestamp()}');
 
     UploadTask uploadTask = ref.putFile(videoFile);
     TaskSnapshot snapshot = await uploadTask;
@@ -50,6 +53,7 @@ class VideoRepository implements VideoUseCaseType {
   //Upload video
   @override
   uploapVideo({required String songName, caption, videoPath}) async {
+    var postId = 'post${FieldValue.serverTimestamp()}';
     try {
       String uid = firebaseAuth.currentUser!.uid;
       DocumentSnapshot userDoc =
@@ -65,7 +69,7 @@ class VideoRepository implements VideoUseCaseType {
       Video video = Video(
           username: (userDoc.data()! as Map<String, dynamic>)['name'],
           uid: uid,
-          id: "video$len",
+          id: postId,
           songName: songName,
           caption: caption,
           thumnail: thumnail,
@@ -78,7 +82,7 @@ class VideoRepository implements VideoUseCaseType {
 
       await firebaseFirestore
           .collection('videos')
-          .doc('video$len')
+          .doc()
           .set(video.toJson())
           .then((_) {
         debugPrint('uploaded');
