@@ -3,6 +3,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:personal_project/constant/color.dart';
 import 'package:personal_project/domain/services/app/app_service.dart';
 import 'package:personal_project/presentation/l10n/stings.g.dart';
@@ -87,10 +88,13 @@ class _HomePageState extends State<HomePage> {
                             COLOR_white_fff5f5f5.withOpacity(0.6),
                         selectedItemColor: COLOR_white_fff5f5f5,
                         type: BottomNavigationBarType.fixed,
+                        selectedFontSize: 12,
+                        unselectedFontSize: 12,
                         backgroundColor: COLOR_black_ff121212,
                         items: [
                           BottomNavigationBarItem(
-                              icon: const Icon(Icons.home_outlined),
+                              icon: Icon(MdiIcons.homeOutline),
+                              activeIcon: Icon(MdiIcons.home),
                               label: LocaleKeys.label_home.tr()),
                           BottomNavigationBarItem(
                               icon: const Icon(Icons.search_rounded),
@@ -98,10 +102,12 @@ class _HomePageState extends State<HomePage> {
                           const BottomNavigationBarItem(
                               icon: Icon(Icons.add), label: ''),
                           BottomNavigationBarItem(
-                              icon: const Icon(Icons.message),
+                              icon: Icon(MdiIcons.messageTextOutline),
+                              activeIcon: Icon(MdiIcons.messageText),
                               label: LocaleKeys.label_message.tr()),
                           BottomNavigationBarItem(
-                              icon: const Icon(Icons.person_2_outlined),
+                              icon: Icon(MdiIcons.accountCircleOutline),
+                              activeIcon: Icon(MdiIcons.accountCircle),
                               label: LocaleKeys.label_profile.tr()),
                         ],
                         currentIndex: state.index,
