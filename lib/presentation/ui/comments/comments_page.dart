@@ -10,6 +10,7 @@ import 'package:personal_project/constant/dimens.dart';
 import 'package:personal_project/data/repository/coment_repository.dart';
 import 'package:personal_project/data/repository/coments_paging_repository.dart';
 import 'package:personal_project/domain/model/comment_model.dart';
+import 'package:personal_project/domain/model/user.dart';
 import 'package:personal_project/domain/reporsitory/auth_reposotory.dart';
 import 'package:personal_project/presentation/l10n/stings.g.dart';
 import 'package:personal_project/presentation/ui/auth/auth.dart';
@@ -21,7 +22,7 @@ import 'package:timeago/timeago.dart' as tago;
 class CommentBottomSheet extends StatefulWidget {
   final String postId;
 
-  CommentBottomSheet({super.key, required this.postId});
+  const CommentBottomSheet({super.key, required this.postId});
 
   @override
   State<CommentBottomSheet> createState() => _CommentBottomSheetState();
@@ -112,7 +113,7 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                                   onPressed: () {
                                     context.pop();
                                   },
-                                  icon: Icon(Icons.close_rounded))
+                                  icon: const Icon(Icons.close_rounded))
                             ],
                             shape: const RoundedRectangleBorder(
                               borderRadius: BorderRadius.only(
@@ -129,7 +130,6 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                                 height: Dimens.DIMENS_3,
                               ),
                             ),
-                            // Customize your SliverAppBar here
                           ),
 
                           SliverFillRemaining(
@@ -255,25 +255,25 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                                   borderRadius: BorderRadius.circular(50),
                                   child: Material(
                                     child: IconButton(
-                                        splashRadius: Dimens.DIMENS_70,
-                                        onPressed: () {
-                                          if (_textEditingController
-                                              .text.isNotEmpty) {
-                                            BlocProvider.of<CommentBloc>(
-                                                    context)
-                                                .add(PostCommentEvent(
-                                                    postId: widget.postId,
-                                                    comment:
-                                                        _textEditingController
-                                                            .text));
-                                            _textEditingController.clear();
-                                          }
-                                          debugPrint('plane');
-                                        },
-                                        icon: FaIcon(
-                                          FontAwesomeIcons.paperPlane,
-                                          color: COLOR_black_ff121212,
-                                        )),
+                                      splashRadius: Dimens.DIMENS_70,
+                                      onPressed: () {
+                                        if (_textEditingController
+                                            .text.isNotEmpty) {
+                                          BlocProvider.of<CommentBloc>(context)
+                                              .add(PostCommentEvent(
+                                                  postId: widget.postId,
+                                                  comment:
+                                                      _textEditingController
+                                                          .text));
+                                          _textEditingController.clear();
+                                        }
+                                        debugPrint('plane');
+                                      },
+                                      icon: FaIcon(
+                                        FontAwesomeIcons.paperPlane,
+                                        color: COLOR_black_ff121212,
+                                      ),
+                                    ),
                                   ),
                                 );
                               }
@@ -304,6 +304,7 @@ class CommentItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    Size size = MediaQuery.of(context).size;
     final CommentRepository repository =
         RepositoryProvider.of<CommentRepository>(context);
     final authRepository = RepositoryProvider.of<AuthRepository>(context);
@@ -312,141 +313,139 @@ class CommentItem extends StatelessWidget {
       create: (context) =>
           LikeCommentCubit(RepositoryProvider.of<CommentRepository>(context)),
       child: Builder(builder: (context) {
-        return ListTile(
-          leading: FutureBuilder(
-              future: repository.getVideoOwnerData(comment.uid),
-              builder: (context, snapshot) {
-                var data = snapshot.data;
-                return snapshot.hasData
-                    ? CircleAvatar(
-                        backgroundColor: Colors.black,
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(50),
-                          child: CachedNetworkImage(
-                            imageUrl: data!.photo!,
-                          ),
-                        ),
-                      )
-                    : const CircleAvatar();
-              }),
-          title: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // FutureBuilder(
-              //     future: _checkVerified(comment.uid),
-              //     initialData: false,
-              //     builder: (_, AsyncSnapshot<bool> snapshot) {
-              //       bool isVerified = snapshot.data!;
-              //       return snapshot.hasData
-              //           ? Row(
-              //               children: [
-              //                 Text(
-              //                   '',
-              //                   style: const TextStyle(
-              //                       fontSize: 20,
-              //                       color: Colors.black,
-              //                       fontWeight: FontWeight.w500),
-              //                 ),
-              //                 isVerified
-              //                     ? Image.asset(
-              //                         'assets/images/blue_check.png',
-              //                         fit: BoxFit.cover,
-              //                         width: 15,
-              //                         height: 15,
-              //                       )
-              //                     : Container(
-              //                         height: 15,
-              //                       )
-              //               ],
-              //             )
-              //           : Container(
-              //               height: 20,
-              //             );
-              //     }),
+        return FutureBuilder(
+            future: repository.getVideoOwnerData(comment.uid),
+            builder: (context, snapshot) {
+              User? data = snapshot.data;
+              if (!snapshot.hasData) {
+                return Container();
+              }
+              return ListTile(
+                minLeadingWidth: Dimens.DIMENS_28,
+                leading: CircleAvatar(
+                  radius: Dimens.DIMENS_15,
+                  backgroundColor: Colors.black,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(50),
+                    child: CachedNetworkImage(
+                      imageUrl: data!.photo!,
+                    ),
+                  ),
+                ),
+                title: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // FutureBuilder(
+                    //     future: _checkVerified(comment.uid),
+                    //     initialData: false,
+                    //     builder: (_, AsyncSnapshot<bool> snapshot) {
+                    //       bool isVerified = snapshot.data!;
+                    //       return snapshot.hasData
+                    //           ? Row(
+                    //               children: [
+                    //                 Text(
+                    //                   '',
+                    //                   style: const TextStyle(
+                    //                       fontSize: 20,
+                    //                       color: Colors.black,
+                    //                       fontWeight: FontWeight.w500),
+                    //                 ),
+                    //                 isVerified
+                    //                     ? Image.asset(
+                    //                         'assets/images/blue_check.png',
+                    //                         fit: BoxFit.cover,
+                    //                         width: 15,
+                    //                         height: 15,
+                    //                       )
+                    //                     : Container(
+                    //                         height: 15,
+                    //                       )
+                    //               ],
+                    //             )
+                    //           : Container(
+                    //               height: 20,
+                    //             );
+                    //     }),
 
-              FutureBuilder(
-                  future: repository.getVideoOwnerData(comment.uid),
-                  builder: (_, snapshot) {
-                    var data = snapshot.data;
-                    return snapshot.hasData
-                        ? Text(
-                            data!.userName!,
-                            style: const TextStyle(
-                                fontSize: 16,
-                                color: Colors.black,
-                                fontWeight: FontWeight.w500),
-                          )
-                        : Container(
-                            height: 16,
-                          );
-                  }),
-              SizedBox(
-                height: Dimens.DIMENS_8,
-              ),
-              Text(
-                comment.comment,
-                style: TextStyle(
-                    height: 0.5, color: COLOR_black_ff121212.withOpacity(0.6)),
-              ),
-              SizedBox(
-                height: Dimens.DIMENS_3,
-              ),
-            ],
-          ),
-          subtitle: Row(
-            children: [
-              Text(
-                tago
-                    .format(
-                        DateTime.parse(
-                            comment.datePublished.toDate().toString()),
-                        locale: 'id')
-                    .toString(),
-                style: const TextStyle(fontSize: 12, color: Colors.grey),
-              ),
-              const SizedBox(
-                width: 10,
-              ),
-            ],
-          ),
-          trailing: Column(
-            children: [
-              InkWell(onTap: () {
-                if (authRepository.currentUser != null) {
-                  BlocProvider.of<LikeCommentCubit>(context).likeComment(
-                      postId: postId,
-                      commentId: comment.id,
-                      isLiked: comment.likes.contains(userUid));
-                } else {
-                  showAuthBottomSheetFunc(context);
-                }
-              }, child: BlocBuilder<LikeCommentCubit, LikeCommentState>(
-                builder: (context, state) {
-                  if (state is CommentLiked) {
-                    return const Icon(
-                      Icons.favorite,
-                      color: Colors.red,
-                    );
-                  } else if (state is UnilkedComment) {
-                    return const Icon(Icons.favorite_border_outlined);
-                  }
-                  return comment.likes.contains(userUid)
-                      ? const Icon(
-                          Icons.favorite,
-                          color: Colors.red,
-                        )
-                      : const Icon(Icons.favorite_border_outlined);
-                },
-              )),
-              Text(
-                comment.likes.length.toString(),
-                style: const TextStyle(fontSize: 12, color: Colors.grey),
-              ),
-            ],
-          ),
-        );
+                    Text(
+                      data.userName!,
+                      style: const TextStyle(
+                          fontSize: 14,
+                          color: Colors.black,
+                          fontWeight: FontWeight.w500),
+                    ),
+                    SizedBox(
+                      width: size.width * 0.8,
+                      child: Text(
+                        comment.comment,
+                        style: TextStyle(
+                            color: COLOR_black_ff121212.withOpacity(0.6)),
+                      ),
+                    ),
+                    SizedBox(
+                      height: Dimens.DIMENS_3,
+                    ),
+                  ],
+                ),
+                subtitle: Row(
+                  children: [
+                    Text(
+                      tago
+                          .format(
+                              DateTime.parse(
+                                  comment.datePublished.toDate().toString()),
+                              locale: 'id')
+                          .toString(),
+                      style: const TextStyle(fontSize: 12, color: Colors.grey),
+                    ),
+                    const SizedBox(
+                      width: 10,
+                    ),
+                  ],
+                ),
+                trailing: Column(
+                  children: [
+                    InkWell(
+                      onTap: () {
+                        if (authRepository.currentUser != null) {
+                          BlocProvider.of<LikeCommentCubit>(context)
+                              .likeComment(
+                                  postId: postId,
+                                  commentId: comment.id,
+                                  isLiked: comment.likes.contains(userUid));
+                        } else {
+                          showAuthBottomSheetFunc(context);
+                        }
+                      },
+                      child: BlocBuilder<LikeCommentCubit, LikeCommentState>(
+                        builder: (context, state) {
+                          if (state is CommentLiked) {
+                            return const Icon(
+                              Icons.favorite,
+                              color: Colors.red,
+                            );
+                          } else if (state is UnilkedComment) {
+                            return const Icon(Icons.favorite_border_outlined);
+                          }
+                          return comment.likes.contains(userUid)
+                              ? const Icon(
+                                  Icons.favorite,
+                                  color: Colors.red,
+                                )
+                              : const Icon(Icons.favorite_border_outlined);
+                        },
+                      ),
+                    ),
+                    Text(
+                      comment.likes.length.toString(),
+                      style: const TextStyle(fontSize: 12, color: Colors.grey),
+                    ),
+                  ],
+                ),
+              );
+            });
       }),
     );
   }
