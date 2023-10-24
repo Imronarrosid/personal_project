@@ -1,7 +1,9 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:go_router/go_router.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:personal_project/constant/color.dart';
 import 'package:personal_project/constant/dimens.dart';
@@ -9,6 +11,7 @@ import 'package:personal_project/data/repository/coment_repository.dart';
 import 'package:personal_project/data/repository/coments_paging_repository.dart';
 import 'package:personal_project/domain/model/comment_model.dart';
 import 'package:personal_project/domain/reporsitory/auth_reposotory.dart';
+import 'package:personal_project/presentation/l10n/stings.g.dart';
 import 'package:personal_project/presentation/ui/auth/auth.dart';
 import 'package:personal_project/presentation/ui/comments/bloc/comment_bloc.dart';
 import 'package:personal_project/presentation/ui/comments/bloc/comments_paging_bloc.dart';
@@ -72,7 +75,6 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
             snap: true,
             snapSizes: const <double>[0.6, 1.0],
             builder: (BuildContext context, ScrollController scrollController) {
-
               //To prevent comments list overlaped by header.
               scrollController.addListener(() {
                 debugPrint('offset: ${scrollController.offset}');
@@ -97,12 +99,21 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                         controller: scrollController,
                         slivers: <Widget>[
                           SliverAppBar(
-                            title: Text('Sliver App Bar'),
+                            title: Text(LocaleKeys.title_comments.tr()),
                             floating: false,
                             pinned: true,
                             backgroundColor: Colors.white,
                             foregroundColor: COLOR_black_ff121212,
                             elevation: 0,
+                            leading: Container(),
+                            leadingWidth: Dimens.DIMENS_3,
+                            actions: [
+                              IconButton(
+                                  onPressed: () {
+                                    context.pop();
+                                  },
+                                  icon: Icon(Icons.close_rounded))
+                            ],
                             shape: const RoundedRectangleBorder(
                               borderRadius: BorderRadius.only(
                                 topLeft: Radius.circular(10),

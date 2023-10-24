@@ -5,6 +5,7 @@ abstract class  LocaleKeys {
   static const title_upload = 'title_upload';
   static const title_profile = 'title_profile';
   static const title_crop = 'title_crop';
+  static const title_comments = 'title_comments';
   static const label_home = 'label_home';
   static const label_search = 'label_search';
   static const label_message = 'label_message';
