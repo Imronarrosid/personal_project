@@ -184,7 +184,7 @@ class _VideoItemState extends State<VideoItem>
                 return snapshot.hasData
                     ? Positioned(
                         right: Dimens.DIMENS_12,
-                        bottom: 0,
+                        bottom: Dimens.DIMENS_8,
                         child: Column(
                           children: [
                             GestureDetector(
@@ -254,14 +254,24 @@ class _VideoItemState extends State<VideoItem>
                               color: COLOR_white_fff5f5f5,
                               size: Dimens.DIMENS_38,
                             ),
-                            Text(
-                              '10',
-                              style: TextStyle(color: COLOR_white_fff5f5f5),
-                            ),
                             SizedBox(
-                              height: Dimens.DIMENS_38,
+                              height: Dimens.DIMENS_15,
                             ),
-                            Container()
+                            Container(
+                              width: Dimens.DIMENS_34,
+                              height: Dimens.DIMENS_34,
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                border: Border.all(color: COLOR_white_fff5f5f5),
+                                borderRadius: BorderRadius.circular(5),
+                                color: const Color.fromARGB(255, 27, 26, 26),
+                              ),
+                              child: FaIcon(
+                                FontAwesomeIcons.gamepad,
+                                color: COLOR_white_fff5f5f5,
+                                size: Dimens.DIMENS_15,
+                              ),
+                            )
                           ],
                         ),
                       )
@@ -274,7 +284,7 @@ class _VideoItemState extends State<VideoItem>
               var data = snapshot.data;
               if (snapshot.hasData) {
                 return Positioned(
-                  bottom: 0,
+                  bottom: Dimens.DIMENS_8,
                   left: Dimens.DIMENS_12,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -316,6 +326,7 @@ class _VideoItemState extends State<VideoItem>
                       state.videoPlayerController!,
                       padding: EdgeInsets.zero,
                       colors: VideoProgressColors(
+                          bufferedColor: COLOR_white_fff5f5f5.withOpacity(0.3),
                           playedColor: COLOR_white_fff5f5f5),
                       allowScrubbing: true,
                     ),
@@ -327,103 +338,6 @@ class _VideoItemState extends State<VideoItem>
           )
         ]),
       ),
-    );
-  }
-}
-
-class ExpandableBottomSheetContent extends StatelessWidget {
-  final ScrollController _scrollController = ScrollController();
-  @override
-  Widget build(BuildContext context) {
-    return DraggableScrollableSheet(
-      initialChildSize:
-          0.5, // Initial height as a fraction of the screen height
-      maxChildSize: 0.9, // Maximum height when fully expanded
-      minChildSize: 0.4, // Minimum height when collapsed,
-      snap: true,
-      snapSizes: const <double>[0.5, 0.7, 0.9],
-      builder: (BuildContext context, ScrollController scrollController) {
-        bool isExpanded = false;
-
-        scrollController.addListener(() {
-          if (scrollController.hasClients) {
-            if (scrollController.offset ==
-                    scrollController.position.maxScrollExtent &&
-                scrollController.offset == 00) {
-              // Sheet is fully expanded
-              isExpanded = true;
-            } else if (scrollController.offset ==
-                scrollController.position.minScrollExtent) {
-              // Sheet is at its initial state
-              isExpanded = false;
-            }
-          }
-        });
-
-        return Container(
-          height: MediaQuery.of(context).size.height,
-          decoration: BoxDecoration(color: Colors.white),
-          child: Column(
-            children: [
-              Expanded(
-                child: CustomScrollView(
-                  controller: scrollController,
-                  slivers: <Widget>[
-                    SliverAppBar(
-                      title: Text('Sliver App Bar'),
-                      floating: true,
-                      pinned: true,
-                      // Customize your SliverAppBar here
-                    ),
-
-                    SliverFillRemaining(
-                      child: ListView.builder(
-                        itemBuilder: (context, index) => ListTile(
-                          title: Text('List Item $index'),
-                        ),
-                        itemCount: 10,
-                      ),
-                    ),
-
-                    // Add more slivers as needed
-                  ],
-                ),
-              ),
-              Padding(
-                padding: EdgeInsets.only(
-                    bottom: MediaQuery.of(context).viewInsets.bottom),
-                child: Row(
-                  children: [
-                    CircleAvatar(),
-                    Expanded(
-                      child: Container(
-                        decoration: BoxDecoration(color: COLOR_grey),
-                        child: TextField(
-                          textAlignVertical: TextAlignVertical.center,
-                          keyboardType: TextInputType.multiline,
-                          minLines: 1,
-                          maxLines: 3,
-                          onChanged: (text) {
-                            if (text.endsWith('\n')) {
-                              // Handle the Enter key press
-
-                              print('Enter key pressed. ');
-                              // You can add your custom logic here
-                            }
-                          },
-                          onSubmitted: (_) {
-                            debugPrint('Submit');
-                          },
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              )
-            ],
-          ),
-        );
-      },
     );
   }
 }
