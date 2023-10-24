@@ -9,10 +9,13 @@ import 'package:personal_project/constant/dimens.dart';
 import 'package:personal_project/data/repository/coment_repository.dart';
 import 'package:personal_project/data/repository/video_player_repository.dart';
 import 'package:personal_project/domain/model/video_model.dart';
+import 'package:personal_project/domain/reporsitory/auth_reposotory.dart';
 import 'package:personal_project/domain/reporsitory/video_repository.dart';
 import 'package:personal_project/presentation/assets/images.dart';
+import 'package:personal_project/presentation/ui/auth/auth.dart';
 import 'package:personal_project/presentation/ui/comments/comments_page.dart';
 import 'package:personal_project/presentation/ui/video/list_video/bloc/video_player_bloc.dart';
+import 'package:personal_project/presentation/ui/video/list_video/cubit/like_video_cubit.dart';
 import 'package:video_cached_player/video_cached_player.dart';
 import 'package:video_player/video_player.dart';
 import 'package:visibility_detector/visibility_detector.dart';
@@ -40,19 +43,30 @@ class _VideoItemState extends State<VideoItem> {
   //   super.initState();
   // }
 
+  // ignore: non_constant_identifier_names
+  final double _IC_LABEL_FONTSIZE = 12;
+
   @override
   Widget build(BuildContext context) {
     debugPrint('Its Rebuild' + widget.videoData.caption);
     var videoData = widget.videoData;
     Size size = MediaQuery.of(context).size;
-    return BlocProvider(
-      create: (context) => VideoPlayerBloc(
-          videoPlayerRepository:
-              RepositoryProvider.of<VideoPlayerRepository>(context),
-          videoRepository: RepositoryProvider.of<VideoRepository>(context))
-        ..add(
-          InitVideoPlayerEvent(url: widget.videoData.videoUrl),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (context) => VideoPlayerBloc(
+              videoPlayerRepository:
+                  RepositoryProvider.of<VideoPlayerRepository>(context),
+              videoRepository: RepositoryProvider.of<VideoRepository>(context))
+            ..add(
+              InitVideoPlayerEvent(url: widget.videoData.videoUrl),
+            ),
         ),
+        BlocProvider(
+          create: (context) =>
+              LikeVideoCubit(RepositoryProvider.of<VideoRepository>(context)),
+        ),
+      ],
       child: Container(
         width: size.width,
         height: size.height,
@@ -81,7 +95,7 @@ class _VideoItemState extends State<VideoItem> {
                         children: [
                           VisibilityDetector(
                             key: Key(
-                                'visible-video-key-${widget.videoData.createdAt}'),
+                                'visible-video-key-//${widget.videoData.createdAt}'),
                             onVisibilityChanged: (info) {
                               final CachedVideoPlayerController? controller =
                                   state.videoPlayerController;
@@ -147,7 +161,9 @@ class _VideoItemState extends State<VideoItem> {
                     children: [
                       Text(
                         'Tidak dapat menampilkan video',
-                        style: TextStyle(color: COLOR_white_fff5f5f5),
+                        style: TextStyle(
+                            color: COLOR_white_fff5f5f5,
+                            fontSize: _IC_LABEL_FONTSIZE),
                       ),
                       SizedBox(
                         height: Dimens.DIMENS_12,
@@ -194,14 +210,69 @@ class _VideoItemState extends State<VideoItem> {
                             SizedBox(
                               height: Dimens.DIMENS_38,
                             ),
-                            Icon(
-                              MdiIcons.heart,
-                              color: COLOR_white_fff5f5f5,
-                              size: Dimens.DIMENS_38,
+                            GestureDetector(
+                              onTap: () {
+                                String? uid =
+                                    RepositoryProvider.of<AuthRepository>(
+                                            context)
+                                        .currentUser
+                                        ?.uid;
+                                if (uid == null) {
+                                  showAuthBottomSheetFunc(context);
+                                } else {
+                                  bool isLiked = videoData.likes.contains(uid);
+                                  BlocProvider.of<LikeVideoCubit>(context)
+                                      .likeComment(
+                                          postId: videoData.id,
+                                          isLiked: isLiked);
+                                }
+                              },
+                              child:
+                                  BlocBuilder<LikeVideoCubit, LikeVideoState>(
+                                builder: (context, state) {
+                                  // return Icon(
+                                  //   MdiIcons.heart,
+                                  //   color: COLOR_white_fff5f5f5,
+                                  //   size: Dimens.DIMENS_38,
+                                  // );
+                                  String? uid =
+                                      RepositoryProvider.of<AuthRepository>(
+                                              context)
+                                          .currentUser
+                                          ?.uid;
+                                  bool isLiked = videoData.likes.contains(uid);
+                                  if (state is VideoIsLiked) {
+                                    return Icon(
+                                      MdiIcons.heart,
+                                      size: Dimens.DIMENS_34,
+                                      color: Colors.red,
+                                    );
+                                  } else if (state is UnilkedVideo) {
+                                    return Icon(
+                                      MdiIcons.heart,
+                                      size: Dimens.DIMENS_34,
+                                      color: COLOR_white_fff5f5f5,
+                                    );
+                                  }
+                                  return isLiked
+                                      ? Icon(
+                                          MdiIcons.heart,
+                                          size: Dimens.DIMENS_34,
+                                          color: Colors.red,
+                                        )
+                                      : Icon(
+                                          MdiIcons.heart,
+                                          size: Dimens.DIMENS_34,
+                                          color: COLOR_white_fff5f5f5,
+                                        );
+                                },
+                              ),
                             ),
                             Text(
                               widget.videoData.likes.length.toString(),
-                              style: TextStyle(color: COLOR_white_fff5f5f5),
+                              style: TextStyle(
+                                  color: COLOR_white_fff5f5f5,
+                                  fontSize: _IC_LABEL_FONTSIZE),
                             ),
                             SizedBox(
                               height: Dimens.DIMENS_12,
@@ -229,13 +300,15 @@ class _VideoItemState extends State<VideoItem> {
                                 child: Icon(
                                   MdiIcons.messageText,
                                   color: COLOR_white_fff5f5f5,
-                                  size: Dimens.DIMENS_34,
+                                  size: Dimens.DIMENS_28,
                                 ),
                               ),
                             ),
                             Text(
                               videoData.commentCount.toString(),
-                              style: TextStyle(color: COLOR_white_fff5f5f5),
+                              style: TextStyle(
+                                  color: COLOR_white_fff5f5f5,
+                                  fontSize: _IC_LABEL_FONTSIZE),
                             ),
                             SizedBox(
                               height: Dimens.DIMENS_12,
@@ -243,7 +316,7 @@ class _VideoItemState extends State<VideoItem> {
                             Icon(
                               MdiIcons.reply,
                               color: COLOR_white_fff5f5f5,
-                              size: Dimens.DIMENS_38,
+                              size: Dimens.DIMENS_34,
                             ),
                             SizedBox(
                               height: Dimens.DIMENS_15,

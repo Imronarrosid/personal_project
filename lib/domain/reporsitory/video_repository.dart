@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:personal_project/domain/model/user.dart';
 import 'package:personal_project/domain/model/video_model.dart';
+import 'package:personal_project/domain/reporsitory/auth_reposotory.dart';
 import 'package:personal_project/domain/services/firebase/firebase_service.dart';
 import 'package:personal_project/domain/usecase/vide_usecase_type.dart';
 import 'package:video_compress/video_compress.dart';
@@ -141,5 +142,20 @@ class VideoRepository implements VideoUseCaseType {
     videoOwnerData =
         User(id: docs['uid'], userName: docs['name'], photo: docs['photo']);
     return User(id: docs['uid'], userName: docs['name'], photo: docs['photo']);
+  }
+
+    Future<void>likeVideo(String id) async {
+    DocumentSnapshot doc = await firebaseFirestore.collection('videos').doc(id).get();
+
+    var uid = firebaseAuth.currentUser!.uid;
+    if ((doc.data()! as dynamic)['likes'].contains(uid)) {
+      await firebaseFirestore.collection('videos').doc(id).update({
+        'likes': FieldValue.arrayRemove([uid])
+      });
+    } else {
+      await firebaseFirestore.collection('videos').doc(id).update({
+        'likes': FieldValue.arrayUnion([uid])
+      });
+    }
   }
 }
