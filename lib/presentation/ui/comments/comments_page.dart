@@ -72,6 +72,8 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
             snap: true,
             snapSizes: const <double>[0.6, 1.0],
             builder: (BuildContext context, ScrollController scrollController) {
+
+              //To prevent comments list overlaped by header.
               scrollController.addListener(() {
                 debugPrint('offset: ${scrollController.offset}');
                 if (scrollController.offset > 0) {
