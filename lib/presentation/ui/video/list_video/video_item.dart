@@ -1,11 +1,9 @@
-import 'dart:math';
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:go_router/go_router.dart';
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:personal_project/constant/color.dart';
 import 'package:personal_project/constant/dimens.dart';
 import 'package:personal_project/data/repository/coment_repository.dart';
@@ -13,9 +11,7 @@ import 'package:personal_project/data/repository/video_player_repository.dart';
 import 'package:personal_project/domain/model/video_model.dart';
 import 'package:personal_project/domain/reporsitory/video_repository.dart';
 import 'package:personal_project/presentation/assets/images.dart';
-import 'package:personal_project/presentation/router/route_utils.dart';
 import 'package:personal_project/presentation/ui/comments/comments_page.dart';
-import 'package:personal_project/presentation/ui/video/list_video/bloc/paging_bloc.dart';
 import 'package:personal_project/presentation/ui/video/list_video/bloc/video_player_bloc.dart';
 import 'package:video_cached_player/video_cached_player.dart';
 import 'package:video_player/video_player.dart';
@@ -29,12 +25,7 @@ class VideoItem extends StatefulWidget {
   State<VideoItem> createState() => _VideoItemState();
 }
 
-class _VideoItemState extends State<VideoItem>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _animationController = AnimationController(
-    duration: const Duration(milliseconds: 300),
-    vsync: this,
-  );
+class _VideoItemState extends State<VideoItem> {
   // late VideoPlayerController _videoPlayerController;
 
   // @override
@@ -63,7 +54,6 @@ class _VideoItemState extends State<VideoItem>
           InitVideoPlayerEvent(url: widget.videoData.videoUrl),
         ),
       child: Container(
-        padding: EdgeInsets.only(bottom: 10),
         width: size.width,
         height: size.height,
         child: Stack(children: [
@@ -168,6 +158,7 @@ class _VideoItemState extends State<VideoItem>
                       ),
                       Text(
                         state is VideoPlayerError ? state.error.toString() : '',
+                        textAlign: TextAlign.center,
                         style: TextStyle(color: COLOR_white_fff5f5f5),
                       ),
                     ],
@@ -204,7 +195,7 @@ class _VideoItemState extends State<VideoItem>
                               height: Dimens.DIMENS_38,
                             ),
                             Icon(
-                              Icons.favorite,
+                              MdiIcons.heart,
                               color: COLOR_white_fff5f5f5,
                               size: Dimens.DIMENS_38,
                             ),
@@ -236,7 +227,7 @@ class _VideoItemState extends State<VideoItem>
                                       });
                                 },
                                 child: Icon(
-                                  Icons.message,
+                                  MdiIcons.messageText,
                                   color: COLOR_white_fff5f5f5,
                                   size: Dimens.DIMENS_34,
                                 ),
@@ -250,7 +241,7 @@ class _VideoItemState extends State<VideoItem>
                               height: Dimens.DIMENS_12,
                             ),
                             Icon(
-                              Icons.reply,
+                              MdiIcons.reply,
                               color: COLOR_white_fff5f5f5,
                               size: Dimens.DIMENS_38,
                             ),
