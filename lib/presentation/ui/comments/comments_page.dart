@@ -25,9 +25,6 @@ class CommentBottomSheet extends StatefulWidget {
 }
 
 class _CommentBottomSheetState extends State<CommentBottomSheet> {
-  late PagingController _pagingController;
-  final ScrollController _scrollController = ScrollController();
-
   final TextEditingController _textEditingController = TextEditingController();
 
   final List<Comment> _newCommentItems = [];
@@ -69,26 +66,16 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
           },
           child: DraggableScrollableSheet(
             initialChildSize:
-                0.5, // Initial height as a fraction of the screen height
-            maxChildSize: 0.9, // Maximum height when fully expanded
-            minChildSize: 0.4, // Minimum height when collapsed,
+                0.7, // Initial height as a fraction of the screen height
+            maxChildSize: 1.0, // Maximum height when fully expanded
+            minChildSize: 0.5, // Minimum height when collapsed,
             snap: true,
-            snapSizes: const <double>[0.5, 0.7, 0.9],
+            snapSizes: const <double>[0.6, 1.0],
             builder: (BuildContext context, ScrollController scrollController) {
-              bool isExpanded = false;
-
               scrollController.addListener(() {
-                if (scrollController.hasClients) {
-                  if (scrollController.offset ==
-                          scrollController.position.maxScrollExtent &&
-                      scrollController.offset == 00) {
-                    // Sheet is fully expanded
-                    isExpanded = true;
-                  } else if (scrollController.offset ==
-                      scrollController.position.minScrollExtent) {
-                    // Sheet is at its initial state
-                    isExpanded = false;
-                  }
+                debugPrint('offset: ${scrollController.offset}');
+                if (scrollController.offset > 0) {
+                  scrollController.jumpTo(0.0);
                 }
               });
 
@@ -133,55 +120,53 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                           ),
 
                           SliverFillRemaining(
-                            child:SingleChildScrollView(
-                                child: Column(
-                                  children: [
-                                    BlocBuilder<CommentBloc, CommentState>(
-                                      builder: (context, state) {
-                                        return ListView.builder(
-                                          reverse: true,
+                            child: SingleChildScrollView(
+                              child: Column(
+                                children: [
+                                  BlocBuilder<CommentBloc, CommentState>(
+                                    builder: (context, state) {
+                                      return ListView.builder(
+                                        reverse: true,
+                                        shrinkWrap: true,
+                                        itemCount: _newCommentItems.length,
+                                        physics:
+                                            const NeverScrollableScrollPhysics(),
+                                        itemBuilder: ((context, index) {
+                                          return CommentItem(
+                                              comment: _newCommentItems[index],
+                                              postId: widget.postId);
+                                        }),
+                                      );
+                                    },
+                                  ),
+                                  BlocBuilder<CommentsPagingBloc,
+                                      CommentsPagingState>(
+                                    builder: (context, state) {
+                                      if (state is CommentsPagingInitialized) {
+                                        return PagedListView<int, Comment>(
+                                          pagingController: state.controller!,
                                           shrinkWrap: true,
-                                          controller: _scrollController,
-                                          itemCount: _newCommentItems.length,
                                           physics:
                                               const NeverScrollableScrollPhysics(),
-                                          itemBuilder: ((context, index) {
+                                          builderDelegate:
+                                              PagedChildBuilderDelegate(
+                                                  itemBuilder: (
+                                            context,
+                                            item,
+                                            index,
+                                          ) {
                                             return CommentItem(
-                                                comment: _newCommentItems[index],
-                                                postId: widget.postId);
+                                              comment: item,
+                                              postId: widget.postId,
+                                            );
                                           }),
                                         );
-                                      },
-                                    ),
-                                    BlocBuilder<CommentsPagingBloc,
-                                        CommentsPagingState>(
-                                      builder: (context, state) {
-                                        if (state is CommentsPagingInitialized) {
-                                          return PagedListView<int, Comment>(
-                                            pagingController: state.controller!,
-                                            shrinkWrap: true,
-                                            physics:
-                                                const NeverScrollableScrollPhysics(),
-                                            builderDelegate:
-                                                PagedChildBuilderDelegate(
-                                                    itemBuilder: (
-                                              context,
-                                              item,
-                                              index,
-                                            ) {
-                                              return CommentItem(
-                                                comment: item,
-                                                postId: widget.postId,
-                                              );
-                                            }),
-                                          );
-                                        }
-                                        return Container();
-                                      },
-                                    ),
-                                  ],
-                                ),
-                              
+                                      }
+                                      return Container();
+                                    },
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
 
