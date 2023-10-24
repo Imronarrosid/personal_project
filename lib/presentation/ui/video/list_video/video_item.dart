@@ -48,7 +48,7 @@ class _VideoItemState extends State<VideoItem> {
 
   @override
   Widget build(BuildContext context) {
-    debugPrint('Its Rebuild' + widget.videoData.caption);
+    debugPrint('Its Rebuild${widget.videoData.caption}');
     var videoData = widget.videoData;
     Size size = MediaQuery.of(context).size;
     return MultiBlocProvider(
@@ -212,6 +212,8 @@ class _VideoItemState extends State<VideoItem> {
                             ),
                             GestureDetector(
                               onTap: () {
+                                int likeCount = int.parse(
+                                    widget.videoData.likes.length.toString());
                                 String? uid =
                                     RepositoryProvider.of<AuthRepository>(
                                             context)
@@ -224,7 +226,8 @@ class _VideoItemState extends State<VideoItem> {
                                   BlocProvider.of<LikeVideoCubit>(context)
                                       .likeComment(
                                           postId: videoData.id,
-                                          isLiked: isLiked);
+                                          isLiked: isLiked,
+                                          currentLikeCount: likeCount);
                                 }
                               },
                               child:
@@ -268,11 +271,24 @@ class _VideoItemState extends State<VideoItem> {
                                 },
                               ),
                             ),
-                            Text(
-                              widget.videoData.likes.length.toString(),
-                              style: TextStyle(
-                                  color: COLOR_white_fff5f5f5,
-                                  fontSize: _IC_LABEL_FONTSIZE),
+                            BlocBuilder<LikeVideoCubit, LikeVideoState>(
+                              builder: (context, state) {
+                                if (state is VideoIsLiked) {
+                                  debugPrint('likeCount${state.likeCount}');
+                                  return Text(
+                                    state.likeCount.toString(),
+                                    style: TextStyle(
+                                        color: COLOR_white_fff5f5f5,
+                                        fontSize: _IC_LABEL_FONTSIZE),
+                                  );
+                                }
+                                return Text(
+                                  videoData.likes.length.toString(),
+                                  style: TextStyle(
+                                      color: COLOR_white_fff5f5f5,
+                                      fontSize: _IC_LABEL_FONTSIZE),
+                                );
+                              },
                             ),
                             SizedBox(
                               height: Dimens.DIMENS_12,
