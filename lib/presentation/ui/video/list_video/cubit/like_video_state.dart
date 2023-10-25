@@ -26,3 +26,14 @@ final class VideoIsLiked extends LikeVideoState {
   @override
   List<Object> get props => [likeCount];
 }
+
+final class ShowDobleTapLikeWidget extends LikeVideoState {
+  final bool isVisible;
+
+  const ShowDobleTapLikeWidget({required this.isVisible});
+
+  @override
+  List<Object> get props => [isVisible];
+}
+
+final class RemoveDoubleTapLikeWidget extends LikeVideoState {}

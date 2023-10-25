@@ -144,14 +144,30 @@ class VideoRepository implements VideoUseCaseType {
     return User(id: docs['uid'], userName: docs['name'], photo: docs['photo']);
   }
 
-    Future<void>likeVideo(String id) async {
-    DocumentSnapshot doc = await firebaseFirestore.collection('videos').doc(id).get();
+  Future<void> likeVideo(String id) async {
+    DocumentSnapshot doc =
+        await firebaseFirestore.collection('videos').doc(id).get();
 
     var uid = firebaseAuth.currentUser!.uid;
     if ((doc.data()! as dynamic)['likes'].contains(uid)) {
       await firebaseFirestore.collection('videos').doc(id).update({
         'likes': FieldValue.arrayRemove([uid])
       });
+    } else {
+      await firebaseFirestore.collection('videos').doc(id).update({
+        'likes': FieldValue.arrayUnion([uid])
+      });
+    }
+  }
+
+  /// double tap to like if video is liked will do nothing.
+  Future<void> doubleTaplikeVideo(String id) async {
+    DocumentSnapshot doc =
+        await firebaseFirestore.collection('videos').doc(id).get();
+
+    var uid = firebaseAuth.currentUser!.uid;
+    if ((doc.data()! as dynamic)['likes'].contains(uid)) {
+      // do nothing
     } else {
       await firebaseFirestore.collection('videos').doc(id).update({
         'likes': FieldValue.arrayUnion([uid])
