@@ -127,7 +127,15 @@ class AuthRepository implements AuthUseCaseType {
     FirebaseFirestore firestore = FirebaseFirestore.instance;
     var doc = await firestore.collection('users').doc(user.id).get();
     if (!doc.exists) {
-      firestore.collection('users').doc(user.id).set(user.toJson());
+      firestore.collection('users').doc(user.id).set({
+        'createdAt': FieldValue.serverTimestamp(),
+        'userName': user.userName,
+        'photoUrl': user.photo,
+        'lastSeen': FieldValue.serverTimestamp(),
+        'metadata': user.metadata,
+        'role': user.role?.toShortString(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
     }
   }
 
@@ -143,8 +151,7 @@ class AuthRepository implements AuthUseCaseType {
         credential = userCredential.credential!;
       }
 
-      final googleUser =
-          await _googleSignIn.signIn();
+      final googleUser = await _googleSignIn.signIn();
 
       if (googleUser != null) {
         _googleUserCompleter.complete(true);
@@ -216,4 +223,9 @@ extension on firebase_auth.User {
   User get toUser {
     return User(id: uid, email: email, userName: displayName, photo: photoURL);
   }
+}
+
+extension RoleToShortString on Role {
+  /// Converts enum to the string equal to enum's name.
+  String toShortString() => toString().split('.').last;
 }
