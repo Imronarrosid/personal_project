@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:personal_project/domain/model/user.dart';
+import 'package:personal_project/domain/services/firebase/firebase_service.dart';
 import 'package:personal_project/domain/usecase/auth_usecase_type.dart';
 
 class LogInWithGoogleFailure implements Exception {
@@ -215,6 +216,15 @@ class AuthRepository implements AuthUseCaseType {
     } on firebase_auth.FirebaseAuthException catch (e) {
       debugPrint(e.toString());
     }
+  }
+
+  Future<User> getVideoOwnerData(String uid) async {
+    DocumentSnapshot docs =
+        await firebaseFirestore.collection('users').doc(uid).get();
+    return User(
+        id: docs['uid'],
+        userName: docs['name'] ?? docs['userName'],
+        photo: docs['photo'] ?? docs['photoUrl']);
   }
 }
 

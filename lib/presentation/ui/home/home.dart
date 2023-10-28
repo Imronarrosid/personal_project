@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:personal_project/constant/color.dart';
+import 'package:personal_project/domain/reporsitory/auth_reposotory.dart';
 import 'package:personal_project/domain/services/app/app_service.dart';
 import 'package:personal_project/presentation/l10n/stings.g.dart';
 import 'package:personal_project/presentation/router/route_utils.dart';
@@ -28,16 +29,17 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  int selectedindex = 0;
-  List<Widget> pages = <Widget>[
-    VideoPage(),
-    const SearchPage(),
-    const MessagePage(),
-    const MessagePage(),
-    const ProfilePage(),
-  ];
   @override
   Widget build(BuildContext context) {
+    final authRepository = RepositoryProvider.of<AuthRepository>(context);
+    int selectedindex = 0;
+    List<Widget> pages = <Widget>[
+      VideoPage(),
+      const SearchPage(),
+      const MessagePage(),
+      const MessagePage(),
+      ProfilePage(uid: authRepository.currentUser!.uid),
+    ];
     final appService = Provider.of<AppService>(context);
     return BlocProvider(
       create: (context) => HomeCubit(),

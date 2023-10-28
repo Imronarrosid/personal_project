@@ -1,0 +1,67 @@
+import 'dart:async';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
+import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
+import 'package:personal_project/data/repository/coment_repository.dart';
+import 'package:personal_project/data/repository/coment_repository.dart';
+import 'package:personal_project/domain/model/comment_model.dart';
+import 'package:personal_project/domain/model/video_model.dart';
+import 'package:personal_project/domain/reporsitory/video_repository.dart';
+import 'package:personal_project/domain/services/firebase/firebase_service.dart';
+
+class UserVideoPagingRepository {
+  PagingController<int, Video>? controller;
+  VideoRepository videoRepository = VideoRepository();
+  int _pageSize = 3;
+  final List<Video> currentLoadedVideo = [];
+
+  void initPagingController(String uid) {
+    controller = PagingController(firstPageKey: 0);
+    controller!.addPageRequestListener((pageKey) {
+      try {
+        _fetchPage(uid: uid, pageKey: pageKey);
+        debugPrint('Fetch data video user:');
+      } catch (e) {
+        debugPrint('Fetch data video user:$e');
+      }
+    });
+  }
+
+  Future<void> _fetchPage({required String uid, required int pageKey}) async {
+    try {
+      List<Video> listVideo = [];
+      final newItems =
+          await videoRepository.getUserVideo(limit: _pageSize, uid: uid);
+      final isLastPage = newItems.length < _pageSize;
+
+      debugPrint('new items video user' + newItems.toString());
+      for (var element in newItems) {
+        debugPrint('Fetch data video user:');
+        listVideo.add(Video.fromSnap(element));
+      }
+
+      //Add loaded comment to [curentLoadedComments]
+      for (var element in listVideo) {
+        currentLoadedVideo.add(element);
+      }
+
+      if (isLastPage) {
+        controller!.appendLastPage(listVideo);
+      } else {
+        final nextPageKey = pageKey + newItems.length;
+        controller!.appendPage(listVideo, nextPageKey);
+      }
+    } catch (error) {
+      controller!.error = error;
+    }
+  }
+
+  void moveItemToFirstIndex(List<dynamic> list, dynamic item) {
+    // Remove the item from its current position in the list
+    list.remove(item);
+
+    // Insert the item at the first index
+    list.insert(0, item);
+  }
+}

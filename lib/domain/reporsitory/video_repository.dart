@@ -14,6 +14,9 @@ import 'package:firebase_storage/firebase_storage.dart';
 class VideoRepository implements VideoUseCaseType {
   FirebaseStorage firebaseStorage = FirebaseStorage.instance;
   final List<DocumentSnapshot> allDocs = [];
+
+  /// list videos each user
+  final List<DocumentSnapshot> allUserVideosDocs = [];
   late User videoOwnerData;
   int currentPageIndex = 0;
 
@@ -173,5 +176,50 @@ class VideoRepository implements VideoUseCaseType {
         'likes': FieldValue.arrayUnion([uid])
       });
     }
+  }
+
+  Future<List<DocumentSnapshot>> getUserVideo(
+      {required String uid, required int limit}) async {
+    List<DocumentSnapshot> listDocs = [];
+
+    debugPrint('get user video $uid');
+
+    QuerySnapshot querySnapshot;
+    try {
+      if (allDocs.isEmpty) {
+        querySnapshot = await firebaseFirestore
+            .collection('videos')
+            .where('uid', isEqualTo: uid)
+            .orderBy('createdAt', descending: true)
+            .limit(limit)
+            .get();
+      } else {
+        querySnapshot = await firebaseFirestore
+            .collection('videos')
+            .where('uid', isEqualTo: uid)
+            .orderBy('createdAt', descending: true)
+            .startAfterDocument(allUserVideosDocs.last)
+            .limit(limit)
+            .get();
+      }
+      debugPrint('get user video ${querySnapshot.docs.length}');
+
+      ///List to get last documet
+      allDocs.addAll(querySnapshot.docs);
+
+      //list that send to infinity list package
+      listDocs.addAll(querySnapshot.docs);
+
+      for (var element in querySnapshot.docs) {
+        debugPrint(Video.fromSnap(element).videoUrl);
+      }
+      for (var element in allDocs) {
+        debugPrint('_LISTDOCS user video' + Video.fromSnap(element).videoUrl);
+      }
+      debugPrint('DOCUMENTSNAP user video ${querySnapshot.docs}');
+    } catch (e) {
+      debugPrint('get video User error'+e.toString());
+    }
+    return listDocs;
   }
 }
