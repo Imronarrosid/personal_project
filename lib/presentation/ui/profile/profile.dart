@@ -15,7 +15,7 @@ import 'package:personal_project/presentation/ui/auth/bloc/auth_bloc.dart';
 import 'package:personal_project/presentation/ui/profile/bloc/user_video_paging_bloc.dart';
 
 class ProfilePage extends StatelessWidget {
-  final String uid;
+  final String? uid;
   const ProfilePage({super.key, required this.uid});
 
   @override
@@ -29,160 +29,225 @@ class ProfilePage extends StatelessWidget {
         elevation: 0,
         foregroundColor: Colors.black,
       ),
-      body: FutureBuilder(
-          future: authRepository.getVideoOwnerData(uid),
-          builder: (context, snapshot) {
-            var data = snapshot.data;
-            if (!snapshot.hasData) {
-              return const CircularProgressIndicator();
-            }
-            return SizedBox(
-              width: size.width,
-              height: size.height,
-              child: BlocBuilder<AuthBloc, AuthState>(
-                builder: (context, state) {
-                  debugPrint(state.toString());
-                  if (state is Authenticated) {
-                    return Container(
-                      child: Column(children: [
-                        CircleAvatar(
-                          radius: 50,
-                          backgroundColor: Colors.transparent,
-                          child: ClipRRect(
-                              borderRadius: BorderRadius.circular(50),
-                              child:
-                                  CachedNetworkImage(imageUrl: data!.photo!)),
-                        ),
-                        Text('@${data.userName}'),
-                        const Row(
-                          children: [
-                            SizedBox(
-                              width: 40,
-                            ),
-                            Expanded(
-                                child: Column(
-                              children: [
-                                Text(
-                                  '0',
-                                  style: TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.w600),
-                                ),
-                                Text(
-                                  'Mengikuti',
-                                  textAlign: TextAlign.center,
-                                ),
-                              ],
-                            )),
-                            Expanded(
-                                child: Column(
-                              children: [
-                                Text(
-                                  '0',
-                                  style: TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.w600),
-                                ),
-                                Text(
-                                  'Pengikut',
-                                  textAlign: TextAlign.center,
-                                ),
-                              ],
-                            )),
-                            Expanded(
-                                child: Column(
-                              children: [
-                                Text(
-                                  '0',
-                                  style: TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.w600),
-                                ),
-                                Text(
-                                  'Suka',
-                                  textAlign: TextAlign.center,
-                                ),
-                              ],
-                            )),
-                            SizedBox(
-                              width: 40,
-                            ),
-                          ],
-                        ),
-                        SizedBox(
-                          height: Dimens.DIMENS_8,
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            SizedBox(
-                              width: 40,
-                            ),
-                            Container(
-                              width: 90,
-                              height: 40,
-                              alignment: Alignment.center,
-                              decoration: BoxDecoration(
-                                  color: COLOR_grey,
-                                  borderRadius: BorderRadius.circular(5)),
-                              child: Text(
-                                'Edit Profil',
-                                textAlign: TextAlign.center,
-                              ),
-                            ),
-                            SizedBox(
-                              width: Dimens.DIMENS_6,
-                            ),
-                            Container(
-                                width: 50,
-                                height: 40,
-                                decoration: BoxDecoration(
-                                    color: COLOR_grey,
-                                    borderRadius: BorderRadius.circular(5)),
-                                child: Icon(MdiIcons.accountPlus)),
-                            SizedBox(
-                              width: 40,
-                            ),
-                          ],
-                        ),
-                        DefaultTabController(
-                          length: 3, // Number of tabs
-                          child: Column(
-                            children: <Widget>[
-                              TabBar(
-                                tabs: [
-                                  Tab(text: 'Tab 1'),
-                                  Tab(text: 'Tab 2'),
-                                  Tab(text: 'Tab 3'),
-                                ],
-                              ),
-                              // Tab Bar View
-                              Container(
-                                height: 400, // Adjust the height as needed
-                                child: TabBarView(
+      body: SizedBox(
+        width: size.width,
+        child: BlocBuilder<AuthBloc, AuthState>(
+          builder: (context, state) {
+            debugPrint(state.toString());
+            if (state is Authenticated) {
+              return FutureBuilder(
+                  future: authRepository.getVideoOwnerData(uid!),
+                  builder: (context, snapshot) {
+                    var data = snapshot.data;
+                    if (!snapshot.hasData) {
+                      return const CircularProgressIndicator();
+                    }
+                    return DefaultTabController(
+                      length: 3,
+                      child: NestedScrollView(
+                        headerSliverBuilder: (context, innerBoxIsScrolled) {
+                          return [
+                            SliverToBoxAdapter(
+                              child: Column(children: [
+                                Row(
                                   children: [
-                                    // Content for Tab 1
-                                    KeepAlivePage(
-                                        child: Expanded(
-                                            child: VideoListView(uid: uid))),
-                                    // Content for Tab 2
-                                    Center(child: Text('Tab 2 Content')),
-                                    // Content for Tab 3
-                                    Center(child: Text('Tab 3 Content')),
+                                    SizedBox(
+                                      width: Dimens.DIMENS_12,
+                                    ),
+                                    Column(
+                                      children: [
+                                        CircleAvatar(
+                                          radius: 30,
+                                          backgroundColor: Colors.transparent,
+                                          child: ClipRRect(
+                                              borderRadius:
+                                                  BorderRadius.circular(50),
+                                              child: CachedNetworkImage(
+                                                  imageUrl: data!.photo!)),
+                                        ),
+                                        Text(
+                                          '${data.userName}',
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 15),
+                                        ),
+                                      ],
+                                    ),
+                                    Expanded(
+                                        child: Column(
+                                      children: [
+                                        Text(
+                                          '0',
+                                          style: TextStyle(
+                                              fontSize: 20,
+                                              fontWeight: FontWeight.w600),
+                                        ),
+                                        Text(
+                                          'Mengikuti',
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(fontSize: 12),
+                                        ),
+                                      ],
+                                    )),
+                                    Expanded(
+                                      child: Column(
+                                        children: [
+                                          Text(
+                                            '0',
+                                            style: TextStyle(
+                                                fontSize: 20,
+                                                fontWeight: FontWeight.w600),
+                                          ),
+                                          Text('Pengikut',
+                                              textAlign: TextAlign.center,
+                                              style: TextStyle(fontSize: 12)),
+                                        ],
+                                      ),
+                                    ),
+                                    Expanded(
+                                        child: Column(
+                                      children: [
+                                        Text(
+                                          '0',
+                                          style: TextStyle(
+                                              fontSize: 20,
+                                              fontWeight: FontWeight.w600),
+                                        ),
+                                        Text('Suka',
+                                            textAlign: TextAlign.center,
+                                            style: TextStyle(fontSize: 12)),
+                                      ],
+                                    )),
+                                    SizedBox(
+                                      width: Dimens.DIMENS_12,
+                                    ),
                                   ],
                                 ),
+                                SizedBox(
+                                  height: Dimens.DIMENS_8,
+                                ),
+                                Padding(
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: Dimens.DIMENS_12),
+                                  child: Text(
+                                      'Lorem ipsum dolor sit amet consectetur adipisicing elit. Maxime mollitia, molestiae quas vel sint commodi repudiandae consequuntur voluptatum laborum numquam blanditiis harum quisquam eius sed odit fugiat iusto fuga praesentium optio, eaque rerum! Provident similique accusantium nemo autem.'),
+                                ),
+                                Padding(
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: Dimens.DIMENS_8),
+                                  child: Wrap(
+                                    spacing: 3.0, // gap between adjacent chips
+                                    children: <Widget>[
+                                      Chip(
+                                        avatar: CircleAvatar(
+                                            backgroundColor:
+                                                Colors.blue.shade900,
+                                            child: const Text('HM')),
+                                        label: const Text('Mulligan'),
+                                      ),
+                                      Chip(
+                                        avatar: CircleAvatar(
+                                            backgroundColor:
+                                                Colors.blue.shade900,
+                                            child: const Text('ML')),
+                                        label: const Text('Lafayette'),
+                                      ),
+                                      Chip(
+                                        avatar: CircleAvatar(
+                                            backgroundColor:
+                                                Colors.blue.shade900,
+                                            child: const Text('HM')),
+                                        label: const Text(
+                                          'Mulligan',
+                                        ),
+                                      ),
+                                      Chip(
+                                        label: Icon(Icons.more_horiz),
+                                      )
+                                    ],
+                                  ),
+                                ),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    SizedBox(
+                                      width: Dimens.DIMENS_12,
+                                    ),
+                                    Expanded(
+                                      flex: 2,
+                                      child: Container(
+                                        height: Dimens.DIMENS_34,
+                                        alignment: Alignment.center,
+                                        decoration: BoxDecoration(
+                                            color: COLOR_grey,
+                                            borderRadius:
+                                                BorderRadius.circular(5)),
+                                        child: Text(
+                                          'Edit Profil',
+                                          textAlign: TextAlign.center,
+                                        ),
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      width: Dimens.DIMENS_6,
+                                    ),
+                                    Expanded(
+                                      child: Container(
+                                          height: Dimens.DIMENS_34,
+                                          decoration: BoxDecoration(
+                                              color: COLOR_grey,
+                                              borderRadius:
+                                                  BorderRadius.circular(5)),
+                                          child: Icon(MdiIcons.accountPlus)),
+                                    ),
+                                    SizedBox(
+                                      width: Dimens.DIMENS_12,
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(
+                                  height: Dimens.DIMENS_8,
+                                )
+                              ]),
+                            ),
+                            SliverAppBar(
+                              toolbarHeight: 0,
+                              floating: false,
+                              pinned: true,
+                              elevation: 0,
+                              backgroundColor: COLOR_white_fff5f5f5,
+                              bottom: TabBar(
+                                labelColor: COLOR_black_ff121212,
+                                indicatorColor: COLOR_black_ff121212,
+                                tabs: [
+                                  Tab(text: 'Video'),
+                                  Tab(text: 'Suka'),
+                                  Tab(text: 'Disimpan'),
+                                ],
                               ),
-                            ],
-                          ),
-                        )
-                      ]),
+                            ),
+                          ];
+                        },
+                        body: TabBarView(
+                          children: [
+                            // Content for Tab 1
+                            KeepAlivePage(
+                                child:
+                                    Expanded(child: VideoListView(uid: uid!))),
+                            // Content for Tab 2
+                            Center(child: Text('Tab 2 Content')),
+                            // Content for Tab 3
+                            Center(child: Text('Tab 3 Content')),
+                          ],
+                        ),
+                      ),
                     );
-                  }
-                  return const NotAuthenticatedPage();
-                },
-              ),
-            );
-          }),
+                  });
+            }
+            return const NotAuthenticatedPage();
+          },
+        ),
+      ),
     );
   }
 }
@@ -204,22 +269,26 @@ class VideoListView extends StatelessWidget {
         child: BlocBuilder<UserVideoPagingBloc, UserVideoPagingState>(
           builder: (context, state) {
             if (state is UserVideoPagingInitialed) {
-              return PagedGridView<int, Video>(
-                  pagingController: state.controller,
-                  shrinkWrap: true,
-                  builderDelegate: PagedChildBuilderDelegate(
-                    itemBuilder: (context, item, index) {
-                      return AspectRatio(
+              return RefreshIndicator(
+                onRefresh: () => Future.sync(() => state.controller.refresh()),
+                child: PagedGridView<int, Video>(
+                    pagingController: state.controller,
+                    builderDelegate: PagedChildBuilderDelegate(
+                      itemBuilder: (context, item, index) {
+                        return AspectRatio(
                           aspectRatio: 16 / 9,
                           child: Container(
-                              child: CachedNetworkImage(
-                                  fit: BoxFit.cover, imageUrl: item.thumnail)));
-                    },
-                  ),
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    childAspectRatio: 9 / 16,
-                    crossAxisCount: 3,
-                  ));
+                            child: CachedNetworkImage(
+                                fit: BoxFit.cover, imageUrl: item.thumnail),
+                          ),
+                        );
+                      },
+                    ),
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      childAspectRatio: 9 / 16,
+                      crossAxisCount: 3,
+                    )),
+              );
             }
             return const CircularProgressIndicator();
           },

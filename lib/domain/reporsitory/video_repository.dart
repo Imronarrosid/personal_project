@@ -186,13 +186,14 @@ class VideoRepository implements VideoUseCaseType {
 
     QuerySnapshot querySnapshot;
     try {
-      if (allDocs.isEmpty) {
+      if (allUserVideosDocs.isEmpty) {
         querySnapshot = await firebaseFirestore
             .collection('videos')
             .where('uid', isEqualTo: uid)
             .orderBy('createdAt', descending: true)
             .limit(limit)
             .get();
+        debugPrint('empty');
       } else {
         querySnapshot = await firebaseFirestore
             .collection('videos')
@@ -205,7 +206,7 @@ class VideoRepository implements VideoUseCaseType {
       debugPrint('get user video ${querySnapshot.docs.length}');
 
       ///List to get last documet
-      allDocs.addAll(querySnapshot.docs);
+      allUserVideosDocs.addAll(querySnapshot.docs);
 
       //list that send to infinity list package
       listDocs.addAll(querySnapshot.docs);
@@ -218,7 +219,7 @@ class VideoRepository implements VideoUseCaseType {
       }
       debugPrint('DOCUMENTSNAP user video ${querySnapshot.docs}');
     } catch (e) {
-      debugPrint('get video User error'+e.toString());
+      debugPrint('get video User error' + e.toString());
     }
     return listDocs;
   }

@@ -13,7 +13,7 @@ import 'package:personal_project/domain/services/firebase/firebase_service.dart'
 class UserVideoPagingRepository {
   PagingController<int, Video>? controller;
   VideoRepository videoRepository = VideoRepository();
-  int _pageSize = 3;
+  int _pageSize = 4;
   final List<Video> currentLoadedVideo = [];
 
   void initPagingController(String uid) {
@@ -37,7 +37,7 @@ class UserVideoPagingRepository {
 
       debugPrint('new items video user' + newItems.toString());
       for (var element in newItems) {
-        debugPrint('Fetch data video user:');
+        debugPrint('Fetch data video user:' + element.id);
         listVideo.add(Video.fromSnap(element));
       }
 
