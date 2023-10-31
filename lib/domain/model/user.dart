@@ -20,6 +20,7 @@ class User extends Equatable {
       this.role,
       this.updatedAt,
       this.metadata,
+      this.searchKey,
       this.lastSeen});
 
   /// Created user timestamp, in ms.
@@ -43,6 +44,8 @@ class User extends Equatable {
   /// Updated user timestamp, in ms.
   final int? updatedAt;
 
+  final String? searchKey;
+
   /// Additional custom metadata or attributes related to the user.
   final Map<String, dynamic>? metadata;
 
@@ -65,7 +68,8 @@ class User extends Equatable {
         "uid": id,
         "createdAt": createdAt,
         "lastSeen": lastSeen,
-        "updatedAt": updatedAt
+        "updatedAt": updatedAt,
+        "searchKey": searchKey
       };
   static User fromSnap(DocumentSnapshot snapshot) {
     var snap = snapshot.data() as Map<String, dynamic>;
@@ -76,10 +80,11 @@ class User extends Equatable {
         id: snap['uid'],
         createdAt: snap['createdAt'],
         updatedAt: snap['updatedAt'],
+        searchKey: snap['searchKey'],
         lastSeen: snap['lastSeen']);
   }
 
   @override
   List<Object?> get props =>
-      [email, id, userName, photo, updatedAt, createdAt, lastSeen];
+      [email, id, userName, photo, updatedAt, createdAt, lastSeen, searchKey];
 }

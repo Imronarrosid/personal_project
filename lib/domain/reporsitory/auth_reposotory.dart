@@ -136,6 +136,7 @@ class AuthRepository implements AuthUseCaseType {
         'metadata': user.metadata,
         'role': user.role?.toShortString(),
         'updatedAt': FieldValue.serverTimestamp(),
+        'searchKey': user.userName!.toLowerCase()
       });
     }
   }
