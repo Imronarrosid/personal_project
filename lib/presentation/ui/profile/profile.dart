@@ -129,8 +129,20 @@ class ProfilePage extends StatelessWidget {
                                 Padding(
                                   padding: EdgeInsets.symmetric(
                                       horizontal: Dimens.DIMENS_12),
-                                  child: Text(
-                                      'Lorem ipsum dolor sit amet consectetur adipisicing elit. Maxime mollitia, molestiae quas vel sint commodi repudiandae consequuntur voluptatum laborum numquam blanditiis harum quisquam eius sed odit fugiat iusto fuga praesentium optio, eaque rerum! Provident similique accusantium nemo autem.'),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      SizedBox(
+                                        height: 85,
+                                        child: Text(
+                                          'Lorem ipsum dolor sit amet\n consectetur adipisicing elit.\n Maxime mollitia, molestiae quas\n vel sint commodi repudiandae \nconsequuntur voluptatum laborum \nnumquam \nblanditiis harum quisquam eius sed \nodit fugiat iusto fuga praesentium optio, eaque rerum! Provident similique accusantium nemo autem.',
+                                          overflow: TextOverflow.ellipsis,
+                                          maxLines: 5,
+                                        ),
+                                      ),
+                                      Text('...selengkapnya')
+                                    ],
+                                  ),
                                 ),
                                 Padding(
                                   padding: EdgeInsets.symmetric(
@@ -231,9 +243,7 @@ class ProfilePage extends StatelessWidget {
                         body: TabBarView(
                           children: [
                             // Content for Tab 1
-                            KeepAlivePage(
-                                child:
-                                    Expanded(child: VideoListView(uid: uid!))),
+                            KeepAlivePage(child: VideoListView(uid: uid!)),
                             // Content for Tab 2
                             Center(child: Text('Tab 2 Content')),
                             // Content for Tab 3
