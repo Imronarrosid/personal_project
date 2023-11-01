@@ -3,9 +3,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:personal_project/constant/color.dart';
 import 'package:personal_project/domain/reporsitory/search_repository.dart';
 import 'package:personal_project/presentation/l10n/stings.g.dart';
+import 'package:personal_project/presentation/router/route_utils.dart';
 import 'package:personal_project/presentation/ui/search/bloc/search_bloc.dart';
 
 class SearchPage extends StatelessWidget {
@@ -48,6 +50,10 @@ class SearchPage extends StatelessWidget {
                       itemBuilder: (ctx, index) {
                         final result = state.results[index];
                         return ListTile(
+                          onTap: (){
+                            context.push(APP_PAGE.profile.toPath,extra: result.id);
+                            debugPrint('profile');
+                          },
                             leading: CircleAvatar(
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(50),
