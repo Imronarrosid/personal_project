@@ -9,6 +9,7 @@ import 'package:personal_project/constant/dimens.dart';
 import 'package:personal_project/data/repository/user_video_paging_repository.dart';
 import 'package:personal_project/domain/model/video_model.dart';
 import 'package:personal_project/domain/reporsitory/auth_reposotory.dart';
+import 'package:personal_project/domain/reporsitory/video_repository.dart';
 import 'package:personal_project/presentation/shared_components/keep_alive_page.dart';
 import 'package:personal_project/presentation/shared_components/not_authenticated_page.dart';
 import 'package:personal_project/presentation/ui/auth/bloc/auth_bloc.dart';
@@ -374,9 +375,17 @@ class ProfilePage extends StatelessWidget {
                             body: TabBarView(
                               children: [
                                 // Content for Tab 1
-                                KeepAlivePage(child: VideoListView(uid: uid!)),
+                                KeepAlivePage(
+                                    child: VideoListView(
+                                  uid: uid!,
+                                  from: From.user,
+                                )),
                                 // Content for Tab 2
-                                Center(child: Text('Tab 2 Content')),
+                                KeepAlivePage(
+                                    child: VideoListView(
+                                  uid: uid!,
+                                  from: From.likes,
+                                )),
                                 // Content for Tab 3
                                 Center(child: Text('Tab 3 Content')),
                               ],
@@ -397,7 +406,8 @@ class ProfilePage extends StatelessWidget {
 
 class VideoListView extends StatelessWidget {
   final String uid;
-  VideoListView({super.key, required this.uid});
+  final From from;
+  VideoListView({super.key, required this.uid, required this.from});
 
   final _scrollController = ScrollController();
 
@@ -408,12 +418,18 @@ class VideoListView extends StatelessWidget {
       child: BlocProvider(
         create: (context) => UserVideoPagingBloc(
             RepositoryProvider.of<UserVideoPagingRepository>(context))
-          ..add(InitUserVideoPaging(uid: uid)),
+          ..add(InitUserVideoPaging(uid: uid, from: from)),
         child: BlocBuilder<UserVideoPagingBloc, UserVideoPagingState>(
           builder: (context, state) {
             if (state is UserVideoPagingInitialed) {
               return RefreshIndicator(
-                onRefresh: () => Future.sync(() => state.controller.refresh()),
+                onRefresh: () {
+                  if (from == From.likes) {
+                    RepositoryProvider.of<UserVideoPagingRepository>(context)
+                        .clearLikeVideo();
+                  }
+                  return Future.sync(() => state.controller.refresh());
+                },
                 child: PagedGridView<int, Video>(
                     pagingController: state.controller,
                     builderDelegate: PagedChildBuilderDelegate(

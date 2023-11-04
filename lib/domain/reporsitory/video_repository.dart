@@ -17,6 +17,7 @@ class VideoRepository implements VideoUseCaseType {
 
   /// list videos each user
   final List<DocumentSnapshot> allUserVideosDocs = [];
+  final List<DocumentSnapshot> likedVideosDocs = [];
   late User videoOwnerData;
   int currentPageIndex = 0;
 
@@ -218,6 +219,52 @@ class VideoRepository implements VideoUseCaseType {
         debugPrint('_LISTDOCS user video' + Video.fromSnap(element).videoUrl);
       }
       debugPrint('DOCUMENTSNAP user video ${querySnapshot.docs}');
+    } catch (e) {
+      debugPrint('get video User error' + e.toString());
+    }
+    return listDocs;
+  }
+
+  Future<List<DocumentSnapshot>> getLikedVideo(
+      {required String uid, required int limit}) async {
+    List<DocumentSnapshot> listDocs = [];
+
+    debugPrint('get liked video $uid');
+
+    QuerySnapshot querySnapshot;
+    try {
+      if (likedVideosDocs.isEmpty) {
+        querySnapshot = await firebaseFirestore
+            .collection('videos')
+            .where('likes', arrayContains: uid)
+            .orderBy('createdAt', descending: true)
+            .limit(limit)
+            .get();
+        debugPrint('empty');
+      } else {
+        querySnapshot = await firebaseFirestore
+            .collection('videos')
+            .where('likes', arrayContains: uid)
+            .orderBy('createdAt', descending: true)
+            .startAfterDocument(likedVideosDocs.last)
+            .limit(limit)
+            .get();
+      }
+      debugPrint('get user video ${querySnapshot.docs.length}');
+
+      ///List to get last documet
+      likedVideosDocs.addAll(querySnapshot.docs);
+
+      //list that send to infinity list package
+      listDocs.addAll(querySnapshot.docs);
+
+      for (var element in querySnapshot.docs) {
+        debugPrint(Video.fromSnap(element).videoUrl);
+      }
+      for (var element in allDocs) {
+        debugPrint('_LISTDOCS liked video' + Video.fromSnap(element).videoUrl);
+      }
+      debugPrint('DOCUMENTSNAP liked video ${querySnapshot.docs}');
     } catch (e) {
       debugPrint('get video User error' + e.toString());
     }

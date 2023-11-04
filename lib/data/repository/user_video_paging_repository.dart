@@ -10,17 +10,24 @@ import 'package:personal_project/domain/model/video_model.dart';
 import 'package:personal_project/domain/reporsitory/video_repository.dart';
 import 'package:personal_project/domain/services/firebase/firebase_service.dart';
 
+enum From { user, likes, bookmark }
+
 class UserVideoPagingRepository {
   PagingController<int, Video>? controller;
   VideoRepository videoRepository = VideoRepository();
+
   int _pageSize = 4;
   final List<Video> currentLoadedVideo = [];
 
-  void initPagingController(String uid) {
+  clearLikeVideo() {
+    videoRepository.likedVideosDocs.clear();
+  }
+
+  void initPagingController(String uid, {required From from}) {
     controller = PagingController(firstPageKey: 0);
     controller!.addPageRequestListener((pageKey) {
       try {
-        _fetchPage(uid: uid, pageKey: pageKey);
+        _fetchPage(uid: uid, pageKey: pageKey, from: from);
         debugPrint('Fetch data video user:');
       } catch (e) {
         debugPrint('Fetch data video user:$e');
@@ -28,11 +35,18 @@ class UserVideoPagingRepository {
     });
   }
 
-  Future<void> _fetchPage({required String uid, required int pageKey}) async {
+  Future<void> _fetchPage(
+      {required From from, required String uid, required int pageKey}) async {
     try {
       List<Video> listVideo = [];
-      final newItems =
-          await videoRepository.getUserVideo(limit: _pageSize, uid: uid);
+      late final List<DocumentSnapshot> newItems;
+      if (from == From.user) {
+        newItems =
+            await videoRepository.getUserVideo(limit: _pageSize, uid: uid);
+      } else if ((from == From.likes)) {
+        newItems =
+            await videoRepository.getLikedVideo(limit: _pageSize, uid: uid);
+      }
       final isLastPage = newItems.length < _pageSize;
 
       debugPrint('new items video user' + newItems.toString());

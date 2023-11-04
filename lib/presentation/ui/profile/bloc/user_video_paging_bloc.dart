@@ -11,7 +11,7 @@ class UserVideoPagingBloc
     extends Bloc<UserVideoPagingEvent, UserVideoPagingState> {
   UserVideoPagingBloc(this.repository) : super(UserVideoPagingInitial()) {
     on<InitUserVideoPaging>((event, emit) {
-      repository.initPagingController(event.uid);
+      repository.initPagingController(event.uid,from: event.from);
       emit(UserVideoPagingInitialed(controller: repository.controller!));
     });
   }

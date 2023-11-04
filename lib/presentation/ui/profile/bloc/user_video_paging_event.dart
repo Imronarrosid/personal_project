@@ -9,9 +9,13 @@ sealed class UserVideoPagingEvent extends Equatable {
 
 class InitUserVideoPaging extends UserVideoPagingEvent {
   final String uid;
+  final From from;
 
-  const InitUserVideoPaging({required this.uid});
+  const InitUserVideoPaging({
+    required this.uid,
+    required this.from,
+  });
 
   @override
-  List<Object> get props => [uid];
+  List<Object> get props => [uid, from];
 }
