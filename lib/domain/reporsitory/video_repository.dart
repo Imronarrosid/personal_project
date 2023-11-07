@@ -157,10 +157,23 @@ class VideoRepository implements VideoUseCaseType {
       await firebaseFirestore.collection('videos').doc(id).update({
         'likes': FieldValue.arrayRemove([uid])
       });
+
+      await firebaseFirestore
+          .collection('users')
+          .doc(uid)
+          .collection('likes')
+          .doc(id)
+          .delete();
     } else {
       await firebaseFirestore.collection('videos').doc(id).update({
         'likes': FieldValue.arrayUnion([uid])
       });
+      await firebaseFirestore
+          .collection('users')
+          .doc(uid)
+          .collection('likes')
+          .doc(id)
+          .set({'postId': id, 'likedAt': FieldValue.serverTimestamp()});
     }
   }
 
@@ -235,17 +248,18 @@ class VideoRepository implements VideoUseCaseType {
     try {
       if (likedVideosDocs.isEmpty) {
         querySnapshot = await firebaseFirestore
-            .collection('videos')
-            .where('likes', arrayContains: uid)
-            .orderBy('createdAt', descending: true)
+            .collection('users')
+            .doc(uid)
+            .collection('likes')
+            .orderBy('likedAt', descending: true)
             .limit(limit)
             .get();
         debugPrint('empty');
       } else {
         querySnapshot = await firebaseFirestore
-            .collection('videos')
-            .where('likes', arrayContains: uid)
-            .orderBy('createdAt', descending: true)
+            .collection('users').doc(uid)
+            .collection('likes')
+            .orderBy('likedAt', descending: true)
             .startAfterDocument(likedVideosDocs.last)
             .limit(limit)
             .get();

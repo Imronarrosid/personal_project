@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -10,6 +11,7 @@ import 'package:personal_project/data/repository/user_video_paging_repository.da
 import 'package:personal_project/domain/model/video_model.dart';
 import 'package:personal_project/domain/reporsitory/auth_reposotory.dart';
 import 'package:personal_project/domain/reporsitory/video_repository.dart';
+import 'package:personal_project/domain/services/firebase/firebase_service.dart';
 import 'package:personal_project/presentation/shared_components/keep_alive_page.dart';
 import 'package:personal_project/presentation/shared_components/not_authenticated_page.dart';
 import 'package:personal_project/presentation/ui/auth/bloc/auth_bloc.dart';
@@ -430,16 +432,35 @@ class VideoListView extends StatelessWidget {
                   }
                   return Future.sync(() => state.controller.refresh());
                 },
-                child: PagedGridView<int, Video>(
+                child: PagedGridView<int, String>(
                     pagingController: state.controller,
                     builderDelegate: PagedChildBuilderDelegate(
                       itemBuilder: (context, item, index) {
+                        // var doc = await firebaseFirestore.collection('videos').doc(item).get();
+                        // Video video = Video.fromSnap(doc);
                         return AspectRatio(
                           aspectRatio: 16 / 9,
-                          child: Container(
-                            child: CachedNetworkImage(
-                                fit: BoxFit.cover, imageUrl: item.thumnail),
-                          ),
+                          child: FutureBuilder(
+                              future: firebaseFirestore
+                                  .collection('videos')
+                                  .doc(item)
+                                  .get(),
+                              builder: (context,
+                                  AsyncSnapshot<DocumentSnapshot> snapshot) {
+                               late Video video;
+                                if (snapshot.data != null) {
+                                  video = Video.fromSnap(snapshot.data!);
+                                }
+
+                                if (!snapshot.hasData) {
+                                  return Container();
+                                }
+                                return Container(
+                                  child: CachedNetworkImage(
+                                      fit: BoxFit.cover,
+                                      imageUrl: video.thumnail),
+                                );
+                              }),
                         );
                       },
                     ),

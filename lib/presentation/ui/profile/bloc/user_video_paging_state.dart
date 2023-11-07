@@ -10,7 +10,7 @@ sealed class UserVideoPagingState extends Equatable {
 final class UserVideoPagingInitial extends UserVideoPagingState {}
 
 final class UserVideoPagingInitialed extends UserVideoPagingState {
-  final PagingController<int, Video> controller;
+  final PagingController<int, String> controller;
 
   const UserVideoPagingInitialed({required this.controller});
 

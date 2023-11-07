@@ -13,7 +13,7 @@ import 'package:personal_project/domain/services/firebase/firebase_service.dart'
 enum From { user, likes, bookmark }
 
 class UserVideoPagingRepository {
-  PagingController<int, Video>? controller;
+  PagingController<int, String>? controller;
   VideoRepository videoRepository = VideoRepository();
 
   int _pageSize = 4;
@@ -38,26 +38,31 @@ class UserVideoPagingRepository {
   Future<void> _fetchPage(
       {required From from, required String uid, required int pageKey}) async {
     try {
-      List<Video> listVideo = [];
+      List<String> listVideo = [];
       late final List<DocumentSnapshot> newItems;
       if (from == From.user) {
         newItems =
             await videoRepository.getUserVideo(limit: _pageSize, uid: uid);
+
+        for (var element in newItems) {
+          debugPrint('Fetch data video user:' + element.id);
+          // listVideo.add(Video.fromSnap(element));
+          listVideo.add(element.id);
+        }
       } else if ((from == From.likes)) {
         newItems =
             await videoRepository.getLikedVideo(limit: _pageSize, uid: uid);
+        for (var element in newItems) {
+          listVideo.add(element.id);
+        }
       }
       final isLastPage = newItems.length < _pageSize;
 
       debugPrint('new items video user' + newItems.toString());
-      for (var element in newItems) {
-        debugPrint('Fetch data video user:' + element.id);
-        listVideo.add(Video.fromSnap(element));
-      }
 
       //Add loaded comment to [curentLoadedComments]
       for (var element in listVideo) {
-        currentLoadedVideo.add(element);
+        // currentLoadedVideo.add(element);
       }
 
       if (isLastPage) {
