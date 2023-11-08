@@ -10,12 +10,14 @@ import 'package:personal_project/constant/dimens.dart';
 import 'package:personal_project/data/repository/user_video_paging_repository.dart';
 import 'package:personal_project/domain/model/video_model.dart';
 import 'package:personal_project/domain/reporsitory/auth_reposotory.dart';
+import 'package:personal_project/domain/reporsitory/user_repository.dart';
 import 'package:personal_project/domain/reporsitory/video_repository.dart';
 import 'package:personal_project/domain/services/firebase/firebase_service.dart';
 import 'package:personal_project/presentation/shared_components/keep_alive_page.dart';
 import 'package:personal_project/presentation/shared_components/not_authenticated_page.dart';
 import 'package:personal_project/presentation/ui/auth/bloc/auth_bloc.dart';
 import 'package:personal_project/presentation/ui/profile/bloc/user_video_paging_bloc.dart';
+import 'package:personal_project/presentation/ui/profile/cubit/follow_cubit.dart';
 import 'package:personal_project/presentation/ui/profile/cubit/profile_cubit.dart';
 
 class ProfilePage extends StatelessWidget {
@@ -26,8 +28,17 @@ class ProfilePage extends StatelessWidget {
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
     final authRepository = RepositoryProvider.of<AuthRepository>(context);
-    return BlocProvider(
-      create: (context) => ProfileCubit(),
+    final UserRepository userRepository =
+        RepositoryProvider.of<UserRepository>(context);
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (context) => ProfileCubit(),
+        ),
+        BlocProvider(
+          create: (context) => FollowCubit(userRepository),
+        ),
+      ],
       child: Builder(builder: (context) {
         return Scaffold(
           appBar: AppBar(
@@ -43,7 +54,7 @@ class ProfilePage extends StatelessWidget {
                 debugPrint(state.toString());
                 if (state is Authenticated) {
                   return FutureBuilder(
-                      future: authRepository.getVideoOwnerData(uid!),
+                      future: userRepository.getUserData(uid!),
                       builder: (context, snapshot) {
                         var data = snapshot.data;
                         if (!snapshot.hasData) {
@@ -71,10 +82,11 @@ class ProfilePage extends StatelessWidget {
                                                   borderRadius:
                                                       BorderRadius.circular(50),
                                                   child: CachedNetworkImage(
-                                                      imageUrl: data!.photo!)),
+                                                      imageUrl:
+                                                          data!.photoURL)),
                                             ),
                                             Text(
-                                              '${data.userName}',
+                                              data.name,
                                               style: TextStyle(
                                                   fontWeight: FontWeight.bold,
                                                   fontSize: 15),
@@ -181,7 +193,7 @@ class ProfilePage extends StatelessWidget {
                                                 .ceil();
 
                                             debugPrint(
-                                                'text is overflow $lines ${lines > 5}');
+                                                'text is overflow  ${lines > 5}');
 
                                             return Column(
                                               mainAxisSize: MainAxisSize.min,
@@ -311,46 +323,141 @@ class ProfilePage extends StatelessWidget {
                                         },
                                       ),
                                     ),
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        SizedBox(
-                                          width: Dimens.DIMENS_12,
-                                        ),
-                                        Expanded(
-                                          flex: 2,
-                                          child: Container(
-                                            height: Dimens.DIMENS_34,
-                                            alignment: Alignment.center,
-                                            decoration: BoxDecoration(
-                                                color: COLOR_grey,
-                                                borderRadius:
-                                                    BorderRadius.circular(5)),
-                                            child: Text(
-                                              'Edit Profil',
-                                              textAlign: TextAlign.center,
-                                            ),
+                                    if (uid == authRepository.currentUser!.uid)
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          SizedBox(
+                                            width: Dimens.DIMENS_12,
                                           ),
-                                        ),
-                                        SizedBox(
-                                          width: Dimens.DIMENS_6,
-                                        ),
-                                        Expanded(
-                                          child: Container(
+                                          Expanded(
+                                            flex: 2,
+                                            child: Container(
                                               height: Dimens.DIMENS_34,
+                                              alignment: Alignment.center,
                                               decoration: BoxDecoration(
                                                   color: COLOR_grey,
                                                   borderRadius:
                                                       BorderRadius.circular(5)),
-                                              child:
-                                                  Icon(MdiIcons.accountPlus)),
-                                        ),
-                                        SizedBox(
-                                          width: Dimens.DIMENS_12,
-                                        ),
-                                      ],
-                                    ),
+                                              child: Text(
+                                                'Edit Profil',
+                                                textAlign: TextAlign.center,
+                                              ),
+                                            ),
+                                          ),
+                                          SizedBox(
+                                            width: Dimens.DIMENS_6,
+                                          ),
+                                          Expanded(
+                                            child: Container(
+                                                height: Dimens.DIMENS_34,
+                                                decoration: BoxDecoration(
+                                                    color: COLOR_grey,
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            5)),
+                                                child:
+                                                    Icon(MdiIcons.accountPlus)),
+                                          ),
+                                          SizedBox(
+                                            width: Dimens.DIMENS_12,
+                                          ),
+                                        ],
+                                      )
+                                    else
+                                      Row(
+                                        children: [
+                                          SizedBox(
+                                            width: Dimens.DIMENS_12,
+                                          ),
+                                          BlocBuilder<FollowCubit, FollowState>(
+                                            builder: (context, state) {
+                                              bool isFollowig;
+                                              debugPrint('follow state $state');
+                                              if (state is Followed) {
+                                                isFollowig = true;
+                                              } else if (state is UnFollowed) {
+                                                isFollowig = false;
+                                              } else {
+                                                isFollowig = data.isFollowig;
+                                              }
+
+                                              return Expanded(
+                                                child: Material(
+                                                  shape: RoundedRectangleBorder(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              5)),
+                                                  color: isFollowig
+                                                      ? COLOR_grey
+                                                      : COLOR_black_ff121212,
+                                                  child: InkWell(
+                                                    onTap: () {
+                                                      BlocProvider.of<
+                                                                  FollowCubit>(
+                                                              context)
+                                                          .followButtonHandle(
+                                                              currentUserUid:
+                                                                  authRepository
+                                                                      .currentUser!
+                                                                      .uid,
+                                                              uid: uid!,
+                                                              stateFromDatabase:
+                                                                  data.isFollowig);
+                                                    },
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            5),
+                                                    child: Container(
+                                                      height: Dimens.DIMENS_34,
+                                                      alignment:
+                                                          Alignment.center,
+                                                      decoration: BoxDecoration(
+                                                          color: Colors
+                                                              .transparent,
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(5)),
+                                                      child: Text(
+                                                        isFollowig
+                                                            ? 'Mengikuti'
+                                                            : 'Ikuti',
+                                                        textAlign:
+                                                            TextAlign.center,
+                                                        style: TextStyle(
+                                                            color: isFollowig
+                                                                ? COLOR_black_ff121212
+                                                                : COLOR_white_fff5f5f5),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              );
+                                            },
+                                          ),
+                                          SizedBox(
+                                            width: Dimens.DIMENS_6,
+                                          ),
+                                          Expanded(
+                                            child: Container(
+                                              height: Dimens.DIMENS_34,
+                                              alignment: Alignment.center,
+                                              decoration: BoxDecoration(
+                                                  color: COLOR_grey,
+                                                  borderRadius:
+                                                      BorderRadius.circular(5)),
+                                              child: Text(
+                                                'Pesan',
+                                                textAlign: TextAlign.center,
+                                              ),
+                                            ),
+                                          ),
+                                          SizedBox(
+                                            width: Dimens.DIMENS_12,
+                                          ),
+                                        ],
+                                      ),
                                     SizedBox(
                                       height: Dimens.DIMENS_8,
                                     )
@@ -447,7 +554,7 @@ class VideoListView extends StatelessWidget {
                                   .get(),
                               builder: (context,
                                   AsyncSnapshot<DocumentSnapshot> snapshot) {
-                               late Video video;
+                                late Video video;
                                 if (snapshot.data != null) {
                                   video = Video.fromSnap(snapshot.data!);
                                 }

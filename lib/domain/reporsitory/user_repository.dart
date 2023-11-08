@@ -1,22 +1,21 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:personal_project/domain/model/user.dart';
+import 'package:personal_project/domain/model/user_data_model.dart';
 import 'package:personal_project/domain/services/firebase/firebase_service.dart';
 import 'package:personal_project/domain/usecase/user_usecase_type.dart';
 
 class UserRepository implements UserUseCaseType {
   @override
-  Future<Map<String, dynamic>> getUserData(String uid) async {
+  Future<UserData> getUserData(String uid) async {
     var myVideos = await firebaseFirestore
         .collection('videos')
         .where('uid', isEqualTo: uid)
         .get();
-    DocumentSnapshot userDoc = await firebaseFirestore
-        .collection('users')
-        .doc(uid)
-        .get();
+    DocumentSnapshot userDoc =
+        await firebaseFirestore.collection('users').doc(uid).get();
     final userData = userDoc.data()! as dynamic;
-    String name = userData['name'];
-    String photo = userData['photo'];
+    String name = userData['name'] ?? userData['userName'];
+    String photo = userData['photo'] ?? userDoc['photoUrl'];
     int likes = 0;
     int followers = 0;
     int following = 0;
@@ -58,11 +57,13 @@ class UserRepository implements UserUseCaseType {
       'following': following.toString(),
       'isFollowing': isFollowing,
       'likes': likes.toString(),
-      'photo': photo,
-      'name': name,
+      'photoUrl': photo,
+      'userName': name,
     };
 
-    return user;
+    return UserData.fromMap(user);
+
+
   }
 
   @override
@@ -121,5 +122,21 @@ class UserRepository implements UserUseCaseType {
     }
 
     return Future.value(thumbnails);
+  }
+
+  Future<bool> isFollowig(
+      {required String currentUserUid, required String otherUserUid}) async {
+    await firebaseFirestore
+        .collection('user')
+        .doc(otherUserUid)
+        .collection('followers')
+        .doc(currentUserUid)
+        .get()
+        .then((value) {
+      if (value.exists) {
+        return true;
+      }
+    });
+    return false;
   }
 }

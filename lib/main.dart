@@ -6,8 +6,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:personal_project/constant/color.dart';
 import 'package:personal_project/data/repository/file_repository.dart';
+import 'package:personal_project/domain/model/user.dart';
 import 'package:personal_project/domain/reporsitory/auth_reposotory.dart';
 import 'package:personal_project/domain/reporsitory/camera_repository.dart';
+import 'package:personal_project/domain/reporsitory/user_repository.dart';
 import 'package:personal_project/domain/reporsitory/video_repository.dart';
 import 'package:personal_project/domain/services/app/app_service.dart';
 import 'package:personal_project/domain/services/auth/auth_service.dart';
@@ -93,6 +95,9 @@ class _MyAppState extends State<MyApp> {
             ),
             RepositoryProvider(
               create: (context) => FileRepository(),
+            ),
+            RepositoryProvider(
+              create: (context) => UserRepository(),
             )
           ],
           child: MultiBlocProvider(
