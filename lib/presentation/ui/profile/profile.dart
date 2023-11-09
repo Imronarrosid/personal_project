@@ -63,7 +63,7 @@ class ProfilePage extends StatelessWidget {
                       body: SizedBox(
                           width: size.width,
                           child: DefaultTabController(
-                            length: 3,
+                            length: 2,
                             child: NestedScrollView(
                               headerSliverBuilder:
                                   (context, innerBoxIsScrolled) {
@@ -536,7 +536,6 @@ class ProfilePage extends StatelessWidget {
                                       tabs: [
                                         Tab(text: 'Video'),
                                         Tab(text: 'Suka'),
-                                        Tab(text: 'Disimpan'),
                                       ],
                                     ),
                                   ),
@@ -558,8 +557,6 @@ class ProfilePage extends StatelessWidget {
                                       from: From.likes,
                                     ),
                                   ),
-                                  // Content for Tab 3
-                                  Center(child: Text('Tab 3 Content')),
                                 ],
                               ),
                             ),
