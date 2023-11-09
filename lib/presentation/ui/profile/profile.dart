@@ -9,6 +9,7 @@ import 'package:material_design_icons_flutter/material_design_icons_flutter.dart
 import 'package:personal_project/constant/color.dart';
 import 'package:personal_project/constant/dimens.dart';
 import 'package:personal_project/data/repository/user_video_paging_repository.dart';
+import 'package:personal_project/domain/model/user_data_model.dart';
 import 'package:personal_project/domain/model/video_model.dart';
 import 'package:personal_project/domain/reporsitory/auth_reposotory.dart';
 import 'package:personal_project/domain/reporsitory/user_repository.dart';
@@ -70,272 +71,12 @@ class ProfilePage extends StatelessWidget {
                                 return [
                                   SliverToBoxAdapter(
                                     child: Column(children: [
-                                      Row(
-                                        children: [
-                                          SizedBox(
-                                            width: Dimens.DIMENS_12,
-                                          ),
-                                          Column(
-                                            children: [
-                                              CircleAvatar(
-                                                radius: 30,
-                                                backgroundColor:
-                                                    Colors.transparent,
-                                                child: ClipRRect(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            50),
-                                                    child: CachedNetworkImage(
-                                                        imageUrl:
-                                                            data!.photoURL)),
-                                              ),
-                                              Text(
-                                                data.name,
-                                                style: TextStyle(
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize: 15),
-                                              ),
-                                            ],
-                                          ),
-                                          Expanded(
-                                            child: Column(
-                                              children: [
-                                                Text(
-                                                  data.followers,
-                                                  style: TextStyle(
-                                                      fontSize: 20,
-                                                      fontWeight:
-                                                          FontWeight.w600),
-                                                ),
-                                                Text(
-                                                  'Mengikuti',
-                                                  textAlign: TextAlign.center,
-                                                  style:
-                                                      TextStyle(fontSize: 12),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                          Expanded(
-                                            child: Column(
-                                              children: [
-                                                Text(
-                                                  data.following,
-                                                  style: TextStyle(
-                                                      fontSize: 20,
-                                                      fontWeight:
-                                                          FontWeight.w600),
-                                                ),
-                                                Text('Pengikut',
-                                                    textAlign: TextAlign.center,
-                                                    style: TextStyle(
-                                                        fontSize: 12)),
-                                              ],
-                                            ),
-                                          ),
-                                          Expanded(
-                                            child: Column(
-                                              children: [
-                                                Text(
-                                                  data.likes,
-                                                  style: TextStyle(
-                                                      fontSize: 20,
-                                                      fontWeight:
-                                                          FontWeight.w600),
-                                                ),
-                                                Text(
-                                                  'Suka',
-                                                  textAlign: TextAlign.center,
-                                                  style:
-                                                      TextStyle(fontSize: 12),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                          SizedBox(
-                                            width: Dimens.DIMENS_12,
-                                          ),
-                                        ],
-                                      ),
+                                      topSectionView(data),
                                       SizedBox(
                                         height: Dimens.DIMENS_8,
                                       ),
-                                      Padding(
-                                        padding: EdgeInsets.symmetric(
-                                            horizontal: Dimens.DIMENS_12),
-                                        child: BlocBuilder<ProfileCubit,
-                                            ProfileState>(
-                                          buildWhen: (previous, current) {
-                                            if (current is ShowLessGameFav) {
-                                              return false;
-                                            } else if (current
-                                                is ShowMoreGameFav) {
-                                              return false;
-                                            }
-                                            return true;
-                                          },
-                                          builder: (context, state) {
-                                            double? height = 80;
-                                            int? maxLines = 5;
-                                            if (state is ShowMoreBio) {
-                                              height = null;
-                                              maxLines = null;
-                                            } else if (state is ShowLessBio) {
-                                              height = 80;
-                                              maxLines = 5;
-                                            }
-                                            return LayoutBuilder(builder:
-                                                (context, constraints) {
-                                              const String text =
-                                                  "Lorem ipsum dolor sit amet\n consectetur adipisicing elit.\n Maxime mollitia, molestiae quas\n vel sint commodi repudiandae \nconsequuntur voluptatum laborum \nnumquam \nblanditiis harum quisquam eius sed \nodit fugiat iusto fuga praesentium \noptio, eaque rerum! Provident similique accusantium nemo autem.";
-                                              final textPainter = TextPainter(
-                                                text: TextSpan(
-                                                  text: text,
-                                                  style:
-                                                      TextStyle(fontSize: 14.0),
-                                                ),
-                                                textDirection:
-                                                    TextDirection.ltr,
-                                              );
-                                              textPainter.layout(
-                                                  maxWidth: double.infinity);
-                                              final lines = (textPainter
-                                                          .size.height /
-                                                      textPainter
-                                                          .preferredLineHeight)
-                                                  .ceil();
-
-                                              debugPrint(
-                                                  'text is overflow  ${lines > 5}');
-
-                                              return Column(
-                                                mainAxisSize: MainAxisSize.min,
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.start,
-                                                children: [
-                                                  SizedBox(
-                                                    height: height,
-                                                    child: Text(
-                                                      'Lorem ipsum dolor sit amet\n consectetur adipisicing elit.\n Maxime mollitia, molestiae quas\n vel sint commodi repudiandae \nconsequuntur voluptatum laborum \nnumquam \nblanditiis harum quisquam eius sed \nodit fugiat iusto fuga praesentium optio, eaque rerum! Provident similique accusantium nemo autem.',
-                                                      overflow:
-                                                          TextOverflow.ellipsis,
-                                                      maxLines: maxLines,
-                                                    ),
-                                                  ),
-                                                  if (lines > 5)
-                                                    InkWell(
-                                                      onTap: () => BlocProvider
-                                                              .of<ProfileCubit>(
-                                                                  context)
-                                                          .seeMoreBioHandle(),
-                                                      child: Text(height != null
-                                                          ? '...selengkapnya'
-                                                          : '...lebih sedikit'),
-                                                    )
-                                                  else
-                                                    Container(),
-                                                ],
-                                              );
-                                            });
-                                          },
-                                        ),
-                                      ),
-                                      Padding(
-                                        padding: EdgeInsets.symmetric(
-                                            horizontal: Dimens.DIMENS_8),
-                                        child: BlocBuilder<ProfileCubit,
-                                            ProfileState>(
-                                          buildWhen: (previous, current) {
-                                            if (current is ShowLessBio) {
-                                              return false;
-                                            } else if (state is ShowMoreBio) {
-                                              return false;
-                                            }
-                                            return true;
-                                          },
-                                          builder: (context, state) {
-                                            List<Widget> items = [
-                                              Chip(
-                                                avatar: CircleAvatar(
-                                                    backgroundColor:
-                                                        Colors.blue.shade900,
-                                                    child: const Text('HM')),
-                                                label: const Text('Mulligan'),
-                                              ),
-                                              Chip(
-                                                avatar: CircleAvatar(
-                                                    backgroundColor:
-                                                        Colors.blue.shade900,
-                                                    child: const Text('ML')),
-                                                label: const Text('Lafayette'),
-                                              ),
-                                              Chip(
-                                                avatar: CircleAvatar(
-                                                    backgroundColor:
-                                                        Colors.blue.shade900,
-                                                    child: const Text('ML')),
-                                                label: const Text('Lafayette'),
-                                              ),
-                                              Chip(
-                                                avatar: CircleAvatar(
-                                                    backgroundColor:
-                                                        Colors.blue.shade900,
-                                                    child: const Text('ML')),
-                                                label: const Text('Lafayette'),
-                                              ),
-                                              Chip(
-                                                avatar: CircleAvatar(
-                                                    backgroundColor:
-                                                        Colors.blue.shade900,
-                                                    child: const Text('HM')),
-                                                label: const Text(
-                                                  'Mulligan',
-                                                ),
-                                              ),
-                                            ];
-                                            if (state is ShowMoreGameFav) {
-                                              return Wrap(
-                                                spacing: 3,
-                                                children: [
-                                                  ...items,
-                                                  GestureDetector(
-                                                    onTap: () {
-                                                      BlocProvider.of<
-                                                                  ProfileCubit>(
-                                                              context)
-                                                          .seeMoreGameFavHandle();
-                                                    },
-                                                    child: const Chip(
-                                                      label:
-                                                          Text('lebih sedikit'),
-                                                    ),
-                                                  )
-                                                ],
-                                              );
-                                            }
-                                            return Wrap(
-                                                spacing:
-                                                    3.0, // gap between adjacent chips
-                                                children: [
-                                                  ...items
-                                                      .getRange(0, 2)
-                                                      .toList(),
-                                                  GestureDetector(
-                                                    onTap: () {
-                                                      BlocProvider.of<
-                                                                  ProfileCubit>(
-                                                              context)
-                                                          .seeMoreGameFavHandle();
-                                                    },
-                                                    child: Chip(
-                                                      label: Icon(
-                                                          Icons.more_horiz),
-                                                    ),
-                                                  )
-                                                ]);
-                                          },
-                                        ),
-                                      ),
+                                      bioSectionView(),
+                                      gameFavView(),
                                       if (uid ==
                                           authRepository.currentUser!.uid)
                                         Row(
@@ -568,6 +309,228 @@ class ProfilePage extends StatelessWidget {
           },
         );
       }),
+    );
+  }
+
+  Padding gameFavView() {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: Dimens.DIMENS_8),
+      child: BlocBuilder<ProfileCubit, ProfileState>(
+        buildWhen: (previous, current) {
+          if (current is ShowLessBio) {
+            return false;
+          } else if (current is ShowMoreBio) {
+            return false;
+          }
+          return true;
+        },
+        builder: (context, state) {
+          List<Widget> items = [
+            Chip(
+              avatar: CircleAvatar(
+                  backgroundColor: Colors.blue.shade900,
+                  child: const Text('HM')),
+              label: const Text('Mulligan'),
+            ),
+            Chip(
+              avatar: CircleAvatar(
+                  backgroundColor: Colors.blue.shade900,
+                  child: const Text('ML')),
+              label: const Text('Lafayette'),
+            ),
+            Chip(
+              avatar: CircleAvatar(
+                  backgroundColor: Colors.blue.shade900,
+                  child: const Text('ML')),
+              label: const Text('Lafayette'),
+            ),
+            Chip(
+              avatar: CircleAvatar(
+                  backgroundColor: Colors.blue.shade900,
+                  child: const Text('ML')),
+              label: const Text('Lafayette'),
+            ),
+            Chip(
+              avatar: CircleAvatar(
+                  backgroundColor: Colors.blue.shade900,
+                  child: const Text('HM')),
+              label: const Text(
+                'Mulligan',
+              ),
+            ),
+          ];
+          if (state is ShowMoreGameFav) {
+            return Wrap(
+              spacing: 3,
+              children: [
+                ...items,
+                GestureDetector(
+                  onTap: () {
+                    BlocProvider.of<ProfileCubit>(context)
+                        .seeMoreGameFavHandle();
+                  },
+                  child: const Chip(
+                    label: Text('lebih sedikit'),
+                  ),
+                )
+              ],
+            );
+          }
+          return Wrap(
+              spacing: 3.0, // gap between adjacent chips
+              children: [
+                ...items.getRange(0, 2).toList(),
+                GestureDetector(
+                  onTap: () {
+                    BlocProvider.of<ProfileCubit>(context)
+                        .seeMoreGameFavHandle();
+                  },
+                  child: Chip(
+                    label: Icon(Icons.more_horiz),
+                  ),
+                )
+              ]);
+        },
+      ),
+    );
+  }
+
+  Padding bioSectionView() {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: Dimens.DIMENS_12),
+      child: BlocBuilder<ProfileCubit, ProfileState>(
+        buildWhen: (previous, current) {
+          if (current is ShowLessGameFav) {
+            return false;
+          } else if (current is ShowMoreGameFav) {
+            return false;
+          }
+          return true;
+        },
+        builder: (context, state) {
+          double? height = 80;
+          int? maxLines = 5;
+          if (state is ShowMoreBio) {
+            height = null;
+            maxLines = null;
+          } else if (state is ShowLessBio) {
+            height = 80;
+            maxLines = 5;
+          }
+          return LayoutBuilder(builder: (context, constraints) {
+            const String text =
+                "Lorem ipsum dolor sit amet\n consectetur adipisicing elit.\n Maxime mollitia, molestiae quas\n vel sint commodi repudiandae \nconsequuntur voluptatum laborum \nnumquam \nblanditiis harum quisquam eius sed \nodit fugiat iusto fuga praesentium \noptio, eaque rerum! Provident similique accusantium nemo autem.";
+            final textPainter = TextPainter(
+              text: TextSpan(
+                text: text,
+                style: TextStyle(fontSize: 14.0),
+              ),
+              textDirection: TextDirection.ltr,
+            );
+            textPainter.layout(maxWidth: double.infinity);
+            final lines =
+                (textPainter.size.height / textPainter.preferredLineHeight)
+                    .ceil();
+
+            debugPrint('text is overflow  ${lines > 5}');
+
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                SizedBox(
+                  height: height,
+                  child: Text(
+                    'Lorem ipsum dolor sit amet\n consectetur adipisicing elit.\n Maxime mollitia, molestiae quas\n vel sint commodi repudiandae \nconsequuntur voluptatum laborum \nnumquam \nblanditiis harum quisquam eius sed \nodit fugiat iusto fuga praesentium optio, eaque rerum! Provident similique accusantium nemo autem.',
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: maxLines,
+                  ),
+                ),
+                if (lines > 5)
+                  InkWell(
+                    onTap: () => BlocProvider.of<ProfileCubit>(context)
+                        .seeMoreBioHandle(),
+                    child: Text(height != null
+                        ? '...selengkapnya'
+                        : '...lebih sedikit'),
+                  )
+                else
+                  Container(),
+              ],
+            );
+          });
+        },
+      ),
+    );
+  }
+
+  Row topSectionView(UserData data) {
+    return Row(
+      children: [
+        SizedBox(
+          width: Dimens.DIMENS_12,
+        ),
+        Column(
+          children: [
+            CircleAvatar(
+              radius: 30,
+              backgroundColor: Colors.transparent,
+              child: ClipRRect(
+                  borderRadius: BorderRadius.circular(50),
+                  child: CachedNetworkImage(imageUrl: data!.photoURL)),
+            ),
+            Text(
+              data.name,
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+            ),
+          ],
+        ),
+        Expanded(
+          child: Column(
+            children: [
+              Text(
+                data.followers,
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+              ),
+              Text(
+                'Mengikuti',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 12),
+              ),
+            ],
+          ),
+        ),
+        Expanded(
+          child: Column(
+            children: [
+              Text(
+                data.following,
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+              ),
+              Text('Pengikut',
+                  textAlign: TextAlign.center, style: TextStyle(fontSize: 12)),
+            ],
+          ),
+        ),
+        Expanded(
+          child: Column(
+            children: [
+              Text(
+                data.likes,
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+              ),
+              Text(
+                'Suka',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 12),
+              ),
+            ],
+          ),
+        ),
+        SizedBox(
+          width: Dimens.DIMENS_12,
+        ),
+      ],
     );
   }
 }
