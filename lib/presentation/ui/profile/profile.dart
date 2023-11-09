@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:personal_project/constant/color.dart';
@@ -94,26 +95,28 @@ class ProfilePage extends StatelessWidget {
                                           ],
                                         ),
                                         Expanded(
-                                            child: Column(
-                                          children: [
-                                            Text(
-                                              '0',
-                                              style: TextStyle(
-                                                  fontSize: 20,
-                                                  fontWeight: FontWeight.w600),
-                                            ),
-                                            Text(
-                                              'Mengikuti',
-                                              textAlign: TextAlign.center,
-                                              style: TextStyle(fontSize: 12),
-                                            ),
-                                          ],
-                                        )),
+                                          child: Column(
+                                            children: [
+                                              Text(
+                                                data.followers,
+                                                style: TextStyle(
+                                                    fontSize: 20,
+                                                    fontWeight:
+                                                        FontWeight.w600),
+                                              ),
+                                              Text(
+                                                'Mengikuti',
+                                                textAlign: TextAlign.center,
+                                                style: TextStyle(fontSize: 12),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
                                         Expanded(
                                           child: Column(
                                             children: [
                                               Text(
-                                                '0',
+                                                data.following,
                                                 style: TextStyle(
                                                     fontSize: 20,
                                                     fontWeight:
@@ -127,19 +130,23 @@ class ProfilePage extends StatelessWidget {
                                           ),
                                         ),
                                         Expanded(
-                                            child: Column(
-                                          children: [
-                                            Text(
-                                              '0',
-                                              style: TextStyle(
-                                                  fontSize: 20,
-                                                  fontWeight: FontWeight.w600),
-                                            ),
-                                            Text('Suka',
+                                          child: Column(
+                                            children: [
+                                              Text(
+                                                data.likes,
+                                                style: TextStyle(
+                                                    fontSize: 20,
+                                                    fontWeight:
+                                                        FontWeight.w600),
+                                              ),
+                                              Text(
+                                                'Suka',
                                                 textAlign: TextAlign.center,
-                                                style: TextStyle(fontSize: 12)),
-                                          ],
-                                        )),
+                                                style: TextStyle(fontSize: 12),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
                                         SizedBox(
                                           width: Dimens.DIMENS_12,
                                         ),
@@ -394,17 +401,56 @@ class ProfilePage extends StatelessWidget {
                                                       : COLOR_black_ff121212,
                                                   child: InkWell(
                                                     onTap: () {
-                                                      BlocProvider.of<
-                                                                  FollowCubit>(
-                                                              context)
-                                                          .followButtonHandle(
-                                                              currentUserUid:
-                                                                  authRepository
-                                                                      .currentUser!
-                                                                      .uid,
-                                                              uid: uid!,
-                                                              stateFromDatabase:
-                                                                  data.isFollowig);
+                                                      if (isFollowig) {
+                                                        showDialog(
+                                                            context: context,
+                                                            builder: (_) {
+                                                              return AlertDialog(
+                                                                title: Text(
+                                                                    'Berhenti Mengikuti ?'),
+                                                                actions: [
+                                                                  TextButton(
+                                                                    onPressed:
+                                                                        () {
+                                                                      context
+                                                                          .pop();
+                                                                    },
+                                                                    child: const Text(
+                                                                        'Batal'),
+                                                                  ),
+                                                                  TextButton(
+                                                                    onPressed:
+                                                                        () {
+                                                                      BlocProvider.of<FollowCubit>(context).followButtonHandle(
+                                                                          currentUserUid: authRepository
+                                                                              .currentUser!
+                                                                              .uid,
+                                                                          uid:
+                                                                              uid!,
+                                                                          stateFromDatabase:
+                                                                              data.isFollowig);
+                                                                      context
+                                                                          .pop();
+                                                                    },
+                                                                    child: const Text(
+                                                                        'Oke'),
+                                                                  )
+                                                                ],
+                                                              );
+                                                            });
+                                                      } else {
+                                                        BlocProvider.of<
+                                                                    FollowCubit>(
+                                                                context)
+                                                            .followButtonHandle(
+                                                                currentUserUid:
+                                                                    authRepository
+                                                                        .currentUser!
+                                                                        .uid,
+                                                                uid: uid!,
+                                                                stateFromDatabase:
+                                                                    data.isFollowig);
+                                                      }
                                                     },
                                                     borderRadius:
                                                         BorderRadius.circular(
