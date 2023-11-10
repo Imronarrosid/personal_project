@@ -51,7 +51,19 @@ class ProfilePage extends StatelessWidget {
                   builder: (context, snapshot) {
                     var data = snapshot.data;
                     if (!snapshot.hasData) {
-                      return const CircularProgressIndicator();
+                      return Scaffold(
+                        appBar: AppBar(
+                          backgroundColor: Colors.transparent,
+                          foregroundColor: COLOR_black_ff121212,
+                          elevation: 0,
+                        ),
+                        body: Container(
+                            width: size.width,
+                            height: size.height,
+                            color: COLOR_white_fff5f5f5,
+                            alignment: Alignment.center,
+                            child: const CircularProgressIndicator()),
+                      );
                     }
 
                     return Scaffold(
