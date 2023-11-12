@@ -9,12 +9,14 @@ import 'package:material_design_icons_flutter/material_design_icons_flutter.dart
 import 'package:personal_project/constant/color.dart';
 import 'package:personal_project/constant/dimens.dart';
 import 'package:personal_project/data/repository/user_video_paging_repository.dart';
+import 'package:personal_project/domain/model/profile_data_model.dart';
 import 'package:personal_project/domain/model/user_data_model.dart';
 import 'package:personal_project/domain/model/video_model.dart';
 import 'package:personal_project/domain/reporsitory/auth_reposotory.dart';
 import 'package:personal_project/domain/reporsitory/user_repository.dart';
 import 'package:personal_project/domain/reporsitory/video_repository.dart';
 import 'package:personal_project/domain/services/firebase/firebase_service.dart';
+import 'package:personal_project/presentation/router/route_utils.dart';
 import 'package:personal_project/presentation/shared_components/keep_alive_page.dart';
 import 'package:personal_project/presentation/shared_components/not_authenticated_page.dart';
 import 'package:personal_project/presentation/ui/auth/bloc/auth_bloc.dart';
@@ -100,17 +102,44 @@ class ProfilePage extends StatelessWidget {
                                             ),
                                             Expanded(
                                               flex: 2,
-                                              child: Container(
-                                                height: Dimens.DIMENS_34,
-                                                alignment: Alignment.center,
-                                                decoration: BoxDecoration(
-                                                    color: COLOR_grey,
+                                              child: Material(
+                                                color: COLOR_grey,
+                                                shape: RoundedRectangleBorder(
                                                     borderRadius:
                                                         BorderRadius.circular(
                                                             5)),
-                                                child: Text(
-                                                  'Edit Profil',
-                                                  textAlign: TextAlign.center,
+                                                child: InkWell(
+                                                  borderRadius:
+                                                      BorderRadius.circular(5),
+                                                  onTap: () {
+                                                    ProfileData profileData =
+                                                        ProfileData(
+                                                            name: data.name,
+                                                            userName: data.name,
+                                                            bio: '',
+                                                            photoUrl:
+                                                                data.photoURL,
+                                                            gameFavoritesId: []);
+                                                    context.push(
+                                                        APP_PAGE
+                                                            .editProfile.toPath,
+                                                        extra: profileData);
+                                                  },
+                                                  child: Container(
+                                                    height: Dimens.DIMENS_34,
+                                                    alignment: Alignment.center,
+                                                    decoration: BoxDecoration(
+                                                      color: Colors.transparent,
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              5),
+                                                    ),
+                                                    child: Text(
+                                                      'Edit Profil',
+                                                      textAlign:
+                                                          TextAlign.center,
+                                                    ),
+                                                  ),
                                                 ),
                                               ),
                                             ),

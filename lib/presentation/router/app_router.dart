@@ -4,9 +4,12 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:personal_project/domain/model/preview_model.dart';
+import 'package:personal_project/domain/model/profile_data_model.dart';
 import 'package:personal_project/domain/services/app/app_service.dart';
 import 'package:personal_project/presentation/router/route_utils.dart';
 import 'package:personal_project/presentation/ui/add_details/add_details_page.dart';
+import 'package:personal_project/presentation/ui/edit_profile/edit_page/edit_name_page.dart';
+import 'package:personal_project/presentation/ui/edit_profile/edit_profile.dart';
 import 'package:personal_project/presentation/ui/home/home.dart';
 import 'package:personal_project/presentation/ui/onboarding/onboarding.dart';
 import 'package:personal_project/presentation/ui/profile/profile.dart';
@@ -99,6 +102,24 @@ class AppRouter {
           return ProfilePage(uid: uid);
         },
       ),
+      GoRoute(
+        path: APP_PAGE.editProfile.toPath,
+        name: APP_PAGE.editProfile.toName,
+        builder: (context, state) {
+          ProfileData profileData = state.extra as ProfileData;
+          return EditProfile(data: profileData);
+        },
+      ),
+      // GoRoute(
+      //   path: APP_PAGE.editName.toPath,
+      //   name: APP_PAGE.editName.toName,
+      //   builder: (context, state) {
+      //     EditNameData data = state.extra as EditNameData;
+      //     return EditName(
+      //       data: data,
+      //     );
+      //   },
+      // ),
 
       // GoRoute(
       //   path: APP_PAGE.error.toPath,

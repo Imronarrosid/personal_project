@@ -1,4 +1,5 @@
 class UserData {
+  final String uid;
   final String name;
   final String photoURL;
   final String followers;
@@ -9,6 +10,7 @@ class UserData {
 
   UserData({
     required this.name,
+    required this.uid,
     required this.photoURL,
     required this.followers,
     required this.following,
@@ -18,6 +20,7 @@ class UserData {
 
   static UserData fromMap(Map<String, dynamic> userData) {
     return UserData(
+        uid: userData['uid'],
         name: userData['userName'],
         photoURL: userData['photoUrl'],
         followers: userData['followers'],

@@ -10,7 +10,9 @@ enum APP_PAGE {
   onBoarding,
   videoPreview,
   videoEditor,
-  addDetails
+  addDetails,
+  editProfile,
+  editName
 }
 
 extension AppPageExtension on APP_PAGE {
@@ -36,6 +38,10 @@ extension AppPageExtension on APP_PAGE {
         return "/add-details";
       case APP_PAGE.profile:
         return "/profile";
+      case APP_PAGE.editProfile:
+        return "/edit-profile";
+      case APP_PAGE.editName:
+        return "/name";
       default:
         return "/";
     }
@@ -63,6 +69,10 @@ extension AppPageExtension on APP_PAGE {
         return "ADD-DETAILS";
       case APP_PAGE.profile:
         return "PROFILE";
+      case APP_PAGE.editProfile:
+        return "EDIT-POFILE";
+      case APP_PAGE.editName:
+        return "NAME";
       default:
         return "HOME";
     }

@@ -53,6 +53,7 @@ class UserRepository implements UserUseCaseType {
     });
 
     var user = {
+      'uid': userDoc['uid'],
       'followers': followers.toString(),
       'following': following.toString(),
       'isFollowing': isFollowing,
@@ -62,8 +63,6 @@ class UserRepository implements UserUseCaseType {
     };
 
     return UserData.fromMap(user);
-
-
   }
 
   @override
