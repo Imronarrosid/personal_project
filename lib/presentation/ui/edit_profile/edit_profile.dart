@@ -9,6 +9,7 @@ import 'package:personal_project/presentation/router/route_utils.dart';
 import 'package:personal_project/presentation/ui/comments/edit_modal/edit_bio_modal.dart';
 import 'package:personal_project/presentation/ui/comments/edit_modal/edit_name_modal.dart';
 import 'package:personal_project/presentation/ui/comments/edit_modal/edit_user_name_modal.dart';
+import 'package:personal_project/presentation/ui/edit_profile/edit_page/edit_game_fav_page.dart';
 
 class EditProfile extends StatelessWidget {
   final ProfileData data;
@@ -171,7 +172,14 @@ class EditProfile extends StatelessWidget {
                     ],
                   ),
                 ),
-                IconButton(onPressed: () {}, icon: Icon(MdiIcons.pencilOutline))
+                IconButton(
+                    onPressed: () {
+                      Navigator.push(context,
+                          MaterialPageRoute(builder: (context) {
+                        return EditGameFavPage();
+                      }));
+                    },
+                    icon: Icon(MdiIcons.pencilOutline))
               ],
             )
           ],
