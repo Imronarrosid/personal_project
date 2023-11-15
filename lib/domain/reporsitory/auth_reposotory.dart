@@ -132,6 +132,7 @@ class AuthRepository implements AuthUseCaseType {
         'uid': user.id,
         'createdAt': FieldValue.serverTimestamp(),
         'name': user.userName,
+        'userName': user.userName!.split(' ').toString(),
         'photoUrl': user.photo,
         'lastSeen': FieldValue.serverTimestamp(),
         'metadata': user.metadata,
