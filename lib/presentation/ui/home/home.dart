@@ -38,7 +38,7 @@ class _HomePageState extends State<HomePage> {
       const SearchPage(),
       const MessagePage(),
       const MessagePage(),
-      ProfilePage(uid: authRepository.currentUser?.uid),
+      ProfilePage(),
     ];
     final appService = Provider.of<AppService>(context);
     return BlocProvider(

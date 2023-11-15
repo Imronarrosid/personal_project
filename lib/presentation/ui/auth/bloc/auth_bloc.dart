@@ -13,7 +13,7 @@ part 'auth_state.dart';
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   AuthBloc(this.authRepository)
       : super(authRepository.currentUser != null
-            ? Authenticated()
+            ? Authenticated(uid: authRepository.currentUser!.uid)
             : NotAuthenticated()) {
     on<LogInWithGoogle>((event, emit) async {
       try {
@@ -26,7 +26,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         bool isAuthenticated = await authRepository.isAuthenticated;
         debugPrint('isAuthenticated $isAuthenticated');
         if (isAuthenticated) {
-          emit(Authenticated());
+          emit(Authenticated(uid: authRepository.currentUser!.uid));
         } else {
           emit(LoginFailed());
         }

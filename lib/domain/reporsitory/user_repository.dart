@@ -1,10 +1,20 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
 import 'package:personal_project/domain/model/user.dart';
+import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 import 'package:personal_project/domain/model/user_data_model.dart';
 import 'package:personal_project/domain/services/firebase/firebase_service.dart';
 import 'package:personal_project/domain/usecase/user_usecase_type.dart';
 
 class UserRepository implements UserUseCaseType {
+  Stream<String> get uid {
+    return firebaseAuth.authStateChanges().map((firebaseUser) {
+      final uid = firebaseUser!.uid;
+      // _cache.write(key: userCacheKey, value: user);
+      return uid;
+    });
+  }
+
   @override
   Future<UserData> getUserData(String uid) async {
     var myVideos = await firebaseFirestore
@@ -60,6 +70,7 @@ class UserRepository implements UserUseCaseType {
       'likes': likes.toString(),
       'photoUrl': photo,
       'userName': name,
+      'updatedAt': userDoc['updatedAt']
     };
 
     return UserData.fromMap(user);
@@ -137,5 +148,17 @@ class UserRepository implements UserUseCaseType {
       }
     });
     return false;
+  }
+
+  Future<void> editName(String newName) async {
+    try {
+      debugPrint(newName);
+      await firebaseFirestore
+          .collection('users')
+          .doc(firebaseAuth.currentUser!.uid)
+          .update({'name': newName, 'updatedAt': FieldValue.serverTimestamp()});
+    } catch (e) {
+      rethrow;
+    }
   }
 }

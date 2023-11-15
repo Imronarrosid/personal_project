@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:personal_project/constant/color.dart';
@@ -9,6 +10,7 @@ import 'package:personal_project/presentation/router/route_utils.dart';
 import 'package:personal_project/presentation/ui/comments/edit_modal/edit_bio_modal.dart';
 import 'package:personal_project/presentation/ui/comments/edit_modal/edit_name_modal.dart';
 import 'package:personal_project/presentation/ui/comments/edit_modal/edit_user_name_modal.dart';
+import 'package:personal_project/presentation/ui/edit_profile/cubit/edit_name_cubit.dart';
 import 'package:personal_project/presentation/ui/edit_profile/edit_page/edit_game_fav_page.dart';
 
 class EditProfile extends StatelessWidget {
@@ -58,19 +60,41 @@ class EditProfile extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text('Nama'),
-                    Text(
-                      data.name,
-                      style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                    BlocBuilder<EditNameCubit, EditNameState>(
+                      builder: (context, state) {
+                        if (state.status == EditNameStatus.initial) {
+                          return Text(
+                            data.name,
+                            style: TextStyle(
+                                fontSize: 16, fontWeight: FontWeight.w500),
+                          );
+                        }
+                        return Text(
+                          state.status == EditNameStatus.nameEditSuccess
+                              ? state.name!
+                              : data.name,
+                          style: TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.w500),
+                        );
+                      },
                     ),
                   ],
                 ),
-                IconButton(
-                    onPressed: () {
-                      // context.push(APP_PAGE.editName.toPath, extra: editNata);
-                      showEditNameModal(context);
-                    },
-                    icon: Icon(MdiIcons.pencilOutline))
+                BlocBuilder<EditNameCubit, EditNameState>(
+                  builder: (context, state) {
+                    return IconButton(
+                        onPressed: () {
+                          // context.push(APP_PAGE.editName.toPath, extra: editNata);
+                          showEditNameModal(
+                              context,
+                              state.status == EditNameStatus.nameEditSuccess
+                                  ? state.name!
+                                  : data.name,
+                              data.updatedAt);
+                        },
+                        icon: Icon(MdiIcons.pencilOutline));
+                  },
+                )
               ],
             ),
             Divider(
@@ -83,10 +107,24 @@ class EditProfile extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text('Nama pengguna'),
-                    Text(
-                      data.name,
-                      style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                    BlocBuilder<EditNameCubit, EditNameState>(
+                      builder: (context, state) {
+                        debugPrint('state ${state.status}');
+                        if (state.status == EditNameStatus.initial) {
+                          return Text(
+                            data.name,
+                            style: TextStyle(
+                                fontSize: 16, fontWeight: FontWeight.w500),
+                          );
+                        }
+                        return Text(
+                          state.status == EditNameStatus.nameEditSuccess
+                              ? state.name!
+                              : data.name,
+                          style: TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.w500),
+                        );
+                      },
                     ),
                   ],
                 ),

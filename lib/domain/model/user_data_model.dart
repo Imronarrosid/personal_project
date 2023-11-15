@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class UserData {
   final String uid;
   final String name;
@@ -5,11 +7,12 @@ class UserData {
   final String followers;
   final String following;
   final String likes;
-
+  final Timestamp updatedAt;
   final bool isFollowig;
 
   UserData({
     required this.name,
+    required this.updatedAt,
     required this.uid,
     required this.photoURL,
     required this.followers,
@@ -26,6 +29,7 @@ class UserData {
         followers: userData['followers'],
         following: userData['following'],
         isFollowig: userData['isFollowing'],
-        likes: userData['likes']);
+        likes: userData['likes'],
+        updatedAt: userData['updatedAt']);
   }
 }

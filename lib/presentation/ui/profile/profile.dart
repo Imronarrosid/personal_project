@@ -20,13 +20,14 @@ import 'package:personal_project/presentation/router/route_utils.dart';
 import 'package:personal_project/presentation/shared_components/keep_alive_page.dart';
 import 'package:personal_project/presentation/shared_components/not_authenticated_page.dart';
 import 'package:personal_project/presentation/ui/auth/bloc/auth_bloc.dart';
+import 'package:personal_project/presentation/ui/edit_profile/cubit/edit_name_cubit.dart';
 import 'package:personal_project/presentation/ui/profile/bloc/user_video_paging_bloc.dart';
 import 'package:personal_project/presentation/ui/profile/cubit/follow_cubit.dart';
 import 'package:personal_project/presentation/ui/profile/cubit/profile_cubit.dart';
 
 class ProfilePage extends StatelessWidget {
   final String? uid;
-  const ProfilePage({super.key, required this.uid});
+  const ProfilePage({super.key, this.uid});
 
   @override
   Widget build(BuildContext context) {
@@ -45,11 +46,11 @@ class ProfilePage extends StatelessWidget {
       ],
       child: Builder(builder: (context) {
         return BlocBuilder<AuthBloc, AuthState>(
-          builder: (context, state) {
-            debugPrint(state.toString());
-            if (state is Authenticated) {
+          builder: (context, authState) {
+            debugPrint(authState.toString());
+            if (authState is Authenticated) {
               return FutureBuilder(
-                  future: userRepository.getUserData(uid!),
+                  future: userRepository.getUserData(uid ?? authState.uid),
                   builder: (context, snapshot) {
                     var data = snapshot.data;
                     if (!snapshot.hasData) {
@@ -70,7 +71,15 @@ class ProfilePage extends StatelessWidget {
 
                     return Scaffold(
                       appBar: AppBar(
-                        title: Text(data!.name),
+                        title: BlocBuilder<EditNameCubit, EditNameState>(
+                          builder: (context, state) {
+                            if (state.status ==
+                                EditNameStatus.nameEditSuccess) {
+                              return Text(state.name!);
+                            }
+                            return Text(data!.name);
+                          },
+                        ),
                         backgroundColor: Colors.transparent,
                         elevation: 0,
                         foregroundColor: Colors.black,
@@ -85,13 +94,13 @@ class ProfilePage extends StatelessWidget {
                                 return [
                                   SliverToBoxAdapter(
                                     child: Column(children: [
-                                      topSectionView(data),
+                                      topSectionView(data!),
                                       SizedBox(
                                         height: Dimens.DIMENS_8,
                                       ),
                                       bioSectionView(),
                                       gameFavView(),
-                                      if (uid ==
+                                      if ((uid ?? authState.uid) ==
                                           authRepository.currentUser!.uid)
                                         Row(
                                           mainAxisAlignment:
@@ -119,6 +128,8 @@ class ProfilePage extends StatelessWidget {
                                                             bio: '',
                                                             photoUrl:
                                                                 data.photoURL,
+                                                            updatedAt:
+                                                                data.updatedAt,
                                                             gameFavoritesId: []);
                                                     context.push(
                                                         APP_PAGE
@@ -217,12 +228,10 @@ class ProfilePage extends StatelessWidget {
                                                                       onPressed:
                                                                           () {
                                                                         BlocProvider.of<FollowCubit>(context).followButtonHandle(
-                                                                            currentUserUid: authRepository
-                                                                                .currentUser!.uid,
-                                                                            uid:
-                                                                                uid!,
-                                                                            stateFromDatabase:
-                                                                                data.isFollowig);
+                                                                            currentUserUid:
+                                                                                authRepository.currentUser!.uid,
+                                                                            uid: uid ?? authState.uid,
+                                                                            stateFromDatabase: data.isFollowig);
                                                                         context
                                                                             .pop();
                                                                       },
@@ -328,14 +337,16 @@ class ProfilePage extends StatelessWidget {
                                   // Content for Tab 1
                                   KeepAlivePage(
                                     child: VideoListView(
-                                      uid: uid!,
+                                      uid: uid ??
+                                          authRepository.currentUser!.uid,
                                       from: From.user,
                                     ),
                                   ),
                                   // Content for Tab 2
                                   KeepAlivePage(
                                     child: VideoListView(
-                                      uid: uid!,
+                                      uid: uid ??
+                                          authRepository.currentUser!.uid,
                                       from: From.likes,
                                     ),
                                   ),

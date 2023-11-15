@@ -1,13 +1,18 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:personal_project/constant/color.dart';
 import 'package:personal_project/constant/dimens.dart';
+import 'package:personal_project/presentation/ui/edit_profile/cubit/edit_name_cubit.dart';
+import 'package:personal_project/utils/edit_name_check.dart';
 
-void showEditNameModal(BuildContext context) {
+void showEditNameModal(BuildContext context, String name, Timestamp timestamp) {
+  final controller = TextEditingController(text: name);
   showModalBottomSheet(
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
       context: context,
-      builder: (ctx) {
+      builder: (context) {
         return Padding(
           padding:
               EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
@@ -18,7 +23,7 @@ void showEditNameModal(BuildContext context) {
               decoration: BoxDecoration(
                   color: COLOR_white_fff5f5f5,
                   borderRadius: BorderRadius.circular(10)),
-              height: 200,
+              height: 250,
               child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -49,6 +54,8 @@ void showEditNameModal(BuildContext context) {
                               .colorScheme
                               .copyWith(primary: COLOR_black_ff121212)),
                       child: TextField(
+                        controller: controller,
+                        enabled: isCanEditName(timestamp),
                         autofocus: true,
                         decoration: InputDecoration(
                             border: OutlineInputBorder(
@@ -56,19 +63,52 @@ void showEditNameModal(BuildContext context) {
                       ),
                     ),
                     SizedBox(
+                      height: Dimens.DIMENS_8,
+                    ),
+                    Text(
+                        'Kamu dapat mengganti nama ${daysUntilTwoWeeks(timestamp)} hari lagi'),
+                    SizedBox(
                       height: Dimens.DIMENS_18,
                     ),
-                    Container(
-                      width: double.infinity,
-                      height: Dimens.DIMENS_38,
-                      alignment: Alignment.center,
-                      child: Text(
-                        'Simpan',
-                        style: TextStyle(color: COLOR_white_fff5f5f5),
+                    InkWell(
+                      onTap: isCanEditName(timestamp)
+                          ? () {
+                              BlocProvider.of<EditNameCubit>(context)
+                                  .editName(controller.text);
+                              debugPrint('editname');
+                            }
+                          : null,
+                      child: Container(
+                        width: double.infinity,
+                        height: Dimens.DIMENS_38,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                            color: isCanEditName(timestamp)
+                                ? COLOR_black_ff121212
+                                : COLOR_grey,
+                            borderRadius: BorderRadius.circular(50)),
+                        child: BlocBuilder<EditNameCubit, EditNameState>(
+                          builder: (context, state) {
+                            debugPrint('state ${state.status}');
+                            if (state.status == EditNameStatus.editProccess) {
+                              return Container(
+                                width: Dimens.DIMENS_18,
+                                height: Dimens.DIMENS_18,
+                                child: CircularProgressIndicator(
+                                  color: COLOR_white_fff5f5f5,
+                                ),
+                              );
+                            }
+                            return Text(
+                              'Simpan',
+                              style: TextStyle(
+                                  color: isCanEditName(timestamp)
+                                      ? COLOR_white_fff5f5f5
+                                      : COLOR_black_ff121212),
+                            );
+                          },
+                        ),
                       ),
-                      decoration: BoxDecoration(
-                          color: COLOR_black_ff121212,
-                          borderRadius: BorderRadius.circular(50)),
                     )
                   ]),
             ),

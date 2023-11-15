@@ -7,12 +7,22 @@ sealed class AuthState extends Equatable {
   List<Object> get props => [];
 }
 
-final class Authenticated extends AuthState {}
+final class Authenticated extends AuthState {
+  final String uid;
+
+  const Authenticated({required this.uid});
+
+  @override
+  // TODO: implement props
+  List<Object> get props => [uid];
+}
 
 final class NotAuthenticated extends AuthState {}
 
 final class LoginProcessing extends AuthState {}
+
 final class LoginFailed extends AuthState {}
+
 final class NoInternet extends AuthState {}
 
 final class AuthError extends AuthState {

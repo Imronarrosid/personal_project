@@ -18,6 +18,7 @@ import 'package:personal_project/presentation/l10n/l10n.dart';
 import 'package:personal_project/presentation/router/app_router.dart';
 import 'package:personal_project/presentation/ui/add_details/bloc/upload_bloc.dart';
 import 'package:personal_project/presentation/ui/auth/bloc/auth_bloc.dart';
+import 'package:personal_project/presentation/ui/edit_profile/cubit/edit_name_cubit.dart';
 import 'package:personal_project/presentation/ui/home/home.dart';
 import 'package:personal_project/presentation/ui/upload/bloc/camera_bloc.dart';
 import 'package:personal_project/presentation/ui/video/list_video/bloc/video_player_bloc.dart';
@@ -85,6 +86,7 @@ class _MyAppState extends State<MyApp> {
       child: Builder(builder: (context) {
         final GoRouter goRouter =
             Provider.of<AppRouter>(context, listen: false).router;
+
         return MultiRepositoryProvider(
           providers: [
             RepositoryProvider(
@@ -98,7 +100,7 @@ class _MyAppState extends State<MyApp> {
             ),
             RepositoryProvider(
               create: (context) => UserRepository(),
-            )
+            ),
           ],
           child: MultiBlocProvider(
             providers: [
@@ -118,6 +120,13 @@ class _MyAppState extends State<MyApp> {
                   RepositoryProvider.of<VideoRepository>(context),
                 ),
               ),
+              BlocProvider(
+                create: (context) {
+                  final UserRepository userRepository =
+                      RepositoryProvider.of<UserRepository>(context);
+                  return EditNameCubit(userRepository);
+                },
+              )
             ],
             child: MaterialApp.router(
               debugShowCheckedModeBanner: false,

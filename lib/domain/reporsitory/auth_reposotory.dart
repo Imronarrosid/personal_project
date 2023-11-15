@@ -129,8 +129,9 @@ class AuthRepository implements AuthUseCaseType {
     var doc = await firestore.collection('users').doc(user.id).get();
     if (!doc.exists) {
       firestore.collection('users').doc(user.id).set({
+        'uid': user.id,
         'createdAt': FieldValue.serverTimestamp(),
-        'userName': user.userName,
+        'name': user.userName,
         'photoUrl': user.photo,
         'lastSeen': FieldValue.serverTimestamp(),
         'metadata': user.metadata,
