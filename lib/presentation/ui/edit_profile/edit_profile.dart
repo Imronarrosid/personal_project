@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -20,6 +21,8 @@ class EditProfile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
+
+    Timestamp lastUpdate = data.updatedAt;
     return Scaffold(
       appBar: AppBar(
         title: Text('Edit Profil'),
@@ -80,7 +83,12 @@ class EditProfile extends StatelessWidget {
                     ),
                   ],
                 ),
-                BlocBuilder<EditNameCubit, EditNameState>(
+                BlocConsumer<EditNameCubit, EditNameState>(
+                  listener: (context, state) {
+                    if (state.status == EditNameStatus.nameEditSuccess) {
+                      lastUpdate = Timestamp.now();
+                    }
+                  },
                   builder: (context, state) {
                     return IconButton(
                         onPressed: () {
@@ -90,7 +98,7 @@ class EditProfile extends StatelessWidget {
                               state.status == EditNameStatus.nameEditSuccess
                                   ? state.name!
                                   : data.name,
-                              data.updatedAt);
+                              lastUpdate);
                         },
                         icon: Icon(MdiIcons.pencilOutline));
                   },
