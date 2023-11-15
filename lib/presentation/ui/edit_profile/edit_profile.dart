@@ -8,9 +8,9 @@ import 'package:personal_project/constant/color.dart';
 import 'package:personal_project/constant/dimens.dart';
 import 'package:personal_project/domain/model/profile_data_model.dart';
 import 'package:personal_project/presentation/router/route_utils.dart';
-import 'package:personal_project/presentation/ui/comments/edit_modal/edit_bio_modal.dart';
-import 'package:personal_project/presentation/ui/comments/edit_modal/edit_name_modal.dart';
-import 'package:personal_project/presentation/ui/comments/edit_modal/edit_user_name_modal.dart';
+import 'package:personal_project/presentation/ui/edit_profile/edit_modal/edit_bio_modal.dart';
+import 'package:personal_project/presentation/ui/edit_profile/edit_modal/edit_name_modal.dart';
+import 'package:personal_project/presentation/ui/edit_profile/edit_modal/edit_user_name_modal.dart';
 import 'package:personal_project/presentation/ui/edit_profile/cubit/edit_name_cubit.dart';
 import 'package:personal_project/presentation/ui/edit_profile/edit_page/edit_game_fav_page.dart';
 
