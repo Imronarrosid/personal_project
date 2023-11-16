@@ -12,12 +12,11 @@ void showEditNameModal(BuildContext context, String name, Timestamp timestamp) {
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
-
   String? validator(String? value) {
     if (value!.trim().isEmpty) {
-      return 'Nama tidak boleh kosong';
+      return 'Nama tidak boleh diawali spasi.';
     } else if (value.isEmpty) {
-      return 'Nama tidak boleh kosong';
+      return 'Nama tidak boleh kosong.';
     }
     return null; // Return null if the input is valid
   }

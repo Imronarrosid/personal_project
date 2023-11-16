@@ -2,8 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:personal_project/constant/color.dart';
 import 'package:personal_project/constant/dimens.dart';
+import 'package:personal_project/utils/validator_edit_user_name.dart';
 
 void showEditUserNameModal(BuildContext context) {
+  final controller = TextEditingController();
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
   showModalBottomSheet(
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
@@ -19,7 +23,7 @@ void showEditUserNameModal(BuildContext context) {
               decoration: BoxDecoration(
                   color: COLOR_white_fff5f5f5,
                   borderRadius: BorderRadius.circular(10)),
-              height: 200,
+              height: 230,
               child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -49,12 +53,20 @@ void showEditUserNameModal(BuildContext context) {
                           colorScheme: ThemeData()
                               .colorScheme
                               .copyWith(primary: COLOR_black_ff121212)),
-                      child: TextField(
-                        autofocus: true,
-                        decoration: InputDecoration(
-                            prefixIcon: Icon(MdiIcons.at),
-                            border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10))),
+                      child: Form(
+                        key: _formKey,
+                        child: TextFormField(
+                          controller: controller,
+                          validator: validateNoWhitespace,
+                          onChanged: (value) {
+                            _formKey.currentState!.validate();
+                          },
+                          autofocus: true,
+                          decoration: InputDecoration(
+                              prefixIcon: Icon(MdiIcons.at),
+                              border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10))),
+                        ),
                       ),
                     ),
                     SizedBox(
