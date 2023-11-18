@@ -91,10 +91,10 @@ void showEditNameModal(BuildContext context, String name, Timestamp timestamp) {
                       SizedBox(
                         height: Dimens.DIMENS_8,
                       ),
-                      (daysUntilTwoWeeks(timestamp) < 0)
-                          ? Text('Kamu bisa mengganti nama 14 hari sekali')
+                      isCanEditName(timestamp)
+                          ? Text('Kamu bisa mengganti nama 7 hari sekali')
                           : Text(
-                              'Kamu dapat mengganti nama ${daysUntilTwoWeeks(timestamp)} hari lagi'),
+                              'Kamu dapat mengganti nama ${daysUntilOneWeeks(timestamp)} hari lagi'),
                       SizedBox(
                         height: Dimens.DIMENS_18,
                       ),

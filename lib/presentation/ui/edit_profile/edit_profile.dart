@@ -120,7 +120,7 @@ class EditProfile extends StatelessWidget {
                         debugPrint('state ${state.status}');
                         if (state.status == EditNameStatus.initial) {
                           return Text(
-                            data.name,
+                            data.userName,
                             style: TextStyle(
                                 fontSize: 16, fontWeight: FontWeight.w500),
                           );
@@ -138,7 +138,9 @@ class EditProfile extends StatelessWidget {
                 ),
                 IconButton(
                     onPressed: () {
-                      showEditUserNameModal(context);
+                      showEditUserNameModal(context,
+                          userName: data.userName,
+                          lastUpdate: data.userNameUpdatedAt);
                     },
                     icon: Icon(MdiIcons.pencilOutline))
               ],

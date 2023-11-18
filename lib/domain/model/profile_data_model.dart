@@ -6,6 +6,7 @@ class ProfileData {
   final String bio;
   final String photoUrl;
   final Timestamp updatedAt;
+  final Timestamp userNameUpdatedAt;
   final List<String> gameFavoritesId;
 
   ProfileData(
@@ -14,5 +15,6 @@ class ProfileData {
       required this.name,
       required this.updatedAt,
       required this.bio,
+      required this.userNameUpdatedAt,
       required this.gameFavoritesId});
 }

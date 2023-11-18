@@ -124,12 +124,15 @@ class ProfilePage extends StatelessWidget {
                                                     ProfileData profileData =
                                                         ProfileData(
                                                             name: data.name,
-                                                            userName: data.name,
+                                                            userName:
+                                                                data.userName,
                                                             bio: '',
                                                             photoUrl:
                                                                 data.photoURL,
                                                             updatedAt:
                                                                 data.updatedAt,
+                                                            userNameUpdatedAt: data
+                                                                .userNameUpdatedAt,
                                                             gameFavoritesId: []);
                                                     context.push(
                                                         APP_PAGE

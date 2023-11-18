@@ -1,11 +1,16 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:personal_project/constant/color.dart';
 import 'package:personal_project/constant/dimens.dart';
+import 'package:personal_project/presentation/ui/edit_profile/cubit/edit_user_name_cubit.dart';
 import 'package:personal_project/utils/validator_edit_user_name.dart';
 
-void showEditUserNameModal(BuildContext context) {
-  final controller = TextEditingController();
+void showEditUserNameModal(BuildContext context,
+    {required String userName, required Timestamp lastUpdate}) {
+  final controller = TextEditingController(text: userName);
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   showModalBottomSheet(
@@ -56,6 +61,7 @@ void showEditUserNameModal(BuildContext context) {
                       child: Form(
                         key: _formKey,
                         child: TextFormField(
+                          enabled: isCanEditUserName(lastUpdate),
                           controller: controller,
                           validator: validateNoWhitespace,
                           onChanged: (value) {
@@ -70,19 +76,59 @@ void showEditUserNameModal(BuildContext context) {
                       ),
                     ),
                     SizedBox(
+                      height: Dimens.DIMENS_8,
+                    ),
+                    isCanEditUserName(lastUpdate)
+                        ? Text(
+                            'Kamu bisa mengganti nama pengguna 14 hari sekali')
+                        : Text(
+                            'Kamu bisa mengganti nama pengguna ${daysUntilTwoWeeks(lastUpdate)} hari lagi'),
+                    SizedBox(
                       height: Dimens.DIMENS_18,
                     ),
-                    Container(
-                      width: double.infinity,
-                      height: Dimens.DIMENS_38,
-                      alignment: Alignment.center,
-                      child: Text(
-                        'Simpan',
-                        style: TextStyle(color: COLOR_white_fff5f5f5),
-                      ),
-                      decoration: BoxDecoration(
-                          color: COLOR_black_ff121212,
+                    Material(
+                      color: COLOR_black_ff121212,
+                      shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(50)),
+                      child: InkWell(
+                        onTap: () {
+                          if (_formKey.currentState!.validate()) {
+                            BlocProvider.of<EditUserNameCubit>(context)
+                                .editUserName(controller.text);
+                          }
+                        },
+                        child: Container(
+                          width: double.infinity,
+                          height: Dimens.DIMENS_38,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                              color: Colors.transparent,
+                              borderRadius: BorderRadius.circular(50)),
+                          child: BlocConsumer<EditUserNameCubit,
+                              EditUserNameState>(
+                            listener: (context, state) {
+                              if (state.status == EditUserNameStatus.success) {
+                                context.pop();
+                              }
+                            },
+                            builder: (context, state) {
+                              if (state.status == EditUserNameStatus.loading) {
+                                return SizedBox(
+                                  width: Dimens.DIMENS_18,
+                                  height: Dimens.DIMENS_18,
+                                  child: CircularProgressIndicator(
+                                    color: COLOR_white_fff5f5f5,
+                                  ),
+                                );
+                              }
+                              return Text(
+                                'Simpan',
+                                style: TextStyle(color: COLOR_white_fff5f5f5),
+                              );
+                            },
+                          ),
+                        ),
+                      ),
                     )
                   ]),
             ),

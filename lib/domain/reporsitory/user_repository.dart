@@ -24,7 +24,7 @@ class UserRepository implements UserUseCaseType {
     DocumentSnapshot userDoc =
         await firebaseFirestore.collection('users').doc(uid).get();
     final userData = userDoc.data()! as dynamic;
-    String name = userData['name'] ?? userData['userName'];
+    String name = userData['name'];
     String photo = userData['photo'] ?? userDoc['photoUrl'];
     int likes = 0;
     int followers = 0;
@@ -64,13 +64,15 @@ class UserRepository implements UserUseCaseType {
 
     var user = {
       'uid': userDoc['uid'],
+      'name': userDoc['name'],
       'followers': followers.toString(),
       'following': following.toString(),
       'isFollowing': isFollowing,
       'likes': likes.toString(),
       'photoUrl': photo,
-      'userName': name,
-      'updatedAt': userDoc['updatedAt']
+      'userName': userDoc['userName'],
+      'updatedAt': userDoc['updatedAt'],
+      'userNameUpdatedAt': userDoc['userNameUpdatedAt']
     };
 
     return UserData.fromMap(user);
@@ -157,6 +159,21 @@ class UserRepository implements UserUseCaseType {
           .collection('users')
           .doc(firebaseAuth.currentUser!.uid)
           .update({'name': newName, 'updatedAt': FieldValue.serverTimestamp()});
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<void> editUserName(String newName) async {
+    try {
+      debugPrint(newName);
+      await firebaseFirestore
+          .collection('users')
+          .doc(firebaseAuth.currentUser!.uid)
+          .update({
+        'userName': newName,
+        'userNameUpdatedAt': FieldValue.serverTimestamp()
+      });
     } catch (e) {
       rethrow;
     }

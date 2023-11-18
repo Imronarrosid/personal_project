@@ -14,7 +14,7 @@ bool isCanEditName(Timestamp timestamp) {
   int differenceInDays = (difference / (24 * 60 * 60 * 1000)).round();
 
   // Check if the difference is greater than or equal to 14 days (2 weeks)
-  return differenceInDays >= 14;
+  return differenceInDays >= 7;
 }
 
 int calculateDaysAgo(Timestamp timestamp) {
@@ -30,7 +30,7 @@ int calculateDaysAgo(Timestamp timestamp) {
   return differenceInDays;
 }
 
-int daysUntilTwoWeeks(Timestamp timestamp) {
+int daysUntilOneWeeks(Timestamp timestamp) {
   // Get the current time
   DateTime now = DateTime.now();
 
@@ -41,7 +41,7 @@ int daysUntilTwoWeeks(Timestamp timestamp) {
   int differenceInDays = now.difference(timestampDateTime).inDays;
 
   // Calculate the remaining days until two weeks (14 days)
-  int remainingDays = 14 - differenceInDays;
+  int remainingDays = 7 - differenceInDays;
 
   return remainingDays;
 }
