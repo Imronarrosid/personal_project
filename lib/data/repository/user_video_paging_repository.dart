@@ -23,6 +23,10 @@ class UserVideoPagingRepository {
     videoRepository.likedVideosDocs.clear();
   }
 
+  clearUserVideo() {
+    currentLoadedVideo.clear();
+  }
+
   void initPagingController(String uid, {required From from}) {
     controller = PagingController(firstPageKey: 0);
     controller!.addPageRequestListener((pageKey) {

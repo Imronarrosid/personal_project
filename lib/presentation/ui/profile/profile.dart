@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -26,12 +28,18 @@ import 'package:personal_project/presentation/ui/profile/bloc/user_video_paging_
 import 'package:personal_project/presentation/ui/profile/cubit/follow_cubit.dart';
 import 'package:personal_project/presentation/ui/profile/cubit/profile_cubit.dart';
 
-class ProfilePage extends StatelessWidget {
+class ProfilePage extends StatefulWidget {
   final String? uid;
   const ProfilePage({super.key, this.uid});
 
   @override
+  State<ProfilePage> createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends State<ProfilePage> {
+  @override
   Widget build(BuildContext context) {
+    debugPrint('refresh');
     Size size = MediaQuery.of(context).size;
     final authRepository = RepositoryProvider.of<AuthRepository>(context);
     final UserRepository userRepository =
@@ -51,7 +59,8 @@ class ProfilePage extends StatelessWidget {
             debugPrint(authState.toString());
             if (authState is Authenticated) {
               return FutureBuilder(
-                  future: userRepository.getUserData(uid ?? authState.uid),
+                  future:
+                      userRepository.getUserData(widget.uid ?? authState.uid),
                   builder: (context, snapshot) {
                     var data = snapshot.data;
                     if (!snapshot.hasData) {
@@ -89,272 +98,289 @@ class ProfilePage extends StatelessWidget {
                           width: size.width,
                           child: DefaultTabController(
                             length: 2,
-                            child: NestedScrollView(
-                              headerSliverBuilder:
-                                  (context, innerBoxIsScrolled) {
-                                return [
-                                  SliverToBoxAdapter(
-                                    child: Column(children: [
-                                      topSectionView(data!),
-                                      SizedBox(
-                                        height: Dimens.DIMENS_8,
-                                      ),
-                                      bioSectionView(),
-                                      gameFavView(),
-                                      if ((uid ?? authState.uid) ==
-                                          authRepository.currentUser!.uid)
-                                        Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            SizedBox(
-                                              width: Dimens.DIMENS_12,
-                                            ),
-                                            Expanded(
-                                              flex: 2,
-                                              child: Material(
-                                                color: COLOR_grey,
-                                                shape: RoundedRectangleBorder(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            5)),
-                                                child: InkWell(
-                                                  borderRadius:
-                                                      BorderRadius.circular(5),
-                                                  onTap: () {
-                                                    ProfileData profileData =
-                                                        ProfileData(
-                                                            name: data.name,
-                                                            userName:
-                                                                data.userName,
-                                                            bio: '',
-                                                            photoUrl:
-                                                                data.photoURL,
-                                                            updatedAt:
-                                                                data.updatedAt,
-                                                            userNameUpdatedAt: data
-                                                                .userNameUpdatedAt,
-                                                            gameFavoritesId: []);
-                                                    context.push(
-                                                        APP_PAGE
-                                                            .editProfile.toPath,
-                                                        extra: profileData);
-                                                  },
-                                                  child: Container(
-                                                    height: Dimens.DIMENS_34,
-                                                    alignment: Alignment.center,
-                                                    decoration: BoxDecoration(
-                                                      color: Colors.transparent,
+                            child: RefreshIndicator(
+                              notificationPredicate: (notification) {
+                                // with NestedScrollView local(depth == 2) OverscrollNotification are not sent
+                                if (notification is OverscrollNotification ||
+                                    Platform.isIOS) {
+                                  return notification.depth == 2;
+                                }
+                                return notification.depth == 0;
+                              },
+                              onRefresh: () =>
+                                  Future.sync(() => setState(() {})),
+                              child: NestedScrollView(
+                                headerSliverBuilder:
+                                    (context, innerBoxIsScrolled) {
+                                  return [
+                                    SliverToBoxAdapter(
+                                      child: Column(children: [
+                                        topSectionView(data!),
+                                        SizedBox(
+                                          height: Dimens.DIMENS_8,
+                                        ),
+                                        bioSectionView(),
+                                        gameFavView(),
+                                        if ((widget.uid ?? authState.uid) ==
+                                            authRepository.currentUser!.uid)
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              SizedBox(
+                                                width: Dimens.DIMENS_12,
+                                              ),
+                                              Expanded(
+                                                flex: 2,
+                                                child: Material(
+                                                  color: COLOR_grey,
+                                                  shape: RoundedRectangleBorder(
                                                       borderRadius:
                                                           BorderRadius.circular(
-                                                              5),
-                                                    ),
-                                                    child: Text(
-                                                      'Edit Profil',
-                                                      textAlign:
-                                                          TextAlign.center,
+                                                              5)),
+                                                  child: InkWell(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            5),
+                                                    onTap: () {
+                                                      ProfileData profileData =
+                                                          ProfileData(
+                                                              name: data.name,
+                                                              userName:
+                                                                  data.userName,
+                                                              bio: '',
+                                                              photoUrl:
+                                                                  data.photoURL,
+                                                              updatedAt: data
+                                                                  .updatedAt,
+                                                              userNameUpdatedAt:
+                                                                  data.userNameUpdatedAt,
+                                                              gameFavoritesId: []);
+                                                      context.push(
+                                                          APP_PAGE.editProfile
+                                                              .toPath,
+                                                          extra: profileData);
+                                                    },
+                                                    child: Container(
+                                                      height: Dimens.DIMENS_34,
+                                                      alignment:
+                                                          Alignment.center,
+                                                      decoration: BoxDecoration(
+                                                        color:
+                                                            Colors.transparent,
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(5),
+                                                      ),
+                                                      child: Text(
+                                                        'Edit Profil',
+                                                        textAlign:
+                                                            TextAlign.center,
+                                                      ),
                                                     ),
                                                   ),
                                                 ),
                                               ),
-                                            ),
-                                            SizedBox(
-                                              width: Dimens.DIMENS_6,
-                                            ),
-                                            Expanded(
-                                              child: Container(
+                                              SizedBox(
+                                                width: Dimens.DIMENS_6,
+                                              ),
+                                              Expanded(
+                                                child: Container(
+                                                    height: Dimens.DIMENS_34,
+                                                    decoration: BoxDecoration(
+                                                        color: COLOR_grey,
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(5)),
+                                                    child: Icon(
+                                                        MdiIcons.accountPlus)),
+                                              ),
+                                              SizedBox(
+                                                width: Dimens.DIMENS_12,
+                                              ),
+                                            ],
+                                          )
+                                        else
+                                          Row(
+                                            children: [
+                                              SizedBox(
+                                                width: Dimens.DIMENS_12,
+                                              ),
+                                              BlocBuilder<FollowCubit,
+                                                  FollowState>(
+                                                builder: (context, state) {
+                                                  bool isFollowig;
+                                                  debugPrint(
+                                                      'follow state $state');
+                                                  if (state is Followed) {
+                                                    isFollowig = true;
+                                                  } else if (state
+                                                      is UnFollowed) {
+                                                    isFollowig = false;
+                                                  } else {
+                                                    isFollowig =
+                                                        data.isFollowig;
+                                                  }
+
+                                                  return Expanded(
+                                                    child: Material(
+                                                      shape:
+                                                          RoundedRectangleBorder(
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                          5)),
+                                                      color: isFollowig
+                                                          ? COLOR_grey
+                                                          : COLOR_black_ff121212,
+                                                      child: InkWell(
+                                                        onTap: () {
+                                                          if (isFollowig) {
+                                                            showDialog(
+                                                                context:
+                                                                    context,
+                                                                builder: (_) {
+                                                                  return AlertDialog(
+                                                                    title: Text(
+                                                                        'Berhenti Mengikuti ?'),
+                                                                    actions: [
+                                                                      TextButton(
+                                                                        onPressed:
+                                                                            () {
+                                                                          context
+                                                                              .pop();
+                                                                        },
+                                                                        child: const Text(
+                                                                            'Batal'),
+                                                                      ),
+                                                                      TextButton(
+                                                                        onPressed:
+                                                                            () {
+                                                                          BlocProvider.of<FollowCubit>(context).followButtonHandle(
+                                                                              currentUserUid: authRepository.currentUser!.uid,
+                                                                              uid: widget.uid ?? authState.uid,
+                                                                              stateFromDatabase: data.isFollowig);
+                                                                          context
+                                                                              .pop();
+                                                                        },
+                                                                        child: const Text(
+                                                                            'Oke'),
+                                                                      )
+                                                                    ],
+                                                                  );
+                                                                });
+                                                          } else {
+                                                            BlocProvider.of<
+                                                                        FollowCubit>(
+                                                                    context)
+                                                                .followButtonHandle(
+                                                                    currentUserUid:
+                                                                        authRepository
+                                                                            .currentUser!
+                                                                            .uid,
+                                                                    uid: widget
+                                                                        .uid!,
+                                                                    stateFromDatabase:
+                                                                        data.isFollowig);
+                                                          }
+                                                        },
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(5),
+                                                        child: Container(
+                                                          height:
+                                                              Dimens.DIMENS_34,
+                                                          alignment:
+                                                              Alignment.center,
+                                                          decoration: BoxDecoration(
+                                                              color: Colors
+                                                                  .transparent,
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                          5)),
+                                                          child: Text(
+                                                            isFollowig
+                                                                ? 'Mengikuti'
+                                                                : 'Ikuti',
+                                                            textAlign: TextAlign
+                                                                .center,
+                                                            style: TextStyle(
+                                                                color: isFollowig
+                                                                    ? COLOR_black_ff121212
+                                                                    : COLOR_white_fff5f5f5),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  );
+                                                },
+                                              ),
+                                              SizedBox(
+                                                width: Dimens.DIMENS_6,
+                                              ),
+                                              Expanded(
+                                                child: Container(
                                                   height: Dimens.DIMENS_34,
+                                                  alignment: Alignment.center,
                                                   decoration: BoxDecoration(
                                                       color: COLOR_grey,
                                                       borderRadius:
                                                           BorderRadius.circular(
                                                               5)),
-                                                  child: Icon(
-                                                      MdiIcons.accountPlus)),
-                                            ),
-                                            SizedBox(
-                                              width: Dimens.DIMENS_12,
-                                            ),
-                                          ],
-                                        )
-                                      else
-                                        Row(
-                                          children: [
-                                            SizedBox(
-                                              width: Dimens.DIMENS_12,
-                                            ),
-                                            BlocBuilder<FollowCubit,
-                                                FollowState>(
-                                              builder: (context, state) {
-                                                bool isFollowig;
-                                                debugPrint(
-                                                    'follow state $state');
-                                                if (state is Followed) {
-                                                  isFollowig = true;
-                                                } else if (state
-                                                    is UnFollowed) {
-                                                  isFollowig = false;
-                                                } else {
-                                                  isFollowig = data.isFollowig;
-                                                }
-
-                                                return Expanded(
-                                                  child: Material(
-                                                    shape:
-                                                        RoundedRectangleBorder(
-                                                            borderRadius:
-                                                                BorderRadius
-                                                                    .circular(
-                                                                        5)),
-                                                    color: isFollowig
-                                                        ? COLOR_grey
-                                                        : COLOR_black_ff121212,
-                                                    child: InkWell(
-                                                      onTap: () {
-                                                        if (isFollowig) {
-                                                          showDialog(
-                                                              context: context,
-                                                              builder: (_) {
-                                                                return AlertDialog(
-                                                                  title: Text(
-                                                                      'Berhenti Mengikuti ?'),
-                                                                  actions: [
-                                                                    TextButton(
-                                                                      onPressed:
-                                                                          () {
-                                                                        context
-                                                                            .pop();
-                                                                      },
-                                                                      child: const Text(
-                                                                          'Batal'),
-                                                                    ),
-                                                                    TextButton(
-                                                                      onPressed:
-                                                                          () {
-                                                                        BlocProvider.of<FollowCubit>(context).followButtonHandle(
-                                                                            currentUserUid:
-                                                                                authRepository.currentUser!.uid,
-                                                                            uid: uid ?? authState.uid,
-                                                                            stateFromDatabase: data.isFollowig);
-                                                                        context
-                                                                            .pop();
-                                                                      },
-                                                                      child: const Text(
-                                                                          'Oke'),
-                                                                    )
-                                                                  ],
-                                                                );
-                                                              });
-                                                        } else {
-                                                          BlocProvider.of<
-                                                                      FollowCubit>(
-                                                                  context)
-                                                              .followButtonHandle(
-                                                                  currentUserUid:
-                                                                      authRepository
-                                                                          .currentUser!
-                                                                          .uid,
-                                                                  uid: uid!,
-                                                                  stateFromDatabase:
-                                                                      data.isFollowig);
-                                                        }
-                                                      },
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              5),
-                                                      child: Container(
-                                                        height:
-                                                            Dimens.DIMENS_34,
-                                                        alignment:
-                                                            Alignment.center,
-                                                        decoration: BoxDecoration(
-                                                            color: Colors
-                                                                .transparent,
-                                                            borderRadius:
-                                                                BorderRadius
-                                                                    .circular(
-                                                                        5)),
-                                                        child: Text(
-                                                          isFollowig
-                                                              ? 'Mengikuti'
-                                                              : 'Ikuti',
-                                                          textAlign:
-                                                              TextAlign.center,
-                                                          style: TextStyle(
-                                                              color: isFollowig
-                                                                  ? COLOR_black_ff121212
-                                                                  : COLOR_white_fff5f5f5),
-                                                        ),
-                                                      ),
-                                                    ),
+                                                  child: Text(
+                                                    'Pesan',
+                                                    textAlign: TextAlign.center,
                                                   ),
-                                                );
-                                              },
-                                            ),
-                                            SizedBox(
-                                              width: Dimens.DIMENS_6,
-                                            ),
-                                            Expanded(
-                                              child: Container(
-                                                height: Dimens.DIMENS_34,
-                                                alignment: Alignment.center,
-                                                decoration: BoxDecoration(
-                                                    color: COLOR_grey,
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            5)),
-                                                child: Text(
-                                                  'Pesan',
-                                                  textAlign: TextAlign.center,
                                                 ),
                                               ),
-                                            ),
-                                            SizedBox(
-                                              width: Dimens.DIMENS_12,
-                                            ),
-                                          ],
-                                        ),
-                                      SizedBox(
-                                        height: Dimens.DIMENS_8,
-                                      )
-                                    ]),
-                                  ),
-                                  SliverAppBar(
-                                    toolbarHeight: 0,
-                                    floating: false,
-                                    pinned: true,
-                                    elevation: 0,
-                                    backgroundColor: COLOR_white_fff5f5f5,
-                                    bottom: TabBar(
-                                      labelColor: COLOR_black_ff121212,
-                                      indicatorColor: COLOR_black_ff121212,
-                                      tabs: [
-                                        Tab(text: 'Video'),
-                                        Tab(text: 'Suka'),
-                                      ],
+                                              SizedBox(
+                                                width: Dimens.DIMENS_12,
+                                              ),
+                                            ],
+                                          ),
+                                        SizedBox(
+                                          height: Dimens.DIMENS_8,
+                                        )
+                                      ]),
                                     ),
-                                  ),
-                                ];
-                              },
-                              body: TabBarView(
-                                children: [
-                                  // Content for Tab 1
-                                  KeepAlivePage(
-                                    child: VideoListView(
-                                      uid: uid ??
-                                          authRepository.currentUser!.uid,
-                                      from: From.user,
+                                    SliverAppBar(
+                                      toolbarHeight: 0,
+                                      floating: false,
+                                      pinned: true,
+                                      elevation: 0,
+                                      backgroundColor: COLOR_white_fff5f5f5,
+                                      bottom: TabBar(
+                                        labelColor: COLOR_black_ff121212,
+                                        indicatorColor: COLOR_black_ff121212,
+                                        tabs: [
+                                          Tab(text: 'Video'),
+                                          Tab(text: 'Suka'),
+                                        ],
+                                      ),
                                     ),
-                                  ),
-                                  // Content for Tab 2
-                                  KeepAlivePage(
-                                    child: VideoListView(
-                                      uid: uid ??
-                                          authRepository.currentUser!.uid,
-                                      from: From.likes,
+                                  ];
+                                },
+                                body: TabBarView(
+                                  children: [
+                                    // Content for Tab 1
+                                    KeepAlivePage(
+                                      child: VideoListView(
+                                        uid: widget.uid ??
+                                            authRepository.currentUser!.uid,
+                                        from: From.user,
+                                      ),
                                     ),
-                                  ),
-                                ],
+                                    // Content for Tab 2
+                                    KeepAlivePage(
+                                      child: VideoListView(
+                                        uid: widget.uid ??
+                                            authRepository.currentUser!.uid,
+                                        from: From.likes,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
                           )),
@@ -537,11 +563,11 @@ class ProfilePage extends StatelessWidget {
             ),
             BlocBuilder<EditUserNameCubit, EditUserNameState>(
               builder: (context, state) {
-                if (state. status == EditUserNameStatus.success) {
-                 return Text(
-                  state.newUserName!,
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-                );
+                if (state.status == EditUserNameStatus.success) {
+                  return Text(
+                    state.newUserName!,
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                  );
                 }
                 return Text(
                   data.userName,
@@ -619,50 +645,41 @@ class VideoListView extends StatelessWidget {
         child: BlocBuilder<UserVideoPagingBloc, UserVideoPagingState>(
           builder: (context, state) {
             if (state is UserVideoPagingInitialed) {
-              return RefreshIndicator(
-                onRefresh: () {
-                  if (from == From.likes) {
-                    RepositoryProvider.of<UserVideoPagingRepository>(context)
-                        .clearLikeVideo();
-                  }
-                  return Future.sync(() => state.controller.refresh());
-                },
-                child: PagedGridView<int, String>(
-                    pagingController: state.controller,
-                    builderDelegate: PagedChildBuilderDelegate(
-                      itemBuilder: (context, item, index) {
-                        // var doc = await firebaseFirestore.collection('videos').doc(item).get();
-                        // Video video = Video.fromSnap(doc);
-                        return AspectRatio(
-                          aspectRatio: 16 / 9,
-                          child: FutureBuilder(
-                              future: firebaseFirestore
-                                  .collection('videos')
-                                  .doc(item)
-                                  .get(),
-                              builder: (context,
-                                  AsyncSnapshot<DocumentSnapshot> snapshot) {
-                                late Video video;
-                                if (snapshot.data != null) {
-                                  video = Video.fromSnap(snapshot.data!);
-                                }
+              return PagedGridView<int, String>(
+                pagingController: state.controller,
+                builderDelegate: PagedChildBuilderDelegate(
+                  itemBuilder: (context, item, index) {
+                    // var doc = await firebaseFirestore.collection('videos').doc(item).get();
+                    // Video video = Video.fromSnap(doc);
+                    return AspectRatio(
+                      aspectRatio: 16 / 9,
+                      child: FutureBuilder(
+                          future: firebaseFirestore
+                              .collection('videos')
+                              .doc(item)
+                              .get(),
+                          builder: (context,
+                              AsyncSnapshot<DocumentSnapshot> snapshot) {
+                            late Video video;
+                            if (snapshot.data != null) {
+                              video = Video.fromSnap(snapshot.data!);
+                            }
 
-                                if (!snapshot.hasData) {
-                                  return Container();
-                                }
-                                return Container(
-                                  child: CachedNetworkImage(
-                                      fit: BoxFit.cover,
-                                      imageUrl: video.thumnail),
-                                );
-                              }),
-                        );
-                      },
-                    ),
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      childAspectRatio: 9 / 16,
-                      crossAxisCount: 3,
-                    )),
+                            if (!snapshot.hasData) {
+                              return Container();
+                            }
+                            return Container(
+                              child: CachedNetworkImage(
+                                  fit: BoxFit.cover, imageUrl: video.thumnail),
+                            );
+                          }),
+                    );
+                  },
+                ),
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  childAspectRatio: 9 / 16,
+                  crossAxisCount: 3,
+                ),
               );
             }
             return const CircularProgressIndicator();
