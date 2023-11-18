@@ -8,6 +8,7 @@ import 'package:personal_project/constant/color.dart';
 import 'package:personal_project/constant/dimens.dart';
 import 'package:personal_project/domain/model/profile_data_model.dart';
 import 'package:personal_project/presentation/router/route_utils.dart';
+import 'package:personal_project/presentation/ui/edit_profile/cubit/edit_bio_cubit.dart';
 import 'package:personal_project/presentation/ui/edit_profile/cubit/edit_user_name_cubit.dart';
 import 'package:personal_project/presentation/ui/edit_profile/edit_modal/edit_bio_modal.dart';
 import 'package:personal_project/presentation/ui/edit_profile/edit_modal/edit_name_modal.dart';
@@ -24,8 +25,9 @@ class EditProfile extends StatelessWidget {
     Size size = MediaQuery.of(context).size;
 
     Timestamp lastUpdate = data.updatedAt;
-    Timestamp userNameUpdatedAt= data.userNameUpdatedAt;
+    Timestamp userNameUpdatedAt = data.userNameUpdatedAt;
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         title: Text('Edit Profil'),
         foregroundColor: COLOR_black_ff121212,
@@ -167,18 +169,34 @@ class EditProfile extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text('Bio'),
-                    Text(
-                      data.bio,
-                      style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                    BlocBuilder<EditBioCubit, EditBioState>(
+                      builder: (context, state) {
+                        String bio = data.bio;
+                        if (state.status == EditBioStatus.succes) {
+                          bio = state.bio!;
+                        }
+                        return Text(
+                          bio,
+                          style: TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.w500),
+                        );
+                      },
                     ),
                   ],
                 ),
-                IconButton(
-                    onPressed: () {
-                      showEditBioMpdal(context);
-                    },
-                    icon: Icon(MdiIcons.pencilOutline))
+                BlocBuilder<EditBioCubit, EditBioState>(
+                  builder: (_, state) {
+                    String bio = data.bio;
+                    if (state.status == EditBioStatus.succes) {
+                      bio = state.bio!;
+                    }
+                    return IconButton(
+                        onPressed: () {
+                          showEditBioMpdal(context, bio: bio);
+                        },
+                        icon: Icon(MdiIcons.pencilOutline));
+                  },
+                )
               ],
             ),
             Divider(

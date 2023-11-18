@@ -152,6 +152,18 @@ class UserRepository implements UserUseCaseType {
     return false;
   }
 
+  Future<String> getBio(String uid) async {
+    String bio = '';
+    var doc = await firebaseFirestore
+        .collection('users')
+        .doc(uid)
+        .collection('otherInfo')
+        .doc('bio')
+        .get();
+    bio = doc['bio'];
+    return bio;
+  }
+
   Future<void> editName(String newName) async {
     try {
       debugPrint(newName);
@@ -174,6 +186,19 @@ class UserRepository implements UserUseCaseType {
         'userName': newName,
         'userNameUpdatedAt': FieldValue.serverTimestamp()
       });
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<void> editBio(String bio) async {
+    try {
+      await firebaseFirestore
+          .collection('users')
+          .doc(firebaseAuth.currentUser!.uid)
+          .collection('otherInfo')
+          .doc('bio')
+          .set({'bio': bio});
     } catch (e) {
       rethrow;
     }

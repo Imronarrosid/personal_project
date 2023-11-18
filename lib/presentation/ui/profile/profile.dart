@@ -22,6 +22,7 @@ import 'package:personal_project/presentation/router/route_utils.dart';
 import 'package:personal_project/presentation/shared_components/keep_alive_page.dart';
 import 'package:personal_project/presentation/shared_components/not_authenticated_page.dart';
 import 'package:personal_project/presentation/ui/auth/bloc/auth_bloc.dart';
+import 'package:personal_project/presentation/ui/edit_profile/cubit/edit_bio_cubit.dart';
 import 'package:personal_project/presentation/ui/edit_profile/cubit/edit_name_cubit.dart';
 import 'package:personal_project/presentation/ui/edit_profile/cubit/edit_user_name_cubit.dart';
 import 'package:personal_project/presentation/ui/profile/bloc/user_video_paging_bloc.dart';
@@ -124,7 +125,8 @@ class _ProfilePageState extends State<ProfilePage> {
                                         SizedBox(
                                           height: Dimens.DIMENS_8,
                                         ),
-                                        bioSectionView(),
+                                        bioSectionView(
+                                            uid: widget.uid ?? authState.uid),
                                         gameFavView(),
                                         if ((widget.uid ?? authState.uid) ==
                                             authRepository.currentUser!.uid)
@@ -147,20 +149,23 @@ class _ProfilePageState extends State<ProfilePage> {
                                                     borderRadius:
                                                         BorderRadius.circular(
                                                             5),
-                                                    onTap: () {
-                                                      ProfileData profileData =
-                                                          ProfileData(
-                                                              name: data.name,
-                                                              userName:
-                                                                  data.userName,
-                                                              bio: '',
-                                                              photoUrl:
-                                                                  data.photoURL,
-                                                              updatedAt: data
-                                                                  .updatedAt,
-                                                              userNameUpdatedAt:
-                                                                  data.userNameUpdatedAt,
-                                                              gameFavoritesId: []);
+                                                    onTap: () async {
+                                                      ProfileData profileData = ProfileData(
+                                                          name: data.name,
+                                                          userName:
+                                                              data.userName,
+                                                          bio: await userRepository
+                                                              .getBio(
+                                                                  widget.uid ??
+                                                                      authState
+                                                                          .uid),
+                                                          photoUrl:
+                                                              data.photoURL,
+                                                          updatedAt:
+                                                              data.updatedAt,
+                                                          userNameUpdatedAt: data
+                                                              .userNameUpdatedAt,
+                                                          gameFavoritesId: []);
                                                       context.push(
                                                           APP_PAGE.editProfile
                                                               .toPath,
@@ -482,75 +487,93 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  Padding bioSectionView() {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: Dimens.DIMENS_12),
-      child: BlocBuilder<ProfileCubit, ProfileState>(
-        buildWhen: (previous, current) {
-          if (current is ShowLessGameFav) {
-            return false;
-          } else if (current is ShowMoreGameFav) {
-            return false;
+  FutureBuilder bioSectionView({required String uid}) {
+    final repository = RepositoryProvider.of<UserRepository>(context);
+    return FutureBuilder(
+        future: repository.getBio(uid),
+        builder: (context, snapshot) {
+          String? bio = snapshot.data;
+          if (!snapshot.hasData) {
+            return Container();
           }
-          return true;
-        },
-        builder: (context, state) {
-          double? height = 80;
-          int? maxLines = 5;
-          if (state is ShowMoreBio) {
-            height = null;
-            maxLines = null;
-          } else if (state is ShowLessBio) {
-            height = 80;
-            maxLines = 5;
-          }
-          return LayoutBuilder(builder: (context, constraints) {
-            const String text =
-                "Lorem ipsum dolor sit amet\n consectetur adipisicing elit.\n Maxime mollitia, molestiae quas\n vel sint commodi repudiandae \nconsequuntur voluptatum laborum \nnumquam \nblanditiis harum quisquam eius sed \nodit fugiat iusto fuga praesentium \noptio, eaque rerum! Provident similique accusantium nemo autem.";
-            final textPainter = TextPainter(
-              text: TextSpan(
-                text: text,
-                style: TextStyle(fontSize: 14.0),
-              ),
-              textDirection: TextDirection.ltr,
-            );
-            textPainter.layout(maxWidth: double.infinity);
-            final lines =
-                (textPainter.size.height / textPainter.preferredLineHeight)
-                    .ceil();
+          return BlocConsumer<EditBioCubit, EditBioState>(
+            listener: (context, state) {
+              if (state.status == EditBioStatus.succes) {
+                bio = state.bio;
+              }
+            },
+            builder: (context, state) {
+              return Padding(
+                padding: EdgeInsets.symmetric(horizontal: Dimens.DIMENS_12),
+                child: BlocBuilder<ProfileCubit, ProfileState>(
+                  buildWhen: (previous, current) {
+                    if (current is ShowLessGameFav) {
+                      return false;
+                    } else if (current is ShowMoreGameFav) {
+                      return false;
+                    }
+                    return true;
+                  },
+                  builder: (context, state) {
+                    int? maxLines = 5;
+                    if (state is ShowMoreBio) {
+                      maxLines = null;
+                    } else if (state is ShowLessBio) {
+                      maxLines = 5;
+                    }
+                    return LayoutBuilder(builder: (context, constraints) {
+                      String text = bio!;
+                      final textPainter = TextPainter(
+                        text: TextSpan(
+                          text: text,
+                          style: TextStyle(fontSize: 14.0),
+                        ),
+                        textDirection: TextDirection.ltr,
+                      );
+                      textPainter.layout(maxWidth: double.infinity);
+                      final lines = (textPainter.size.height /
+                              textPainter.preferredLineHeight)
+                          .ceil();
 
-            debugPrint('text is overflow  ${lines > 5}');
+                      debugPrint('text is overflow  ${lines > 5}');
 
-            return Column(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                SizedBox(
-                  height: height,
-                  child: Text(
-                    'Lorem ipsum dolor sit amet\n consectetur adipisicing elit.\n Maxime mollitia, molestiae quas\n vel sint commodi repudiandae \nconsequuntur voluptatum laborum \nnumquam \nblanditiis harum quisquam eius sed \nodit fugiat iusto fuga praesentium optio, eaque rerum! Provident similique accusantium nemo autem.',
-                    overflow: TextOverflow.ellipsis,
-                    maxLines: maxLines,
-                  ),
+                      return Column(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          SizedBox(
+                            width: MediaQuery.of(context).size.width,
+                            child: Text(
+                              bio!,
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: maxLines,
+                              textAlign: TextAlign.left,
+                            ),
+                          ),
+                          if (lines > 5)
+                            InkWell(
+                              onTap: () =>
+                                  BlocProvider.of<ProfileCubit>(context)
+                                      .seeMoreBioHandle(),
+                              child: Text(state is ShowLessBio
+                                  ? '...selengkapnya'
+                                  : '...lebih sedikit'),
+                            )
+                          else
+                            Container(),
+                        ],
+                      );
+                    });
+                  },
                 ),
-                if (lines > 5)
-                  InkWell(
-                    onTap: () => BlocProvider.of<ProfileCubit>(context)
-                        .seeMoreBioHandle(),
-                    child: Text(height != null
-                        ? '...selengkapnya'
-                        : '...lebih sedikit'),
-                  )
-                else
-                  Container(),
-              ],
-            );
-          });
-        },
-      ),
-    );
+              );
+            },
+          );
+        });
   }
 
+  /// username,photo ,follwers,folowing,likes
   Row topSectionView(UserData data) {
     return Row(
       children: [
