@@ -27,6 +27,7 @@ import 'package:personal_project/presentation/ui/edit_profile/cubit/edit_user_na
 import 'package:personal_project/presentation/ui/profile/bloc/user_video_paging_bloc.dart';
 import 'package:personal_project/presentation/ui/profile/cubit/follow_cubit.dart';
 import 'package:personal_project/presentation/ui/profile/cubit/profile_cubit.dart';
+import 'package:personal_project/presentation/ui/profile/cubit/refresh_profile_cubit.dart';
 
 class ProfilePage extends StatefulWidget {
   final String? uid;
@@ -52,6 +53,9 @@ class _ProfilePageState extends State<ProfilePage> {
         BlocProvider(
           create: (context) => FollowCubit(userRepository),
         ),
+        BlocProvider(
+          create: (context) => RefreshProfileCubit(),
+        )
       ],
       child: Builder(builder: (context) {
         return BlocBuilder<AuthBloc, AuthState>(
@@ -107,8 +111,9 @@ class _ProfilePageState extends State<ProfilePage> {
                                 }
                                 return notification.depth == 0;
                               },
-                              onRefresh: () =>
-                                  Future.sync(() => setState(() {})),
+                              onRefresh: () => Future.sync(() =>
+                                  BlocProvider.of<RefreshProfileCubit>(context)
+                                      .refreshProfile()),
                               child: NestedScrollView(
                                 headerSliverBuilder:
                                     (context, innerBoxIsScrolled) {
@@ -645,40 +650,52 @@ class VideoListView extends StatelessWidget {
         child: BlocBuilder<UserVideoPagingBloc, UserVideoPagingState>(
           builder: (context, state) {
             if (state is UserVideoPagingInitialed) {
-              return PagedGridView<int, String>(
-                pagingController: state.controller,
-                builderDelegate: PagedChildBuilderDelegate(
-                  itemBuilder: (context, item, index) {
-                    // var doc = await firebaseFirestore.collection('videos').doc(item).get();
-                    // Video video = Video.fromSnap(doc);
-                    return AspectRatio(
-                      aspectRatio: 16 / 9,
-                      child: FutureBuilder(
-                          future: firebaseFirestore
-                              .collection('videos')
-                              .doc(item)
-                              .get(),
-                          builder: (context,
-                              AsyncSnapshot<DocumentSnapshot> snapshot) {
-                            late Video video;
-                            if (snapshot.data != null) {
-                              video = Video.fromSnap(snapshot.data!);
-                            }
+              return BlocListener<RefreshProfileCubit, RefreshProfileState>(
+                listener: (context, refreshState) {
+                  if (refreshState.status == RefreshStatus.refresh) {
+                    RepositoryProvider.of<UserVideoPagingRepository>(context)
+                        .clearLikeVideo();
+                    RepositoryProvider.of<UserVideoPagingRepository>(context)
+                        .clearUserVideo();
+                    state.controller.refresh();
+                  }
+                },
+                child: PagedGridView<int, String>(
+                  pagingController: state.controller,
+                  builderDelegate: PagedChildBuilderDelegate(
+                    itemBuilder: (context, item, index) {
+                      // var doc = await firebaseFirestore.collection('videos').doc(item).get();
+                      // Video video = Video.fromSnap(doc);
+                      return AspectRatio(
+                        aspectRatio: 16 / 9,
+                        child: FutureBuilder(
+                            future: firebaseFirestore
+                                .collection('videos')
+                                .doc(item)
+                                .get(),
+                            builder: (context,
+                                AsyncSnapshot<DocumentSnapshot> snapshot) {
+                              late Video video;
+                              if (snapshot.data != null) {
+                                video = Video.fromSnap(snapshot.data!);
+                              }
 
-                            if (!snapshot.hasData) {
-                              return Container();
-                            }
-                            return Container(
-                              child: CachedNetworkImage(
-                                  fit: BoxFit.cover, imageUrl: video.thumnail),
-                            );
-                          }),
-                    );
-                  },
-                ),
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  childAspectRatio: 9 / 16,
-                  crossAxisCount: 3,
+                              if (!snapshot.hasData) {
+                                return Container();
+                              }
+                              return Container(
+                                child: CachedNetworkImage(
+                                    fit: BoxFit.cover,
+                                    imageUrl: video.thumnail),
+                              );
+                            }),
+                      );
+                    },
+                  ),
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    childAspectRatio: 9 / 16,
+                    crossAxisCount: 3,
+                  ),
                 ),
               );
             }

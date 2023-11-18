@@ -24,7 +24,7 @@ class UserVideoPagingRepository {
   }
 
   clearUserVideo() {
-    currentLoadedVideo.clear();
+    videoRepository.allUserVideosDocs.clear();
   }
 
   void initPagingController(String uid, {required From from}) {
