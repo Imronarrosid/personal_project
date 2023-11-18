@@ -8,6 +8,7 @@ import 'package:personal_project/constant/color.dart';
 import 'package:personal_project/constant/dimens.dart';
 import 'package:personal_project/domain/model/profile_data_model.dart';
 import 'package:personal_project/presentation/router/route_utils.dart';
+import 'package:personal_project/presentation/ui/edit_profile/cubit/edit_user_name_cubit.dart';
 import 'package:personal_project/presentation/ui/edit_profile/edit_modal/edit_bio_modal.dart';
 import 'package:personal_project/presentation/ui/edit_profile/edit_modal/edit_name_modal.dart';
 import 'package:personal_project/presentation/ui/edit_profile/edit_modal/edit_user_name_modal.dart';
@@ -23,6 +24,7 @@ class EditProfile extends StatelessWidget {
     Size size = MediaQuery.of(context).size;
 
     Timestamp lastUpdate = data.updatedAt;
+    Timestamp userNameUpdatedAt= data.userNameUpdatedAt;
     return Scaffold(
       appBar: AppBar(
         title: Text('Edit Profil'),
@@ -115,10 +117,10 @@ class EditProfile extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text('Nama pengguna'),
-                    BlocBuilder<EditNameCubit, EditNameState>(
+                    BlocBuilder<EditUserNameCubit, EditUserNameState>(
                       builder: (context, state) {
                         debugPrint('state ${state.status}');
-                        if (state.status == EditNameStatus.initial) {
+                        if (state.status == EditUserNameStatus.initial) {
                           return Text(
                             data.userName,
                             style: TextStyle(
@@ -126,8 +128,8 @@ class EditProfile extends StatelessWidget {
                           );
                         }
                         return Text(
-                          state.status == EditNameStatus.nameEditSuccess
-                              ? state.name!
+                          state.status == EditUserNameStatus.success
+                              ? state.newUserName!
                               : data.name,
                           style: TextStyle(
                               fontSize: 16, fontWeight: FontWeight.w500),
@@ -136,13 +138,22 @@ class EditProfile extends StatelessWidget {
                     ),
                   ],
                 ),
-                IconButton(
-                    onPressed: () {
-                      showEditUserNameModal(context,
-                          userName: data.userName,
-                          lastUpdate: data.userNameUpdatedAt);
-                    },
-                    icon: Icon(MdiIcons.pencilOutline))
+                BlocConsumer<EditUserNameCubit, EditUserNameState>(
+                  listener: (context, state) {
+                    if (state.status == EditUserNameStatus.success) {
+                      userNameUpdatedAt = Timestamp.now();
+                    }
+                  },
+                  builder: (context, state) {
+                    return IconButton(
+                        onPressed: () {
+                          showEditUserNameModal(context,
+                              userName: data.userName,
+                              lastUpdate: data.userNameUpdatedAt);
+                        },
+                        icon: Icon(MdiIcons.pencilOutline));
+                  },
+                )
               ],
             ),
             Divider(

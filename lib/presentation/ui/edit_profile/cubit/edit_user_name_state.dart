@@ -4,7 +4,11 @@ enum EditUserNameStatus { initial, loading, success, error }
 
 class EditUserNameState extends Equatable {
   final EditUserNameStatus? status;
-  const EditUserNameState({this.status});
+  final String? newUserName;
+  const EditUserNameState({
+    this.status,
+    this.newUserName,
+  });
 
   @override
   List<Object> get props => [status!];

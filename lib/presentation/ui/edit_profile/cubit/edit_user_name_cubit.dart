@@ -12,7 +12,8 @@ class EditUserNameCubit extends Cubit<EditUserNameState> {
     emit(const EditUserNameState(status: EditUserNameStatus.loading));
     try {
       await userRepository.editUserName(newUserName);
-      emit(const EditUserNameState(status: EditUserNameStatus.success));
+      emit(EditUserNameState(
+          status: EditUserNameStatus.success, newUserName: newUserName));
     } catch (e) {
       emit(const EditUserNameState(status: EditUserNameStatus.error));
     }

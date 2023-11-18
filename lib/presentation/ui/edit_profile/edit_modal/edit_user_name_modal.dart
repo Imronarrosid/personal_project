@@ -87,16 +87,20 @@ void showEditUserNameModal(BuildContext context,
                       height: Dimens.DIMENS_18,
                     ),
                     Material(
-                      color: COLOR_black_ff121212,
+                      color: isCanEditUserName(lastUpdate)
+                          ? COLOR_black_ff121212
+                          : COLOR_grey,
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(50)),
                       child: InkWell(
-                        onTap: () {
-                          if (_formKey.currentState!.validate()) {
-                            BlocProvider.of<EditUserNameCubit>(context)
-                                .editUserName(controller.text);
-                          }
-                        },
+                        onTap: isCanEditUserName(lastUpdate)
+                            ? () {
+                                if (_formKey.currentState!.validate()) {
+                                  BlocProvider.of<EditUserNameCubit>(context)
+                                      .editUserName(controller.text);
+                                }
+                              }
+                            : null,
                         child: Container(
                           width: double.infinity,
                           height: Dimens.DIMENS_38,
@@ -123,7 +127,10 @@ void showEditUserNameModal(BuildContext context,
                               }
                               return Text(
                                 'Simpan',
-                                style: TextStyle(color: COLOR_white_fff5f5f5),
+                                style: TextStyle(
+                                    color: isCanEditUserName(lastUpdate)
+                                        ? COLOR_white_fff5f5f5
+                                        : COLOR_black_ff121212),
                               );
                             },
                           ),

@@ -21,6 +21,7 @@ import 'package:personal_project/presentation/shared_components/keep_alive_page.
 import 'package:personal_project/presentation/shared_components/not_authenticated_page.dart';
 import 'package:personal_project/presentation/ui/auth/bloc/auth_bloc.dart';
 import 'package:personal_project/presentation/ui/edit_profile/cubit/edit_name_cubit.dart';
+import 'package:personal_project/presentation/ui/edit_profile/cubit/edit_user_name_cubit.dart';
 import 'package:personal_project/presentation/ui/profile/bloc/user_video_paging_bloc.dart';
 import 'package:personal_project/presentation/ui/profile/cubit/follow_cubit.dart';
 import 'package:personal_project/presentation/ui/profile/cubit/profile_cubit.dart';
@@ -534,9 +535,19 @@ class ProfilePage extends StatelessWidget {
                   borderRadius: BorderRadius.circular(50),
                   child: CachedNetworkImage(imageUrl: data!.photoURL)),
             ),
-            Text(
-              data.name,
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+            BlocBuilder<EditUserNameCubit, EditUserNameState>(
+              builder: (context, state) {
+                if (state. status == EditUserNameStatus.success) {
+                 return Text(
+                  state.newUserName!,
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                );
+                }
+                return Text(
+                  data.userName,
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                );
+              },
             ),
           ],
         ),
