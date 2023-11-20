@@ -12,6 +12,7 @@ import 'package:personal_project/presentation/ui/edit_profile/cubit/edit_bio_cub
 import 'package:personal_project/presentation/ui/edit_profile/cubit/edit_user_name_cubit.dart';
 import 'package:personal_project/presentation/ui/edit_profile/edit_modal/edit_bio_modal.dart';
 import 'package:personal_project/presentation/ui/edit_profile/edit_modal/edit_name_modal.dart';
+import 'package:personal_project/presentation/ui/edit_profile/edit_modal/edit_profilr_picture_modal.dart';
 import 'package:personal_project/presentation/ui/edit_profile/edit_modal/edit_user_name_modal.dart';
 import 'package:personal_project/presentation/ui/edit_profile/cubit/edit_name_cubit.dart';
 import 'package:personal_project/presentation/ui/edit_profile/edit_page/edit_game_fav_page.dart';
@@ -44,8 +45,8 @@ class EditProfile extends StatelessWidget {
             Align(
               alignment: Alignment.center,
               child: SizedBox(
-                width: 70,
-                height: 70,
+                width: 90,
+                height: 90,
                 child: Stack(
                   children: [
                     ClipRRect(
@@ -53,8 +54,13 @@ class EditProfile extends StatelessWidget {
                       child: CachedNetworkImage(imageUrl: data.photoUrl),
                     ),
                     Align(
-                      alignment: Alignment.bottomRight,
-                      child: Icon(MdiIcons.cameraOutline),
+                      alignment: Alignment.center,
+                      child: IconButton(
+                        padding: EdgeInsets.zero,
+                          onPressed: () {
+                            showEditPPModal(context);
+                          },
+                          icon: Icon(MdiIcons.cameraOutline)),
                     )
                   ],
                 ),

@@ -8,6 +8,7 @@ import 'package:personal_project/domain/model/profile_data_model.dart';
 import 'package:personal_project/domain/services/app/app_service.dart';
 import 'package:personal_project/presentation/router/route_utils.dart';
 import 'package:personal_project/presentation/ui/add_details/add_details_page.dart';
+import 'package:personal_project/presentation/ui/profile_pict_preview/profile_pict_preview.dart';
 import 'package:personal_project/presentation/ui/edit_profile/edit_page/edit_name_page.dart';
 import 'package:personal_project/presentation/ui/edit_profile/edit_profile.dart';
 import 'package:personal_project/presentation/ui/home/home.dart';
@@ -108,6 +109,14 @@ class AppRouter {
         builder: (context, state) {
           ProfileData profileData = state.extra as ProfileData;
           return EditProfile(data: profileData);
+        },
+      ),
+      GoRoute(
+        path: APP_PAGE.cropImage.toPath,
+        name: APP_PAGE.cropImage.toName,
+        builder: (context, state) {
+          XFile profileData = state.extra as XFile;
+          return PrevewProfilePictPage(imageFile: profileData);
         },
       ),
       // GoRoute(

@@ -12,7 +12,8 @@ enum APP_PAGE {
   videoEditor,
   addDetails,
   editProfile,
-  editName
+  editName,
+  cropImage
 }
 
 extension AppPageExtension on APP_PAGE {
@@ -42,6 +43,8 @@ extension AppPageExtension on APP_PAGE {
         return "/edit-profile";
       case APP_PAGE.editName:
         return "/name";
+      case APP_PAGE.cropImage:
+        return "/crop-image";
       default:
         return "/";
     }
@@ -73,6 +76,8 @@ extension AppPageExtension on APP_PAGE {
         return "EDIT-POFILE";
       case APP_PAGE.editName:
         return "NAME";
+      case APP_PAGE.cropImage:
+        return "CROP";
       default:
         return "HOME";
     }
