@@ -9,6 +9,7 @@ import 'package:personal_project/constant/dimens.dart';
 import 'package:personal_project/domain/model/profile_data_model.dart';
 import 'package:personal_project/presentation/router/route_utils.dart';
 import 'package:personal_project/presentation/ui/edit_profile/cubit/edit_bio_cubit.dart';
+import 'package:personal_project/presentation/ui/edit_profile/cubit/edit_profile_pict_cubit.dart';
 import 'package:personal_project/presentation/ui/edit_profile/cubit/edit_user_name_cubit.dart';
 import 'package:personal_project/presentation/ui/edit_profile/edit_modal/edit_bio_modal.dart';
 import 'package:personal_project/presentation/ui/edit_profile/edit_modal/edit_name_modal.dart';
@@ -51,12 +52,25 @@ class EditProfile extends StatelessWidget {
                   children: [
                     ClipRRect(
                       borderRadius: BorderRadius.circular(50),
-                      child: CachedNetworkImage(imageUrl: data.photoUrl),
+                      child: BlocBuilder<EditProfilePictCubit,
+                          EditProfilePictState>(
+                        builder: (context, state) {
+                          if (state.status == EditProfilePicStatus.success) {
+                            return Image.file(
+                              state.imageFile!,
+                              width: 90,
+                              height: 90,
+                              fit: BoxFit.cover,
+                            );
+                          }
+                          return CachedNetworkImage(imageUrl: data.photoUrl,fit: BoxFit.cover,width: double.infinity,);
+                        },
+                      ),
                     ),
                     Align(
                       alignment: Alignment.center,
                       child: IconButton(
-                        padding: EdgeInsets.zero,
+                          padding: EdgeInsets.zero,
                           onPressed: () {
                             showEditPPModal(context);
                           },

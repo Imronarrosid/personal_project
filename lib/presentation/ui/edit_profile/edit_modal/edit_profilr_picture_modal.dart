@@ -12,11 +12,11 @@ showEditPPModal(BuildContext context) {
   showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (context) {
+      builder: (_) {
         return Padding(
           padding: const EdgeInsets.all(8.0),
           child: Container(
-            height: 300,
+            height: 200,
             padding: EdgeInsets.all(Dimens.DIMENS_12),
             decoration: BoxDecoration(
                 color: COLOR_white_fff5f5f5,
@@ -41,23 +41,31 @@ showEditPPModal(BuildContext context) {
                   'Foto Profil',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
                 ),
-                ListTile(
-                  leading: Icon(MdiIcons.camera),
-                  title: Text('Camera'),
-                  onTap: () {
-                    picker.pickImage(source: ImageSource.camera);
-                  },
+                Material(
+                  child: ListTile(
+                    leading: Icon(MdiIcons.camera),
+                    title: Text('Camera'),
+                    onTap: () async {
+                      XFile? file =
+                          await picker.pickImage(source: ImageSource.camera);
+                      if (context.mounted && file != null) {
+                        context.push(APP_PAGE.cropImage.toPath, extra: file);
+                      }
+                    },
+                  ),
                 ),
-                ListTile(
-                  leading: Icon(MdiIcons.image),
-                  title: Text('Galeri'),
-                  onTap: () async {
-                    XFile? file =
-                        await picker.pickImage(source: ImageSource.gallery,imageQuality: 15);
-                    if (context.mounted) {
-                      context.push(APP_PAGE.cropImage.toPath, extra: file);
-                    }
-                  },
+                Material(
+                  child: ListTile(
+                    leading: Icon(MdiIcons.image),
+                    title: Text('Galeri'),
+                    onTap: () async {
+                      XFile? file = await picker.pickImage(
+                          source: ImageSource.gallery, imageQuality: 15);
+                      if (context.mounted && file != null) {
+                        context.push(APP_PAGE.cropImage.toPath, extra: file);
+                      }
+                    },
+                  ),
                 ),
               ],
             ),

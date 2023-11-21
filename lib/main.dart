@@ -20,6 +20,7 @@ import 'package:personal_project/presentation/ui/add_details/bloc/upload_bloc.da
 import 'package:personal_project/presentation/ui/auth/bloc/auth_bloc.dart';
 import 'package:personal_project/presentation/ui/edit_profile/cubit/edit_bio_cubit.dart';
 import 'package:personal_project/presentation/ui/edit_profile/cubit/edit_name_cubit.dart';
+import 'package:personal_project/presentation/ui/edit_profile/cubit/edit_profile_pict_cubit.dart';
 import 'package:personal_project/presentation/ui/edit_profile/cubit/edit_user_name_cubit.dart';
 import 'package:personal_project/presentation/ui/home/home.dart';
 import 'package:personal_project/presentation/ui/upload/bloc/camera_bloc.dart';
@@ -138,6 +139,11 @@ class _MyAppState extends State<MyApp> {
                 final UserRepository userRepository =
                     RepositoryProvider.of<UserRepository>(context);
                 return EditUserNameCubit(userRepository);
+              }),
+              BlocProvider(create: (context) {
+                final UserRepository userRepository =
+                    RepositoryProvider.of<UserRepository>(context);
+                return EditProfilePictCubit(userRepository);
               })
             ],
             child: MaterialApp.router(

@@ -24,6 +24,7 @@ import 'package:personal_project/presentation/shared_components/not_authenticate
 import 'package:personal_project/presentation/ui/auth/bloc/auth_bloc.dart';
 import 'package:personal_project/presentation/ui/edit_profile/cubit/edit_bio_cubit.dart';
 import 'package:personal_project/presentation/ui/edit_profile/cubit/edit_name_cubit.dart';
+import 'package:personal_project/presentation/ui/edit_profile/cubit/edit_profile_pict_cubit.dart';
 import 'package:personal_project/presentation/ui/edit_profile/cubit/edit_user_name_cubit.dart';
 import 'package:personal_project/presentation/ui/profile/bloc/user_video_paging_bloc.dart';
 import 'package:personal_project/presentation/ui/profile/cubit/follow_cubit.dart';
@@ -89,7 +90,8 @@ class _ProfilePageState extends State<ProfilePage> {
                         title: BlocBuilder<EditNameCubit, EditNameState>(
                           builder: (context, state) {
                             if (state.status ==
-                                EditNameStatus.nameEditSuccess) {
+                                    EditNameStatus.nameEditSuccess &&
+                                data!.uid == authRepository.currentUser!.uid) {
                               return Text(state.name!);
                             }
                             return Text(data!.name);
@@ -583,22 +585,44 @@ class _ProfilePageState extends State<ProfilePage> {
         Column(
           children: [
             CircleAvatar(
-              radius: 30,
-              backgroundColor: Colors.transparent,
+              backgroundColor: COLOR_grey,
+              radius: 35,
               child: ClipRRect(
                   borderRadius: BorderRadius.circular(50),
-                  child: CachedNetworkImage(imageUrl: data!.photoURL)),
+                  child:
+                      BlocBuilder<EditProfilePictCubit, EditProfilePictState>(
+                    builder: (context, state) {
+                      String uid =
+                          RepositoryProvider.of<AuthRepository>(context)
+                              .currentUser!
+                              .uid;
+                      if (state.status == EditProfilePicStatus.success &&
+                          data.uid == uid) {
+                        return Image.file(
+                          state.imageFile!,
+                          width: double.infinity,
+                          fit: BoxFit.fill,
+                        );
+                      }
+                      return CachedNetworkImage(imageUrl: data.photoURL,fit: BoxFit.cover,
+                      width: double.infinity,);
+                    },
+                  )),
             ),
             BlocBuilder<EditUserNameCubit, EditUserNameState>(
               builder: (context, state) {
-                if (state.status == EditUserNameStatus.success) {
+                String uid = RepositoryProvider.of<AuthRepository>(context)
+                    .currentUser!
+                    .uid;
+                if (state.status == EditUserNameStatus.success &&
+                    data.uid == uid) {
                   return Text(
-                    state.newUserName!,
+                    '@${state.newUserName!}',
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
                   );
                 }
                 return Text(
-                  data.userName,
+                  '@${data.userName}',
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
                 );
               },
@@ -609,7 +633,7 @@ class _ProfilePageState extends State<ProfilePage> {
           child: Column(
             children: [
               Text(
-                data.followers,
+                data.following,
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
               ),
               Text(
@@ -624,7 +648,7 @@ class _ProfilePageState extends State<ProfilePage> {
           child: Column(
             children: [
               Text(
-                data.following,
+                data.followers,
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
               ),
               Text('Pengikut',

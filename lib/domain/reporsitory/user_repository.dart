@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:personal_project/domain/model/user.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
@@ -25,7 +28,7 @@ class UserRepository implements UserUseCaseType {
         await firebaseFirestore.collection('users').doc(uid).get();
     final userData = userDoc.data()! as dynamic;
     String name = userData['name'];
-    String photo = userData['photo'] ?? userDoc['photoUrl'];
+    String photo = userDoc['photoUrl'];
     int likes = 0;
     int followers = 0;
     int following = 0;
@@ -52,7 +55,7 @@ class UserRepository implements UserUseCaseType {
         .collection('users')
         .doc(uid)
         .collection('followers')
-        .doc(uid)
+        .doc(firebaseAuth.currentUser!.uid)
         .get()
         .then((value) {
       if (value.exists) {
@@ -199,6 +202,24 @@ class UserRepository implements UserUseCaseType {
           .collection('otherInfo')
           .doc('bio')
           .set({'bio': bio});
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<void> editProfilePict(File imageFile) async {
+    try {
+      Reference ref = firebaseStorage
+          .ref()
+          .child('pofilePicts')
+          .child('profilePicts ${FieldValue.serverTimestamp()}');
+      UploadTask uploadTask = ref.putFile(imageFile);
+      TaskSnapshot snapshot = await uploadTask;
+      String downloaUrl = await snapshot.ref.getDownloadURL();
+      await firebaseFirestore
+          .collection('users')
+          .doc(firebaseAuth.currentUser!.uid)
+          .update({'photoUrl': downloaUrl});
     } catch (e) {
       rethrow;
     }
