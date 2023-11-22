@@ -97,6 +97,15 @@ class _ProfilePageState extends State<ProfilePage> {
                             return Text(data!.name);
                           },
                         ),
+                        actions: [
+                          (widget.uid == authState.uid || widget.uid == null)
+                              ? IconButton(
+                                  onPressed: () {
+                                    context.push(APP_PAGE.menu.toPath);
+                                  },
+                                  icon: Icon(MdiIcons.menu))
+                              : Container()
+                        ],
                         backgroundColor: Colors.transparent,
                         elevation: 0,
                         foregroundColor: Colors.black,
@@ -604,8 +613,11 @@ class _ProfilePageState extends State<ProfilePage> {
                           fit: BoxFit.fill,
                         );
                       }
-                      return CachedNetworkImage(imageUrl: data.photoURL,fit: BoxFit.cover,
-                      width: double.infinity,);
+                      return CachedNetworkImage(
+                        imageUrl: data.photoURL,
+                        fit: BoxFit.cover,
+                        width: double.infinity,
+                      );
                     },
                   )),
             ),

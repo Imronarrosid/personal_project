@@ -13,7 +13,9 @@ enum APP_PAGE {
   addDetails,
   editProfile,
   editName,
-  cropImage
+  cropImage,
+  menu,
+  addGameFav
 }
 
 extension AppPageExtension on APP_PAGE {
@@ -45,6 +47,10 @@ extension AppPageExtension on APP_PAGE {
         return "/name";
       case APP_PAGE.cropImage:
         return "/crop-image";
+      case APP_PAGE.menu:
+        return "/settings";
+      case APP_PAGE.addGameFav:
+        return "/add-game-fav";
       default:
         return "/";
     }
@@ -78,6 +84,10 @@ extension AppPageExtension on APP_PAGE {
         return "NAME";
       case APP_PAGE.cropImage:
         return "CROP";
+      case APP_PAGE.menu:
+        return "SETTINGS";
+      case APP_PAGE.addGameFav:
+        return "ADD-GAME-FAV";
       default:
         return "HOME";
     }

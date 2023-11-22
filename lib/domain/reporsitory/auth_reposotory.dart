@@ -1,7 +1,9 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -228,6 +230,30 @@ class AuthRepository implements AuthUseCaseType {
         id: docs['uid'],
         userName: docs['name'] ?? docs['userName'],
         photo: docs['photo'] ?? docs['photoUrl']);
+  }
+
+  Future<bool> isAdmin(String uid) async {
+    DocumentSnapshot<Map<String, dynamic>> doc =
+        await firebaseFirestore.collection('users').doc(uid).get();
+
+    var data = doc.data();
+    if (data!.containsKey('role') && data['role'] == 'admin') {
+      return true;
+    }
+
+    return false;
+  }
+
+  Future<void> addGameFav(String gameTitle, File image) async {
+    Reference ref =
+        firebaseStorage.ref().child('gameFavorites').child('Pict $gameTitle');
+    UploadTask uploadTask = ref.putFile(image);
+    TaskSnapshot snapshot = await uploadTask;
+    String gameImage = await snapshot.ref.getDownloadURL();
+    await firebaseFirestore
+        .collection('gameFavorites')
+        .doc(gameTitle)
+        .set({'gameTitile': gameTitle, 'gameImage': gameImage});
   }
 }
 

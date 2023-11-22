@@ -14,6 +14,8 @@ import 'package:personal_project/presentation/ui/edit_profile/edit_profile.dart'
 import 'package:personal_project/presentation/ui/home/home.dart';
 import 'package:personal_project/presentation/ui/onboarding/onboarding.dart';
 import 'package:personal_project/presentation/ui/profile/profile.dart';
+import 'package:personal_project/presentation/ui/menu/menu_page.dart';
+import 'package:personal_project/presentation/ui/ugf/ugf_page.dart';
 import 'package:personal_project/presentation/ui/upload/upload.dart';
 import 'package:personal_project/presentation/ui/video_editor/video_editor_page.dart';
 import 'package:personal_project/presentation/ui/video_preview/video_previe_page.dart';
@@ -96,6 +98,11 @@ class AppRouter {
         builder: (context, state) => const OnBoardingPage(),
       ),
       GoRoute(
+        path: APP_PAGE.addGameFav.toPath,
+        name: APP_PAGE.addGameFav.toName,
+        builder: (context, state) => const UGFPage(),
+      ),
+      GoRoute(
         path: APP_PAGE.profile.toPath,
         name: APP_PAGE.profile.toName,
         builder: (context, state) {
@@ -117,6 +124,27 @@ class AppRouter {
         builder: (context, state) {
           XFile profileData = state.extra as XFile;
           return PrevewProfilePictPage(imageFile: profileData);
+        },
+      ),
+      GoRoute(
+        path: APP_PAGE.menu.toPath,
+        name: APP_PAGE.menu.toName,
+        pageBuilder: (context, state) => CustomTransitionPage(
+          child: MenuPage(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) =>
+              SlideTransition(
+                  position: animation.drive(
+                    Tween<Offset>(
+                      begin: Offset(0.75, 0),
+                      end: Offset.zero,
+                    ).chain(
+                      CurveTween(curve: Curves.ease),
+                    ),
+                  ),
+                  child: child),
+        ),
+        builder: (context, state) {
+          return const MenuPage();
         },
       ),
       // GoRoute(
