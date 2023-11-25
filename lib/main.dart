@@ -22,6 +22,7 @@ import 'package:personal_project/presentation/ui/edit_profile/cubit/edit_bio_cub
 import 'package:personal_project/presentation/ui/edit_profile/cubit/edit_name_cubit.dart';
 import 'package:personal_project/presentation/ui/edit_profile/cubit/edit_profile_pict_cubit.dart';
 import 'package:personal_project/presentation/ui/edit_profile/cubit/edit_user_name_cubit.dart';
+import 'package:personal_project/presentation/ui/edit_profile/cubit/game_fav_cubit.dart';
 import 'package:personal_project/presentation/ui/home/home.dart';
 import 'package:personal_project/presentation/ui/upload/bloc/camera_bloc.dart';
 import 'package:personal_project/presentation/ui/video/list_video/bloc/video_player_bloc.dart';
@@ -144,7 +145,15 @@ class _MyAppState extends State<MyApp> {
                 final UserRepository userRepository =
                     RepositoryProvider.of<UserRepository>(context);
                 return EditProfilePictCubit(userRepository);
-              })
+              }),
+              BlocProvider(
+                create: (context) {
+                  final UserRepository userRepository =
+                      RepositoryProvider.of<UserRepository>(context);
+                  return GameFavCubit(userRepository);
+                },
+                child: Container(),
+              )
             ],
             child: MaterialApp.router(
               debugShowCheckedModeBanner: false,

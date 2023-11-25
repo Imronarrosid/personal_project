@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:personal_project/domain/model/game_fav_modal.dart';
 import 'package:personal_project/domain/model/user.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 import 'package:personal_project/domain/model/user_data_model.dart';
@@ -223,5 +224,92 @@ class UserRepository implements UserUseCaseType {
     } catch (e) {
       rethrow;
     }
+  }
+
+  Future<List<GameFav>> getAllGameFav() async {
+    List<GameFav> gameFav = [];
+    try {
+      QuerySnapshot<Map<String, dynamic>> docs =
+          await firebaseFirestore.collection('gameFavorites').get();
+      for (var element in docs.docs) {
+        gameFav.add(GameFav.fromSnap(element));
+        element.reference;
+      }
+    } catch (e) {
+      rethrow;
+    }
+
+    return gameFav;
+  }
+
+  Future<void> editGameFav(List<String> gameFav) async {
+    try {
+      await firebaseFirestore
+          .collection('users')
+          .doc(firebaseAuth.currentUser!.uid)
+          .collection('otherInfo')
+          .doc('gameFav')
+          .set({'titles': gameFav});
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<List<DocumentSnapshot>> _getAllGameDocuments(
+      List<DocumentReference> documentReferences) async {
+    List<DocumentSnapshot> documents = [];
+    debugPrint('getDocs');
+    try {
+      for (DocumentReference reference in documentReferences) {
+        DocumentSnapshot snapshot = await reference.get();
+        if (snapshot.exists) {
+          documents.add(snapshot);
+        }
+      }
+    } catch (e) {
+      print('Error getting documents: $e');
+    }
+
+    return documents;
+  }
+
+  Future<List<GameFav>> getSelectedGames(String uid) async {
+    List<GameFav> gameFav = [];
+    debugPrint('gametes');
+    try {
+      DocumentSnapshot data = await firebaseFirestore
+          .collection('users')
+          .doc(uid)
+          .collection('otherInfo')
+          .doc('gameFav')
+          .get();
+
+      List<dynamic> gv = data['titles'];
+
+      debugPrint('reff${gv}');
+      var doc = await firebaseFirestore
+          .collection('users')
+          .doc(uid)
+          .collection('otherInfo')
+          .doc('bio')
+          .get();
+      debugPrint('bio: ${doc['bio'].runtimeType}');
+
+    
+      // debugPrint('games ${rfs.length}');
+      for (var element in gv) {
+        var game = await firebaseFirestore
+            .collection('gameFavorites')
+            .doc(element)
+            .get();
+        gameFav.add(GameFav.fromSnap(game));
+
+        debugPrint('gameFav$element');
+      }
+    } catch (e) {
+      rethrow;
+    }
+
+    return gameFav;
   }
 }

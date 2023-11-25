@@ -3,11 +3,13 @@ import 'dart:io';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:personal_project/domain/model/game_fav_modal.dart';
 import 'package:personal_project/domain/model/preview_model.dart';
 import 'package:personal_project/domain/model/profile_data_model.dart';
 import 'package:personal_project/domain/services/app/app_service.dart';
 import 'package:personal_project/presentation/router/route_utils.dart';
 import 'package:personal_project/presentation/ui/add_details/add_details_page.dart';
+import 'package:personal_project/presentation/ui/edit_profile/edit_page/edit_game_fav_page.dart';
 import 'package:personal_project/presentation/ui/profile_pict_preview/profile_pict_preview.dart';
 import 'package:personal_project/presentation/ui/edit_profile/edit_page/edit_name_page.dart';
 import 'package:personal_project/presentation/ui/edit_profile/edit_profile.dart';
@@ -102,6 +104,15 @@ class AppRouter {
         name: APP_PAGE.addGameFav.toName,
         builder: (context, state) => const UGFPage(),
       ),
+      GoRoute(
+          path: APP_PAGE.editGameFav.toPath,
+          name: APP_PAGE.editGameFav.toName,
+          builder: (context, state) {
+            List<GameFav> games = state.extra as List<GameFav>;
+            return EditGameFavPage(
+              gameFav: games,
+            );
+          }),
       GoRoute(
         path: APP_PAGE.profile.toPath,
         name: APP_PAGE.profile.toName,

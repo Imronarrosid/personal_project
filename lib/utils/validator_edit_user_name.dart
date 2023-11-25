@@ -1,9 +1,8 @@
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 bool isCanEditUserName(Timestamp timestamp) {
   // Get the current time
-  DateTime now = DateTime.now();
+  DateTime now = Timestamp.now().toDate();
 
   // Convert Firestore timestamp to DateTime
   DateTime timestampDateTime = timestamp.toDate();
@@ -20,7 +19,7 @@ bool isCanEditUserName(Timestamp timestamp) {
 
 int calculateDaysAgo(Timestamp timestamp) {
   // Get the current time
-  DateTime now = DateTime.now();
+  DateTime now = Timestamp.now().toDate();
 
   // Convert Firestore timestamp to DateTime
   DateTime timestampDateTime = timestamp.toDate();
@@ -33,7 +32,7 @@ int calculateDaysAgo(Timestamp timestamp) {
 
 int daysUntilTwoWeeks(Timestamp timestamp) {
   // Get the current time
-  DateTime now = DateTime.now();
+  DateTime now = Timestamp.now().toDate();
 
   // Convert Firestore timestamp to DateTime
   DateTime timestampDateTime = timestamp.toDate();

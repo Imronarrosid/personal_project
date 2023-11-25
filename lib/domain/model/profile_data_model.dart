@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:personal_project/domain/model/game_fav_modal.dart';
 
 class ProfileData {
   final String name;
@@ -8,6 +9,7 @@ class ProfileData {
   final Timestamp updatedAt;
   final Timestamp userNameUpdatedAt;
   final List<String> gameFavoritesId;
+  final List<GameFav> gameFav;
 
   ProfileData(
       {required this.userName,
@@ -16,5 +18,6 @@ class ProfileData {
       required this.updatedAt,
       required this.bio,
       required this.userNameUpdatedAt,
+      required this.gameFav,
       required this.gameFavoritesId});
 }

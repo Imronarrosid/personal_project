@@ -253,7 +253,7 @@ class AuthRepository implements AuthUseCaseType {
     await firebaseFirestore
         .collection('gameFavorites')
         .doc(gameTitle)
-        .set({'gameTitile': gameTitle, 'gameImage': gameImage});
+        .set({'title': gameTitle, 'icon': gameImage});
   }
 }
 

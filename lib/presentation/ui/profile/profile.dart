@@ -11,6 +11,7 @@ import 'package:material_design_icons_flutter/material_design_icons_flutter.dart
 import 'package:personal_project/constant/color.dart';
 import 'package:personal_project/constant/dimens.dart';
 import 'package:personal_project/data/repository/user_video_paging_repository.dart';
+import 'package:personal_project/domain/model/game_fav_modal.dart';
 import 'package:personal_project/domain/model/profile_data_model.dart';
 import 'package:personal_project/domain/model/user_data_model.dart';
 import 'package:personal_project/domain/model/video_model.dart';
@@ -26,6 +27,7 @@ import 'package:personal_project/presentation/ui/edit_profile/cubit/edit_bio_cub
 import 'package:personal_project/presentation/ui/edit_profile/cubit/edit_name_cubit.dart';
 import 'package:personal_project/presentation/ui/edit_profile/cubit/edit_profile_pict_cubit.dart';
 import 'package:personal_project/presentation/ui/edit_profile/cubit/edit_user_name_cubit.dart';
+import 'package:personal_project/presentation/ui/edit_profile/cubit/game_fav_cubit.dart';
 import 'package:personal_project/presentation/ui/profile/bloc/user_video_paging_bloc.dart';
 import 'package:personal_project/presentation/ui/profile/cubit/follow_cubit.dart';
 import 'package:personal_project/presentation/ui/profile/cubit/profile_cubit.dart';
@@ -40,6 +42,8 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
+  List<GameFav> gameFavs = [];
+  String userBio = '';
   @override
   Widget build(BuildContext context) {
     debugPrint('refresh');
@@ -131,170 +135,181 @@ class _ProfilePageState extends State<ProfilePage> {
                                     (context, innerBoxIsScrolled) {
                                   return [
                                     SliverToBoxAdapter(
-                                      child: Column(children: [
-                                        topSectionView(data!),
-                                        SizedBox(
-                                          height: Dimens.DIMENS_8,
-                                        ),
-                                        bioSectionView(
-                                            uid: widget.uid ?? authState.uid),
-                                        gameFavView(),
-                                        if ((widget.uid ?? authState.uid) ==
-                                            authRepository.currentUser!.uid)
-                                          Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            children: [
-                                              SizedBox(
-                                                width: Dimens.DIMENS_12,
-                                              ),
-                                              Expanded(
-                                                flex: 2,
-                                                child: Material(
-                                                  color: COLOR_grey,
-                                                  shape: RoundedRectangleBorder(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              5)),
-                                                  child: InkWell(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            5),
-                                                    onTap: () async {
-                                                      ProfileData profileData = ProfileData(
-                                                          name: data.name,
-                                                          userName:
-                                                              data.userName,
-                                                          bio: await userRepository
-                                                              .getBio(
-                                                                  widget.uid ??
-                                                                      authState
-                                                                          .uid),
-                                                          photoUrl:
-                                                              data.photoURL,
-                                                          updatedAt:
-                                                              data.updatedAt,
-                                                          userNameUpdatedAt: data
-                                                              .userNameUpdatedAt,
-                                                          gameFavoritesId: []);
-                                                      context.push(
-                                                          APP_PAGE.editProfile
-                                                              .toPath,
-                                                          extra: profileData);
-                                                    },
-                                                    child: Container(
-                                                      height: Dimens.DIMENS_34,
-                                                      alignment:
-                                                          Alignment.center,
-                                                      decoration: BoxDecoration(
-                                                        color:
-                                                            Colors.transparent,
-                                                        borderRadius:
-                                                            BorderRadius
-                                                                .circular(5),
-                                                      ),
-                                                      child: Text(
-                                                        'Edit Profil',
-                                                        textAlign:
-                                                            TextAlign.center,
-                                                      ),
-                                                    ),
+                                      child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            topSectionView(data!),
+                                            SizedBox(
+                                              height: Dimens.DIMENS_8,
+                                            ),
+                                            bioSectionView(
+                                                uid: widget.uid ??
+                                                    authState.uid),
+                                            gameFavView(
+                                                widget.uid ?? authState.uid),
+                                            SizedBox(
+                                              height: Dimens.DIMENS_8,
+                                            ),
+                                            if ((widget.uid ?? authState.uid) ==
+                                                authRepository.currentUser!.uid)
+                                              Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                children: [
+                                                  SizedBox(
+                                                    width: Dimens.DIMENS_12,
                                                   ),
-                                                ),
-                                              ),
-                                              SizedBox(
-                                                width: Dimens.DIMENS_6,
-                                              ),
-                                              Expanded(
-                                                child: Container(
-                                                    height: Dimens.DIMENS_34,
-                                                    decoration: BoxDecoration(
-                                                        color: COLOR_grey,
-                                                        borderRadius:
-                                                            BorderRadius
-                                                                .circular(5)),
-                                                    child: Icon(
-                                                        MdiIcons.accountPlus)),
-                                              ),
-                                              SizedBox(
-                                                width: Dimens.DIMENS_12,
-                                              ),
-                                            ],
-                                          )
-                                        else
-                                          Row(
-                                            children: [
-                                              SizedBox(
-                                                width: Dimens.DIMENS_12,
-                                              ),
-                                              BlocBuilder<FollowCubit,
-                                                  FollowState>(
-                                                builder: (context, state) {
-                                                  bool isFollowig;
-                                                  debugPrint(
-                                                      'follow state $state');
-                                                  if (state is Followed) {
-                                                    isFollowig = true;
-                                                  } else if (state
-                                                      is UnFollowed) {
-                                                    isFollowig = false;
-                                                  } else {
-                                                    isFollowig =
-                                                        data.isFollowig;
-                                                  }
-
-                                                  return Expanded(
+                                                  Expanded(
+                                                    flex: 2,
                                                     child: Material(
+                                                      color: COLOR_grey,
                                                       shape:
                                                           RoundedRectangleBorder(
                                                               borderRadius:
                                                                   BorderRadius
                                                                       .circular(
                                                                           5)),
-                                                      color: isFollowig
-                                                          ? COLOR_grey
-                                                          : COLOR_black_ff121212,
                                                       child: InkWell(
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(5),
                                                         onTap: () {
-                                                          if (isFollowig) {
-                                                            showDialog(
-                                                                context:
-                                                                    context,
-                                                                builder: (_) {
-                                                                  return AlertDialog(
-                                                                    title: Text(
-                                                                        'Berhenti Mengikuti ?'),
-                                                                    actions: [
-                                                                      TextButton(
-                                                                        onPressed:
-                                                                            () {
-                                                                          context
-                                                                              .pop();
-                                                                        },
-                                                                        child: const Text(
-                                                                            'Batal'),
-                                                                      ),
-                                                                      TextButton(
-                                                                        onPressed:
-                                                                            () {
-                                                                          BlocProvider.of<FollowCubit>(context).followButtonHandle(
-                                                                              currentUserUid: authRepository.currentUser!.uid,
-                                                                              uid: widget.uid ?? authState.uid,
-                                                                              stateFromDatabase: data.isFollowig);
-                                                                          context
-                                                                              .pop();
-                                                                        },
-                                                                        child: const Text(
-                                                                            'Oke'),
-                                                                      )
-                                                                    ],
-                                                                  );
-                                                                });
-                                                          } else {
-                                                            BlocProvider.of<
-                                                                        FollowCubit>(
-                                                                    context)
-                                                                .followButtonHandle(
+                                                          ProfileData
+                                                              profileData =
+                                                              ProfileData(
+                                                                  name:
+                                                                      data.name,
+                                                                  userName: data
+                                                                      .userName,
+                                                                  bio: userBio,
+                                                                  photoUrl: data
+                                                                      .photoURL,
+                                                                  updatedAt: data
+                                                                      .updatedAt,
+                                                                  userNameUpdatedAt:
+                                                                      data
+                                                                          .userNameUpdatedAt,
+                                                                  gameFav:
+                                                                      gameFavs,
+                                                                  gameFavoritesId: []);
+                                                          context.push(
+                                                              APP_PAGE
+                                                                  .editProfile
+                                                                  .toPath,
+                                                              extra:
+                                                                  profileData);
+                                                        },
+                                                        child: Container(
+                                                          height:
+                                                              Dimens.DIMENS_34,
+                                                          alignment:
+                                                              Alignment.center,
+                                                          decoration:
+                                                              BoxDecoration(
+                                                            color: Colors
+                                                                .transparent,
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        5),
+                                                          ),
+                                                          child: Text(
+                                                            'Edit Profil',
+                                                            textAlign: TextAlign
+                                                                .center,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  SizedBox(
+                                                    width: Dimens.DIMENS_6,
+                                                  ),
+                                                  Expanded(
+                                                    child: Container(
+                                                        height:
+                                                            Dimens.DIMENS_34,
+                                                        decoration: BoxDecoration(
+                                                            color: COLOR_grey,
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        5)),
+                                                        child: Icon(MdiIcons
+                                                            .accountPlus)),
+                                                  ),
+                                                  SizedBox(
+                                                    width: Dimens.DIMENS_12,
+                                                  ),
+                                                ],
+                                              )
+                                            else
+                                              Row(
+                                                children: [
+                                                  SizedBox(
+                                                    width: Dimens.DIMENS_12,
+                                                  ),
+                                                  BlocBuilder<FollowCubit,
+                                                      FollowState>(
+                                                    builder: (context, state) {
+                                                      bool isFollowig;
+                                                      debugPrint(
+                                                          'follow state $state');
+                                                      if (state is Followed) {
+                                                        isFollowig = true;
+                                                      } else if (state
+                                                          is UnFollowed) {
+                                                        isFollowig = false;
+                                                      } else {
+                                                        isFollowig =
+                                                            data.isFollowig;
+                                                      }
+
+                                                      return Expanded(
+                                                        child: Material(
+                                                          shape: RoundedRectangleBorder(
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                          5)),
+                                                          color: isFollowig
+                                                              ? COLOR_grey
+                                                              : COLOR_black_ff121212,
+                                                          child: InkWell(
+                                                            onTap: () {
+                                                              if (isFollowig) {
+                                                                showDialog(
+                                                                    context:
+                                                                        context,
+                                                                    builder:
+                                                                        (_) {
+                                                                      return AlertDialog(
+                                                                        title: Text(
+                                                                            'Berhenti Mengikuti ?'),
+                                                                        actions: [
+                                                                          TextButton(
+                                                                            onPressed:
+                                                                                () {
+                                                                              context.pop();
+                                                                            },
+                                                                            child:
+                                                                                const Text('Batal'),
+                                                                          ),
+                                                                          TextButton(
+                                                                            onPressed:
+                                                                                () {
+                                                                              BlocProvider.of<FollowCubit>(context).followButtonHandle(currentUserUid: authRepository.currentUser!.uid, uid: widget.uid ?? authState.uid, stateFromDatabase: data.isFollowig);
+                                                                              context.pop();
+                                                                            },
+                                                                            child:
+                                                                                const Text('Oke'),
+                                                                          )
+                                                                        ],
+                                                                      );
+                                                                    });
+                                                              } else {
+                                                                BlocProvider.of<FollowCubit>(context).followButtonHandle(
                                                                     currentUserUid:
                                                                         authRepository
                                                                             .currentUser!
@@ -303,67 +318,72 @@ class _ProfilePageState extends State<ProfilePage> {
                                                                         .uid!,
                                                                     stateFromDatabase:
                                                                         data.isFollowig);
-                                                          }
-                                                        },
-                                                        borderRadius:
-                                                            BorderRadius
-                                                                .circular(5),
-                                                        child: Container(
-                                                          height:
-                                                              Dimens.DIMENS_34,
-                                                          alignment:
-                                                              Alignment.center,
-                                                          decoration: BoxDecoration(
-                                                              color: Colors
-                                                                  .transparent,
-                                                              borderRadius:
-                                                                  BorderRadius
-                                                                      .circular(
-                                                                          5)),
-                                                          child: Text(
-                                                            isFollowig
-                                                                ? 'Mengikuti'
-                                                                : 'Ikuti',
-                                                            textAlign: TextAlign
-                                                                .center,
-                                                            style: TextStyle(
-                                                                color: isFollowig
-                                                                    ? COLOR_black_ff121212
-                                                                    : COLOR_white_fff5f5f5),
+                                                              }
+                                                            },
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        5),
+                                                            child: Container(
+                                                              height: Dimens
+                                                                  .DIMENS_34,
+                                                              alignment:
+                                                                  Alignment
+                                                                      .center,
+                                                              decoration: BoxDecoration(
+                                                                  color: Colors
+                                                                      .transparent,
+                                                                  borderRadius:
+                                                                      BorderRadius
+                                                                          .circular(
+                                                                              5)),
+                                                              child: Text(
+                                                                isFollowig
+                                                                    ? 'Mengikuti'
+                                                                    : 'Ikuti',
+                                                                textAlign:
+                                                                    TextAlign
+                                                                        .center,
+                                                                style: TextStyle(
+                                                                    color: isFollowig
+                                                                        ? COLOR_black_ff121212
+                                                                        : COLOR_white_fff5f5f5),
+                                                              ),
+                                                            ),
                                                           ),
                                                         ),
+                                                      );
+                                                    },
+                                                  ),
+                                                  SizedBox(
+                                                    width: Dimens.DIMENS_6,
+                                                  ),
+                                                  Expanded(
+                                                    child: Container(
+                                                      height: Dimens.DIMENS_34,
+                                                      alignment:
+                                                          Alignment.center,
+                                                      decoration: BoxDecoration(
+                                                          color: COLOR_grey,
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(5)),
+                                                      child: Text(
+                                                        'Pesan',
+                                                        textAlign:
+                                                            TextAlign.center,
                                                       ),
                                                     ),
-                                                  );
-                                                },
-                                              ),
-                                              SizedBox(
-                                                width: Dimens.DIMENS_6,
-                                              ),
-                                              Expanded(
-                                                child: Container(
-                                                  height: Dimens.DIMENS_34,
-                                                  alignment: Alignment.center,
-                                                  decoration: BoxDecoration(
-                                                      color: COLOR_grey,
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              5)),
-                                                  child: Text(
-                                                    'Pesan',
-                                                    textAlign: TextAlign.center,
                                                   ),
-                                                ),
+                                                  SizedBox(
+                                                    width: Dimens.DIMENS_12,
+                                                  ),
+                                                ],
                                               ),
-                                              SizedBox(
-                                                width: Dimens.DIMENS_12,
-                                              ),
-                                            ],
-                                          ),
-                                        SizedBox(
-                                          height: Dimens.DIMENS_8,
-                                        )
-                                      ]),
+                                            SizedBox(
+                                              height: Dimens.DIMENS_8,
+                                            )
+                                          ]),
                                     ),
                                     SliverAppBar(
                                       toolbarHeight: 0,
@@ -415,173 +435,193 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  Padding gameFavView() {
+  Padding gameFavView(String uid) {
+    UserRepository repository = RepositoryProvider.of<UserRepository>(context);
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: Dimens.DIMENS_8),
-      child: BlocBuilder<ProfileCubit, ProfileState>(
-        buildWhen: (previous, current) {
-          if (current is ShowLessBio) {
-            return false;
-          } else if (current is ShowMoreBio) {
-            return false;
+      child: BlocConsumer<GameFavCubit, GameFavState>(
+        listener: (context, state) {
+          if (state.sattus == GameFavSattus.succes) {
+            gameFavs = state.gameFav!;
           }
-          return true;
         },
         builder: (context, state) {
-          List<Widget> items = [
-            Chip(
-              avatar: CircleAvatar(
-                  backgroundColor: Colors.blue.shade900,
-                  child: const Text('HM')),
-              label: const Text('Mulligan'),
-            ),
-            Chip(
-              avatar: CircleAvatar(
-                  backgroundColor: Colors.blue.shade900,
-                  child: const Text('ML')),
-              label: const Text('Lafayette'),
-            ),
-            Chip(
-              avatar: CircleAvatar(
-                  backgroundColor: Colors.blue.shade900,
-                  child: const Text('ML')),
-              label: const Text('Lafayette'),
-            ),
-            Chip(
-              avatar: CircleAvatar(
-                  backgroundColor: Colors.blue.shade900,
-                  child: const Text('ML')),
-              label: const Text('Lafayette'),
-            ),
-            Chip(
-              avatar: CircleAvatar(
-                  backgroundColor: Colors.blue.shade900,
-                  child: const Text('HM')),
-              label: const Text(
-                'Mulligan',
-              ),
-            ),
-          ];
-          if (state is ShowMoreGameFav) {
-            return Wrap(
-              spacing: 3,
-              children: [
-                ...items,
-                GestureDetector(
-                  onTap: () {
-                    BlocProvider.of<ProfileCubit>(context)
-                        .seeMoreGameFavHandle();
-                  },
-                  child: const Chip(
-                    label: Text('lebih sedikit'),
-                  ),
-                )
-              ],
-            );
-          }
-          return Wrap(
-              spacing: 3.0, // gap between adjacent chips
-              children: [
-                ...items.getRange(0, 2).toList(),
-                GestureDetector(
-                  onTap: () {
-                    BlocProvider.of<ProfileCubit>(context)
-                        .seeMoreGameFavHandle();
-                  },
-                  child: Chip(
-                    label: Icon(Icons.more_horiz),
-                  ),
-                )
-              ]);
-        },
-      ),
-    );
-  }
+          return FutureBuilder(
+              future: repository.getSelectedGames(uid),
+              builder: (context, AsyncSnapshot<List<GameFav>> snapshot) {
+                List<GameFav>? games = snapshot.data;
 
-  FutureBuilder bioSectionView({required String uid}) {
-    final repository = RepositoryProvider.of<UserRepository>(context);
-    return FutureBuilder(
-        future: repository.getBio(uid),
-        builder: (context, snapshot) {
-          String? bio = snapshot.data;
-          if (!snapshot.hasData) {
-            return Container();
-          }
-          return BlocConsumer<EditBioCubit, EditBioState>(
-            listener: (context, state) {
-              if (state.status == EditBioStatus.succes) {
-                bio = state.bio;
-              }
-            },
-            builder: (context, state) {
-              return Padding(
-                padding: EdgeInsets.symmetric(horizontal: Dimens.DIMENS_12),
-                child: BlocBuilder<ProfileCubit, ProfileState>(
+                if (!snapshot.hasData) {
+                  return Container();
+                }
+                if (snapshot.hasData) {
+                  gameFavs = games!;
+                }
+                return BlocBuilder<ProfileCubit, ProfileState>(
                   buildWhen: (previous, current) {
-                    if (current is ShowLessGameFav) {
+                    if (current is ShowLessBio) {
                       return false;
-                    } else if (current is ShowMoreGameFav) {
+                    } else if (current is ShowMoreBio) {
                       return false;
                     }
                     return true;
                   },
                   builder: (context, state) {
-                    int? maxLines = 5;
-                    if (state is ShowMoreBio) {
-                      maxLines = null;
-                    } else if (state is ShowLessBio) {
-                      maxLines = 5;
-                    }
-                    return LayoutBuilder(builder: (context, constraints) {
-                      String text = bio!;
-                      final textPainter = TextPainter(
-                        text: TextSpan(
-                          text: text,
-                          style: TextStyle(fontSize: 14.0),
-                        ),
-                        textDirection: TextDirection.ltr,
-                      );
-                      textPainter.layout(maxWidth: double.infinity);
-                      final lines = (textPainter.size.height /
-                              textPainter.preferredLineHeight)
-                          .ceil();
-
-                      debugPrint('text is overflow  ${lines > 5}');
-
-                      return Column(
-                        mainAxisSize: MainAxisSize.min,
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                    List<Widget> items = [
+                      ...List<Widget>.generate(
+                          games!.length,
+                          (index) => Chip(
+                                avatar: CircleAvatar(
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(50),
+                                    child: CachedNetworkImage(
+                                      imageUrl: games[index].gameImage!,
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
+                                ),
+                                label: Text(games[index].gameTitle!),
+                              )).toList(),
+                    ];
+                    if (state is ShowMoreGameFav) {
+                      return Wrap(
+                        spacing: 3,
                         children: [
-                          SizedBox(
-                            width: MediaQuery.of(context).size.width,
-                            child: Text(
-                              bio!,
-                              overflow: TextOverflow.ellipsis,
-                              maxLines: maxLines,
-                              textAlign: TextAlign.left,
-                            ),
-                          ),
-                          if (lines > 5)
-                            InkWell(
-                              onTap: () =>
-                                  BlocProvider.of<ProfileCubit>(context)
-                                      .seeMoreBioHandle(),
-                              child: Text(state is ShowLessBio
-                                  ? '...selengkapnya'
-                                  : '...lebih sedikit'),
-                            )
-                          else
-                            Container(),
+                          ...items,
+                          items.length > 3
+                              ? GestureDetector(
+                                  onTap: () {
+                                    BlocProvider.of<ProfileCubit>(context)
+                                        .seeMoreGameFavHandle();
+                                  },
+                                  child: const Chip(
+                                    label: Text('lebih sedikit'),
+                                  ),
+                                )
+                              : Container()
                         ],
                       );
-                    });
+                    }
+                    return Wrap(
+                        spacing: 3.0, // gap between adjacent chips
+                        children: [
+                          ...items.getRange(0, 2).toList(),
+                          items.length > 3
+                              ? GestureDetector(
+                                  onTap: () {
+                                    BlocProvider.of<ProfileCubit>(context)
+                                        .seeMoreGameFavHandle();
+                                  },
+                                  child: Chip(
+                                    label: Icon(Icons.more_horiz),
+                                  ),
+                                )
+                              : Container()
+                        ]);
                   },
-                ),
+                );
+              });
+        },
+      ),
+    );
+  }
+
+  BlocConsumer bioSectionView({required String uid}) {
+    final repository = RepositoryProvider.of<UserRepository>(context);
+    return BlocConsumer<EditBioCubit, EditBioState>(
+      listener: (context, state) {
+        if (state.status == EditBioStatus.succes) {
+          userBio = state.bio!;
+        }
+      },
+      builder: (context, state) {
+        return FutureBuilder(
+            future: repository.getBio(uid),
+            builder: (context, snapshot) {
+              String? bio = snapshot.data;
+              if (snapshot.hasData) {
+                userBio = bio!;
+              }
+              if (!snapshot.hasData) {
+                return Container();
+              }
+              return BlocConsumer<EditBioCubit, EditBioState>(
+                listener: (context, state) {
+                  if (state.status == EditBioStatus.succes) {
+                    bio = state.bio;
+                  }
+                },
+                builder: (context, state) {
+                  return Padding(
+                    padding: EdgeInsets.symmetric(horizontal: Dimens.DIMENS_12),
+                    child: BlocBuilder<ProfileCubit, ProfileState>(
+                      buildWhen: (previous, current) {
+                        if (current is ShowLessGameFav) {
+                          return false;
+                        } else if (current is ShowMoreGameFav) {
+                          return false;
+                        }
+                        return true;
+                      },
+                      builder: (context, state) {
+                        int? maxLines = 5;
+                        if (state is ShowMoreBio) {
+                          maxLines = null;
+                        } else if (state is ShowLessBio) {
+                          maxLines = 5;
+                        }
+                        return LayoutBuilder(builder: (context, constraints) {
+                          String text = bio!;
+                          final textPainter = TextPainter(
+                            text: TextSpan(
+                              text: text,
+                              style: TextStyle(fontSize: 14.0),
+                            ),
+                            textDirection: TextDirection.ltr,
+                          );
+                          textPainter.layout(maxWidth: double.infinity);
+                          final lines = (textPainter.size.height /
+                                  textPainter.preferredLineHeight)
+                              .ceil();
+
+                          debugPrint('text is overflow  ${lines > 5}');
+
+                          return Column(
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              SizedBox(
+                                width: MediaQuery.of(context).size.width,
+                                child: Text(
+                                  bio!,
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: maxLines,
+                                  textAlign: TextAlign.left,
+                                ),
+                              ),
+                              if (lines > 5)
+                                InkWell(
+                                  onTap: () =>
+                                      BlocProvider.of<ProfileCubit>(context)
+                                          .seeMoreBioHandle(),
+                                  child: Text(state is ShowLessBio
+                                      ? '...selengkapnya'
+                                      : '...lebih sedikit'),
+                                )
+                              else
+                                Container(),
+                            ],
+                          );
+                        });
+                      },
+                    ),
+                  );
+                },
               );
-            },
-          );
-        });
+            });
+      },
+    );
   }
 
   /// username,photo ,follwers,folowing,likes
