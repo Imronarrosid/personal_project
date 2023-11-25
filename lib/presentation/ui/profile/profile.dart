@@ -632,55 +632,59 @@ class _ProfilePageState extends State<ProfilePage> {
         SizedBox(
           width: Dimens.DIMENS_12,
         ),
-        Column(
-          children: [
-            CircleAvatar(
-              backgroundColor: COLOR_grey,
-              radius: 35,
-              child: ClipRRect(
-                  borderRadius: BorderRadius.circular(50),
-                  child:
-                      BlocBuilder<EditProfilePictCubit, EditProfilePictState>(
-                    builder: (context, state) {
-                      String uid =
-                          RepositoryProvider.of<AuthRepository>(context)
-                              .currentUser!
-                              .uid;
-                      if (state.status == EditProfilePicStatus.success &&
-                          data.uid == uid) {
-                        return Image.file(
-                          state.imageFile!,
+        SizedBox(
+          width: 90,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              CircleAvatar(
+                backgroundColor: COLOR_grey,
+                radius: 35,
+                child: ClipRRect(
+                    borderRadius: BorderRadius.circular(50),
+                    child:
+                        BlocBuilder<EditProfilePictCubit, EditProfilePictState>(
+                      builder: (context, state) {
+                        String uid =
+                            RepositoryProvider.of<AuthRepository>(context)
+                                .currentUser!
+                                .uid;
+                        if (state.status == EditProfilePicStatus.success &&
+                            data.uid == uid) {
+                          return Image.file(
+                            state.imageFile!,
+                            width: double.infinity,
+                            fit: BoxFit.fill,
+                          );
+                        }
+                        return CachedNetworkImage(
+                          imageUrl: data.photoURL,
+                          fit: BoxFit.cover,
                           width: double.infinity,
-                          fit: BoxFit.fill,
                         );
-                      }
-                      return CachedNetworkImage(
-                        imageUrl: data.photoURL,
-                        fit: BoxFit.cover,
-                        width: double.infinity,
-                      );
-                    },
-                  )),
-            ),
-            BlocBuilder<EditUserNameCubit, EditUserNameState>(
-              builder: (context, state) {
-                String uid = RepositoryProvider.of<AuthRepository>(context)
-                    .currentUser!
-                    .uid;
-                if (state.status == EditUserNameStatus.success &&
-                    data.uid == uid) {
+                      },
+                    )),
+              ),
+              BlocBuilder<EditUserNameCubit, EditUserNameState>(
+                builder: (context, state) {
+                  String uid = RepositoryProvider.of<AuthRepository>(context)
+                      .currentUser!
+                      .uid;
+                  if (state.status == EditUserNameStatus.success &&
+                      data.uid == uid) {
+                    return Text(
+                      '@${state.newUserName!}',
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                    );
+                  }
                   return Text(
-                    '@${state.newUserName!}',
+                    '@${data.userName}',
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
                   );
-                }
-                return Text(
-                  '@${data.userName}',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-                );
-              },
-            ),
-          ],
+                },
+              ),
+            ],
+          ),
         ),
         Expanded(
           child: Column(
