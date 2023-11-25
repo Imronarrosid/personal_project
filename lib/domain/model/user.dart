@@ -15,6 +15,7 @@ class User extends Equatable {
       {this.createdAt,
       required this.id,
       this.email,
+      this.name,
       this.userName,
       this.photo,
       this.role,
@@ -24,7 +25,7 @@ class User extends Equatable {
       this.lastSeen});
 
   /// Created user timestamp, in ms.
-  final int? createdAt;
+  final Timestamp? createdAt;
 
   /// The current user's email address.
   final String? email;
@@ -34,15 +35,16 @@ class User extends Equatable {
 
   /// The current user's name (display name).
   final String? userName;
+  final String? name;
 
   /// Url for the current user's photo.
   final String? photo;
 
   /// Timestamp when user was last visible, in ms.
-  final int? lastSeen;
+  final Timestamp? lastSeen;
 
   /// Updated user timestamp, in ms.
-  final int? updatedAt;
+  final Timestamp? updatedAt;
 
   final String? searchKey;
 
@@ -74,6 +76,7 @@ class User extends Equatable {
   static User fromSnap(DocumentSnapshot snapshot) {
     var snap = snapshot.data() as Map<String, dynamic>;
     return User(
+        name: snap['name'],
         userName: snap['userName'],
         photo: snap['photoUrl'],
         email: snap['email'],
@@ -85,6 +88,15 @@ class User extends Equatable {
   }
 
   @override
-  List<Object?> get props =>
-      [email, id, userName, photo, updatedAt, createdAt, lastSeen, searchKey];
+  List<Object?> get props => [
+        email,
+        id,
+        name,
+        userName,
+        photo,
+        updatedAt,
+        createdAt,
+        lastSeen,
+        searchKey
+      ];
 }

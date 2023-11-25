@@ -23,7 +23,7 @@ class SearchPage extends StatelessWidget {
         child: Builder(builder: (context) {
           return Scaffold(
             appBar: AppBar(
-              elevation: 0,
+                elevation: 0,
                 toolbarHeight: 80,
                 backgroundColor: COLOR_white_fff5f5f5,
                 title: TextField(
@@ -50,19 +50,25 @@ class SearchPage extends StatelessWidget {
                       itemBuilder: (ctx, index) {
                         final result = state.results[index];
                         return ListTile(
-                          onTap: (){
-                            context.push(APP_PAGE.profile.toPath,extra: result.id);
+                          onTap: () {
+                            context.push(APP_PAGE.profile.toPath,
+                                extra: result.id);
                             debugPrint('profile');
                           },
-                            leading: CircleAvatar(
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(50),
-                                child:
-                                    CachedNetworkImage(imageUrl: result.photo!),
+                          leading: CircleAvatar(
+                            backgroundColor: COLOR_grey,
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(50),
+                              child: CachedNetworkImage(
+                                imageUrl: result.photo!,
+                                fit: BoxFit.cover,
+                                width: double.infinity,
                               ),
                             ),
-                            title: Text(result.userName!),
-                            subtitle: Text('username'),);
+                          ),
+                          title: Text(result.name!),
+                          subtitle: Text(result.userName!),
+                        );
                       });
                 }
                 return Container();
