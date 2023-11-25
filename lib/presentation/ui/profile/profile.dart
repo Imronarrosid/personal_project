@@ -75,6 +75,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     var data = snapshot.data;
                     if (!snapshot.hasData) {
                       return Scaffold(
+                        backgroundColor: COLOR_white_fff5f5f5,
                         appBar: AppBar(
                           backgroundColor: Colors.transparent,
                           foregroundColor: COLOR_black_ff121212,
@@ -90,6 +91,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     }
 
                     return Scaffold(
+                      backgroundColor: COLOR_white_fff5f5f5,
                       appBar: AppBar(
                         title: BlocBuilder<EditNameCubit, EditNameState>(
                           builder: (context, state) {
@@ -674,7 +676,8 @@ class _ProfilePageState extends State<ProfilePage> {
                       data.uid == uid) {
                     return Text(
                       '@${state.newUserName!}',
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
                     );
                   }
                   return Text(
