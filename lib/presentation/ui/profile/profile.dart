@@ -396,9 +396,16 @@ class _ProfilePageState extends State<ProfilePage> {
                                       bottom: TabBar(
                                         labelColor: COLOR_black_ff121212,
                                         indicatorColor: COLOR_black_ff121212,
+                                        indicatorSize:
+                                            TabBarIndicatorSize.label,
+                                            indicatorWeight: 3,
                                         tabs: [
-                                          Tab(text: 'Video'),
-                                          Tab(text: 'Suka'),
+                                          Tab(
+                                            icon: Icon(MdiIcons.folderPlay),
+                                          ),
+                                          Tab(
+                                            icon: Icon(MdiIcons.heart),
+                                          ),
                                         ],
                                       ),
                                     ),
@@ -769,6 +776,7 @@ class VideoListView extends StatelessWidget {
                 },
                 child: PagedGridView<int, String>(
                   pagingController: state.controller,
+                  padding: EdgeInsets.only(top: Dimens.DIMENS_6),
                   builderDelegate: PagedChildBuilderDelegate(
                     itemBuilder: (context, item, index) {
                       // var doc = await firebaseFirestore.collection('videos').doc(item).get();
@@ -790,11 +798,8 @@ class VideoListView extends StatelessWidget {
                               if (!snapshot.hasData) {
                                 return Container();
                               }
-                              return Container(
-                                child: CachedNetworkImage(
-                                    fit: BoxFit.cover,
-                                    imageUrl: video.thumnail),
-                              );
+                              return CachedNetworkImage(
+                                  fit: BoxFit.cover, imageUrl: video.thumnail);
                             }),
                       );
                     },
@@ -802,6 +807,8 @@ class VideoListView extends StatelessWidget {
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                     childAspectRatio: 9 / 16,
                     crossAxisCount: 3,
+                    mainAxisSpacing: Dimens.DIMENS_3,
+                    crossAxisSpacing: Dimens.DIMENS_3,
                   ),
                 ),
               );
