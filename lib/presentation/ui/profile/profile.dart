@@ -504,6 +504,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     }
                     return Wrap(
                         spacing: 3.0, // gap between adjacent chips
+                        runSpacing: 0,
                         children: [
                           ...items.getRange(0, 3).toList(),
                           items.length > 3
