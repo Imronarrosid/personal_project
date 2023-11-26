@@ -45,6 +45,7 @@ class _ProfilePageState extends State<ProfilePage> {
   List<GameFav> gameFavs = [];
   String userBio = '';
   bool isToEditProfile = false;
+  bool isToMenu = true;
   @override
   Widget build(BuildContext context) {
     debugPrint('refresh');
@@ -107,8 +108,12 @@ class _ProfilePageState extends State<ProfilePage> {
                         actions: [
                           (widget.uid == authState.uid || widget.uid == null)
                               ? IconButton(
-                                  onPressed: () {
-                                    context.push(APP_PAGE.menu.toPath);
+                                  onPressed: () async {
+                                    if (isToMenu) {
+                                      isToMenu = false;
+                                      await context.push(APP_PAGE.menu.toPath);
+                                    }
+                                    isToMenu = true;
                                   },
                                   icon: Icon(MdiIcons.menu))
                               : Container()
