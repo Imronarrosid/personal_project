@@ -44,6 +44,7 @@ class ProfilePage extends StatefulWidget {
 class _ProfilePageState extends State<ProfilePage> {
   List<GameFav> gameFavs = [];
   String userBio = '';
+  bool isToEditProfile = false;
   @override
   Widget build(BuildContext context) {
     debugPrint('refresh');
@@ -176,32 +177,9 @@ class _ProfilePageState extends State<ProfilePage> {
                                                         borderRadius:
                                                             BorderRadius
                                                                 .circular(5),
-                                                        onTap: () {
-                                                          ProfileData
-                                                              profileData =
-                                                              ProfileData(
-                                                                  name:
-                                                                      data.name,
-                                                                  userName: data
-                                                                      .userName,
-                                                                  bio: userBio,
-                                                                  photoUrl: data
-                                                                      .photoURL,
-                                                                  updatedAt: data
-                                                                      .updatedAt,
-                                                                  userNameUpdatedAt:
-                                                                      data
-                                                                          .userNameUpdatedAt,
-                                                                  gameFav:
-                                                                      gameFavs,
-                                                                  gameFavoritesId: []);
-                                                          context.push(
-                                                              APP_PAGE
-                                                                  .editProfile
-                                                                  .toPath,
-                                                              extra:
-                                                                  profileData);
-                                                        },
+                                                        onTap: () =>
+                                                            toEditProfile(
+                                                                data, context),
                                                         child: Container(
                                                           height:
                                                               Dimens.DIMENS_34,
@@ -398,7 +376,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                         indicatorColor: COLOR_black_ff121212,
                                         indicatorSize:
                                             TabBarIndicatorSize.label,
-                                            indicatorWeight: 3,
+                                        indicatorWeight: 3,
                                         tabs: [
                                           Tab(
                                             icon: Icon(MdiIcons.folderPlay),
@@ -442,6 +420,24 @@ class _ProfilePageState extends State<ProfilePage> {
         );
       }),
     );
+  }
+
+  Future<void> toEditProfile(UserData data, BuildContext context) async {
+    ProfileData profileData = ProfileData(
+        name: data.name,
+        userName: data.userName,
+        bio: userBio,
+        photoUrl: data.photoURL,
+        updatedAt: data.updatedAt,
+        userNameUpdatedAt: data.userNameUpdatedAt,
+        gameFav: gameFavs,
+        gameFavoritesId: []);
+
+    if (!isToEditProfile) {
+      isToEditProfile = true;
+      await context.push(APP_PAGE.editProfile.toPath, extra: profileData);
+    }
+    isToEditProfile = false;
   }
 
   Padding gameFavView(String uid) {
