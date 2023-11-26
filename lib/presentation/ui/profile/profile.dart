@@ -745,9 +745,7 @@ class _ProfilePageState extends State<ProfilePage> {
 class VideoListView extends StatelessWidget {
   final String uid;
   final From from;
-  VideoListView({super.key, required this.uid, required this.from});
-
-  final _scrollController = ScrollController();
+  const VideoListView({super.key, required this.uid, required this.from});
 
   @override
   Widget build(BuildContext context) {
@@ -774,6 +772,15 @@ class VideoListView extends StatelessWidget {
                   pagingController: state.controller,
                   padding: EdgeInsets.only(top: Dimens.DIMENS_6),
                   builderDelegate: PagedChildBuilderDelegate(
+                    noItemsFoundIndicatorBuilder: (context) => Center(
+                      child: Text(
+                        from == From.likes
+                            ? 'Tidak Ada Postingann Disukai'
+                            : 'Tidak Ada Postingan',
+                        style: const TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                    ),
                     itemBuilder: (context, item, index) {
                       // var doc = await firebaseFirestore.collection('videos').doc(item).get();
                       // Video video = Video.fromSnap(doc);
