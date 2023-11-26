@@ -679,13 +679,14 @@ class _ProfilePageState extends State<ProfilePage> {
                       data.uid == uid) {
                     return Text(
                       '@${state.newUserName!}',
-                      style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold, fontSize: 14),
                     );
                   }
                   return Text(
                     '@${data.userName}',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold, fontSize: 14),
                   );
                 },
               ),
