@@ -144,8 +144,8 @@ class VideoRepository implements VideoUseCaseType {
     DocumentSnapshot docs =
         await firebaseFirestore.collection('users').doc(uid).get();
     videoOwnerData =
-        User(id: docs['uid'], userName: docs['name'], photo: docs['photo']);
-    return User(id: docs['uid'], userName: docs['name'], photo: docs['photo']);
+        User(id: docs['uid'], userName: docs['userName'], photo: docs['photo']);
+    return videoOwnerData;
   }
 
   Future<void> likeVideo(String id) async {
@@ -257,7 +257,8 @@ class VideoRepository implements VideoUseCaseType {
         debugPrint('empty');
       } else {
         querySnapshot = await firebaseFirestore
-            .collection('users').doc(uid)
+            .collection('users')
+            .doc(uid)
             .collection('likes')
             .orderBy('likedAt', descending: true)
             .startAfterDocument(likedVideosDocs.last)
