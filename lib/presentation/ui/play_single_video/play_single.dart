@@ -348,6 +348,12 @@ class _PlaySingleVideoPageState extends State<PlaySingleVideoPage> {
       ),
     );
   }
+
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
+  }
 }
 
 class LikeWidget extends StatelessWidget {
