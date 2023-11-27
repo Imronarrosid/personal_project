@@ -16,7 +16,8 @@ enum APP_PAGE {
   cropImage,
   menu,
   addGameFav,
-  editGameFav
+  editGameFav,
+  videoItem
 }
 
 extension AppPageExtension on APP_PAGE {
@@ -54,6 +55,8 @@ extension AppPageExtension on APP_PAGE {
         return "/add-game-fav";
       case APP_PAGE.editGameFav:
         return "/edit-game-fav";
+      case APP_PAGE.videoItem:
+        return "/video-item";
       default:
         return "/";
     }
@@ -93,6 +96,8 @@ extension AppPageExtension on APP_PAGE {
         return "ADD-GAME-FAV";
       case APP_PAGE.editGameFav:
         return "EDIT-GAME-FAV";
+      case APP_PAGE.videoItem:
+        return "VIDEO-ITEM";
       default:
         return "HOME";
     }

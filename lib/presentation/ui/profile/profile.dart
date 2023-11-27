@@ -762,7 +762,7 @@ class VideoListView extends StatelessWidget {
             RepositoryProvider.of<UserVideoPagingRepository>(context))
           ..add(InitUserVideoPaging(uid: uid, from: from)),
         child: BlocBuilder<UserVideoPagingBloc, UserVideoPagingState>(
-          builder: (context, state) {
+          builder: (_, state) {
             if (state is UserVideoPagingInitialed) {
               return BlocListener<RefreshProfileCubit, RefreshProfileState>(
                 listener: (context, refreshState) {
@@ -787,7 +787,7 @@ class VideoListView extends StatelessWidget {
                             fontSize: 16, fontWeight: FontWeight.bold),
                       ),
                     ),
-                    itemBuilder: (context, item, index) {
+                    itemBuilder: (_, item, index) {
                       // var doc = await firebaseFirestore.collection('videos').doc(item).get();
                       // Video video = Video.fromSnap(doc);
                       return AspectRatio(
@@ -797,8 +797,8 @@ class VideoListView extends StatelessWidget {
                                 .collection('videos')
                                 .doc(item)
                                 .get(),
-                            builder: (context,
-                                AsyncSnapshot<DocumentSnapshot> snapshot) {
+                            builder:
+                                (_, AsyncSnapshot<DocumentSnapshot> snapshot) {
                               late Video video;
                               if (snapshot.data != null) {
                                 video = Video.fromSnap(snapshot.data!);
@@ -807,8 +807,15 @@ class VideoListView extends StatelessWidget {
                               if (!snapshot.hasData) {
                                 return Container();
                               }
-                              return CachedNetworkImage(
-                                  fit: BoxFit.cover, imageUrl: video.thumnail);
+                              return GestureDetector(
+                                onTap: () {
+                                  context.push(APP_PAGE.videoItem.toPath,
+                                      extra: video);
+                                },
+                                child: CachedNetworkImage(
+                                    fit: BoxFit.cover,
+                                    imageUrl: video.thumnail),
+                              );
                             }),
                       );
                     },

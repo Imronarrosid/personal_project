@@ -2,14 +2,18 @@ import 'dart:io';
 
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:personal_project/domain/model/game_fav_modal.dart';
 import 'package:personal_project/domain/model/preview_model.dart';
 import 'package:personal_project/domain/model/profile_data_model.dart';
+import 'package:personal_project/domain/model/video_model.dart';
+import 'package:personal_project/domain/reporsitory/video_repository.dart';
 import 'package:personal_project/domain/services/app/app_service.dart';
 import 'package:personal_project/presentation/router/route_utils.dart';
 import 'package:personal_project/presentation/ui/add_details/add_details_page.dart';
 import 'package:personal_project/presentation/ui/edit_profile/edit_page/edit_game_fav_page.dart';
+import 'package:personal_project/presentation/ui/play_single_video/play_single.dart';
 import 'package:personal_project/presentation/ui/profile_pict_preview/profile_pict_preview.dart';
 import 'package:personal_project/presentation/ui/edit_profile/edit_page/edit_name_page.dart';
 import 'package:personal_project/presentation/ui/edit_profile/edit_profile.dart';
@@ -19,6 +23,7 @@ import 'package:personal_project/presentation/ui/profile/profile.dart';
 import 'package:personal_project/presentation/ui/menu/menu_page.dart';
 import 'package:personal_project/presentation/ui/ugf/ugf_page.dart';
 import 'package:personal_project/presentation/ui/upload/upload.dart';
+import 'package:personal_project/presentation/ui/video/list_video/video_item.dart';
 import 'package:personal_project/presentation/ui/video_editor/video_editor_page.dart';
 import 'package:personal_project/presentation/ui/video_preview/video_previe_page.dart';
 
@@ -135,6 +140,32 @@ class AppRouter {
         builder: (context, state) {
           XFile profileData = state.extra as XFile;
           return PrevewProfilePictPage(imageFile: profileData);
+        },
+      ),
+      GoRoute(
+        path: APP_PAGE.videoItem.toPath,
+        name: APP_PAGE.videoItem.toName,
+        pageBuilder: (context, state) {
+          Video videoData = state.extra as Video;
+          return CustomTransitionPage(
+            child: PlaySingleVideoPage(videoData: videoData),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) =>
+                    SlideTransition(
+                        position: animation.drive(
+                          Tween<Offset>(
+                            begin: Offset(0.75, 0),
+                            end: Offset.zero,
+                          ).chain(
+                            CurveTween(curve: Curves.ease),
+                          ),
+                        ),
+                        child: child),
+          );
+        },
+        builder: (context, state) {
+          Video videoData = state.extra as Video;
+          return PlaySingleVideoPage(videoData: videoData);
         },
       ),
       GoRoute(
