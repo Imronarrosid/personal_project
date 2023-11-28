@@ -83,7 +83,9 @@ class VideoRepository implements VideoUseCaseType {
           likes: [],
           commentCount: 0,
           shareCount: 0,
-          createdAt: FieldValue.serverTimestamp());
+          createdAt: FieldValue.serverTimestamp(),
+          game: '',
+          views: []);
 
       await firebaseFirestore
           .collection('videos')
@@ -284,5 +286,15 @@ class VideoRepository implements VideoUseCaseType {
       debugPrint('get video User error' + e.toString());
     }
     return listDocs;
+  }
+
+  Future<void> addViewsCount(String postId) async {
+    Map<String, dynamic> views = {
+      'uid': firebaseAuth.currentUser!.uid,
+      'viewsAt': Timestamp.now()
+    };
+    await firebaseFirestore.collection('videos').doc(postId).update({
+      'views': FieldValue.arrayUnion([views])
+    });
   }
 }

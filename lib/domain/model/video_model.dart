@@ -8,9 +8,10 @@ class Video {
       caption,
       thumnail,
       videoUrl,
+      game,
       profileImg;
   final dynamic createdAt;
-  final List likes;
+  final List likes, views;
   final int commentCount, shareCount;
   Video(
       {required this.username,
@@ -21,7 +22,9 @@ class Video {
       required this.thumnail,
       required this.videoUrl,
       required this.profileImg,
+      required this.game,
       required this.likes,
+      required this.views,
       required this.commentCount,
       required this.shareCount,
       required this.createdAt});
@@ -38,7 +41,9 @@ class Video {
         "caption": caption,
         "videoUrl": videoUrl,
         "thumnail": thumnail,
-        "createdAt": createdAt
+        "createdAt": createdAt,
+        "views": views,
+        "game": game
       };
   static Video fromSnap(DocumentSnapshot snapshot) {
     var snap = snapshot.data() as Map<String, dynamic>;
@@ -56,6 +61,8 @@ class Video {
       videoUrl: snap["videoUrl"],
       thumnail: snap["thumnail"],
       createdAt: snap["creaatedAt"],
+      views: snap["views"],
+      game: snap['game'],
     );
   }
 }
