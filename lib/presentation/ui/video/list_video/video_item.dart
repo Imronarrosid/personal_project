@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:go_router/go_router.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:personal_project/constant/color.dart';
 import 'package:personal_project/constant/dimens.dart';
@@ -14,6 +15,7 @@ import 'package:personal_project/domain/model/video_model.dart';
 import 'package:personal_project/domain/reporsitory/auth_reposotory.dart';
 import 'package:personal_project/domain/reporsitory/video_repository.dart';
 import 'package:personal_project/presentation/assets/images.dart';
+import 'package:personal_project/presentation/router/route_utils.dart';
 import 'package:personal_project/presentation/ui/auth/auth.dart';
 import 'package:personal_project/presentation/ui/comments/comments_page.dart';
 import 'package:personal_project/presentation/ui/video/list_video/bloc/video_player_bloc.dart';
@@ -211,89 +213,11 @@ class _VideoItemState extends State<VideoItem> {
                             bottom: Dimens.DIMENS_20,
                             child: Column(
                               children: [
-                                GestureDetector(
-                                  onTap: () {},
-                                  child: CircleAvatar(
-                                    child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(50),
-                                      child: CachedNetworkImage(
-                                        imageUrl: data!.photo!,
-                                        errorWidget: (context, url, error) =>
-                                            Icon(Icons.error),
-                                      ),
-                                    ),
-                                  ),
-                                ),
+                                _buildProfilePictures(context, data),
                                 SizedBox(
                                   height: Dimens.DIMENS_38,
                                 ),
-                                GestureDetector(
-                                  onTap: () {
-                                    int likeCount = int.parse(widget
-                                        .videoData.likes.length
-                                        .toString());
-                                    String? uid =
-                                        RepositoryProvider.of<AuthRepository>(
-                                                context)
-                                            .currentUser
-                                            ?.uid;
-                                    if (uid == null) {
-                                      showAuthBottomSheetFunc(context);
-                                    } else {
-                                      bool isLiked =
-                                          videoData.likes.contains(uid);
-                                      BlocProvider.of<LikeVideoCubit>(context)
-                                          .likePost(
-                                              postId: videoData.id,
-                                              stateFromDatabase: isLiked,
-                                              databaseLikeCount: likeCount);
-                                    }
-                                  },
-                                  child: BlocBuilder<LikeVideoCubit,
-                                      LikeVideoState>(
-                                    buildWhen: (previous, current) {
-                                      if (current is ShowDobleTapLikeWidget ||
-                                          current
-                                              is RemoveDoubleTapLikeWidget) {
-                                        return false;
-                                      }
-                                      return true;
-                                    },
-                                    builder: (context, state) {
-                                      String? uid =
-                                          RepositoryProvider.of<AuthRepository>(
-                                                  context)
-                                              .currentUser
-                                              ?.uid;
-                                      bool isLiked =
-                                          videoData.likes.contains(uid);
-                                      if (state is VideoIsLiked) {
-                                        return Icon(
-                                          MdiIcons.heart,
-                                          size: Dimens.DIMENS_34,
-                                          color: Colors.red,
-                                        );
-                                      } else if (state is UnilkedVideo) {
-                                        return Icon(
-                                          MdiIcons.heart,
-                                          size: Dimens.DIMENS_34,
-                                          color: COLOR_white_fff5f5f5,
-                                        );
-                                      }
-                                      return isLiked
-                                          ? Icon(
-                                              MdiIcons.heart,
-                                              size: Dimens.DIMENS_34,
-                                              color: Colors.red,
-                                            )
-                                          : Icon(
-                                              MdiIcons.heart,
-                                              size: Dimens.DIMENS_34,
-                                              color: COLOR_white_fff5f5f5,
-                                            );
-                                    },
-                                  ),
-                                ),
+                                _buildLikeButton(context, videoData),
                                 BlocBuilder<LikeVideoCubit, LikeVideoState>(
                                   buildWhen: (previous, current) {
                                     if (current is ShowDobleTapLikeWidget ||
@@ -416,6 +340,80 @@ class _VideoItemState extends State<VideoItem> {
           ),
         );
       }),
+    );
+  }
+
+  GestureDetector _buildLikeButton(BuildContext context, Video videoData) {
+    return GestureDetector(
+      onTap: () {
+        int likeCount = int.parse(widget.videoData.likes.length.toString());
+        String? uid =
+            RepositoryProvider.of<AuthRepository>(context).currentUser?.uid;
+        if (uid == null) {
+          showAuthBottomSheetFunc(context);
+        } else {
+          bool isLiked = videoData.likes.contains(uid);
+          BlocProvider.of<LikeVideoCubit>(context).likePost(
+              postId: videoData.id,
+              stateFromDatabase: isLiked,
+              databaseLikeCount: likeCount);
+        }
+      },
+      child: BlocBuilder<LikeVideoCubit, LikeVideoState>(
+        buildWhen: (previous, current) {
+          if (current is ShowDobleTapLikeWidget ||
+              current is RemoveDoubleTapLikeWidget) {
+            return false;
+          }
+          return true;
+        },
+        builder: (context, state) {
+          String? uid =
+              RepositoryProvider.of<AuthRepository>(context).currentUser?.uid;
+          bool isLiked = videoData.likes.contains(uid);
+          if (state is VideoIsLiked) {
+            return Icon(
+              MdiIcons.heart,
+              size: Dimens.DIMENS_34,
+              color: Colors.red,
+            );
+          } else if (state is UnilkedVideo) {
+            return Icon(
+              MdiIcons.heart,
+              size: Dimens.DIMENS_34,
+              color: COLOR_white_fff5f5f5,
+            );
+          }
+          return isLiked
+              ? Icon(
+                  MdiIcons.heart,
+                  size: Dimens.DIMENS_34,
+                  color: Colors.red,
+                )
+              : Icon(
+                  MdiIcons.heart,
+                  size: Dimens.DIMENS_34,
+                  color: COLOR_white_fff5f5f5,
+                );
+        },
+      ),
+    );
+  }
+
+  GestureDetector _buildProfilePictures(BuildContext context, User? data) {
+    return GestureDetector(
+      onTap: () {
+        context.push(APP_PAGE.profile.toPath, extra: widget.videoData.uid);
+      },
+      child: CircleAvatar(
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(50),
+          child: CachedNetworkImage(
+            imageUrl: data!.photo!,
+            errorWidget: (context, url, error) => const Icon(Icons.error),
+          ),
+        ),
+      ),
     );
   }
 
