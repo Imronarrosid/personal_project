@@ -18,6 +18,13 @@ class CommentsPagingBloc
       }
     });
   }
+  @override
+  Future<void> close() {
+    if (repository.controller != null) {
+      repository.controller!.dispose();
+    }
+    return super.close();
+  }
 
   final ComentsPagingRepository repository;
 }

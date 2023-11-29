@@ -11,6 +11,8 @@ final class CommentInitial extends CommentState {}
 
 final class AddComentState extends CommentState {}
 
+final class RefreshComentState extends CommentState {}
+
 final class ComentAddedState extends CommentState {
   final Comment comment;
 

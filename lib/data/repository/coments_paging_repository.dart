@@ -1,20 +1,19 @@
 import 'dart:async';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:personal_project/data/repository/coment_repository.dart';
-import 'package:personal_project/data/repository/coment_repository.dart';
 import 'package:personal_project/domain/model/comment_model.dart';
-import 'package:personal_project/domain/model/video_model.dart';
-import 'package:personal_project/domain/reporsitory/video_repository.dart';
-import 'package:personal_project/domain/services/firebase/firebase_service.dart';
 
 class ComentsPagingRepository {
   PagingController<int, Comment>? controller;
   CommentRepository commentRepository = CommentRepository();
-  int _pageSize = 2;
+  final int _pageSize = 20;
   final List<Comment> currentLoadedComments = [];
+
+  void clearAllcoment() {
+    commentRepository.allDocs.clear();
+  }
 
   void initPagingController(String postId) {
     controller = PagingController(firstPageKey: 0);
@@ -35,7 +34,7 @@ class ComentsPagingRepository {
           limit: _pageSize, postId: postId);
       final isLastPage = newItems.length < _pageSize;
 
-      debugPrint('new items' + newItems.toString());
+      debugPrint('new items$newItems');
 
       for (var element in newItems) {
         listComments.add(Comment.fromSnap(element));

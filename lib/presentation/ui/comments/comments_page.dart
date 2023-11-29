@@ -133,52 +133,59 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                           ),
 
                           SliverFillRemaining(
-                            child: SingleChildScrollView(
-                              child: Column(
-                                children: [
-                                  BlocBuilder<CommentBloc, CommentState>(
-                                    builder: (context, state) {
-                                      return ListView.builder(
-                                        reverse: true,
-                                        shrinkWrap: true,
-                                        itemCount: _newCommentItems.length,
-                                        physics:
-                                            const NeverScrollableScrollPhysics(),
-                                        itemBuilder: ((context, index) {
-                                          return CommentItem(
-                                              comment: _newCommentItems[index],
-                                              postId: widget.postId);
-                                        }),
-                                      );
-                                    },
-                                  ),
-                                  BlocBuilder<CommentsPagingBloc,
-                                      CommentsPagingState>(
-                                    builder: (context, state) {
-                                      if (state is CommentsPagingInitialized) {
-                                        return PagedListView<int, Comment>(
-                                          pagingController: state.controller!,
+                            child: RefreshIndicator(
+                              onRefresh: () {
+                                return _refreshComments(context);
+                              },
+                              child: SingleChildScrollView(
+                                child: Column(
+                                  children: [
+                                    BlocBuilder<CommentBloc, CommentState>(
+                                      builder: (context, state) {
+                                        return ListView.builder(
+                                          reverse: true,
                                           shrinkWrap: true,
+                                          itemCount: _newCommentItems.length,
                                           physics:
                                               const NeverScrollableScrollPhysics(),
-                                          builderDelegate:
-                                              PagedChildBuilderDelegate(
-                                                  itemBuilder: (
-                                            context,
-                                            item,
-                                            index,
-                                          ) {
+                                          itemBuilder: ((context, index) {
                                             return CommentItem(
-                                              comment: item,
-                                              postId: widget.postId,
-                                            );
+                                                comment:
+                                                    _newCommentItems[index],
+                                                postId: widget.postId);
                                           }),
                                         );
-                                      }
-                                      return Container();
-                                    },
-                                  ),
-                                ],
+                                      },
+                                    ),
+                                    BlocBuilder<CommentsPagingBloc,
+                                        CommentsPagingState>(
+                                      builder: (context, state) {
+                                        if (state
+                                            is CommentsPagingInitialized) {
+                                          return PagedListView<int, Comment>(
+                                            pagingController: state.controller!,
+                                            shrinkWrap: true,
+                                            physics:
+                                                const NeverScrollableScrollPhysics(),
+                                            builderDelegate:
+                                                PagedChildBuilderDelegate(
+                                                    itemBuilder: (
+                                              context,
+                                              item,
+                                              index,
+                                            ) {
+                                              return CommentItem(
+                                                comment: item,
+                                                postId: widget.postId,
+                                              );
+                                            }),
+                                          );
+                                        }
+                                        return Container();
+                                      },
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
                           ),
@@ -295,6 +302,19 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
       ),
     );
   }
+
+  Future<void> _refreshComments(BuildContext context) {
+    return Future.sync(() {
+      _newCommentItems.clear();
+      ComentsPagingRepository commentsPagingReository =
+          RepositoryProvider.of<ComentsPagingRepository>(context);
+      commentsPagingReository.clearAllcoment();
+      BlocProvider.of<CommentBloc>(context).add(RefreshComentEvent());
+      if (commentsPagingReository.controller != null) {
+        commentsPagingReository.controller!.refresh();
+      }
+    });
+  }
 }
 
 class CommentItem extends StatelessWidget {
@@ -304,6 +324,8 @@ class CommentItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    tago.setLocaleMessages('id', tago.IdMessages());
+
     Size size = MediaQuery.of(context).size;
     final CommentRepository repository =
         RepositoryProvider.of<CommentRepository>(context);

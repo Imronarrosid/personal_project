@@ -9,6 +9,8 @@ sealed class CommentEvent extends Equatable {
 
 class AddComentEvent extends CommentEvent {}
 
+class RefreshComentEvent extends CommentEvent {}
+
 class PostCommentEvent extends CommentEvent {
   final String postId;
   final String comment;
