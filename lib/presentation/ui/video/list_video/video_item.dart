@@ -164,7 +164,11 @@ class _VideoItemState extends State<VideoItem> {
                                           opacity: state.opacity!,
                                           duration: kThemeAnimationDuration,
                                           child: GestureDetector(
-                                            onTap: controller!.play,
+                                            onTap: () {
+                                              BlocProvider.of<VideoPlayerBloc>(
+                                                      context)
+                                                  .add(PauseVideo());
+                                            },
                                             child: FaIcon(
                                               FontAwesomeIcons.play,
                                               size: state.size,

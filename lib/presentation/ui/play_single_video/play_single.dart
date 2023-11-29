@@ -380,7 +380,16 @@ class _PlaySingleVideoPageState extends State<PlaySingleVideoPage> {
                               opacity: state.status == PlayStatus.play ? 0 : 1,
                               duration: kThemeAnimationDuration,
                               child: GestureDetector(
-                                onTap: controller.play,
+                                onTap: () {
+                                  BlocProvider.of<PlayButtonCubit>(context)
+                                      .playHandle(controller.value.isPlaying);
+                                  if (controller.value.isPlaying) {
+                                    controller.pause();
+                                  } else {
+                                    controller.play();
+                                  }
+                                  debugPrint('playy');
+                                },
                                 child: FaIcon(
                                   FontAwesomeIcons.play,
                                   size: state.status == PlayStatus.pause
@@ -404,6 +413,7 @@ class _PlaySingleVideoPageState extends State<PlaySingleVideoPage> {
 
   @override
   void dispose() {
+    controller.removeListener(() {});
     controller.dispose();
     super.dispose();
   }
