@@ -13,6 +13,7 @@ import 'package:personal_project/domain/reporsitory/video_repository.dart';
 import 'package:personal_project/presentation/assets/images.dart';
 import 'package:personal_project/presentation/ui/auth/auth.dart';
 import 'package:personal_project/presentation/ui/comments/comments_page.dart';
+import 'package:personal_project/presentation/ui/play_single_video/cubit/play_button_cubit.dart';
 import 'package:personal_project/presentation/ui/video/list_video/cubit/like_video_cubit.dart';
 import 'package:video_cached_player/video_cached_player.dart';
 import 'package:video_player/video_player.dart';
@@ -29,6 +30,7 @@ class _PlaySingleVideoPageState extends State<PlaySingleVideoPage> {
   late CachedVideoPlayerController controller;
   // ignore: non_constant_identifier_names
   final double _IC_LABEL_FONTSIZE = 12;
+  bool isViewed = false;
 
   @override
   void initState() {
@@ -38,9 +40,24 @@ class _PlaySingleVideoPageState extends State<PlaySingleVideoPage> {
         controller.play();
         controller.setLooping(true);
         setState(() {});
+        _addViews();
       }
     });
     super.initState();
+  }
+
+  void _addViews() {
+    controller.addListener(() {
+      int duratio = controller.value.duration.inSeconds;
+      double minDur = 3 / 10 * duratio;
+
+      if (controller.value.position.inSeconds > minDur.toInt() && !isViewed) {
+        RepositoryProvider.of<VideoRepository>(context)
+            .addViewsCount(widget.videoData.id);
+
+        isViewed = true;
+      }
+    });
   }
 
   @override
@@ -61,9 +78,19 @@ class _PlaySingleVideoPageState extends State<PlaySingleVideoPage> {
             create: (context) =>
                 LikeVideoCubit(RepositoryProvider.of<VideoRepository>(context)),
           ),
+          BlocProvider(create: (context) => PlayButtonCubit())
         ],
         child: Builder(builder: (context) {
           return GestureDetector(
+            onTap: () {
+              BlocProvider.of<PlayButtonCubit>(context)
+                  .playHandle(controller.value.isPlaying);
+              if (controller.value.isPlaying) {
+                controller.pause();
+              } else {
+                controller.play();
+              }
+            },
             onDoubleTap: () {
               String? uid = RepositoryProvider.of<AuthRepository>(context)
                   .currentUser
@@ -343,6 +370,29 @@ class _PlaySingleVideoPageState extends State<PlaySingleVideoPage> {
                 const Align(
                   alignment: Alignment.center,
                   child: LikeWidget(),
+                ),
+                BlocBuilder<PlayButtonCubit, PlayButtonState>(
+                  builder: (context, state) {
+                    return state.status == PlayStatus.pause
+                        ? Align(
+                            alignment: Alignment.center,
+                            child: AnimatedOpacity(
+                              opacity: state.status == PlayStatus.play ? 0 : 1,
+                              duration: kThemeAnimationDuration,
+                              child: GestureDetector(
+                                onTap: controller.play,
+                                child: FaIcon(
+                                  FontAwesomeIcons.play,
+                                  size: state.status == PlayStatus.pause
+                                      ? Dimens.DIMENS_34
+                                      : Dimens.DIMENS_18,
+                                  color: COLOR_white_fff5f5f5,
+                                ),
+                              ),
+                            ),
+                          )
+                        : Container();
+                  },
                 )
               ]),
             ),
