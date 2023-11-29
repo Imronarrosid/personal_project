@@ -22,7 +22,7 @@ class VideoPage extends StatelessWidget {
       body: SizedBox(
         width: size.width,
         height: size.height,
-        child: const ListVideo(),
+        child: ListVideo(),
       ),
     );
   }
