@@ -8,8 +8,10 @@ import 'package:personal_project/domain/reporsitory/video_repository.dart';
 class PagingRepository {
   PagingController<int, Video>? controller;
   VideoRepository videoRepository = VideoRepository();
-  int _pageSize = 2;
-  final List<Video> currentLoadedVideo = [];
+  final int _pageSize = 15;
+  void clearAllVideo() {
+    videoRepository.allDocs.clear();
+  }
 
   void initPagingController() {
     controller = PagingController(firstPageKey: 0);
@@ -29,16 +31,10 @@ class PagingRepository {
       final newItems = await videoRepository.getListVideo(limit: _pageSize);
       final isLastPage = newItems.length < _pageSize;
 
-      debugPrint('new items' + newItems.toString());
+      debugPrint('new items$newItems');
 
       for (var element in newItems) {
         listVideo.add(Video.fromSnap(element));
-      }
-      if (newItems.isEmpty) {
-        for (var element in currentLoadedVideo) {
-          listVideo.add(element);
-          debugPrint('current loaded' + element.videoUrl);
-        }
       }
 
       if (isLastPage) {

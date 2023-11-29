@@ -1,30 +1,18 @@
 import 'dart:async';
-import 'dart:isolate';
-import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:personal_project/constant/color.dart';
-import 'package:personal_project/constant/dimens.dart';
 import 'package:personal_project/data/repository/paging_repository.dart';
 import 'package:personal_project/data/repository/video_player_repository.dart';
 import 'package:personal_project/domain/model/video_model.dart';
-import 'package:personal_project/domain/reporsitory/video_repository.dart';
-import 'package:personal_project/presentation/shared_components/custom_snackbar.dart';
-import 'package:personal_project/presentation/shared_components/keep_alive_page.dart';
 import 'package:personal_project/presentation/ui/video/list_video/bloc/paging_bloc.dart';
 import 'package:personal_project/presentation/ui/video/list_video/video_item.dart';
-import 'package:video_cached_player/video_cached_player.dart';
 
-class ListVideo extends StatefulWidget {
-  const ListVideo({super.key});
+class ListVideo extends StatelessWidget {
+  ListVideo({super.key});
 
-  @override
-  State<ListVideo> createState() => _ListVideoState();
-}
-
-class _ListVideoState extends State<ListVideo> {
   final PageController _controller = PageController();
 
   @override
@@ -48,13 +36,7 @@ class _ListVideoState extends State<ListVideo> {
                     final PagingRepository pagingRepository =
                         RepositoryProvider.of<PagingRepository>(context);
 
-                    // Clear current loaded video on refresh
-                    pagingRepository.currentLoadedVideo.clear();
-
-                    //Store current loaded video to paging repository.
-                    for (var video in pagingRepository.controller!.itemList!) {
-                      pagingRepository.currentLoadedVideo.add(video);
-                    }
+                    pagingRepository.clearAllVideo();
 
                     return Future.sync(
                       () {
@@ -95,11 +77,6 @@ class _ListVideoState extends State<ListVideo> {
         ),
       ),
     );
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
   }
 }
 
