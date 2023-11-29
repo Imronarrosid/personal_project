@@ -35,7 +35,7 @@ class _HomePageState extends State<HomePage> {
     int selectedindex = 0;
     List<Widget> pages = <Widget>[
       VideoPage(),
-      const SearchPage(),
+      SearchPage(),
       const MessagePage(),
       const MessagePage(),
       ProfilePage(),
