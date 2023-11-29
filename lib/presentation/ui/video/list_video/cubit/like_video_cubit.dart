@@ -1,6 +1,5 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:flutter/material.dart';
 import 'package:personal_project/domain/reporsitory/video_repository.dart';
 
 part 'like_video_state.dart';
@@ -40,7 +39,7 @@ class LikeVideoCubit extends Cubit<LikeVideoState> {
     _clientState ??= dataBaseState;
 
     if (_clientState == false && dataBaseState == false) {
-      repository.doubleTaplikeVideo(postId);
+      repository.likeVideo(postId);
 
       emit(VideoIsLiked(likeCount: databaseLikeCount + 1));
       _clientState = true;
@@ -48,7 +47,7 @@ class LikeVideoCubit extends Cubit<LikeVideoState> {
       //do nothing
     }
     if (_clientState == false && dataBaseState == true) {
-      repository.doubleTaplikeVideo(postId);
+      repository.likeVideo(postId);
 
       emit(VideoIsLiked(likeCount: databaseLikeCount));
       _clientState = true;
