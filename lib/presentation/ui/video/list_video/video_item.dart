@@ -184,32 +184,30 @@ class _VideoItemState extends State<VideoItem> {
                       } else if (state is VideoPlayerInitial) {
                         return const CircularProgressIndicator();
                       }
-                      return Container(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              'Tidak dapat menampilkan video',
-                              style: TextStyle(
-                                  color: COLOR_white_fff5f5f5,
-                                  fontSize: _IC_LABEL_FONTSIZE),
-                            ),
-                            SizedBox(
-                              height: Dimens.DIMENS_12,
-                            ),
-                            FaIcon(
-                              FontAwesomeIcons.circleExclamation,
-                              color: COLOR_white_fff5f5f5,
-                            ),
-                            Text(
-                              state is VideoPlayerError
-                                  ? state.error.toString()
-                                  : '',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(color: COLOR_white_fff5f5f5),
-                            ),
-                          ],
-                        ),
+                      return Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            'Tidak dapat menampilkan video',
+                            style: TextStyle(
+                                color: COLOR_white_fff5f5f5,
+                                fontSize: _IC_LABEL_FONTSIZE),
+                          ),
+                          SizedBox(
+                            height: Dimens.DIMENS_12,
+                          ),
+                          FaIcon(
+                            FontAwesomeIcons.circleExclamation,
+                            color: COLOR_white_fff5f5f5,
+                          ),
+                          Text(
+                            state is VideoPlayerError
+                                ? state.error.toString()
+                                : '',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(color: COLOR_white_fff5f5f5),
+                          ),
+                        ],
                       );
                     },
                   ),
@@ -313,10 +311,13 @@ class _VideoItemState extends State<VideoItem> {
                                           textColor: Colors.white,
                                           fontSize: 16.0);
                                     },
-                                    child: Icon(
-                                      MdiIcons.reply,
-                                      color: COLOR_white_fff5f5f5,
-                                      size: Dimens.DIMENS_34,
+                                    child: Transform.flip(
+                                      flipX: true,
+                                      child: Icon(
+                                        MdiIcons.reply,
+                                        color: COLOR_white_fff5f5f5,
+                                        size: Dimens.DIMENS_34,
+                                      ),
                                     ),
                                   ),
                                   SizedBox(
