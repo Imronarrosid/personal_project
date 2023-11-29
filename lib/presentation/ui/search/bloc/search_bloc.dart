@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:bloc/bloc.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:personal_project/domain/model/user.dart';
@@ -12,15 +11,20 @@ part 'search_state.dart';
 
 class SearchBloc extends Bloc<SearchEvent, SearchState> {
   StreamSubscription? searchSubscription;
-  SearchBloc(this.repository) : super(const SearchState([])) {
+  SearchBloc(this.repository)
+      : super(const SearchState(results: [], status: SearchStatus.initial)) {
     on<SearchEvent>((event, emit) async {
-      if (event.query.isEmpty) {
-        emit(const SearchState([]));
+      var searchResult = await repository.onSearchChanged(event.query);
+      if (searchResult.isEmpty && event.query.isNotEmpty) {
+        emit(const SearchState(results: [], status: SearchStatus.noItemFound));
       } else {
-        var searchResult = await repository.onSearchChanged(event.query);
         debugPrint('search ${searchResult.length}');
 
-        emit(SearchState(searchResult));
+        emit(SearchState(results: searchResult, status: SearchStatus.success));
+      }
+
+      if (event.query.isEmpty) {
+        emit(const SearchState(status: SearchStatus.initial));
       }
 
       searchSubscription = repository.searchSubscription;

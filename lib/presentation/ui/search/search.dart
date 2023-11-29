@@ -60,11 +60,16 @@ class SearchPage extends StatelessWidget {
                   )),
               body: BlocBuilder<SearchBloc, SearchState>(
                 builder: (context, state) {
-                  if (state.results.isNotEmpty) {
+                  if (state.status == SearchStatus.noItemFound) {
+                    return Center(
+                        child: Text(
+                            '"${_textEditingController.text}" Tidak ditemukan'));
+                  }
+                  if (state.status == SearchStatus.success) {
                     return ListView.builder(
-                        itemCount: state.results.length,
+                        itemCount: state.results!.length,
                         itemBuilder: (ctx, index) {
-                          final result = state.results[index];
+                          final result = state.results![index];
                           return ListTile(
                             onTap: () {
                               context.push(APP_PAGE.profile.toPath,

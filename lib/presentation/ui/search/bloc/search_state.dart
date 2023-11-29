@@ -1,10 +1,13 @@
 part of 'search_bloc.dart';
 
-class SearchState extends Equatable {
-  final List<User> results;
+enum SearchStatus { success, initial, noItemFound }
 
-  const SearchState(this.results);
+class SearchState extends Equatable {
+  final SearchStatus status;
+  final List<User>? results;
+
+  const SearchState({this.results, required this.status});
 
   @override
-  List<Object?> get props => [results];
+  List<Object?> get props => [results, status];
 }
