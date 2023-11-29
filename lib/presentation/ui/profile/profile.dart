@@ -807,14 +807,44 @@ class VideoListView extends StatelessWidget {
                               if (!snapshot.hasData) {
                                 return Container();
                               }
-                              return GestureDetector(
-                                onTap: () {
-                                  context.push(APP_PAGE.videoItem.toPath,
-                                      extra: video);
-                                },
-                                child: CachedNetworkImage(
-                                    fit: BoxFit.cover,
-                                    imageUrl: video.thumnail),
+                              return Container(
+                                color: COLOR_black,
+                                child: GestureDetector(
+                                  onTap: () {
+                                    context.push(APP_PAGE.videoItem.toPath,
+                                        extra: video);
+                                  },
+                                  child: Stack(
+                                    alignment: Alignment.center,
+                                    children: [
+                                      CachedNetworkImage(
+                                          fit: BoxFit.cover,
+                                          imageUrl: video.thumnail),
+                                      Align(
+                                        alignment: Alignment.bottomLeft,
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: Row(
+                                            children: [
+                                              Text(
+                                                video.views.length.toString(),
+                                                style: TextStyle(
+                                                    color:
+                                                        COLOR_white_fff5f5f5),
+                                              ),
+                                              Text(
+                                                ' dilihat',
+                                                style: TextStyle(
+                                                    color:
+                                                        COLOR_white_fff5f5f5),
+                                              )
+                                            ],
+                                          ),
+                                        ),
+                                      )
+                                    ],
+                                  ),
+                                ),
                               );
                             }),
                       );
