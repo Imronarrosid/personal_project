@@ -261,10 +261,13 @@ class _PlaySingleVideoPageState extends State<PlaySingleVideoPage> {
                                   SizedBox(
                                     height: Dimens.DIMENS_12,
                                   ),
-                                  Icon(
-                                    MdiIcons.reply,
-                                    color: COLOR_white_fff5f5f5,
-                                    size: Dimens.DIMENS_34,
+                                  Transform.flip(
+                                    flipX: true,
+                                    child: Icon(
+                                      MdiIcons.reply,
+                                      color: COLOR_white_fff5f5f5,
+                                      size: Dimens.DIMENS_34,
+                                    ),
                                   ),
                                   SizedBox(
                                     height: Dimens.DIMENS_15,
