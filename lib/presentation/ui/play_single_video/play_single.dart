@@ -14,6 +14,7 @@ import 'package:personal_project/presentation/assets/images.dart';
 import 'package:personal_project/presentation/ui/auth/auth.dart';
 import 'package:personal_project/presentation/ui/comments/comments_page.dart';
 import 'package:personal_project/presentation/ui/play_single_video/cubit/play_button_cubit.dart';
+import 'package:personal_project/presentation/ui/video/list_video/cubit/captions_cubit.dart';
 import 'package:personal_project/presentation/ui/video/list_video/cubit/like_video_cubit.dart';
 import 'package:video_cached_player/video_cached_player.dart';
 import 'package:video_player/video_player.dart';
@@ -78,7 +79,12 @@ class _PlaySingleVideoPageState extends State<PlaySingleVideoPage> {
             create: (context) =>
                 LikeVideoCubit(RepositoryProvider.of<VideoRepository>(context)),
           ),
-          BlocProvider(create: (context) => PlayButtonCubit())
+          BlocProvider(
+            create: (context) => PlayButtonCubit(),
+          ),
+          BlocProvider(
+            create: (_) => CaptionsCubit(),
+          )
         ],
         child: Builder(builder: (context) {
           return GestureDetector(
@@ -310,8 +316,8 @@ class _PlaySingleVideoPageState extends State<PlaySingleVideoPage> {
                                       color:
                                           const Color.fromARGB(255, 27, 26, 26),
                                     ),
-                                    child: FaIcon(
-                                      FontAwesomeIcons.gamepad,
+                                    child: Icon(
+                                      MdiIcons.controller,
                                       color: COLOR_white_fff5f5f5,
                                       size: Dimens.DIMENS_15,
                                     ),
@@ -339,11 +345,71 @@ class _PlaySingleVideoPageState extends State<PlaySingleVideoPage> {
                                   color: COLOR_white_fff5f5f5,
                                   fontSize: Dimens.DIMENS_16),
                             ),
-                            Text(
-                              videoData.caption,
-                              style: TextStyle(
-                                  color: COLOR_white_fff5f5f5,
-                                  fontWeight: FontWeight.w300),
+                            BlocBuilder<CaptionsCubit, CaptionsState>(
+                              builder: (context, state) {
+                                int? maxLines = 2;
+
+                                if (state.status == Captions.seeLess) {
+                                  maxLines = 2;
+                                } else if (state.status == Captions.seeMore) {
+                                  maxLines = null;
+                                }
+
+                                return LayoutBuilder(
+                                    builder: (context, boxConstraints) {
+                                  String text = videoData.caption;
+                                  final textPainter = TextPainter(
+                                    text: TextSpan(
+                                      text: text,
+                                      style: TextStyle(fontSize: 14.0),
+                                    ),
+                                    textDirection: TextDirection.ltr,
+                                  );
+                                  textPainter.layout(
+                                      maxWidth:
+                                          MediaQuery.of(context).size.width *
+                                              0.7);
+                                  final lines = (textPainter.size.height /
+                                          textPainter.preferredLineHeight)
+                                      .ceil();
+                                  return SizedBox(
+                                    width:
+                                        MediaQuery.of(context).size.width * 0.7,
+                                    child: SingleChildScrollView(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.end,
+                                        children: [
+                                          Text(
+                                            videoData.caption,
+                                            maxLines: maxLines,
+                                            style: TextStyle(
+                                                color: COLOR_white_fff5f5f5,
+                                                fontWeight: FontWeight.w300),
+                                          ),
+                                          lines > 2
+                                              ? InkWell(
+                                                  onTap: () {
+                                                    BlocProvider.of<
+                                                                CaptionsCubit>(
+                                                            context)
+                                                        .captionsHandle();
+                                                  },
+                                                  child: Text(
+                                                    maxLines != null
+                                                        ? '...selengkapnya'
+                                                        : '..lebih sedikit',
+                                                    style: TextStyle(
+                                                        color: COLOR_grey),
+                                                  ),
+                                                )
+                                              : Container()
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                });
+                              },
                             ),
                             SvgPicture.asset(Images.IC_MUSIC)
                           ],
