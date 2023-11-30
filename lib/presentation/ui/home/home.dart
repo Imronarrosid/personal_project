@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:personal_project/constant/color.dart';
+import 'package:personal_project/constant/dimens.dart';
 import 'package:personal_project/domain/reporsitory/auth_reposotory.dart';
 import 'package:personal_project/domain/services/app/app_service.dart';
 import 'package:personal_project/presentation/l10n/stings.g.dart';
@@ -18,6 +19,7 @@ import 'package:personal_project/presentation/ui/upload/bloc/camera_bloc.dart';
 import 'package:personal_project/presentation/ui/upload/upload.dart';
 import 'package:personal_project/presentation/ui/profile/profile.dart';
 import 'package:personal_project/presentation/ui/search/search.dart';
+import 'package:personal_project/presentation/ui/upload/upload_modal.dart';
 import 'package:personal_project/presentation/ui/video/video.dart';
 import 'package:provider/provider.dart';
 
@@ -117,8 +119,9 @@ class _HomePageState extends State<HomePage> {
                           if (value == 2) {
                             // Navigator.push(context, MaterialPageRoute(builder: (context)=>UploadPage()));
                             // BlocProvider.of<CameraBloc>(context).add(const OpenRearCameraEvent());
-                            await availableCameras().then((value) => context
-                                .push(APP_PAGE.upload.toPath, extra: value));
+                            // await availableCameras().then((value) => context
+                            //     .push(APP_PAGE.upload.toPath, extra: value));
+                            showUploadModal(context);
                           } else {
                             // setState(() {
                             //   selectedindex = value;
