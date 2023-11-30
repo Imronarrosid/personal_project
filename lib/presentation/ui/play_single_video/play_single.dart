@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:go_router/go_router.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:personal_project/constant/color.dart';
 import 'package:personal_project/constant/dimens.dart';
@@ -11,6 +12,7 @@ import 'package:personal_project/domain/model/video_model.dart';
 import 'package:personal_project/domain/reporsitory/auth_reposotory.dart';
 import 'package:personal_project/domain/reporsitory/video_repository.dart';
 import 'package:personal_project/presentation/assets/images.dart';
+import 'package:personal_project/presentation/router/route_utils.dart';
 import 'package:personal_project/presentation/ui/auth/auth.dart';
 import 'package:personal_project/presentation/ui/comments/comments_page.dart';
 import 'package:personal_project/presentation/ui/play_single_video/cubit/play_button_cubit.dart';
@@ -141,7 +143,10 @@ class _PlaySingleVideoPageState extends State<PlaySingleVideoPage> {
                               child: Column(
                                 children: [
                                   GestureDetector(
-                                    onTap: () {},
+                                    onTap: () {
+                                      context.push(APP_PAGE.profile.toPath,
+                                          extra: widget.videoData.uid);
+                                    },
                                     child: CircleAvatar(
                                       child: ClipRRect(
                                         borderRadius: BorderRadius.circular(50),
