@@ -661,16 +661,41 @@ class _ProfilePageState extends State<ProfilePage> {
                                 .uid;
                         if (state.status == EditProfilePicStatus.success &&
                             data.uid == uid) {
-                          return Image.file(
-                            state.imageFile!,
-                            width: double.infinity,
-                            fit: BoxFit.fill,
+                          return GestureDetector(
+                            onTap: () {
+                              showDialog(
+                                  context: context,
+                                  builder: (_) {
+                                    return Dialog(
+                                        child: Image.file(
+                                      state.imageFile!,
+                                      width: 300,
+                                    ));
+                                  });
+                            },
+                            child: Image.file(
+                              state.imageFile!,
+                              width: double.infinity,
+                              fit: BoxFit.fill,
+                            ),
                           );
                         }
-                        return CachedNetworkImage(
-                          imageUrl: data.photoURL,
-                          fit: BoxFit.cover,
-                          width: double.infinity,
+                        return GestureDetector(
+                          onTap: () {
+                            showDialog(
+                                context: context,
+                                builder: (_) {
+                                  return Dialog(
+                                    child: CachedNetworkImage(
+                                        width: 300, imageUrl: data.photoURL),
+                                  );
+                                });
+                          },
+                          child: CachedNetworkImage(
+                            imageUrl: data.photoURL,
+                            fit: BoxFit.cover,
+                            width: double.infinity,
+                          ),
                         );
                       },
                     )),
