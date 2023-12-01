@@ -7,7 +7,10 @@ import 'package:personal_project/constant/color.dart';
 import 'package:personal_project/data/repository/paging_repository.dart';
 import 'package:personal_project/data/repository/video_player_repository.dart';
 import 'package:personal_project/domain/model/video_model.dart';
+import 'package:personal_project/domain/reporsitory/video_repository.dart';
+import 'package:personal_project/presentation/shared_components/video_player_item.dart';
 import 'package:personal_project/presentation/ui/video/list_video/bloc/paging_bloc.dart';
+import 'package:personal_project/presentation/ui/video/list_video/bloc/video_player_bloc.dart';
 import 'package:personal_project/presentation/ui/video/list_video/video_item.dart';
 
 class ListVideo extends StatelessWidget {
@@ -53,11 +56,9 @@ class ListVideo extends StatelessWidget {
                     physics: const BouncingScrollPhysics(),
                     builderDelegate: PagedChildBuilderDelegate<Video>(
                         itemBuilder: (context, item, index) {
-                          return RepositoryProvider(
-                            create: (context) => VideoPlayerRepository(),
-                            child: VideoItem(
-                              videoData: item,
-                            ),
+                          return VideoPlayerItem(
+                            item: item,
+                            url: item.videoUrl,
                           );
                         },
                         newPageProgressIndicatorBuilder: (_) =>

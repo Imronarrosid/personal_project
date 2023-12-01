@@ -60,15 +60,6 @@ class _VideoItemState extends State<VideoItem> {
     return MultiBlocProvider(
       providers: [
         BlocProvider(
-          create: (context) => VideoPlayerBloc(
-              videoPlayerRepository:
-                  RepositoryProvider.of<VideoPlayerRepository>(context),
-              videoRepository: RepositoryProvider.of<VideoRepository>(context))
-            ..add(
-              InitVideoPlayerEvent(url: widget.videoData.videoUrl),
-            ),
-        ),
-        BlocProvider(
           create: (context) =>
               LikeVideoCubit(RepositoryProvider.of<VideoRepository>(context)),
         ),
