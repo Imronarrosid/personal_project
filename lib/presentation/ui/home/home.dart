@@ -2,6 +2,7 @@ import 'package:camera/camera.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:personal_project/constant/color.dart';
@@ -61,6 +62,12 @@ class _HomePageState extends State<HomePage> {
                             showUploadingSnackBar(context);
                           } else if (state is VideoUploaded) {
                             showUploadedSnackBar(context);
+                          } else if (state is UploadError) {
+                            Fluttertoast.showToast(
+                              msg: 'Upload gagal',
+                              backgroundColor: Colors.black45,
+                              gravity: ToastGravity.TOP,
+                            );
                           }
                         },
                       ),

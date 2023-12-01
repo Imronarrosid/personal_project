@@ -97,8 +97,7 @@ class VideoRepository implements VideoUseCaseType {
       });
     } catch (e) {
       debugPrint(e.toString());
-      throw Exception(e.toString());
-      // Get.snackbar('Upload video error', e.toString());
+      rethrow;
     }
   }
 
