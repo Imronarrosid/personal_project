@@ -6,21 +6,17 @@ import 'dart:io';
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
 import 'package:personal_project/constant/color.dart';
 import 'package:personal_project/constant/dimens.dart';
 import 'package:personal_project/constant/font_size.dart';
-import 'package:personal_project/data/repository/file_repository.dart';
 import 'package:personal_project/presentation/l10n/stings.g.dart';
 import 'package:personal_project/presentation/router/route_utils.dart';
 import 'package:personal_project/presentation/shared_components/crop_page.dart';
-import 'package:personal_project/presentation/shared_components/export_result.dart';
 // import 'package:video_editor/video_editor.dart';
 import 'package:ffmpeg_kit_flutter_min_gpl/ffmpeg_kit.dart';
 import 'package:ffmpeg_kit_flutter_min_gpl/ffmpeg_kit_config.dart';
-import 'package:ffmpeg_kit_flutter_min_gpl/ffprobe_kit.dart';
 import 'package:ffmpeg_kit_flutter_min_gpl/return_code.dart';
 import 'package:ffmpeg_kit_flutter_min_gpl/statistics.dart';
 import 'package:ffmpeg_wasm/ffmpeg_wasm.dart';
@@ -125,7 +121,10 @@ class _VideoEditorState extends State<VideoEditor> {
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
-      onWillPop: () async => false,
+      onWillPop: () async {
+        _removeFile();
+        return false;
+      },
       child: Scaffold(
         backgroundColor: COLOR_black_ff121212,
         body: _controller.initialized
@@ -262,9 +261,7 @@ class _VideoEditorState extends State<VideoEditor> {
                         alignment: Alignment.center,
                         width: MediaQuery.of(context).size.width,
                         height: MediaQuery.of(context).size.height,
-                        decoration: const BoxDecoration(
-                          color: Colors.black38
-                        ),
+                        decoration: const BoxDecoration(color: Colors.black38),
                         child: AlertDialog(
                           title: ValueListenableBuilder(
                             valueListenable: _exportingProgress,
@@ -413,6 +410,10 @@ class _VideoEditorState extends State<VideoEditor> {
         ),
       )
     ];
+  }
+
+  _removeFile() {
+    File(widget.file.path).deleteSync(recursive: true);
   }
 
   Widget _coverSelection() {
