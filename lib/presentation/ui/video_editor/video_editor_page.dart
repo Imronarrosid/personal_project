@@ -412,7 +412,7 @@ class _VideoEditorState extends State<VideoEditor> {
     ];
   }
 
-  _removeFile() {
+  void _removeFile() {
     File(widget.file.path).deleteSync(recursive: true);
   }
 
