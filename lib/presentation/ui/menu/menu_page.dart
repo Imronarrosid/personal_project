@@ -33,7 +33,13 @@ class MenuPage extends StatelessWidget {
                   context.push(APP_PAGE.addGameFav.toPath);
                 },
               );
-            })
+            }),
+        ListTile(
+          title: Text('Caches'),
+          onTap: () {
+            context.push(APP_PAGE.cachesPage.toPath);
+          },
+        )
       ]),
     );
   }

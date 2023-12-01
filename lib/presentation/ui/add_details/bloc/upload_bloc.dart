@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:personal_project/domain/reporsitory/video_repository.dart';
@@ -15,10 +17,15 @@ class UploadBloc extends Bloc<UploadEvent, UploadState> {
             caption: event.caption,
             videoPath: event.videoPath);
         emit(VideoUploaded());
+        _removeFile(event.videoPath);
       } catch (e) {
         emit(UploadError(e.toString()));
       }
     });
   }
+  void _removeFile(String path) {
+    File(path).deleteSync(recursive: true);
+  }
+
   VideoRepository videoRepository;
 }

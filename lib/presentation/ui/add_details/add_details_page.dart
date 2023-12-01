@@ -15,6 +15,7 @@ import 'package:personal_project/presentation/l10n/stings.g.dart';
 import 'package:personal_project/presentation/router/route_utils.dart';
 import 'package:personal_project/presentation/ui/add_details/bloc/upload_bloc.dart';
 import 'package:personal_project/presentation/ui/auth/auth.dart';
+import 'package:personal_project/utils/get_thumbnails.dart';
 import 'package:video_compress/video_compress.dart';
 import 'package:video_editor_2/domain/thumbnails.dart';
 
@@ -23,13 +24,6 @@ class AddDetailsPage extends StatelessWidget {
   AddDetailsPage({super.key, required this.videoFile});
 
   final TextEditingController textEditingController = TextEditingController();
-
-  Future<File> _getTumbnail() async {
-    debugPrint('GET thumbnail${videoFile.path}');
-    final thumbnailFile =
-        await VideoThumbnail.thumbnailFile(video: videoFile.path);
-    return File(thumbnailFile.path);
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -67,7 +61,7 @@ class AddDetailsPage extends StatelessWidget {
                     width: Dimens.DIMENS_85,
                     height: Dimens.DIMENS_120,
                     child: FutureBuilder(
-                      future: _getTumbnail(),
+                      future: getTumbnail(videoFile.path),
                       builder: (context, snapshot) {
                         var thumbnailFile = snapshot.data;
 

@@ -82,6 +82,20 @@ class _ProfilePageState extends State<ProfilePage> {
                           backgroundColor: Colors.transparent,
                           foregroundColor: COLOR_black_ff121212,
                           elevation: 0,
+                          actions: [
+                            (widget.uid == authState.uid || widget.uid == null)
+                                ? IconButton(
+                                    onPressed: () async {
+                                      if (isToMenu) {
+                                        isToMenu = false;
+                                        await context
+                                            .push(APP_PAGE.menu.toPath);
+                                      }
+                                      isToMenu = true;
+                                    },
+                                    icon: Icon(MdiIcons.menu))
+                                : Container()
+                          ],
                         ),
                         body: Container(
                             width: size.width,

@@ -1,11 +1,8 @@
 import 'dart:io';
 
-import 'package:video_compress/video_compress.dart';
+import 'package:get_thumbnail_video/video_thumbnail.dart';
 
-Future<File> getTumbnail(String videpath) async {
-  final thumbnailFile = await VideoCompress.getFileThumbnail(videpath,
-      quality: 50, // default(100)
-      position: -1 // default(-1)
-      );
-  return thumbnailFile;
+Future<File> getTumbnail(String path) async {
+  final thumbnailFile = await VideoThumbnail.thumbnailFile(video: path);
+  return File(thumbnailFile.path);
 }

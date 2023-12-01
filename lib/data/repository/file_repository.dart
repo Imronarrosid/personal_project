@@ -8,4 +8,22 @@ import 'package:personal_project/utils/get_thumbnails.dart';
 
 class FileRepository {
   XFile? exportedVideo;
+
+  Future<List<String>> getAppCaches() async {
+    List<String> paths = [];
+    Directory dir = await getApplicationCacheDirectory();
+
+    for (var element in dir.listSync(recursive: true)) {
+      debugPrint(element.path);
+      if (element.path.endsWith('.mp4')) {
+        paths.add(element.path);
+      }
+    }
+    return paths;
+  }
+
+  Future<File> getVideoThumnails(String path) async {
+    File file = await getTumbnail(path);
+    return file;
+  }
 }

@@ -12,6 +12,7 @@ import 'package:personal_project/domain/reporsitory/video_repository.dart';
 import 'package:personal_project/domain/services/app/app_service.dart';
 import 'package:personal_project/presentation/router/route_utils.dart';
 import 'package:personal_project/presentation/ui/add_details/add_details_page.dart';
+import 'package:personal_project/presentation/ui/caches/caches_page.dart';
 import 'package:personal_project/presentation/ui/edit_profile/edit_page/edit_game_fav_page.dart';
 import 'package:personal_project/presentation/ui/play_single_video/play_single.dart';
 import 'package:personal_project/presentation/ui/profile_pict_preview/profile_pict_preview.dart';
@@ -140,6 +141,13 @@ class AppRouter {
         builder: (context, state) {
           XFile profileData = state.extra as XFile;
           return PrevewProfilePictPage(imageFile: profileData);
+        },
+      ),
+      GoRoute(
+        path: APP_PAGE.cachesPage.toPath,
+        name: APP_PAGE.cachesPage.toName,
+        builder: (context, state) {
+          return const CachesPage();
         },
       ),
       GoRoute(
