@@ -1,7 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
@@ -9,12 +8,10 @@ import 'package:material_design_icons_flutter/material_design_icons_flutter.dart
 import 'package:personal_project/constant/color.dart';
 import 'package:personal_project/constant/dimens.dart';
 import 'package:personal_project/data/repository/coment_repository.dart';
-import 'package:personal_project/data/repository/video_player_repository.dart';
 import 'package:personal_project/domain/model/user.dart';
 import 'package:personal_project/domain/model/video_model.dart';
 import 'package:personal_project/domain/reporsitory/auth_reposotory.dart';
 import 'package:personal_project/domain/reporsitory/video_repository.dart';
-import 'package:personal_project/presentation/assets/images.dart';
 import 'package:personal_project/presentation/router/route_utils.dart';
 import 'package:personal_project/presentation/ui/auth/auth.dart';
 import 'package:personal_project/presentation/ui/comments/comments_page.dart';
@@ -27,7 +24,8 @@ import 'package:visibility_detector/visibility_detector.dart';
 
 class VideoItem extends StatefulWidget {
   final Video videoData;
-  const VideoItem({super.key, required this.videoData});
+  final bool auto;
+  const VideoItem({super.key, required this.videoData, this.auto = false});
 
   @override
   State<VideoItem> createState() => _VideoItemState();
@@ -102,8 +100,6 @@ class _VideoItemState extends State<VideoItem> {
                     },
                     builder: (context, state) {
                       if (state is VideoPlayerIntialized) {
-                        final CachedVideoPlayerController? controller =
-                            state.videoPlayerController;
                         return FittedBox(
                           fit: BoxFit.contain,
                           child: SizedBox(
@@ -122,13 +118,14 @@ class _VideoItemState extends State<VideoItem> {
                                         state.videoPlayerController;
                                     var visiblePercentage =
                                         info.visibleFraction * 100;
-                                    if (visiblePercentage < 5) {
-                                      if (controller != null) {
+                                    if (visiblePercentage < 5 && widget.auto) {
+                                      if (controller!.value.isInitialized) {
                                         controller.pause();
                                       }
                                     } else {
                                       // Point the controller is initialized
-                                      if (controller != null) {
+                                      if (controller!.value.isInitialized &&
+                                          widget.auto) {
                                         controller.play();
                                       }
                                     }

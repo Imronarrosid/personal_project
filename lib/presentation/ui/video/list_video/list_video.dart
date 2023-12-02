@@ -59,6 +59,7 @@ class ListVideo extends StatelessWidget {
                           return VideoPlayerItem(
                             item: item,
                             url: item.videoUrl,
+                            auto: true,
                           );
                         },
                         newPageProgressIndicatorBuilder: (_) =>

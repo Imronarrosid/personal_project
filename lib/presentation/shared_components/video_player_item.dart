@@ -9,10 +9,12 @@ import 'package:personal_project/presentation/ui/video/list_video/video_item.dar
 class VideoPlayerItem extends StatelessWidget {
   final String url;
   final Video item;
+  final bool auto;
   const VideoPlayerItem({
     super.key,
     required this.url,
     required this.item,
+    this.auto = false,
   });
 
   @override
@@ -29,6 +31,7 @@ class VideoPlayerItem extends StatelessWidget {
           ),
         child: VideoItem(
           videoData: item,
+          auto: auto,
         ),
       ),
     );
