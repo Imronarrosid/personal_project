@@ -24,6 +24,10 @@ import 'package:visibility_detector/visibility_detector.dart';
 
 class VideoItem extends StatefulWidget {
   final Video videoData;
+
+  /// if value is true video will auto
+  ///
+  /// play and pause
   final bool auto;
   const VideoItem({super.key, required this.videoData, this.auto = false});
 
@@ -32,20 +36,6 @@ class VideoItem extends StatefulWidget {
 }
 
 class _VideoItemState extends State<VideoItem> {
-  // late VideoPlayerController _videoPlayerController;
-
-  // @override
-  // void initState() {
-  //   try {
-  //     _videoPlayerController = VideoPlayerController.networkUrl(
-  //         Uri.parse(widget.videoData.videoUrl));
-  //     debugPrint('InitState');
-  //   } catch (e) {
-  //     debugPrint(e.toString());
-  //   }
-  //   super.initState();
-  // }
-
   // ignore: non_constant_identifier_names
   final double _IC_LABEL_FONTSIZE = 12;
   bool isViewed = false;
@@ -66,7 +56,7 @@ class _VideoItemState extends State<VideoItem> {
       child: Builder(builder: (context) {
         return BlocListener<VideoPlayerBloc, VideoPlayerState>(
           listener: (context, state) {
-            if (state is VideoPlayerIntialized) {
+            if (state.status == VideoPlayerStatus.initialized) {
               debugPrint('vidnitialize');
               addViews(state: state, videoData: videoData);
             }
@@ -93,20 +83,19 @@ class _VideoItemState extends State<VideoItem> {
                   alignment: Alignment.center,
                   child: BlocBuilder<VideoPlayerBloc, VideoPlayerState>(
                     buildWhen: (previous, current) {
-                      if (current is VideoPaused) {
+                      if (current.status == VideoPlayerStatus.paused ||
+                          current.status == VideoPlayerStatus.playing) {
                         return false;
                       }
                       return true;
                     },
                     builder: (context, state) {
-                      if (state is VideoPlayerIntialized) {
+                      if (state.status == VideoPlayerStatus.initialized) {
                         return FittedBox(
                           fit: BoxFit.contain,
                           child: SizedBox(
-                            width:
-                                state.videoPlayerController!.value.size.width,
-                            height:
-                                state.videoPlayerController!.value.size.height,
+                            width: state.controller!.value.size.width,
+                            height: state.controller!.value.size.height,
                             child: Stack(
                               children: [
                                 VisibilityDetector(
@@ -114,27 +103,40 @@ class _VideoItemState extends State<VideoItem> {
                                       'visible-video-key-//${widget.videoData.createdAt}'),
                                   onVisibilityChanged: (info) {
                                     final CachedVideoPlayerController?
-                                        controller =
-                                        state.videoPlayerController;
+                                        controller = state.controller;
                                     var visiblePercentage =
                                         info.visibleFraction * 100;
                                     if (visiblePercentage < 5 && widget.auto) {
                                       if (controller!.value.isInitialized) {
-                                        controller.pause();
+                                        BlocProvider.of<VideoPlayerBloc>(
+                                                context)
+                                            .add(const VideoPlayerEvent(
+                                                actions: VideoEvent.pause));
                                       }
                                     } else {
                                       // Point the controller is initialized
                                       if (controller!.value.isInitialized &&
                                           widget.auto) {
-                                        controller.play();
+                                        BlocProvider.of<VideoPlayerBloc>(
+                                                context)
+                                            .add(const VideoPlayerEvent(
+                                                actions: VideoEvent.play));
                                       }
                                     }
                                   },
                                   child: GestureDetector(
                                       onTap: () {
-                                        BlocProvider.of<VideoPlayerBloc>(
-                                                context)
-                                            .add(PauseVideo());
+                                        VideoPlayerBloc bloc =
+                                            BlocProvider.of<VideoPlayerBloc>(
+                                                context);
+
+                                        if (state.controller!.value.isPlaying) {
+                                          bloc.add(const VideoPlayerEvent(
+                                              actions: VideoEvent.pause));
+                                        } else {
+                                          bloc.add(const VideoPlayerEvent(
+                                              actions: VideoEvent.play));
+                                        }
                                       },
                                       child: Container(
                                         padding: EdgeInsets.only(
@@ -142,33 +144,37 @@ class _VideoItemState extends State<VideoItem> {
                                                 .viewInsets
                                                 .bottom),
                                         child: CachedVideoPlayer(
-                                            state.videoPlayerController!),
+                                            state.controller!),
                                       )),
                                 ),
                                 BlocBuilder<VideoPlayerBloc, VideoPlayerState>(
                                   builder: (context, state) {
-                                    if (state is VideoPaused) {
-                                      return Align(
-                                        alignment: Alignment.center,
-                                        child: AnimatedOpacity(
-                                          opacity: state.opacity!,
-                                          duration: kThemeAnimationDuration,
-                                          child: GestureDetector(
-                                            onTap: () {
-                                              BlocProvider.of<VideoPlayerBloc>(
-                                                      context)
-                                                  .add(PauseVideo());
-                                            },
-                                            child: FaIcon(
-                                              FontAwesomeIcons.play,
-                                              size: state.size,
-                                              color: COLOR_white_fff5f5f5,
-                                            ),
+                                    return Align(
+                                      alignment: Alignment.center,
+                                      child: AnimatedOpacity(
+                                        opacity: state.status ==
+                                                VideoPlayerStatus.paused
+                                            ? 1
+                                            : 0,
+                                        duration: kThemeAnimationDuration,
+                                        child: GestureDetector(
+                                          onTap: () {
+                                            BlocProvider.of<VideoPlayerBloc>(
+                                                    context)
+                                                .add(const VideoPlayerEvent(
+                                                    actions: VideoEvent.play));
+                                          },
+                                          child: FaIcon(
+                                            FontAwesomeIcons.play,
+                                            size: state.status ==
+                                                    VideoPlayerStatus.paused
+                                                ? Dimens.DIMENS_38
+                                                : Dimens.DIMENS_50,
+                                            color: COLOR_white_fff5f5f5,
                                           ),
                                         ),
-                                      );
-                                    }
-                                    return Container();
+                                      ),
+                                    );
                                   },
                                 ),
                               ],
@@ -195,7 +201,7 @@ class _VideoItemState extends State<VideoItem> {
                             color: COLOR_white_fff5f5f5,
                           ),
                           Text(
-                            state is VideoPlayerError
+                            state.status == VideoPlayerStatus.error
                                 ? state.error.toString()
                                 : '',
                             textAlign: TextAlign.center,
@@ -353,16 +359,14 @@ class _VideoItemState extends State<VideoItem> {
     );
   }
 
-  void addViews(
-      {required VideoPlayerIntialized state, required Video videoData}) {
-    state.videoPlayerController!.addListener(() {
-      int duratio = state.videoPlayerController!.value.duration.inSeconds;
+  void addViews({required VideoPlayerState state, required Video videoData}) {
+    state.controller!.addListener(() {
+      int duratio = state.controller!.value.duration.inSeconds;
       double minDur = 3 / 10 * duratio;
 
       debugPrint('add views $minDur');
 
-      if (state.videoPlayerController!.value.position.inSeconds >
-              minDur.toInt() &&
+      if (state.controller!.value.position.inSeconds > minDur.toInt() &&
           !isViewed) {
         RepositoryProvider.of<VideoRepository>(context)
             .addViewsCount(videoData.id);
@@ -451,17 +455,18 @@ class _VideoItemState extends State<VideoItem> {
       alignment: Alignment.bottomCenter,
       child: BlocBuilder<VideoPlayerBloc, VideoPlayerState>(
         buildWhen: (previous, current) {
-          if (current is VideoPaused) {
+          if (current.status == VideoPlayerStatus.paused ||
+              current.status == VideoPlayerStatus.playing) {
             return false;
           }
           return true;
         },
         builder: (context, state) {
-          if (state is VideoPlayerIntialized) {
+          if (state.status == VideoPlayerStatus.initialized) {
             return SizedBox(
               height: 3,
               child: CachedVideoProgressIndicator(
-                state.videoPlayerController!,
+                state.controller!,
                 padding: EdgeInsets.zero,
                 colors: VideoProgressColors(
                     bufferedColor: COLOR_white_fff5f5f5.withOpacity(0.3),
@@ -493,7 +498,7 @@ class _VideoItemState extends State<VideoItem> {
                 Text(
                   '@${data!.userName!}',
                   style: TextStyle(
-                      color: COLOR_white_fff5f5f5, fontSize: Dimens.DIMENS_16),
+                      color: COLOR_white_fff5f5f5, fontSize: Dimens.DIMENS_18),
                 ),
                 BlocBuilder<CaptionsCubit, CaptionsState>(
                   builder: (context, state) {
@@ -510,7 +515,8 @@ class _VideoItemState extends State<VideoItem> {
                       final textPainter = TextPainter(
                         text: TextSpan(
                           text: text,
-                          style: TextStyle(fontSize: 14.0),
+                          style: const TextStyle(
+                              fontSize: 14.0, fontWeight: FontWeight.w400),
                         ),
                         textDirection: TextDirection.ltr,
                       );
@@ -523,14 +529,15 @@ class _VideoItemState extends State<VideoItem> {
                         width: MediaQuery.of(context).size.width * 0.7,
                         child: SingleChildScrollView(
                           child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.end,
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
                                 videoData.caption,
                                 maxLines: maxLines,
                                 style: TextStyle(
                                     color: COLOR_white_fff5f5f5,
-                                    fontWeight: FontWeight.w300),
+                                    fontSize: 14.0,
+                                    fontWeight: FontWeight.w400),
                               ),
                               lines > 2
                                   ? InkWell(

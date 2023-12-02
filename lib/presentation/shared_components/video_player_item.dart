@@ -9,6 +9,10 @@ import 'package:personal_project/presentation/ui/video/list_video/video_item.dar
 class VideoPlayerItem extends StatelessWidget {
   final String url;
   final Video item;
+
+  /// if value is true video will auto
+  ///
+  /// play and pause
   final bool auto;
   const VideoPlayerItem({
     super.key,
@@ -27,7 +31,8 @@ class VideoPlayerItem extends StatelessWidget {
                 RepositoryProvider.of<VideoPlayerRepository>(context),
             videoRepository: RepositoryProvider.of<VideoRepository>(context))
           ..add(
-            InitVideoPlayerEvent(url: item.videoUrl),
+            VideoPlayerEvent(
+                actions: VideoEvent.initialize, videoUrl: item.videoUrl),
           ),
         child: VideoItem(
           videoData: item,
