@@ -13,26 +13,30 @@ part 'auth_state.dart';
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   AuthBloc(this.authRepository)
       : super(authRepository.currentUser != null
-            ? Authenticated(uid: authRepository.currentUser!.uid)
-            : NotAuthenticated()) {
+            ? AuthState(
+                status: AuthStatus.authenticated,
+                uid: authRepository.currentUser!.uid)
+            : const AuthState(status: AuthStatus.notAuthenticated)) {
     on<LogInWithGoogle>((event, emit) async {
       try {
         authRepository.logInWithGoogle();
         bool isGoogleUserNotEmpty = await authRepository.isGoogleUserNotEmpty;
         debugPrint('isGooleUserIsempty $isGoogleUserNotEmpty');
         if (isGoogleUserNotEmpty) {
-          emit(LoginProcessing());
+          emit(const AuthState(status: AuthStatus.loading));
         }
         bool isAuthenticated = await authRepository.isAuthenticated;
         debugPrint('isAuthenticated $isAuthenticated');
         if (isAuthenticated) {
-          emit(Authenticated(uid: authRepository.currentUser!.uid));
+          emit(AuthState(
+              status: AuthStatus.authenticated,
+              uid: authRepository.currentUser!.uid));
         } else {
-          emit(LoginFailed());
+          emit(const AuthState(status: AuthStatus.error));
         }
       } on LogInWithGoogleFailure catch (e) {
         debugPrint('Error$e');
-        emit(AuthError(e.toString()));
+        emit(AuthState(status: AuthStatus.error, error: e.toString()));
       } catch (_) {}
     });
   }

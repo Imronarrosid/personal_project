@@ -71,10 +71,10 @@ class _ProfilePageState extends State<ProfilePage> {
         return BlocBuilder<AuthBloc, AuthState>(
           builder: (context, authState) {
             debugPrint(authState.toString());
-            if (authState is Authenticated) {
+            if (_isAuthenticated(authState)) {
               return FutureBuilder(
                   future:
-                      userRepository.getUserData(widget.uid ?? authState.uid),
+                      userRepository.getUserData(widget.uid ?? authState.uid!),
                   builder: (context, snapshot) {
                     var data = snapshot.data;
                     if (!snapshot.hasData) {
@@ -85,13 +85,13 @@ class _ProfilePageState extends State<ProfilePage> {
                           foregroundColor: COLOR_black_ff121212,
                           elevation: 0,
                           actions: [
-                            (widget.uid == authState.uid || widget.uid == null)
+                            (_isLogedUser(authState))
                                 ? IconButton(
                                     onPressed: () async {
                                       if (isToMenu) {
                                         isToMenu = false;
-                                        await context
-                                            .push(APP_PAGE.menu.toPath);
+                                        await context.push(APP_PAGE.menu.toPath,
+                                            extra: data!.photoURL);
                                       }
                                       isToMenu = true;
                                     },
@@ -122,12 +122,13 @@ class _ProfilePageState extends State<ProfilePage> {
                           },
                         ),
                         actions: [
-                          (widget.uid == authState.uid || widget.uid == null)
+                          (_isLogedUser(authState))
                               ? IconButton(
                                   onPressed: () async {
                                     if (isToMenu) {
                                       isToMenu = false;
-                                      await context.push(APP_PAGE.menu.toPath);
+                                      await context.push(APP_PAGE.menu.toPath,
+                                          extra: data!.photoURL);
                                     }
                                     isToMenu = true;
                                   },
@@ -169,9 +170,9 @@ class _ProfilePageState extends State<ProfilePage> {
                                             ),
                                             bioSectionView(
                                                 uid: widget.uid ??
-                                                    authState.uid),
+                                                    authState.uid!),
                                             gameFavView(
-                                                widget.uid ?? authState.uid),
+                                                widget.uid ?? authState.uid!),
                                             SizedBox(
                                               height: Dimens.DIMENS_8,
                                             ),
@@ -300,7 +301,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                                                           TextButton(
                                                                             onPressed:
                                                                                 () {
-                                                                              BlocProvider.of<FollowCubit>(context).followButtonHandle(currentUserUid: authRepository.currentUser!.uid, uid: widget.uid ?? authState.uid, stateFromDatabase: data.isFollowig);
+                                                                              BlocProvider.of<FollowCubit>(context).followButtonHandle(currentUserUid: authRepository.currentUser!.uid, uid: widget.uid ?? authState.uid!, stateFromDatabase: data.isFollowig);
                                                                               context.pop();
                                                                             },
                                                                             child:
@@ -450,6 +451,12 @@ class _ProfilePageState extends State<ProfilePage> {
       }),
     );
   }
+
+  bool _isAuthenticated(AuthState authState) =>
+      authState.status == AuthStatus.authenticated;
+
+  bool _isLogedUser(AuthState authState) =>
+      widget.uid == authState.uid || widget.uid == null;
 
   Future<void> toEditProfile(UserData data, BuildContext context) async {
     ProfileData profileData = ProfileData(

@@ -23,7 +23,7 @@ void showAuthBottomSheetFunc(BuildContext context) {
         return BlocListener<AuthBloc, AuthState>(
           listener: (context, state) {
             debugPrint('auth state $state');
-            if (state is LoginProcessing) {
+            if (state.status == AuthStatus.loading) {
               context.pop();
             }
           },

@@ -34,16 +34,13 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
-    final authRepository = RepositoryProvider.of<AuthRepository>(context);
-    int selectedindex = 0;
     List<Widget> pages = <Widget>[
-      VideoPage(),
+      const VideoPage(),
       SearchPage(),
       const MessagePage(),
       const MessagePage(),
-      ProfilePage(),
+      const ProfilePage(),
     ];
-    final appService = Provider.of<AppService>(context);
     return BlocProvider(
       create: (context) => HomeCubit(),
       child: BlocBuilder<HomeCubit, HomeState>(
@@ -73,11 +70,9 @@ class _HomePageState extends State<HomePage> {
                       ),
                       BlocListener<AuthBloc, AuthState>(
                         listener: (context, state) {
-                          if (state is Authenticated) {
+                          if (state.status == AuthStatus.authenticated) {
                             showLoginSuccessSnackBar(context);
-                          } else if (state is AuthError) {
-                            showLoginErrorSnackBar(context);
-                          } else if (state is NoInternet) {
+                          } else if (state.status == AuthStatus.error) {
                             showLoginErrorSnackBar(context);
                           }
                         },
@@ -143,7 +138,7 @@ class _HomePageState extends State<HomePage> {
                 ),
                 BlocBuilder<AuthBloc, AuthState>(
                   builder: (context, state) {
-                    if (state == LoginProcessing()) {
+                    if (state.status == AuthStatus.loading) {
                       return Container(
                         color: Colors.black38,
                         child: const Align(

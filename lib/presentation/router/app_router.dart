@@ -179,22 +179,29 @@ class AppRouter {
       GoRoute(
         path: APP_PAGE.menu.toPath,
         name: APP_PAGE.menu.toName,
-        pageBuilder: (context, state) => CustomTransitionPage(
-          child: MenuPage(),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) =>
-              SlideTransition(
-                  position: animation.drive(
-                    Tween<Offset>(
-                      begin: Offset(0.75, 0),
-                      end: Offset.zero,
-                    ).chain(
-                      CurveTween(curve: Curves.ease),
-                    ),
-                  ),
-                  child: child),
-        ),
+        pageBuilder: (context, state) {
+          String? imageUrl = state.extra as String?;
+          return CustomTransitionPage(
+            child: MenuPage(
+              accImageUrl: imageUrl,
+            ),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) =>
+                    SlideTransition(
+                        position: animation.drive(
+                          Tween<Offset>(
+                            begin: Offset(0.75, 0),
+                            end: Offset.zero,
+                          ).chain(
+                            CurveTween(curve: Curves.ease),
+                          ),
+                        ),
+                        child: child),
+          );
+        },
         builder: (context, state) {
-          return const MenuPage();
+          String? imageUrl = state.extra as String?;
+          return MenuPage(accImageUrl: imageUrl);
         },
       ),
       // GoRoute(
