@@ -1,3 +1,6 @@
 abstract class VideoUseCaseType {
-  Future<void> uploapVideo({required String songName, caption, videoPath});
+  Future<void> uploapVideo(
+      {required String songName,
+      required String caption,
+      required String videoPath});
 }
