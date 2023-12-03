@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:easy_localization/easy_localization.dart' as localization;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -19,6 +20,7 @@ import 'package:personal_project/domain/reporsitory/auth_reposotory.dart';
 import 'package:personal_project/domain/reporsitory/user_repository.dart';
 import 'package:personal_project/domain/reporsitory/video_repository.dart';
 import 'package:personal_project/domain/services/firebase/firebase_service.dart';
+import 'package:personal_project/presentation/l10n/stings.g.dart';
 import 'package:personal_project/presentation/router/route_utils.dart';
 import 'package:personal_project/presentation/shared_components/keep_alive_page.dart';
 import 'package:personal_project/presentation/shared_components/not_authenticated_page.dart';
@@ -434,7 +436,15 @@ class _ProfilePageState extends State<ProfilePage> {
                     );
                   });
             }
-            return const NotAuthenticatedPage();
+            return Scaffold(
+                backgroundColor: COLOR_white_fff5f5f5,
+                appBar: AppBar(
+                  backgroundColor: COLOR_white_fff5f5f5,
+                  foregroundColor: COLOR_black_ff121212,
+                  elevation: 0,
+                  title: Text(LocaleKeys.title_profile.tr()),
+                ),
+                body: const NotAuthenticatedPage());
           },
         );
       }),
@@ -681,10 +691,14 @@ class _ProfilePageState extends State<ProfilePage> {
                                   context: context,
                                   builder: (_) {
                                     return Dialog(
-                                        child: Image.file(
-                                      state.imageFile!,
-                                      width: 300,
-                                    ));
+                                      backgroundColor: Colors.transparent,
+                                      child: Image.file(
+                                        state.imageFile!,
+                                        color: Colors.transparent,
+                                        width: 300,
+                                        fit: BoxFit.contain,
+                                      ),
+                                    );
                                   });
                             },
                             child: Image.file(
@@ -701,7 +715,10 @@ class _ProfilePageState extends State<ProfilePage> {
                                 builder: (_) {
                                   return Dialog(
                                     child: CachedNetworkImage(
-                                        width: 300, imageUrl: data.photoURL),
+                                      width: 300,
+                                      imageUrl: data.photoURL,
+                                      fit: BoxFit.contain,
+                                    ),
                                   );
                                 });
                           },
