@@ -69,7 +69,7 @@ class _VideoItemState extends State<VideoItem> {
 
               bool isLiked = videoData.likes.contains(uid);
               BlocProvider.of<LikeVideoCubit>(context).doubleTapToLike(
-                  postId: videoData.id,
+                  postId: videoData.id!,
                   dataBaseState: isLiked,
                   databaseLikeCount: videoData.likes.length);
             },
@@ -280,7 +280,7 @@ class _VideoItemState extends State<VideoItem> {
                                               debugPrint(
                                                   'bottomInset${MediaQuery.of(context).viewInsets.bottom}');
                                               return CommentBottomSheet(
-                                                postId: widget.videoData.id,
+                                                postId: widget.videoData.id!,
                                               );
                                             });
                                       },
@@ -369,7 +369,7 @@ class _VideoItemState extends State<VideoItem> {
       if (state.controller!.value.position.inSeconds > minDur.toInt() &&
           !isViewed) {
         RepositoryProvider.of<VideoRepository>(context)
-            .addViewsCount(videoData.id);
+            .addViewsCount(videoData.id!);
         debugPrint('add views');
         isViewed = true;
       }
@@ -387,7 +387,7 @@ class _VideoItemState extends State<VideoItem> {
         } else {
           bool isLiked = videoData.likes.contains(uid);
           BlocProvider.of<LikeVideoCubit>(context).likePost(
-              postId: videoData.id,
+              postId: videoData.id!,
               stateFromDatabase: isLiked,
               databaseLikeCount: likeCount);
         }

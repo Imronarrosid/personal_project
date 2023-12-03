@@ -1,9 +1,16 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Video {
+  /// [id] for [Video] document id on firestore
+  ///
+  /// [id] have value from document id
+  ///
+  /// no nedd to insert [id] value on uploading video
+  ///
+  /// firestore will create [id] value
+  final String? id;
   final String username,
       uid,
-      id,
       songName,
       caption,
       thumnail,
@@ -14,9 +21,9 @@ class Video {
   final List likes, views;
   final int commentCount, shareCount;
   Video(
-      {required this.username,
+      {this.id,
+      required this.username,
       required this.uid,
-      required this.id,
       required this.songName,
       required this.caption,
       required this.thumnail,
@@ -52,7 +59,7 @@ class Video {
       username: snap["username"],
       uid: snap["uid"],
       profileImg: snap["profileImg"],
-      id: snap["id"],
+      id: snapshot.id,
       likes: snap["likes"],
       commentCount: snap["commentCount"],
       shareCount: snap["shareCount"],

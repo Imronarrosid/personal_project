@@ -140,13 +140,13 @@ class _OnBoardingPageState extends State<OnBoardingPage> {
   }
 
   void cancel() {
-    final appService = Provider.of<AppService>(context);
+    final appService = Provider.of<AppService>(context, listen: false);
     appService.onboarding = true;
     context.pushReplacement(APP_PAGE.home.toPath);
   }
 
   void _saveSelected() {
-    final appService = Provider.of<AppService>(context);
+    final appService = Provider.of<AppService>(context, listen: false);
     appService.onboarding = true;
     appService.saveSelectedGamefav(titleList);
     context.pushReplacement(APP_PAGE.home.toPath);

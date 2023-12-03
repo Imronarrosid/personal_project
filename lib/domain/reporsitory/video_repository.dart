@@ -4,7 +4,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:personal_project/domain/model/user.dart';
 import 'package:personal_project/domain/model/video_model.dart';
-import 'package:personal_project/domain/reporsitory/auth_reposotory.dart';
 import 'package:personal_project/domain/services/firebase/firebase_service.dart';
 import 'package:personal_project/domain/usecase/vide_usecase_type.dart';
 import 'package:video_compress/video_compress.dart';
@@ -59,7 +58,6 @@ class VideoRepository implements VideoUseCaseType {
   //Upload video
   @override
   uploapVideo({required String songName, caption, videoPath}) async {
-    var postId = 'post${FieldValue.serverTimestamp()}';
     try {
       String uid = firebaseAuth.currentUser!.uid;
       DocumentSnapshot userDoc =
@@ -75,7 +73,6 @@ class VideoRepository implements VideoUseCaseType {
       Video video = Video(
           username: (userDoc.data()! as Map<String, dynamic>)['name'],
           uid: uid,
-          id: postId,
           songName: songName,
           caption: caption,
           thumnail: thumnail,
@@ -337,6 +334,7 @@ class VideoRepository implements VideoUseCaseType {
       'uid': firebaseAuth.currentUser!.uid,
       'viewsAt': Timestamp.now()
     };
+    debugPrint('postId $postId');
     await firebaseFirestore.collection('videos').doc(postId).update({
       'views': FieldValue.arrayUnion([views])
     });
