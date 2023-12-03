@@ -8,7 +8,6 @@ import 'package:personal_project/constant/color.dart';
 import 'package:personal_project/data/repository/file_repository.dart';
 import 'package:personal_project/domain/model/user.dart';
 import 'package:personal_project/domain/reporsitory/auth_reposotory.dart';
-import 'package:personal_project/domain/reporsitory/camera_repository.dart';
 import 'package:personal_project/domain/reporsitory/user_repository.dart';
 import 'package:personal_project/domain/reporsitory/video_repository.dart';
 import 'package:personal_project/domain/services/app/app_service.dart';
@@ -75,7 +74,6 @@ class _MyAppState extends State<MyApp> {
   }
 
   void onStartUp() async {
-    cameras = await availableCameras();
     await appService.onAppStart();
   }
 
