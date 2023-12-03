@@ -75,6 +75,7 @@ class _MyAppState extends State<MyApp> {
 
   void onStartUp() async {
     await appService.onAppStart();
+    debugPrint('onboard:${appService.onboarding}');
   }
 
   @override

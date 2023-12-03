@@ -30,6 +30,7 @@ class AppService with ChangeNotifier {
     notifyListeners();
   }
 
+  /// if value is true onboarding not appear
   set onboarding(bool value) {
     sharedPreferences.setBool(ONBOARD_KEY, value);
     _onboarding = value;
@@ -46,5 +47,13 @@ class AppService with ChangeNotifier {
 
     _initialized = true;
     notifyListeners();
+  }
+
+  void saveSelectedGamefav(List<String> gameFav) {
+    sharedPreferences.setStringList('gameFav', gameFav);
+  }
+
+  List<String> getAllSelectedGameFav() {
+    return sharedPreferences.getStringList('gameFav') ?? <String>[];
   }
 }

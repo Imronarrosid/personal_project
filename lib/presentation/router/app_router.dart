@@ -39,8 +39,8 @@ class AppRouter {
     routerNeglect: true,
     debugLogDiagnostics: true,
     initialLocation: appService.onboarding
-        ? APP_PAGE.onBoarding.toPath
-        : APP_PAGE.home.toPath,
+        ? APP_PAGE.home.toPath
+        : APP_PAGE.onBoarding.toPath,
     routes: <GoRoute>[
       GoRoute(
           path: APP_PAGE.home.toPath,
