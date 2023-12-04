@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:personal_project/domain/model/user.dart';
 import 'package:personal_project/domain/model/video_model.dart';
 import 'package:personal_project/domain/services/firebase/firebase_service.dart';
+import 'package:personal_project/domain/services/uuid_generator.dart';
 import 'package:personal_project/domain/usecase/vide_usecase_type.dart';
 import 'package:video_compress/video_compress.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -34,10 +35,7 @@ class VideoRepository implements VideoUseCaseType {
   }
 
   _uploadToStorage(String id, File videoFile) async {
-    Reference ref = firebaseStorage
-        .ref()
-        .child('videos')
-        .child('video${FieldValue.serverTimestamp()}');
+    Reference ref = firebaseStorage.ref().child('videos').child(generateUuid());
 
     UploadTask uploadTask = ref.putFile(videoFile);
     TaskSnapshot snapshot = await uploadTask;
@@ -57,7 +55,10 @@ class VideoRepository implements VideoUseCaseType {
 
   //Upload video
   @override
-  uploapVideo({required String songName, caption, videoPath}) async {
+  uploapVideo(
+      {required String songName,
+      required String caption,
+      required String videoPath}) async {
     try {
       String uid = firebaseAuth.currentUser!.uid;
       DocumentSnapshot userDoc =

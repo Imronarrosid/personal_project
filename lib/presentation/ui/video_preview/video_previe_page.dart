@@ -89,13 +89,15 @@ class _VideoPreviewPageState extends State<VideoPreviewPage> {
               if (state is VideoPlayerIntialized) {
                 debugPrint(state.toString());
 
-                return FittedBox(
-                  fit: BoxFit
-                      .contain, // You can adjust this to control the fit mode
-                  child: SizedBox(
-                    width: _videoPlayerController.value.size.width,
-                    height: _videoPlayerController.value.size.height,
-                    child: VideoPlayer(_videoPlayerController),
+                return Expanded(
+                  child: FittedBox(
+                    fit: BoxFit
+                        .contain, // You can adjust this to control the fit mode
+
+                    child: SizedBox(
+                        width: 300,
+                        height: 700,
+                        child: VideoPlayer(_videoPlayerController)),
                   ),
                 );
               }

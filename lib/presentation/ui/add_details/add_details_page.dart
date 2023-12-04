@@ -9,6 +9,7 @@ import 'package:go_router/go_router.dart';
 import 'package:personal_project/constant/color.dart';
 import 'package:personal_project/constant/dimens.dart';
 import 'package:personal_project/constant/font_size.dart';
+import 'package:personal_project/domain/model/preview_model.dart';
 import 'package:personal_project/domain/reporsitory/auth_reposotory.dart';
 import 'package:personal_project/presentation/assets/images.dart';
 import 'package:personal_project/presentation/l10n/stings.g.dart';
@@ -60,25 +61,32 @@ class AddDetailsPage extends StatelessWidget {
                   SizedBox(
                     width: Dimens.DIMENS_85,
                     height: Dimens.DIMENS_120,
-                    child: FutureBuilder(
-                      future: getTumbnail(videoFile.path),
-                      builder: (context, snapshot) {
-                        var thumbnailFile = snapshot.data;
-
-                        return snapshot.hasData
-                            ? SizedBox(
-                                width: Dimens.DIMENS_85,
-                                height: Dimens.DIMENS_120,
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(10),
-                                  child: Image.file(thumbnailFile!,
-                                      fit: BoxFit.cover),
-                                ),
-                              )
-                            : const Center(
-                                child: CircularProgressIndicator(),
-                              );
+                    child: GestureDetector(
+                      onTap: () {
+                        context.push(APP_PAGE.videoPreview.toPath,
+                            extra: PreviewData(
+                                file: videoFile, isFromCamera: false));
                       },
+                      child: FutureBuilder(
+                        future: getTumbnail(videoFile.path),
+                        builder: (context, snapshot) {
+                          var thumbnailFile = snapshot.data;
+
+                          return snapshot.hasData
+                              ? SizedBox(
+                                  width: Dimens.DIMENS_85,
+                                  height: Dimens.DIMENS_120,
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(10),
+                                    child: Image.file(thumbnailFile!,
+                                        fit: BoxFit.cover),
+                                  ),
+                                )
+                              : const Center(
+                                  child: CircularProgressIndicator(),
+                                );
+                        },
+                      ),
                     ),
                   ),
                   Expanded(

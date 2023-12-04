@@ -24,6 +24,7 @@ import 'package:flutter/foundation.dart';
 import 'package:get_thumbnail_video/index.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
+import 'package:personal_project/presentation/shared_components/export_result.dart';
 import 'package:video_editor_2/domain/entities/file_format.dart';
 import 'package:video_editor_2/video_editor.dart';
 import 'package:get_thumbnail_video/video_thumbnail.dart';
@@ -76,9 +77,10 @@ class _VideoEditorState extends State<VideoEditor> {
   Future<void> _exportVideo() async {
     _exportingProgress.value = 0;
     _isExporting.value = true;
+    _controller.video.pause();
+
     try {
       final video = await exportVideo(
-        preset: VideoExportPreset.medium,
         onStatistics: (stats) => _exportingProgress.value =
             stats.getProgress(_controller.trimmedDuration.inMilliseconds),
       );
@@ -86,12 +88,9 @@ class _VideoEditorState extends State<VideoEditor> {
       _isExporting.value = false;
       if (mounted) {
         context.push(APP_PAGE.addDetails.toPath, extra: File(video.path));
-        // showDialog(
-        //   context: context,
-        //   builder: (_) => VideoResultPopup(video: video),
-        // );
       }
     } catch (e) {
+      debugPrint('error ${e.toString()}');
       _showErrorSnackBar("Error on export video :(");
     }
   }

@@ -91,7 +91,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                       if (isToMenu) {
                                         isToMenu = false;
                                         await context.push(APP_PAGE.menu.toPath,
-                                            extra: data!.photoURL);
+                                            extra: data?.photoURL);
                                       }
                                       isToMenu = true;
                                     },

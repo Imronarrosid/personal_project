@@ -61,7 +61,7 @@ class _HomePageState extends State<HomePage> {
                             showUploadedSnackBar(context);
                           } else if (state is UploadError) {
                             Fluttertoast.showToast(
-                              msg: 'Upload gagal',
+                              msg: 'Upload gagal ${state.error}',
                               backgroundColor: Colors.black45,
                               gravity: ToastGravity.TOP,
                             );
