@@ -73,7 +73,7 @@ class AppRouter {
           path: APP_PAGE.videoPreview.toPath,
           name: APP_PAGE.videoPreview.toName,
           pageBuilder: (context, state) {
-            PreviewData previewData = state.extra as PreviewData;
+            File previewData = state.extra as File;
             return MaterialPage(
                 child: VideoPreviewPage(
               previewData: previewData,

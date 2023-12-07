@@ -1,19 +1,21 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:personal_project/constant/color.dart';
-import 'package:personal_project/constant/font_size.dart';
-import 'package:personal_project/domain/model/preview_model.dart';
+import 'package:personal_project/constant/dimens.dart';
+import 'package:personal_project/presentation/assets/images.dart';
 import 'package:personal_project/presentation/l10n/stings.g.dart';
-import 'package:personal_project/presentation/router/route_utils.dart';
 import 'package:personal_project/presentation/ui/video_preview/bloc/video_preview_bloc.dart';
 import 'package:video_player/video_player.dart';
 
 class VideoPreviewPage extends StatefulWidget {
-  final PreviewData previewData;
+  final File previewData;
   const VideoPreviewPage({super.key, required this.previewData});
 
   @override
@@ -22,89 +24,132 @@ class VideoPreviewPage extends StatefulWidget {
 
 class _VideoPreviewPageState extends State<VideoPreviewPage> {
   late VideoPlayerController _videoPlayerController;
+  // ignore: non_constant_identifier_names
+  final double _IC_LABEL_FONTSIZE = 12;
+  String? _fileMbSize;
 
   @override
   void initState() {
-    _videoPlayerController = VideoPlayerController.file(widget.previewData.file)
-      ..initialize().then((value) {
-        BlocProvider.of<VideoPreviewBloc>(context)
-            .add(InitVideoPlayer(controller: _videoPlayerController));
+    _videoPlayerController = VideoPlayerController.file(widget.previewData)
+      ..initialize().then((_) {
+        if (_videoPlayerController.value.isInitialized) {
+          setState(() {});
+          _videoPlayerController.setLooping(true);
+          _videoPlayerController.play();
+        }
       });
-    _videoPlayerController.setLooping(true);
+
+    widget.previewData.readAsBytes().then((bytes) {
+      _fileMbSize = _fileMBSize(bytes);
+      setState(() {});
+    });
 
     super.initState();
   }
 
+  String _fileMBSize(Uint8List bytes) {
+    return '${(bytes.lengthInBytes / (1024 * 1024)).toStringAsFixed(1)} MB';
+  }
+
   @override
   Widget build(BuildContext context) {
-    Size size = MediaQuery.of(context).size;
-    return WillPopScope(
-      onWillPop: () async {
-        //if file is from camera will show dialog first
-        if (widget.previewData.isFromCamera) {
-          if (!await _showDialog(context, widget.previewData.file)) {
-            return false;
-          }
-        }
-        _videoPlayerController.dispose();
-
-        return true;
-      },
-      child: Scaffold(
-        backgroundColor: COLOR_black,
-        extendBody: true,
-        extendBodyBehindAppBar: true,
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-        ),
-        persistentFooterButtons: [
+    return Scaffold(
+      backgroundColor: COLOR_black,
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+      ),
+      body: Stack(
+        children: [
           SizedBox.expand(
-            child: Padding(
-              padding: const EdgeInsets.all(5.0),
-              child: ElevatedButton(
-                  onPressed: () async {
-                    _videoPlayerController.pause();
-                    await context.push(APP_PAGE.addDetails.toPath,
-                        extra: widget.previewData);
-
-                    _videoPlayerController.play();
-                  },
-                  child: Text(
-                    LocaleKeys.label_next.tr(),
-                    style: TextStyle(
-                        color: COLOR_white_fff5f5f5,
-                        fontSize: FontSize.FONT_SIZE_16,
-                        fontWeight: FontWeight.w500),
-                  )),
+            child: FittedBox(
+              fit: BoxFit.contain,
+              child: SizedBox(
+                width: _videoPlayerController.value.size.width,
+                height: _videoPlayerController.value.size.height,
+                child: VideoPlayer(_videoPlayerController),
+              ),
             ),
           ),
-        ],
-        body: Container(
-          width: size.width,
-          height: size.height,
-          alignment: Alignment.center,
-          child: BlocBuilder<VideoPreviewBloc, VideoPreviewState>(
-            builder: (context, state) {
-              if (state is VideoPlayerIntialized) {
-                debugPrint(state.toString());
-
-                return Expanded(
-                  child: FittedBox(
-                    fit: BoxFit
-                        .contain, // You can adjust this to control the fit mode
-
-                    child: SizedBox(
-                        width: 300,
-                        height: 700,
-                        child: VideoPlayer(_videoPlayerController)),
+          Positioned(
+            right: Dimens.DIMENS_12,
+            bottom: Dimens.DIMENS_20,
+            child: Opacity(
+              opacity: 0.4,
+              child: Column(
+                children: [
+                  _buildProfilePictures(),
+                  SizedBox(
+                    height: Dimens.DIMENS_38,
                   ),
-                );
-              }
-              return const Center(child: CircularProgressIndicator());
-            },
+                  _buildLikeButton(),
+                  Text(
+                    '0',
+                    style: TextStyle(
+                        color: COLOR_white_fff5f5f5,
+                        fontSize: _IC_LABEL_FONTSIZE),
+                  ),
+                  SizedBox(
+                    height: Dimens.DIMENS_12,
+                  ),
+                  Icon(
+                    MdiIcons.messageText,
+                    color: COLOR_white_fff5f5f5,
+                    size: Dimens.DIMENS_28,
+                  ),
+                  Text(
+                    '0',
+                    style: TextStyle(
+                        color: COLOR_white_fff5f5f5,
+                        fontSize: _IC_LABEL_FONTSIZE),
+                  ),
+                  SizedBox(
+                    height: Dimens.DIMENS_12,
+                  ),
+                  Transform.flip(
+                    flipX: true,
+                    child: Icon(
+                      MdiIcons.reply,
+                      color: COLOR_white_fff5f5f5,
+                      size: Dimens.DIMENS_34,
+                    ),
+                  ),
+                  SizedBox(
+                    height: Dimens.DIMENS_15,
+                  ),
+                  Container(
+                    width: Dimens.DIMENS_34,
+                    height: Dimens.DIMENS_34,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      border: Border.all(color: COLOR_white_fff5f5f5),
+                      borderRadius: BorderRadius.circular(5),
+                      color: const Color.fromARGB(255, 27, 26, 26),
+                    ),
+                    child: Icon(
+                      MdiIcons.controller,
+                      color: COLOR_white_fff5f5f5,
+                      size: Dimens.DIMENS_15,
+                    ),
+                  )
+                ],
+              ),
+            ),
           ),
-        ),
+          _buildUserNameView(),
+          _buildProgerBarIndicatorView(),
+          Align(
+              alignment: Alignment.center,
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  'Video size: $_fileMbSize',
+                  style: TextStyle(
+                      color: COLOR_white_fff5f5f5, fontWeight: FontWeight.bold),
+                ),
+              ))
+        ],
       ),
     );
   }
@@ -114,6 +159,85 @@ class _VideoPreviewPageState extends State<VideoPreviewPage> {
     _videoPlayerController.dispose();
     super.dispose();
   }
+
+  Align _buildProgerBarIndicatorView() {
+    return Align(
+        alignment: Alignment.bottomCenter,
+        child: Opacity(
+          opacity: 0.4,
+          child: SizedBox(
+            height: 3,
+            child: VideoProgressIndicator(
+              _videoPlayerController,
+              padding: EdgeInsets.zero,
+              colors: VideoProgressColors(
+                  bufferedColor: COLOR_white_fff5f5f5.withOpacity(0.3),
+                  playedColor: COLOR_white_fff5f5f5),
+              allowScrubbing: true,
+            ),
+          ),
+        ));
+  }
+
+  Positioned _buildUserNameView() {
+    return Positioned(
+      bottom: Dimens.DIMENS_20,
+      left: Dimens.DIMENS_12,
+      child: Opacity(
+        opacity: 0.4,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '@username',
+              style: TextStyle(
+                  color: COLOR_white_fff5f5f5, fontSize: Dimens.DIMENS_18),
+            ),
+            SizedBox(
+              width: MediaQuery.of(context).size.width * 0.7,
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Caption',
+                      style: TextStyle(
+                          color: COLOR_white_fff5f5f5,
+                          fontSize: 14.0,
+                          fontWeight: FontWeight.w400),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            Icon(
+              MdiIcons.controller,
+              color: COLOR_white_fff5f5f5,
+            )
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+CircleAvatar _buildProfilePictures() {
+  return CircleAvatar(
+    child: ClipRRect(
+      borderRadius: BorderRadius.circular(50),
+      child: SvgPicture.asset(
+        Images.IC_PERSON_2_OUTLINE,
+      ),
+    ),
+  );
+}
+
+Icon _buildLikeButton() {
+  return Icon(
+    MdiIcons.heart,
+    size: Dimens.DIMENS_34,
+    color: COLOR_white_fff5f5f5,
+  );
 }
 
 Future<bool> _showDialog(BuildContext context, File file) async {

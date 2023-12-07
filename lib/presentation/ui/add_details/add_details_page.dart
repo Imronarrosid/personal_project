@@ -4,7 +4,6 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:get_thumbnail_video/video_thumbnail.dart';
 import 'package:go_router/go_router.dart';
 import 'package:personal_project/constant/color.dart';
 import 'package:personal_project/constant/dimens.dart';
@@ -17,8 +16,6 @@ import 'package:personal_project/presentation/router/route_utils.dart';
 import 'package:personal_project/presentation/ui/add_details/bloc/upload_bloc.dart';
 import 'package:personal_project/presentation/ui/auth/auth.dart';
 import 'package:personal_project/utils/get_thumbnails.dart';
-import 'package:video_compress/video_compress.dart';
-import 'package:video_editor_2/domain/thumbnails.dart';
 
 class AddDetailsPage extends StatelessWidget {
   final File videoFile;
@@ -63,9 +60,10 @@ class AddDetailsPage extends StatelessWidget {
                     height: Dimens.DIMENS_120,
                     child: GestureDetector(
                       onTap: () {
-                        context.push(APP_PAGE.videoPreview.toPath,
-                            extra: PreviewData(
-                                file: videoFile, isFromCamera: false));
+                        context.push(
+                          APP_PAGE.videoPreview.toPath,
+                          extra: videoFile,
+                        );
                       },
                       child: FutureBuilder(
                         future: getTumbnail(videoFile.path),

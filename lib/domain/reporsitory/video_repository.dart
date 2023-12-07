@@ -19,6 +19,12 @@ class VideoRepository implements VideoUseCaseType {
   final List<DocumentSnapshot> allUserVideosDocs = [];
   final List<DocumentSnapshot> likedVideosDocs = [];
   final List<DocumentSnapshot> videosByGamesDocs = [];
+
+  UploadTask? _uploadVideoTask;
+
+  UploadTask get uploadVideoTask => _uploadVideoTask!;
+
+  
   late User videoOwnerData;
   int currentPageIndex = 0;
 
@@ -38,6 +44,8 @@ class VideoRepository implements VideoUseCaseType {
     Reference ref = firebaseStorage.ref().child('videos').child(generateUuid());
 
     UploadTask uploadTask = ref.putFile(videoFile);
+
+    var uv = uploadTask.snapshot.bytesTransferred;
     TaskSnapshot snapshot = await uploadTask;
     String downloaUrl = await snapshot.ref.getDownloadURL();
     return downloaUrl;
@@ -66,8 +74,7 @@ class VideoRepository implements VideoUseCaseType {
       //Get id
       var allDocs = await firebaseFirestore.collection('videos').get();
       int len = allDocs.docs.length;
-      String videoUrl =
-          await _uploadToStorage("video $len", await _compressVideo(videoPath));
+      String videoUrl = await _uploadToStorage("video $len", File(videoPath));
       String thumnail =
           await _uploadThumnailesToStorage("video $len", videoPath);
 
