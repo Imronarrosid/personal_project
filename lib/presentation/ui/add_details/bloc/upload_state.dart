@@ -9,7 +9,14 @@ sealed class UploadState extends Equatable {
 
 final class UploadInitial extends UploadState {}
 
-final class Uploading extends UploadState {}
+final class Uploading extends UploadState {
+  final File thumbnail;
+  final String caption;
+
+  const Uploading(this.thumbnail, this.caption);
+  @override
+  List<Object> get props => [thumbnail, caption];
+}
 
 final class VideoUploaded extends UploadState {}
 

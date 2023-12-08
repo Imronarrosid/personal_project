@@ -26,6 +26,8 @@ class AddDetailsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
+
+    Future<File> thumbnail = getTumbnail(videoFile.path);
     return GestureDetector(
       onTap: () {
         // Dismiss the keyboard when tapping outside of text fields
@@ -114,50 +116,63 @@ class AddDetailsPage extends StatelessWidget {
                 decoration: BoxDecoration(
                     color: COLOR_black_ff121212,
                     borderRadius: BorderRadius.circular(50)),
-                child: Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    splashColor: COLOR_white_fff5f5f5.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(50),
-                    onTap: () {
-                      var isUserEmpty =
-                          RepositoryProvider.of<AuthRepository>(context)
-                              .currentUser;
-                      if (isUserEmpty == null) {
-                        showAuthBottomSheetFunc(context);
-                      } else {
-                        //will upload videos
-                        BlocProvider.of<UploadBloc>(context).add(
-                          UploadVideoEvent(
-                              videoPath: videoFile.path,
-                              caption: textEditingController.text),
-                        );
-                        debugPrint('Uploading');
-                      }
-                    },
-                    child: SizedBox(
-                      height: Dimens.DIMENS_38,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          SvgPicture.asset(
-                            Images.IC_UPLOAD_2,
-                            width: Dimens.DIMENS_18,
-                          ),
-                          SizedBox(
-                            width: Dimens.DIMENS_6,
-                          ),
-                          Text(
-                            LocaleKeys.title_upload.tr(),
-                            style: TextStyle(
-                                color: COLOR_white_fff5f5f5,
-                                fontSize: FontSize.FONT_SIZE_12),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
+                child: FutureBuilder(
+                    future: thumbnail,
+                    builder: (context, asyncSnapshot) {
+                      var data = asyncSnapshot.data;
+                      return Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          splashColor: COLOR_white_fff5f5f5.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(50),
+                          onTap: () {
+                            var isUserEmpty =
+                                RepositoryProvider.of<AuthRepository>(context)
+                                    .currentUser;
+                            if (isUserEmpty == null) {
+                              showAuthBottomSheetFunc(context);
+                            } else if (asyncSnapshot.hasData) {
+                              //will upload videos
+                              BlocProvider.of<UploadBloc>(context).add(
+                                UploadVideoEvent(
+                                    thumbnail: data!.path,
+                                    videoPath: videoFile.path,
+                                    caption: textEditingController.text),
+                              );
+                              debugPrint('Uploading');
+                            }
+                          },
+                          child: asyncSnapshot.hasData
+                              ? SizedBox(
+                                  height: Dimens.DIMENS_38,
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      SvgPicture.asset(
+                                        Images.IC_UPLOAD_2,
+                                        width: Dimens.DIMENS_18,
+                                      ),
+                                      SizedBox(
+                                        width: Dimens.DIMENS_6,
+                                      ),
+                                      Text(
+                                        LocaleKeys.title_upload.tr(),
+                                        style: TextStyle(
+                                            color: COLOR_white_fff5f5f5,
+                                            fontSize: FontSize.FONT_SIZE_12),
+                                      ),
+                                    ],
+                                  ))
+                              : SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    color: COLOR_white_fff5f5f5,
+                                  ),
+                                ),
+                        ),
+                      );
+                    }),
               ),
             ]),
           ),

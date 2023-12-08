@@ -82,7 +82,7 @@ class _VideoEditorState extends State<VideoEditor> {
     try {
       final video = await exportVideo(
         customInstruction:
-            "-r 24 -crf 18 -c:v libx264 -c:a aac -b:v 1500k -b:a 192k ",
+            " -crf 28 -c:v libx264 -c:a aac -b:v 1250k -b:a 192k ",
         onStatistics: (stats) => _exportingProgress.value =
             stats.getProgress(_controller.trimmedDuration.inMilliseconds),
       );

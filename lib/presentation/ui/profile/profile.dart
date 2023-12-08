@@ -24,6 +24,7 @@ import 'package:personal_project/presentation/l10n/stings.g.dart';
 import 'package:personal_project/presentation/router/route_utils.dart';
 import 'package:personal_project/presentation/shared_components/keep_alive_page.dart';
 import 'package:personal_project/presentation/shared_components/not_authenticated_page.dart';
+import 'package:personal_project/presentation/ui/add_details/bloc/upload_bloc.dart';
 import 'package:personal_project/presentation/ui/auth/bloc/auth_bloc.dart';
 import 'package:personal_project/presentation/ui/edit_profile/cubit/edit_bio_cubit.dart';
 import 'package:personal_project/presentation/ui/edit_profile/cubit/edit_name_cubit.dart';
@@ -396,9 +397,8 @@ class _ProfilePageState extends State<ProfilePage> {
                                       bottom: TabBar(
                                         labelColor: COLOR_black_ff121212,
                                         indicatorColor: COLOR_black_ff121212,
-                                        indicatorSize:
-                                            TabBarIndicatorSize.label,
-                                        indicatorWeight: 3,
+                                        indicatorSize: TabBarIndicatorSize.tab,
+                                        indicatorWeight: 2,
                                         tabs: [
                                           Tab(
                                             icon: Icon(MdiIcons.folderPlay),
@@ -818,114 +818,193 @@ class VideoListView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return RepositoryProvider(
-      create: (context) => UserVideoPagingRepository(),
-      child: BlocProvider(
-        create: (context) => UserVideoPagingBloc(
-            RepositoryProvider.of<UserVideoPagingRepository>(context))
-          ..add(InitUserVideoPaging(uid: uid, from: from)),
-        child: BlocBuilder<UserVideoPagingBloc, UserVideoPagingState>(
-          builder: (_, state) {
-            if (state is UserVideoPagingInitialed) {
-              return BlocListener<RefreshProfileCubit, RefreshProfileState>(
-                listener: (context, refreshState) {
-                  if (refreshState.status == RefreshStatus.refresh) {
-                    RepositoryProvider.of<UserVideoPagingRepository>(context)
-                        .clearLikeVideo();
-                    RepositoryProvider.of<UserVideoPagingRepository>(context)
-                        .clearUserVideo();
-                    state.controller.refresh();
-                  }
-                },
-                child: PagedGridView<int, String>(
-                  pagingController: state.controller,
-                  padding: EdgeInsets.only(top: Dimens.DIMENS_6),
-                  builderDelegate: PagedChildBuilderDelegate(
-                    noItemsFoundIndicatorBuilder: (context) => Center(
-                      child: Text(
-                        from == From.likes
-                            ? 'Tidak Ada Postingann Disukai'
-                            : 'Tidak Ada Postingan',
-                        style: const TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                    itemBuilder: (_, item, index) {
-                      // var doc = await firebaseFirestore.collection('videos').doc(item).get();
-                      // Video video = Video.fromSnap(doc);
-                      return AspectRatio(
-                        aspectRatio: 16 / 9,
-                        child: FutureBuilder(
-                            future: firebaseFirestore
-                                .collection('videos')
-                                .doc(item)
-                                .get(),
-                            builder:
-                                (_, AsyncSnapshot<DocumentSnapshot> snapshot) {
-                              late Video video;
-                              if (snapshot.data != null) {
-                                video = Video.fromSnap(snapshot.data!);
-                              }
-
-                              if (!snapshot.hasData) {
-                                return Container();
-                              }
-                              return Container(
-                                color: COLOR_black,
-                                child: GestureDetector(
-                                  onTap: () {
-                                    context.push(APP_PAGE.videoItem.toPath,
-                                        extra: video);
-                                  },
-                                  child: Stack(
-                                    alignment: Alignment.center,
-                                    children: [
-                                      CachedNetworkImage(
-                                          fit: BoxFit.cover,
-                                          imageUrl: video.thumnail),
-                                      Align(
-                                        alignment: Alignment.bottomLeft,
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(8.0),
-                                          child: Row(
-                                            children: [
-                                              Text(
-                                                video.views.length.toString(),
-                                                style: TextStyle(
-                                                    color:
-                                                        COLOR_white_fff5f5f5),
-                                              ),
-                                              Text(
-                                                ' dilihat',
-                                                style: TextStyle(
-                                                    color:
-                                                        COLOR_white_fff5f5f5),
-                                              )
-                                            ],
-                                          ),
-                                        ),
-                                      )
-                                    ],
-                                  ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        !(from == From.user)
+            ? Container()
+            : BlocBuilder<UploadBloc, UploadState>(
+                builder: (context, state) {
+                  if (state is Uploading) {
+                    return Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(8)),
+                        child: ListTile(
+                          minLeadingWidth: 50,
+                          leading: SizedBox(
+                            width: 50,
+                            child: Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                Image.file(
+                                  state.thumbnail,
+                                  width: 60,
+                                  fit: BoxFit.cover,
                                 ),
-                              );
-                            }),
-                      );
-                    },
-                  ),
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    childAspectRatio: 9 / 16,
-                    crossAxisCount: 3,
-                    mainAxisSpacing: Dimens.DIMENS_3,
-                    crossAxisSpacing: Dimens.DIMENS_3,
-                  ),
-                ),
-              );
-            }
-            return const CircularProgressIndicator();
-          },
+                                StreamBuilder(
+                                  stream:
+                                      RepositoryProvider.of<VideoRepository>(
+                                              context)
+                                          .uploadProgressStream,
+                                  builder: (context, snapshot) {
+                                    if (!snapshot.hasData) {
+                                      return Container();
+                                    }
+                                    return SizedBox.expand(
+                                      child: Stack(
+                                        alignment: Alignment.center,
+                                        children: [
+                                          CircularProgressIndicator(
+                                            value: snapshot.data! / 100,
+                                            color: COLOR_white_fff5f5f5,
+                                          ),
+                                          Text(
+                                            '${snapshot.data!.toInt()}%',
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                color: COLOR_white_fff5f5f5),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
+                          title: const Text('Upload video'),
+                          subtitle: Text(state.caption),
+                        ),
+                      ),
+                    );
+                  }
+                  return Container();
+                },
+              ),
+        Expanded(
+          child: RepositoryProvider(
+            create: (context) => UserVideoPagingRepository(),
+            child: BlocProvider(
+              create: (context) => UserVideoPagingBloc(
+                  RepositoryProvider.of<UserVideoPagingRepository>(context))
+                ..add(InitUserVideoPaging(uid: uid, from: from)),
+              child: BlocBuilder<UserVideoPagingBloc, UserVideoPagingState>(
+                builder: (_, state) {
+                  if (state is UserVideoPagingInitialed) {
+                    return BlocListener<RefreshProfileCubit,
+                        RefreshProfileState>(
+                      listener: (context, refreshState) {
+                        if (refreshState.status == RefreshStatus.refresh) {
+                          RepositoryProvider.of<UserVideoPagingRepository>(
+                                  context)
+                              .clearLikeVideo();
+                          RepositoryProvider.of<UserVideoPagingRepository>(
+                                  context)
+                              .clearUserVideo();
+                          state.controller.refresh();
+                        }
+                      },
+                      child: PagedGridView<int, String>(
+                        pagingController: state.controller,
+                        padding: const EdgeInsets.only(top: 2),
+                        builderDelegate: PagedChildBuilderDelegate(
+                          noItemsFoundIndicatorBuilder: (context) => Center(
+                            child: Text(
+                              from == From.likes
+                                  ? 'Tidak Ada Postingann Disukai'
+                                  : 'Tidak Ada Postingan',
+                              style: const TextStyle(
+                                  fontSize: 16, fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                          itemBuilder: (_, item, index) {
+                            // var doc = await firebaseFirestore.collection('videos').doc(item).get();
+                            // Video video = Video.fromSnap(doc);
+                            return AspectRatio(
+                              aspectRatio: 16 / 9,
+                              child: FutureBuilder(
+                                  future: firebaseFirestore
+                                      .collection('videos')
+                                      .doc(item)
+                                      .get(),
+                                  builder: (_,
+                                      AsyncSnapshot<DocumentSnapshot>
+                                          snapshot) {
+                                    late Video video;
+                                    if (snapshot.data != null) {
+                                      video = Video.fromSnap(snapshot.data!);
+                                    }
+
+                                    if (!snapshot.hasData) {
+                                      return Container();
+                                    }
+                                    return Container(
+                                      color: COLOR_black,
+                                      child: GestureDetector(
+                                        onTap: () {
+                                          context.push(
+                                              APP_PAGE.videoItem.toPath,
+                                              extra: video);
+                                        },
+                                        child: Stack(
+                                          alignment: Alignment.center,
+                                          children: [
+                                            CachedNetworkImage(
+                                                fit: BoxFit.cover,
+                                                imageUrl: video.thumnail),
+                                            Align(
+                                              alignment: Alignment.bottomLeft,
+                                              child: Padding(
+                                                padding:
+                                                    const EdgeInsets.all(8.0),
+                                                child: Row(
+                                                  children: [
+                                                    Text(
+                                                      video.views.length
+                                                          .toString(),
+                                                      style: TextStyle(
+                                                          color:
+                                                              COLOR_white_fff5f5f5),
+                                                    ),
+                                                    Text(
+                                                      ' dilihat',
+                                                      style: TextStyle(
+                                                          color:
+                                                              COLOR_white_fff5f5f5),
+                                                    )
+                                                  ],
+                                                ),
+                                              ),
+                                            )
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                  }),
+                            );
+                          },
+                        ),
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                          childAspectRatio: 9 / 16,
+                          crossAxisCount: 3,
+                          mainAxisSpacing: 1,
+                          crossAxisSpacing: 1,
+                        ),
+                      ),
+                    );
+                  }
+                  return const CircularProgressIndicator();
+                },
+              ),
+            ),
+          ),
         ),
-      ),
+      ],
     );
   }
 }

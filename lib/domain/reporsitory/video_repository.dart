@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
@@ -20,11 +21,12 @@ class VideoRepository implements VideoUseCaseType {
   final List<DocumentSnapshot> likedVideosDocs = [];
   final List<DocumentSnapshot> videosByGamesDocs = [];
 
-  UploadTask? _uploadVideoTask;
+  StreamController<double> _uploadVideoController =
+      StreamController<double>.broadcast();
 
-  UploadTask get uploadVideoTask => _uploadVideoTask!;
+  Stream<double> get uploadProgressStream =>
+      _uploadVideoController.stream.asBroadcastStream();
 
-  
   late User videoOwnerData;
   int currentPageIndex = 0;
 
@@ -40,14 +42,20 @@ class VideoRepository implements VideoUseCaseType {
     return thumnail;
   }
 
-  _uploadToStorage(String id, File videoFile) async {
+  Future<String> _uploadToStorage(String id, File videoFile) async {
     Reference ref = firebaseStorage.ref().child('videos').child(generateUuid());
 
     UploadTask uploadTask = ref.putFile(videoFile);
 
-    var uv = uploadTask.snapshot.bytesTransferred;
+    uploadTask.snapshotEvents.listen((snapshot) {
+      double progress =
+          ((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+      _uploadVideoController.add(progress);
+    });
+
     TaskSnapshot snapshot = await uploadTask;
     String downloaUrl = await snapshot.ref.getDownloadURL();
+
     return downloaUrl;
   }
 
@@ -56,8 +64,8 @@ class VideoRepository implements VideoUseCaseType {
 
     UploadTask uploadTask = ref.putFile(await _getThumnaile(videoPath));
     TaskSnapshot snapshot = await uploadTask;
-    if (snapshot.state == TaskState.success) {}
     String downloaUrl = await snapshot.ref.getDownloadURL();
+
     return downloaUrl;
   }
 
@@ -100,8 +108,11 @@ class VideoRepository implements VideoUseCaseType {
           .then((_) {
         debugPrint('uploaded');
       });
+      _uploadVideoController.close();
+      _uploadVideoController = StreamController<double>.broadcast();
     } catch (e) {
       debugPrint(e.toString());
+      _uploadVideoController.close();
       rethrow;
     }
   }
