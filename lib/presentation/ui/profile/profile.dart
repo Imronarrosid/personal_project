@@ -91,8 +91,9 @@ class _ProfilePageState extends State<ProfilePage> {
                                     onPressed: () async {
                                       if (isToMenu) {
                                         isToMenu = false;
-                                        await context.push(APP_PAGE.menu.toPath,
-                                            extra: data?.photoURL);
+                                        await context.push(
+                                          APP_PAGE.menu.toPath,
+                                        );
                                       }
                                       isToMenu = true;
                                     },
@@ -129,7 +130,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                     if (isToMenu) {
                                       isToMenu = false;
                                       await context.push(APP_PAGE.menu.toPath,
-                                          extra: data!.photoURL);
+                                          extra: data!.uid);
                                     }
                                     isToMenu = true;
                                   },

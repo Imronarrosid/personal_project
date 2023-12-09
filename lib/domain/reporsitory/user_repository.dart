@@ -19,6 +19,15 @@ class UserRepository implements UserUseCaseType {
     });
   }
 
+  String _userName = '';
+  String _photoURL = '';
+
+  set username(String userName) => _userName = userName;
+  set photoUrl(String photoURL) => _photoURL = photoURL;
+
+  String get getUserName => _userName;
+  String get getPhotoURL => _photoURL;
+
   @override
   Future<UserData> getUserData(String uid) async {
     var myVideos = await firebaseFirestore
@@ -295,7 +304,6 @@ class UserRepository implements UserUseCaseType {
           .get();
       debugPrint('bio: ${doc['bio'].runtimeType}');
 
-    
       // debugPrint('games ${rfs.length}');
       for (var element in gv) {
         var game = await firebaseFirestore

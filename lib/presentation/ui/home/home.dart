@@ -1,5 +1,6 @@
 import 'package:camera/camera.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -8,7 +9,9 @@ import 'package:material_design_icons_flutter/material_design_icons_flutter.dart
 import 'package:personal_project/constant/color.dart';
 import 'package:personal_project/constant/dimens.dart';
 import 'package:personal_project/domain/reporsitory/auth_reposotory.dart';
+import 'package:personal_project/domain/reporsitory/user_repository.dart';
 import 'package:personal_project/domain/services/app/app_service.dart';
+import 'package:personal_project/domain/services/firebase/firebase_service.dart';
 import 'package:personal_project/presentation/l10n/stings.g.dart';
 import 'package:personal_project/presentation/router/route_utils.dart';
 import 'package:personal_project/presentation/shared_components/custom_snackbar.dart';
@@ -32,6 +35,28 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  @override
+  void initState() {
+    _onLogin();
+    super.initState();
+  }
+
+  void _onLogin() async {
+    final userRepository = RepositoryProvider.of<UserRepository>(context);
+    final authRepository = RepositoryProvider.of<AuthRepository>(context);
+    final User? currentUser = authRepository.currentUser;
+
+    if (currentUser != null) {
+      final user = await firebaseFirestore
+          .collection('users')
+          .doc(currentUser.uid)
+          .get();
+
+      userRepository.photoUrl = user['photoUrl'];
+      userRepository.username = user['userName'];
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     List<Widget> pages = <Widget>[

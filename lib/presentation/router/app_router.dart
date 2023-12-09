@@ -180,11 +180,8 @@ class AppRouter {
         path: APP_PAGE.menu.toPath,
         name: APP_PAGE.menu.toName,
         pageBuilder: (context, state) {
-          String? imageUrl = state.extra as String?;
           return CustomTransitionPage(
-            child: MenuPage(
-              accImageUrl: imageUrl,
-            ),
+            child: const MenuPage(),
             transitionsBuilder:
                 (context, animation, secondaryAnimation, child) =>
                     SlideTransition(
@@ -200,8 +197,7 @@ class AppRouter {
           );
         },
         builder: (context, state) {
-          String? imageUrl = state.extra as String?;
-          return MenuPage(accImageUrl: imageUrl);
+          return const MenuPage();
         },
       ),
       // GoRoute(
