@@ -154,14 +154,15 @@ class _MyAppState extends State<MyApp> {
                 },
                 child: Container(),
               ),
-              BlocProvider(create: (_) => LanguageCubit(appService))
+              BlocProvider(create: (_) => LanguageCubit())
             ],
             child: MaterialApp.router(
               debugShowCheckedModeBanner: false,
               theme: ThemeData(
-                primarySwatch: PRIMARY,
-                useMaterial3: true,
-              ),
+                  primarySwatch: PRIMARY,
+                  useMaterial3: true,
+                  appBarTheme:
+                      const AppBarTheme(surfaceTintColor: Colors.transparent)),
               locale: context.locale,
               supportedLocales: context.supportedLocales,
               localizationsDelegates: context.localizationDelegates,

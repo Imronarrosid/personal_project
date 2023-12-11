@@ -14,29 +14,12 @@ class AppService with ChangeNotifier {
   bool _loginState = false;
   bool _initialized = false;
   bool _onboarding = false;
-  String _locale = LOCALE.id.code;
 
   AppService(this.sharedPreferences);
 
   bool get loginState => _loginState;
   bool get initialized => _initialized;
   bool get onboarding => _onboarding;
-  String get getAppLocale => _locale;
-
-  void setAppLocale(LOCALE locale) {
-    String code = LOCALE.id.code;
-    switch (locale) {
-      case LOCALE.id:
-        code = LOCALE.id.code;
-        break;
-      case LOCALE.en:
-        code = LOCALE.en.code;
-        break;
-      default:
-    }
-    sharedPreferences.setString('locale', code);
-    _locale = code;
-  }
 
   set loginState(bool state) {
     sharedPreferences.setBool(LOGIN_KEY, state);
@@ -59,7 +42,6 @@ class AppService with ChangeNotifier {
   Future<void> onAppStart() async {
     _onboarding = sharedPreferences.getBool(ONBOARD_KEY) ?? false;
     _loginState = sharedPreferences.getBool(LOGIN_KEY) ?? false;
-    _locale = sharedPreferences.getString('locale') ?? LOCALE.id.code;
 
     // This is just to demonstrate the splash screen is working.
     // In real-life applications, it is not recommended to interrupt the user experience by doing such things.

@@ -1,11 +1,13 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:personal_project/constant/color.dart';
 import 'package:personal_project/constant/dimens.dart';
 import 'package:personal_project/presentation/l10n/locale_code.dart';
 import 'package:personal_project/presentation/l10n/stings.g.dart';
+import 'package:personal_project/presentation/router/route_utils.dart';
 import 'package:personal_project/presentation/ui/language/cubit/language_cubit.dart';
 
 class LanguagePage extends StatelessWidget {
@@ -40,7 +42,7 @@ class LanguagePage extends StatelessWidget {
                         topLeft: Radius.circular(10),
                         topRight: Radius.circular(10))),
                 tileColor: Colors.white,
-                groupValue: state.selectedLocale,
+                groupValue: context.locale.languageCode,
                 value: LOCALE.id.code,
                 onChanged: (value) {
                   _setLocale(context, value!);
@@ -53,7 +55,7 @@ class LanguagePage extends StatelessWidget {
                         bottomLeft: Radius.circular(10),
                         bottomRight: Radius.circular(10))),
                 tileColor: Colors.white,
-                groupValue: state.selectedLocale,
+                groupValue: context.locale.languageCode,
                 value: LOCALE.en.code,
                 onChanged: (value) {
                   _setLocale(context, value!);
@@ -88,7 +90,10 @@ class LanguagePage extends StatelessWidget {
                         style: TextStyle(color: COLOR_black.withOpacity(0.5)))),
                 TextButton(
                     onPressed: () {
+                      context.setLocale(Locale(selected));
                       languageCubit.setLocale(selected);
+                      context.pop();
+                      // context.pushReplacement(APP_PAGE.home.toPath);
                     },
                     child: Text(LocaleKeys.label_oke.tr()))
               ],

@@ -114,49 +114,52 @@ class _HomePageState extends State<HomePage> {
                   ),
                   bottomNavigationBar: BlocBuilder<HomeCubit, HomeState>(
                     builder: (context, state) {
-                      return BottomNavigationBar(
-                        unselectedItemColor:
-                            COLOR_white_fff5f5f5.withOpacity(0.6),
-                        selectedItemColor: COLOR_white_fff5f5f5,
-                        type: BottomNavigationBarType.fixed,
-                        selectedFontSize: 12,
-                        unselectedFontSize: 12,
-                        backgroundColor: COLOR_black_ff121212,
-                        items: [
-                          BottomNavigationBarItem(
-                              icon: Icon(MdiIcons.homeOutline),
-                              activeIcon: Icon(MdiIcons.home),
-                              label: LocaleKeys.label_home.tr()),
-                          BottomNavigationBarItem(
-                              icon: const Icon(Icons.search_rounded),
-                              label: LocaleKeys.label_search.tr()),
-                          const BottomNavigationBarItem(
-                              icon: Icon(Icons.add), label: ''),
-                          BottomNavigationBarItem(
-                              icon: Icon(MdiIcons.messageTextOutline),
-                              activeIcon: Icon(MdiIcons.messageText),
-                              label: LocaleKeys.label_message.tr()),
-                          BottomNavigationBarItem(
-                              icon: Icon(MdiIcons.accountCircleOutline),
-                              activeIcon: Icon(MdiIcons.accountCircle),
-                              label: LocaleKeys.label_profile.tr()),
-                        ],
-                        currentIndex: state.index,
-                        onTap: (value) async {
-                          if (value == 2) {
-                            // Navigator.push(context, MaterialPageRoute(builder: (context)=>UploadPage()));
-                            // BlocProvider.of<CameraBloc>(context).add(const OpenRearCameraEvent());
-                            // await availableCameras().then((value) => context
-                            //     .push(APP_PAGE.upload.toPath, extra: value));
-                            showUploadModal(context);
-                          } else {
-                            // setState(() {
-                            //   selectedindex = value;
-                            // });
-                            BlocProvider.of<HomeCubit>(context)
-                                .changePage(value);
-                          }
-                        },
+                      return Theme(
+                        data: ThemeData(useMaterial3: false),
+                        child: BottomNavigationBar(
+                          unselectedItemColor:
+                              COLOR_white_fff5f5f5.withOpacity(0.6),
+                          selectedItemColor: COLOR_white_fff5f5f5,
+                          type: BottomNavigationBarType.fixed,
+                          selectedFontSize: 12,
+                          unselectedFontSize: 12,
+                          backgroundColor: COLOR_black_ff121212,
+                          items: [
+                            BottomNavigationBarItem(
+                                icon: Icon(MdiIcons.homeOutline),
+                                activeIcon: Icon(MdiIcons.home),
+                                label: LocaleKeys.label_home.tr()),
+                            BottomNavigationBarItem(
+                                icon: const Icon(Icons.search_rounded),
+                                label: LocaleKeys.label_search.tr()),
+                            const BottomNavigationBarItem(
+                                icon: Icon(Icons.add), label: ''),
+                            BottomNavigationBarItem(
+                                icon: Icon(MdiIcons.messageTextOutline),
+                                activeIcon: Icon(MdiIcons.messageText),
+                                label: LocaleKeys.label_message.tr()),
+                            BottomNavigationBarItem(
+                                icon: Icon(MdiIcons.accountCircleOutline),
+                                activeIcon: Icon(MdiIcons.accountCircle),
+                                label: LocaleKeys.label_profile.tr()),
+                          ],
+                          currentIndex: state.index,
+                          onTap: (value) async {
+                            if (value == 2) {
+                              // Navigator.push(context, MaterialPageRoute(builder: (context)=>UploadPage()));
+                              // BlocProvider.of<CameraBloc>(context).add(const OpenRearCameraEvent());
+                              // await availableCameras().then((value) => context
+                              //     .push(APP_PAGE.upload.toPath, extra: value));
+                              showUploadModal(context);
+                            } else {
+                              // setState(() {
+                              //   selectedindex = value;
+                              // });
+                              BlocProvider.of<HomeCubit>(context)
+                                  .changePage(value);
+                            }
+                          },
+                        ),
                       );
                     },
                   ),
