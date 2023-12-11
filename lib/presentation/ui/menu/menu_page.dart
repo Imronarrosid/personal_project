@@ -105,6 +105,9 @@ class MenuPage extends StatelessWidget {
             tileColor: Colors.white,
             leading: Icon(MdiIcons.web),
             title: Text('Bahasa'),
+            onTap: () {
+              context.push(APP_PAGE.languagePage.toPath);
+            },
           ),
           ListTile(
             shape: const RoundedRectangleBorder(

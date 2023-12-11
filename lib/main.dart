@@ -23,6 +23,7 @@ import 'package:personal_project/presentation/ui/edit_profile/cubit/edit_profile
 import 'package:personal_project/presentation/ui/edit_profile/cubit/edit_user_name_cubit.dart';
 import 'package:personal_project/presentation/ui/edit_profile/cubit/game_fav_cubit.dart';
 import 'package:personal_project/presentation/ui/home/home.dart';
+import 'package:personal_project/presentation/ui/language/cubit/language_cubit.dart';
 import 'package:personal_project/presentation/ui/upload/bloc/camera_bloc.dart';
 import 'package:personal_project/presentation/ui/video/list_video/bloc/video_player_bloc.dart';
 import 'package:personal_project/presentation/ui/video_preview/bloc/video_preview_bloc.dart';
@@ -152,10 +153,15 @@ class _MyAppState extends State<MyApp> {
                   return GameFavCubit(userRepository);
                 },
                 child: Container(),
-              )
+              ),
+              BlocProvider(create: (_) => LanguageCubit(appService))
             ],
             child: MaterialApp.router(
               debugShowCheckedModeBanner: false,
+              theme: ThemeData(
+                primarySwatch: PRIMARY,
+                useMaterial3: true,
+              ),
               locale: context.locale,
               supportedLocales: context.supportedLocales,
               localizationsDelegates: context.localizationDelegates,

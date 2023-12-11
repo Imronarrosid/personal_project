@@ -18,7 +18,8 @@ enum APP_PAGE {
   addGameFav,
   editGameFav,
   videoItem,
-  cachesPage
+  cachesPage,
+  languagePage
 }
 
 extension AppPageExtension on APP_PAGE {
@@ -60,6 +61,8 @@ extension AppPageExtension on APP_PAGE {
         return "/video-item";
       case APP_PAGE.cachesPage:
         return "/caches";
+      case APP_PAGE.languagePage:
+        return "/language";
       default:
         return "/";
     }
@@ -103,6 +106,8 @@ extension AppPageExtension on APP_PAGE {
         return "VIDEO-ITEM";
       case APP_PAGE.cachesPage:
         return "CACHES-PAGE";
+      case APP_PAGE.languagePage:
+        return "LANGUAGE";
       default:
         return "HOME";
     }

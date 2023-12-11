@@ -13,6 +13,7 @@ import 'package:personal_project/domain/services/app/app_service.dart';
 import 'package:personal_project/presentation/router/route_utils.dart';
 import 'package:personal_project/presentation/ui/add_details/add_details_page.dart';
 import 'package:personal_project/presentation/ui/edit_profile/edit_page/edit_game_fav_page.dart';
+import 'package:personal_project/presentation/ui/language/language_page.dart';
 import 'package:personal_project/presentation/ui/play_single_video/play_single.dart';
 import 'package:personal_project/presentation/ui/profile_pict_preview/profile_pict_preview.dart';
 import 'package:personal_project/presentation/ui/edit_profile/edit_page/edit_name_page.dart';
@@ -198,6 +199,30 @@ class AppRouter {
         },
         builder: (context, state) {
           return const MenuPage();
+        },
+      ),
+      GoRoute(
+        path: APP_PAGE.languagePage.toPath,
+        name: APP_PAGE.languagePage.toName,
+        pageBuilder: (context, state) {
+          return CustomTransitionPage(
+            child: const LanguagePage(),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) =>
+                    SlideTransition(
+                        position: animation.drive(
+                          Tween<Offset>(
+                            begin: Offset(0.75, 0),
+                            end: Offset.zero,
+                          ).chain(
+                            CurveTween(curve: Curves.ease),
+                          ),
+                        ),
+                        child: child),
+          );
+        },
+        builder: (context, state) {
+          return const LanguagePage();
         },
       ),
       // GoRoute(
