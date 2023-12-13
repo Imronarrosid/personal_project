@@ -219,7 +219,9 @@ class _ProfilePageState extends State<ProfilePage> {
                                                                         5),
                                                           ),
                                                           child: Text(
-                                                            'Edit Profil',
+                                                            LocaleKeys
+                                                                .label_edit_profile
+                                                                .tr(),
                                                             textAlign: TextAlign
                                                                 .center,
                                                           ),
@@ -289,8 +291,9 @@ class _ProfilePageState extends State<ProfilePage> {
                                                                     builder:
                                                                         (_) {
                                                                       return AlertDialog(
-                                                                        title: Text(
-                                                                            'Berhenti Mengikuti ?'),
+                                                                        title: Text(LocaleKeys
+                                                                            .message_unfollow
+                                                                            .tr()),
                                                                         actions: [
                                                                           TextButton(
                                                                             onPressed:
@@ -298,7 +301,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                                                               context.pop();
                                                                             },
                                                                             child:
-                                                                                const Text('Batal'),
+                                                                                Text(LocaleKeys.label_cancel.tr()),
                                                                           ),
                                                                           TextButton(
                                                                             onPressed:
@@ -307,7 +310,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                                                               context.pop();
                                                                             },
                                                                             child:
-                                                                                const Text('Oke'),
+                                                                                Text(LocaleKeys.label_oke.tr()),
                                                                           )
                                                                         ],
                                                                       );
@@ -343,8 +346,12 @@ class _ProfilePageState extends State<ProfilePage> {
                                                                               5)),
                                                               child: Text(
                                                                 isFollowig
-                                                                    ? 'Mengikuti'
-                                                                    : 'Ikuti',
+                                                                    ? LocaleKeys
+                                                                        .label_following
+                                                                        .tr()
+                                                                    : LocaleKeys
+                                                                        .label_follow
+                                                                        .tr(),
                                                                 textAlign:
                                                                     TextAlign
                                                                         .center,
@@ -373,7 +380,8 @@ class _ProfilePageState extends State<ProfilePage> {
                                                               BorderRadius
                                                                   .circular(5)),
                                                       child: Text(
-                                                        'Pesan',
+                                                        LocaleKeys.label_message
+                                                            .tr(),
                                                         textAlign:
                                                             TextAlign.center,
                                                       ),
@@ -536,8 +544,10 @@ class _ProfilePageState extends State<ProfilePage> {
                                     BlocProvider.of<ProfileCubit>(context)
                                         .seeMoreGameFavHandle();
                                   },
-                                  child: const Chip(
-                                    label: Text('lebih sedikit'),
+                                  child: Chip(
+                                    label: Text(LocaleKeys.label_see_less
+                                        .tr()
+                                        .replaceAll('.', '')),
                                   ),
                                 )
                               : Container()
@@ -556,7 +566,10 @@ class _ProfilePageState extends State<ProfilePage> {
                                         .seeMoreGameFavHandle();
                                   },
                                   child: Chip(
-                                    label: Icon(Icons.more_horiz),
+                                    label: Icon(
+                                      Icons.more_horiz,
+                                      size: Dimens.DIMENS_20,
+                                    ),
                                   ),
                                 )
                               : Container()
@@ -618,7 +631,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           final textPainter = TextPainter(
                             text: TextSpan(
                               text: text,
-                              style: TextStyle(fontSize: 14.0),
+                              style: const TextStyle(fontSize: 14.0),
                             ),
                             textDirection: TextDirection.ltr,
                           );
@@ -648,9 +661,10 @@ class _ProfilePageState extends State<ProfilePage> {
                                   onTap: () =>
                                       BlocProvider.of<ProfileCubit>(context)
                                           .seeMoreBioHandle(),
-                                  child: Text(state is ShowLessBio
-                                      ? '...selengkapnya'
-                                      : '...lebih sedikit'),
+                                  child: Text(state is ShowLessBio ||
+                                          state is ProfileInitial
+                                      ? LocaleKeys.label_see_more.tr()
+                                      : LocaleKeys.label_see_less.tr()),
                                 )
                               else
                                 Container(),
@@ -766,14 +780,13 @@ class _ProfilePageState extends State<ProfilePage> {
           child: Column(
             children: [
               Text(
-                data.following,
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+                data.followers,
+                style:
+                    const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
               ),
-              Text(
-                'Mengikuti',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 12),
-              ),
+              Text(LocaleKeys.label_followers.tr(),
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontSize: 12)),
             ],
           ),
         ),
@@ -781,11 +794,15 @@ class _ProfilePageState extends State<ProfilePage> {
           child: Column(
             children: [
               Text(
-                data.followers,
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+                data.following,
+                style:
+                    const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
               ),
-              Text('Pengikut',
-                  textAlign: TextAlign.center, style: TextStyle(fontSize: 12)),
+              Text(
+                LocaleKeys.label_following.tr(),
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontSize: 12),
+              ),
             ],
           ),
         ),
@@ -794,12 +811,13 @@ class _ProfilePageState extends State<ProfilePage> {
             children: [
               Text(
                 data.likes,
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+                style:
+                    const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
               ),
               Text(
-                'Suka',
+                LocaleKeys.label_likes.tr(),
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 12),
+                style: const TextStyle(fontSize: 12),
               ),
             ],
           ),
@@ -877,7 +895,6 @@ class VideoListView extends StatelessWidget {
                               ],
                             ),
                           ),
-                          title: const Text('Upload video'),
                           subtitle: Text(state.caption),
                         ),
                       ),
@@ -915,9 +932,9 @@ class VideoListView extends StatelessWidget {
                         builderDelegate: PagedChildBuilderDelegate(
                           noItemsFoundIndicatorBuilder: (context) => Center(
                             child: Text(
-                              from == From.likes
-                                  ? 'Tidak Ada Postingann Disukai'
-                                  : 'Tidak Ada Postingan',
+                              from == From.user
+                                  ? LocaleKeys.message_no_post.tr()
+                                  : LocaleKeys.message_no_liked_post.tr(),
                               style: const TextStyle(
                                   fontSize: 16, fontWeight: FontWeight.bold),
                             ),
@@ -965,14 +982,14 @@ class VideoListView extends StatelessWidget {
                                                 child: Row(
                                                   children: [
                                                     Text(
-                                                      video.views.length
-                                                          .toString(),
+                                                      '${video.views.length} ',
                                                       style: TextStyle(
                                                           color:
                                                               COLOR_white_fff5f5f5),
                                                     ),
                                                     Text(
-                                                      ' dilihat',
+                                                      LocaleKeys.label_views
+                                                          .tr(),
                                                       style: TextStyle(
                                                           color:
                                                               COLOR_white_fff5f5f5),

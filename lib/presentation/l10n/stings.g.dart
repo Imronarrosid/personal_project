@@ -6,6 +6,9 @@ abstract class  LocaleKeys {
   static const title_profile = 'title_profile';
   static const title_crop = 'title_crop';
   static const title_comments = 'title_comments';
+  static const title_menu = 'title_menu';
+  static const title_language = 'title_language';
+  static const title_storage = 'title_storage';
   static const label_home = 'label_home';
   static const label_search = 'label_search';
   static const label_message = 'label_message';
@@ -22,6 +25,25 @@ abstract class  LocaleKeys {
   static const label_signin_with_google = 'label_signin_with_google';
   static const label_free = 'label_free';
   static const label_sconds = 'label_sconds';
+  static const label_account = 'label_account';
+  static const label_settings = 'label_settings';
+  static const label_caches = 'label_caches';
+  static const label_pick_language = 'label_pick_language';
+  static const label_language_indonesia = 'label_language_indonesia';
+  static const label_language_english = 'label_language_english';
+  static const label_logout = 'label_logout';
+  static const label_following = 'label_following';
+  static const label_followers = 'label_followers';
+  static const label_likes = 'label_likes';
+  static const label_see_more = 'label_see_more';
+  static const label_see_less = 'label_see_less';
+  static const label_views = 'label_views';
+  static const label_edit_profile = 'label_edit_profile';
+  static const label_follow = 'label_follow';
+  static const label_name = 'label_name';
+  static const label_user_name = 'label_user_name';
+  static const label_bio = 'label_bio';
+  static const label_favorite_games = 'label_favorite_games';
   static const message_delete_video = 'message_delete_video';
   static const message_wait = 'message_wait';
   static const message_write_something = 'message_write_something';
@@ -29,5 +51,10 @@ abstract class  LocaleKeys {
   static const message_uploading = 'message_uploading';
   static const message_uploaded = 'message_uploaded';
   static const message_login_success = 'message_login_success';
+  static const message_caches = 'message_caches';
+  static const message_delete_cache = 'message_delete_cache';
+  static const message_unfollow = 'message_unfollow';
+  static const message_no_post = 'message_no_post';
+  static const message_no_liked_post = 'message_no_liked_post';
 
 }

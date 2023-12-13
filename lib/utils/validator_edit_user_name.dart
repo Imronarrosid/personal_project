@@ -1,8 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-bool isCanEditUserName(Timestamp timestamp) {
+import 'get_ntp_time.dart';
+
+Future<bool> isCanEditUserName(Timestamp timestamp) async {
   // Get the current time
-  DateTime now = Timestamp.now().toDate();
+  DateTime now = await getNtpTime();
 
   // Convert Firestore timestamp to DateTime
   DateTime timestampDateTime = timestamp.toDate();
@@ -17,9 +19,9 @@ bool isCanEditUserName(Timestamp timestamp) {
   return differenceInDays >= 14;
 }
 
-int calculateDaysAgo(Timestamp timestamp) {
+Future<int> calculateDaysAgo(Timestamp timestamp) async {
   // Get the current time
-  DateTime now = Timestamp.now().toDate();
+  DateTime now = await getNtpTime();
 
   // Convert Firestore timestamp to DateTime
   DateTime timestampDateTime = timestamp.toDate();
@@ -30,9 +32,9 @@ int calculateDaysAgo(Timestamp timestamp) {
   return differenceInDays;
 }
 
-int daysUntilTwoWeeks(Timestamp timestamp) {
+Future<int> daysUntilTwoWeeks(Timestamp timestamp) async {
   // Get the current time
-  DateTime now = Timestamp.now().toDate();
+  DateTime now = await getNtpTime();
 
   // Convert Firestore timestamp to DateTime
   DateTime timestampDateTime = timestamp.toDate();

@@ -28,6 +28,7 @@ void showEditNameModal(
     showModalBottomSheet(
         backgroundColor: Colors.transparent,
         isScrollControlled: true,
+        elevation: 0,
         context: context,
         builder: (context) {
           return BlocListener<EditNameCubit, EditNameState>(
@@ -144,7 +145,7 @@ void showEditNameModal(
                               },
                             ),
                           ),
-                        )
+                        ),
                       ]),
                 ),
               ),

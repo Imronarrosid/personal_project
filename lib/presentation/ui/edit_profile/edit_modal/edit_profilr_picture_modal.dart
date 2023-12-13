@@ -12,6 +12,7 @@ showEditPPModal(BuildContext context) {
   showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
+      elevation: 0,
       builder: (_) {
         return Padding(
           padding: const EdgeInsets.all(8.0),

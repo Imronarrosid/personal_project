@@ -21,7 +21,7 @@ class LanguagePage extends StatelessWidget {
         elevation: 0,
         foregroundColor: COLOR_black_ff121212,
         backgroundColor: COLOR_white_fff5f5f5,
-        title: const Text('Bahasa'),
+        title: Text(LocaleKeys.title_language.tr()),
       ),
       body: BlocBuilder<LanguageCubit, LanguageState>(
         builder: (context, state) {
@@ -32,7 +32,7 @@ class LanguagePage extends StatelessWidget {
               SizedBox(
                 height: Dimens.DIMENS_24,
               ),
-              Text('Pilih bahasa'),
+              Text(LocaleKeys.label_pick_language.tr()),
               SizedBox(
                 height: Dimens.DIMENS_12,
               ),
@@ -47,7 +47,7 @@ class LanguagePage extends StatelessWidget {
                 onChanged: (value) {
                   _setLocale(context, value!);
                 },
-                title: Text('Indonesia'),
+                title: Text(LocaleKeys.label_language_indonesia.tr()),
               ),
               RadioListTile(
                 shape: const RoundedRectangleBorder(
@@ -60,7 +60,7 @@ class LanguagePage extends StatelessWidget {
                 onChanged: (value) {
                   _setLocale(context, value!);
                 },
-                title: Text('Inggris'),
+                title: Text(LocaleKeys.label_language_english.tr()),
               ),
             ]),
           );

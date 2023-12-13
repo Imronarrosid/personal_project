@@ -1,14 +1,14 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/foundation.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:personal_project/constant/color.dart';
 import 'package:personal_project/constant/dimens.dart';
-import 'package:personal_project/domain/model/user.dart';
 import 'package:personal_project/domain/reporsitory/auth_reposotory.dart';
 import 'package:personal_project/domain/reporsitory/user_repository.dart';
+import 'package:personal_project/presentation/l10n/stings.g.dart';
 import 'package:personal_project/presentation/router/route_utils.dart';
 import 'package:personal_project/presentation/ui/auth/bloc/auth_bloc.dart';
 
@@ -30,7 +30,7 @@ class MenuPage extends StatelessWidget {
         foregroundColor: COLOR_black_ff121212,
         backgroundColor: COLOR_white_fff5f5f5,
         elevation: 0,
-        title: Text('Menu'),
+        title: Text(LocaleKeys.title_menu.tr()),
       ),
       body: Padding(
         padding: EdgeInsets.symmetric(horizontal: Dimens.DIMENS_12),
@@ -38,7 +38,7 @@ class MenuPage extends StatelessWidget {
           SizedBox(
             height: Dimens.DIMENS_42,
           ),
-          _menuTitle('Akun'),
+          _menuTitle(LocaleKeys.label_account.tr()),
           SizedBox(
             height: Dimens.DIMENS_8,
           ),
@@ -56,7 +56,7 @@ class MenuPage extends StatelessWidget {
                     child: Icon(MdiIcons.account),
                   ),
                 ),
-                title: const Text('Akun'),
+                title: Text(LocaleKeys.label_account.tr()),
               );
             }
             return ListTile(
@@ -77,12 +77,13 @@ class MenuPage extends StatelessWidget {
               ),
               title: Text('@${userRepository.getUserName}'),
               trailing: Container(
-                padding: EdgeInsets.symmetric(horizontal: 15, vertical: 7),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 15, vertical: 7),
                 decoration: BoxDecoration(
                     color: COLOR_black_ff121212,
                     borderRadius: BorderRadius.circular(5)),
                 child: Text(
-                  'Keluar',
+                  LocaleKeys.label_logout.tr(),
                   style: TextStyle(color: COLOR_white_fff5f5f5),
                 ),
               ),
@@ -91,7 +92,7 @@ class MenuPage extends StatelessWidget {
           SizedBox(
             height: Dimens.DIMENS_16,
           ),
-          _menuTitle('Seting'),
+          _menuTitle(LocaleKeys.label_settings.tr()),
           SizedBox(
             height: Dimens.DIMENS_8,
           ),
@@ -104,7 +105,7 @@ class MenuPage extends StatelessWidget {
             ),
             tileColor: Colors.white,
             leading: Icon(MdiIcons.web),
-            title: Text('Bahasa'),
+            title: Text(LocaleKeys.title_language.tr()),
             onTap: () {
               context.push(APP_PAGE.languagePage.toPath);
             },
@@ -118,7 +119,7 @@ class MenuPage extends StatelessWidget {
             ),
             tileColor: Colors.white,
             leading: Icon(MdiIcons.database),
-            title: Text('Penyimppanan'),
+            title: Text(LocaleKeys.title_storage.tr()),
             onTap: () {
               context.push(APP_PAGE.cachesPage.toPath);
             },

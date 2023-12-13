@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -8,6 +9,7 @@ import 'package:personal_project/constant/color.dart';
 import 'package:personal_project/constant/dimens.dart';
 import 'package:personal_project/domain/model/game_fav_modal.dart';
 import 'package:personal_project/domain/model/profile_data_model.dart';
+import 'package:personal_project/presentation/l10n/stings.g.dart';
 import 'package:personal_project/presentation/router/route_utils.dart';
 import 'package:personal_project/presentation/ui/edit_profile/cubit/edit_bio_cubit.dart';
 import 'package:personal_project/presentation/ui/edit_profile/cubit/edit_profile_pict_cubit.dart';
@@ -18,37 +20,50 @@ import 'package:personal_project/presentation/ui/edit_profile/edit_modal/edit_na
 import 'package:personal_project/presentation/ui/edit_profile/edit_modal/edit_profilr_picture_modal.dart';
 import 'package:personal_project/presentation/ui/edit_profile/edit_modal/edit_user_name_modal.dart';
 import 'package:personal_project/presentation/ui/edit_profile/cubit/edit_name_cubit.dart';
-import 'package:personal_project/presentation/ui/edit_profile/edit_page/edit_game_fav_page.dart';
 
-class EditProfile extends StatelessWidget {
+class EditProfile extends StatefulWidget {
   final ProfileData data;
   const EditProfile({super.key, required this.data});
+
+  @override
+  State<EditProfile> createState() => _EditProfileState();
+}
+
+class _EditProfileState extends State<EditProfile> {
+  late Timestamp lastUpdate;
+
+  late Timestamp userNameUpdatedAt;
+
+  @override
+  void initState() {
+    lastUpdate = widget.data.updatedAt;
+    userNameUpdatedAt = widget.data.userNameUpdatedAt;
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
 
-    Timestamp lastUpdate = data.updatedAt;
-    Timestamp userNameUpdatedAt = data.userNameUpdatedAt;
     final List<Chip> chips = List<Chip>.generate(
-      data.gameFav.length,
+      widget.data.gameFav.length,
       (index) => Chip(
         avatar: CircleAvatar(
             backgroundColor: COLOR_grey,
             child: ClipRRect(
                 borderRadius: BorderRadius.circular(50),
                 child: CachedNetworkImage(
-                  imageUrl: data.gameFav[index].gameImage!,
+                  imageUrl: widget.data.gameFav[index].gameImage!,
                   fit: BoxFit.cover,
                 ))),
-        label: Text(data.gameFav[index].gameTitle!),
+        label: Text(widget.data.gameFav[index].gameTitle!),
       ),
     ).toList();
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
-        title: Text('Edit Profil'),
+        title: Text(LocaleKeys.label_edit_profile.tr()),
         foregroundColor: COLOR_black_ff121212,
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -82,7 +97,7 @@ class EditProfile extends StatelessWidget {
                               );
                             }
                             return CachedNetworkImage(
-                              imageUrl: data.photoUrl,
+                              imageUrl: widget.data.photoUrl,
                               fit: BoxFit.cover,
                               width: double.infinity,
                             );
@@ -108,21 +123,21 @@ class EditProfile extends StatelessWidget {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Nama'),
+                      Text(LocaleKeys.label_name.tr()),
                       BlocBuilder<EditNameCubit, EditNameState>(
                         builder: (context, state) {
                           if (state.status == EditNameStatus.initial) {
                             return Text(
-                              data.name,
-                              style: TextStyle(
+                              widget.data.name,
+                              style: const TextStyle(
                                   fontSize: 16, fontWeight: FontWeight.w500),
                             );
                           }
                           return Text(
                             state.status == EditNameStatus.nameEditSuccess
                                 ? state.name!
-                                : data.name,
-                            style: TextStyle(
+                                : widget.data.name,
+                            style: const TextStyle(
                                 fontSize: 16, fontWeight: FontWeight.w500),
                           );
                         },
@@ -143,7 +158,7 @@ class EditProfile extends StatelessWidget {
                                 context,
                                 state.status == EditNameStatus.nameEditSuccess
                                     ? state.name!
-                                    : data.name,
+                                    : widget.data.name,
                                 lastUpdate);
                           },
                           icon: Icon(MdiIcons.pencilOutline));
@@ -160,22 +175,22 @@ class EditProfile extends StatelessWidget {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Nama pengguna'),
+                      Text(LocaleKeys.label_user_name.tr()),
                       BlocBuilder<EditUserNameCubit, EditUserNameState>(
                         builder: (context, state) {
                           debugPrint('state ${state.status}');
                           if (state.status == EditUserNameStatus.initial) {
                             return Text(
-                              data.userName,
-                              style: TextStyle(
+                              widget.data.userName,
+                              style: const TextStyle(
                                   fontSize: 16, fontWeight: FontWeight.w500),
                             );
                           }
                           return Text(
                             state.status == EditUserNameStatus.success
                                 ? state.newUserName!
-                                : data.name,
-                            style: TextStyle(
+                                : widget.data.name,
+                            style: const TextStyle(
                                 fontSize: 16, fontWeight: FontWeight.w500),
                           );
                         },
@@ -192,8 +207,8 @@ class EditProfile extends StatelessWidget {
                       return IconButton(
                           onPressed: () {
                             showEditUserNameModal(context,
-                                userName: data.userName,
-                                lastUpdate: data.userNameUpdatedAt);
+                                userName: widget.data.userName,
+                                lastUpdate: userNameUpdatedAt);
                           },
                           icon: Icon(MdiIcons.pencilOutline));
                     },
@@ -210,16 +225,16 @@ class EditProfile extends StatelessWidget {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Bio'),
+                      Text(LocaleKeys.label_bio.tr()),
                       BlocBuilder<EditBioCubit, EditBioState>(
                         builder: (context, state) {
-                          String bio = data.bio;
+                          String bio = widget.data.bio;
                           if (state.status == EditBioStatus.succes) {
                             bio = state.bio!;
                           }
                           return Text(
                             bio,
-                            style: TextStyle(
+                            style: const TextStyle(
                                 fontSize: 16, fontWeight: FontWeight.w500),
                           );
                         },
@@ -228,7 +243,7 @@ class EditProfile extends StatelessWidget {
                   ),
                   BlocBuilder<EditBioCubit, EditBioState>(
                     builder: (_, state) {
-                      String bio = data.bio;
+                      String bio = widget.data.bio;
                       if (state.status == EditBioStatus.succes) {
                         bio = state.bio!;
                       }
@@ -251,7 +266,7 @@ class EditProfile extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Game favorit'),
+                        Text(LocaleKeys.label_favorite_games.tr()),
                         BlocBuilder<GameFavCubit, GameFavState>(
                           builder: (context, state) {
                             if (state.sattus == GameFavSattus.succes) {
@@ -283,7 +298,7 @@ class EditProfile extends StatelessWidget {
                   IconButton(
                       onPressed: () {
                         context.push(APP_PAGE.editGameFav.toPath,
-                            extra: data.gameFav);
+                            extra: widget.data.gameFav);
                       },
                       icon: Icon(MdiIcons.pencilOutline))
                 ],

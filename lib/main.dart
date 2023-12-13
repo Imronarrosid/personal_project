@@ -159,10 +159,13 @@ class _MyAppState extends State<MyApp> {
             child: MaterialApp.router(
               debugShowCheckedModeBanner: false,
               theme: ThemeData(
-                  primarySwatch: PRIMARY,
-                  useMaterial3: true,
-                  appBarTheme:
-                      const AppBarTheme(surfaceTintColor: Colors.transparent)),
+                primarySwatch: PRIMARY,
+                useMaterial3: true,
+                appBarTheme: const AppBarTheme(
+                    surfaceTintColor: Colors.transparent,
+                    scrolledUnderElevation: 0,
+                    elevation: 0),
+              ),
               locale: context.locale,
               supportedLocales: context.supportedLocales,
               localizationsDelegates: context.localizationDelegates,

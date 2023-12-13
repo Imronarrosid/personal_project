@@ -1,8 +1,10 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:personal_project/constant/color.dart';
 import 'package:personal_project/constant/dimens.dart';
+import 'package:personal_project/presentation/l10n/stings.g.dart';
 import 'package:personal_project/presentation/ui/edit_profile/cubit/edit_bio_cubit.dart';
 
 void showEditBioMpdal(BuildContext context, {required String bio}) {
@@ -10,6 +12,7 @@ void showEditBioMpdal(BuildContext context, {required String bio}) {
   showModalBottomSheet(
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
+      elevation: 0,
       context: context,
       builder: (ctx) {
         return Padding(
@@ -40,7 +43,7 @@ void showEditBioMpdal(BuildContext context, {required String bio}) {
                       height: Dimens.DIMENS_6,
                     ),
                     Text(
-                      'Bio',
+                      LocaleKeys.label_bio.tr(),
                       style:
                           TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
                     ),

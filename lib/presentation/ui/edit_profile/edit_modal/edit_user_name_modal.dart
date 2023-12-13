@@ -9,15 +9,23 @@ import 'package:personal_project/presentation/ui/edit_profile/cubit/edit_user_na
 import 'package:personal_project/utils/validator_edit_user_name.dart';
 
 void showEditUserNameModal(BuildContext context,
-    {required String userName, required Timestamp lastUpdate}) {
+    {required String userName, required Timestamp lastUpdate}) async {
   final controller = TextEditingController(text: userName);
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
+  bool isCanEdit = await isCanEditUserName(lastUpdate);
+  int daysCount = await daysUntilTwoWeeks(lastUpdate);
+
+  debugPrint(lastUpdate.toDate().toString());
+
+  if (!context.mounted) return;
 
   showModalBottomSheet(
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
       context: context,
-      builder: (ctx) {
+      elevation: 0,
+      builder: (context) {
         return Padding(
           padding:
               EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
@@ -61,7 +69,7 @@ void showEditUserNameModal(BuildContext context,
                       child: Form(
                         key: _formKey,
                         child: TextFormField(
-                          enabled: isCanEditUserName(lastUpdate),
+                          enabled: isCanEdit,
                           controller: controller,
                           validator: validateNoWhitespace,
                           onChanged: (value) {
@@ -78,22 +86,20 @@ void showEditUserNameModal(BuildContext context,
                     SizedBox(
                       height: Dimens.DIMENS_8,
                     ),
-                    isCanEditUserName(lastUpdate)
+                    isCanEdit
                         ? Text(
                             'Kamu bisa mengganti nama pengguna 14 hari sekali')
                         : Text(
-                            'Kamu bisa mengganti nama pengguna ${daysUntilTwoWeeks(lastUpdate)} hari lagi'),
+                            'Kamu bisa mengganti nama pengguna $daysCount hari lagi'),
                     SizedBox(
                       height: Dimens.DIMENS_18,
                     ),
                     Material(
-                      color: isCanEditUserName(lastUpdate)
-                          ? COLOR_black_ff121212
-                          : COLOR_grey,
+                      color: isCanEdit ? COLOR_black_ff121212 : COLOR_grey,
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(50)),
                       child: InkWell(
-                        onTap: isCanEditUserName(lastUpdate)
+                        onTap: isCanEdit
                             ? () {
                                 if (_formKey.currentState!.validate()) {
                                   BlocProvider.of<EditUserNameCubit>(context)
@@ -128,7 +134,7 @@ void showEditUserNameModal(BuildContext context,
                               return Text(
                                 'Simpan',
                                 style: TextStyle(
-                                    color: isCanEditUserName(lastUpdate)
+                                    color: isCanEdit
                                         ? COLOR_white_fff5f5f5
                                         : COLOR_black_ff121212),
                               );
