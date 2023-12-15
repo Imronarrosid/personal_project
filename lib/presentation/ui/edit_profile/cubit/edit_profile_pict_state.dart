@@ -4,9 +4,9 @@ enum EditProfilePicStatus { initial, loading, error, success }
 
 class EditProfilePictState extends Equatable {
   final EditProfilePicStatus status;
-  final File? imageFile;
-  const EditProfilePictState({required this.status, this.imageFile});
+  final String? imageUrl;
+  const EditProfilePictState({required this.status, this.imageUrl});
 
   @override
-  List<Object?> get props => [status, imageFile];
+  List<Object?> get props => [status, imageUrl];
 }

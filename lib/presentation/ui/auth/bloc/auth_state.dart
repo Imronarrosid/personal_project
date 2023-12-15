@@ -9,16 +9,19 @@ enum AuthStatus {
 
 class AuthState extends Equatable {
   final AuthStatus status;
-  final String? uid;
+  final String? uid, name, userName, photoURL;
   final String? error;
   const AuthState({
     this.error,
     this.uid,
+    this.name,
+    this.userName,
+    this.photoURL,
     required this.status,
   });
 
   @override
-  List<Object?> get props => [status, uid];
+  List<Object?> get props => [status, uid, name, userName, photoURL];
 }
 
 // final class Authenticated extends AuthState {

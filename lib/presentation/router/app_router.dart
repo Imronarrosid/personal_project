@@ -124,8 +124,8 @@ class AppRouter {
         path: APP_PAGE.profile.toPath,
         name: APP_PAGE.profile.toName,
         builder: (context, state) {
-          String uid = state.extra as String;
-          return ProfilePage(uid: uid);
+          ProfilePayload data = state.extra as ProfilePayload;
+          return ProfilePage(payload: data);
         },
       ),
       GoRoute(

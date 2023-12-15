@@ -21,3 +21,17 @@ class ProfileData {
       required this.gameFav,
       required this.gameFavoritesId});
 }
+
+class ProfilePayload {
+  final String uid, name, userName, photoURL;
+  final Timestamp? nameUpdatedAt, userNameUpdatedAt;
+
+  ProfilePayload({
+    required this.uid,
+    required this.name,
+    required this.userName,
+    required this.photoURL,
+    this.nameUpdatedAt,
+    this.userNameUpdatedAt,
+  });
+}

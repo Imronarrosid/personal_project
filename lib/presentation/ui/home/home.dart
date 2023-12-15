@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:camera/camera.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -8,6 +10,7 @@ import 'package:go_router/go_router.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:personal_project/constant/color.dart';
 import 'package:personal_project/constant/dimens.dart';
+import 'package:personal_project/domain/model/profile_data_model.dart';
 import 'package:personal_project/domain/reporsitory/auth_reposotory.dart';
 import 'package:personal_project/domain/reporsitory/user_repository.dart';
 import 'package:personal_project/domain/services/app/app_service.dart';
@@ -52,8 +55,11 @@ class _HomePageState extends State<HomePage> {
           .doc(currentUser.uid)
           .get();
 
+      userRepository.name = user['name'];
       userRepository.photoUrl = user['photoUrl'];
       userRepository.username = user['userName'];
+      userRepository.nameUpdated = user['updatedAt'];
+      userRepository.ueserNameUpdated = user['userNameUpdatedAt'];
     }
   }
 

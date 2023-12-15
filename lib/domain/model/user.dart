@@ -13,6 +13,7 @@ class User extends Equatable {
   /// {@macro user}
   const User(
       {this.createdAt,
+      this.userNameUpdatedAt,
       required this.id,
       this.email,
       this.name,
@@ -54,6 +55,8 @@ class User extends Equatable {
   /// User [Role].
   final Role? role;
 
+  final Timestamp? userNameUpdatedAt;
+
   /// Empty user which represents an unauthenticated user.
   static const empty = User(id: '');
 
@@ -84,7 +87,8 @@ class User extends Equatable {
         createdAt: snap['createdAt'],
         updatedAt: snap['updatedAt'],
         searchKey: snap['searchKey'],
-        lastSeen: snap['lastSeen']);
+        lastSeen: snap['lastSeen'],
+        userNameUpdatedAt: snap['userNameUpdatedAt']);
   }
 
   @override

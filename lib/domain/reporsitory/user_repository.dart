@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -19,14 +20,37 @@ class UserRepository implements UserUseCaseType {
     });
   }
 
+  String _name = '';
   String _userName = '';
   String _photoURL = '';
+  Timestamp _nameUpdated = Timestamp.now();
+  Timestamp _userNameUpdated = Timestamp.now();
 
+  set name(String name) => _name = name;
   set username(String userName) => _userName = userName;
   set photoUrl(String photoURL) => _photoURL = photoURL;
+  set nameUpdated(Timestamp updated) => _nameUpdated = updated;
+  set ueserNameUpdated(Timestamp updated) => _userNameUpdated = updated;
 
+  String get getName => _name;
   String get getUserName => _userName;
   String get getPhotoURL => _photoURL;
+  Timestamp get getNameUpdated => _nameUpdated;
+  Timestamp get getUserNameupdatedAt => _userNameUpdated;
+
+  Future<User> getUserData1(String uid) async {
+    final String? uid = firebaseAuth.currentUser?.uid;
+
+    final user = await firebaseFirestore.collection('users').doc(uid).get();
+
+    _name = user['name'];
+    _photoURL = user['photoUrl'];
+    _userName = user['userName'];
+    _nameUpdated = user['updatedAt'];
+    _userNameUpdated = user['userNameUpdatedAt'];
+
+    return User.fromSnap(user);
+  }
 
   @override
   Future<UserData> getUserData(String uid) async {
@@ -91,6 +115,66 @@ class UserRepository implements UserUseCaseType {
     return UserData.fromMap(user);
   }
 
+  Future<bool> isFollowing(String uid) async {
+    bool isFollowing = false;
+    try {
+      await firebaseFirestore
+          .collection('users')
+          .doc(uid)
+          .collection('followers')
+          .doc(firebaseAuth.currentUser!.uid)
+          .get()
+          .then((value) {
+        if (value.exists) {
+          isFollowing = true;
+        } else {
+          isFollowing = false;
+        }
+      });
+      return isFollowing;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<int> getFollowingCount(uid) async {
+    int following = 0;
+    var followingDoc = await firebaseFirestore
+        .collection('users')
+        .doc(uid)
+        .collection('following')
+        .get();
+
+    following = followingDoc.docs.length;
+
+    return following;
+  }
+
+  Future<int> getFollowerCount(String uid) async {
+    int followers = 0;
+    var followerDoc = await firebaseFirestore
+        .collection('users')
+        .doc(uid)
+        .collection('followers')
+        .get();
+    followers = followerDoc.docs.length;
+    return followers;
+  }
+
+  Future<int> getLikesCount(String uid) async {
+    int likes = 0;
+
+    var myVideos = await firebaseFirestore
+        .collection('videos')
+        .where('uid', isEqualTo: uid)
+        .get();
+
+    for (var item in myVideos.docs) {
+      likes += (item.data()['likes'] as List).length;
+    }
+    return likes;
+  }
+
   @override
   Future<void> followUser(
       {required String currentUserUid, required String uid}) async {
@@ -132,6 +216,11 @@ class UserRepository implements UserUseCaseType {
           .delete();
       // _user.update('followers', (value) => (int.parse(value) - 1).toString());
     }
+  }
+
+  Future<Stream> getUser(String uid) async {
+    Stream data = firebaseFirestore.collection('users').doc(uid).snapshots();
+    return data;
   }
 
   @override
@@ -217,7 +306,7 @@ class UserRepository implements UserUseCaseType {
     }
   }
 
-  Future<void> editProfilePict(File imageFile) async {
+  Future<String> editProfilePict(File imageFile) async {
     try {
       Reference ref = firebaseStorage
           .ref()
@@ -230,6 +319,7 @@ class UserRepository implements UserUseCaseType {
           .collection('users')
           .doc(firebaseAuth.currentUser!.uid)
           .update({'photoUrl': downloaUrl});
+      return downloaUrl;
     } catch (e) {
       rethrow;
     }

@@ -5,14 +5,20 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:personal_project/constant/color.dart';
+import 'package:personal_project/domain/model/profile_data_model.dart';
 import 'package:personal_project/domain/reporsitory/search_repository.dart';
 import 'package:personal_project/presentation/l10n/stings.g.dart';
 import 'package:personal_project/presentation/router/route_utils.dart';
 import 'package:personal_project/presentation/ui/search/bloc/search_bloc.dart';
 
-class SearchPage extends StatelessWidget {
-  SearchPage({super.key});
+class SearchPage extends StatefulWidget {
+  const SearchPage({super.key});
 
+  @override
+  State<SearchPage> createState() => _SearchPageState();
+}
+
+class _SearchPageState extends State<SearchPage> {
   final TextEditingController _textEditingController = TextEditingController();
 
   @override
@@ -72,8 +78,14 @@ class SearchPage extends StatelessWidget {
                           final result = state.results![index];
                           return ListTile(
                             onTap: () {
+                              debugPrint('photo${result.photo}');
                               context.push(APP_PAGE.profile.toPath,
-                                  extra: result.id);
+                                  extra: ProfilePayload(
+                                    uid: result.id,
+                                    name: result.name!,
+                                    userName: result.userName!,
+                                    photoURL: result.photo!,
+                                  ));
                               debugPrint('profile');
                             },
                             leading: CircleAvatar(

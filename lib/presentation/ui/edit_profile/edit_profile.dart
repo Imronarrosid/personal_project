@@ -89,8 +89,8 @@ class _EditProfileState extends State<EditProfile> {
                             EditProfilePictState>(
                           builder: (context, state) {
                             if (state.status == EditProfilePicStatus.success) {
-                              return Image.file(
-                                state.imageFile!,
+                              return CachedNetworkImage(
+                                imageUrl: state.imageUrl!,
                                 width: 90,
                                 height: 90,
                                 fit: BoxFit.cover,

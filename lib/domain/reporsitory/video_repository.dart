@@ -350,7 +350,7 @@ class VideoRepository implements VideoUseCaseType {
 
   Future<void> addViewsCount(String postId) async {
     Map<String, dynamic> views = {
-      'uid': firebaseAuth.currentUser!.uid,
+      'uid': firebaseAuth.currentUser?.uid ?? 'notAuthenticated',
       'viewsAt': Timestamp.now()
     };
     debugPrint('postId $postId');

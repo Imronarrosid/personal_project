@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:easy_localization/easy_localization.dart' as localization;
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -14,6 +13,7 @@ import 'package:personal_project/constant/dimens.dart';
 import 'package:personal_project/data/repository/user_video_paging_repository.dart';
 import 'package:personal_project/domain/model/game_fav_modal.dart';
 import 'package:personal_project/domain/model/profile_data_model.dart';
+import 'package:personal_project/domain/model/user.dart';
 import 'package:personal_project/domain/model/user_data_model.dart';
 import 'package:personal_project/domain/model/video_model.dart';
 import 'package:personal_project/domain/reporsitory/auth_reposotory.dart';
@@ -37,8 +37,8 @@ import 'package:personal_project/presentation/ui/profile/cubit/profile_cubit.dar
 import 'package:personal_project/presentation/ui/profile/cubit/refresh_profile_cubit.dart';
 
 class ProfilePage extends StatefulWidget {
-  final String? uid;
-  const ProfilePage({super.key, this.uid});
+  final ProfilePayload? payload;
+  const ProfilePage({super.key, this.payload});
 
   @override
   State<ProfilePage> createState() => _ProfilePageState();
@@ -49,6 +49,32 @@ class _ProfilePageState extends State<ProfilePage> {
   String userBio = '';
   bool isToEditProfile = false;
   bool isToMenu = true;
+
+  String? title, userName, photoURL;
+
+  Future<User>? futureUserData1;
+
+  @override
+  void initState() {
+    if (widget.payload != null) {
+      title = widget.payload!.name;
+      userName = '@${widget.payload!.userName}';
+      photoURL = widget.payload!.photoURL;
+      debugPrint('photo ${photoURL}');
+    } else {
+      final UserRepository repository =
+          RepositoryProvider.of<UserRepository>(context);
+
+      final authRepository = RepositoryProvider.of<AuthRepository>(context);
+      if (widget.payload == null && authRepository.currentUser != null) {
+        futureUserData1 =
+            repository.getUserData1(authRepository.currentUser!.uid);
+      }
+    }
+
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     debugPrint('refresh');
@@ -69,416 +95,512 @@ class _ProfilePageState extends State<ProfilePage> {
         )
       ],
       child: Builder(builder: (context) {
-        return BlocBuilder<AuthBloc, AuthState>(
-          builder: (context, authState) {
-            debugPrint(authState.toString());
-            if (_isAuthenticated(authState)) {
-              return FutureBuilder(
-                  future:
-                      userRepository.getUserData(widget.uid ?? authState.uid!),
-                  builder: (context, snapshot) {
-                    var data = snapshot.data;
-                    if (!snapshot.hasData) {
-                      return Scaffold(
-                        backgroundColor: COLOR_white_fff5f5f5,
-                        appBar: AppBar(
-                          backgroundColor: Colors.transparent,
-                          foregroundColor: COLOR_black_ff121212,
-                          elevation: 0,
-                          actions: [
-                            (_isLogedUser(authState))
-                                ? IconButton(
-                                    onPressed: () async {
-                                      if (isToMenu) {
-                                        isToMenu = false;
-                                        await context.push(
-                                          APP_PAGE.menu.toPath,
-                                        );
-                                      }
-                                      isToMenu = true;
-                                    },
-                                    icon: Icon(MdiIcons.menu))
-                                : Container()
-                          ],
-                        ),
-                        body: Container(
-                            width: size.width,
-                            height: size.height,
-                            color: COLOR_white_fff5f5f5,
-                            alignment: Alignment.center,
-                            child: const CircularProgressIndicator()),
-                      );
-                    }
+        return BlocListener<AuthBloc, AuthState>(
+          listener: (context, state) {
+            //execute when first time login
+            if (state.status == AuthStatus.authenticated) {
+              final UserRepository repository =
+                  RepositoryProvider.of<UserRepository>(context);
 
-                    return Scaffold(
-                      backgroundColor: COLOR_white_fff5f5f5,
-                      appBar: AppBar(
-                        title: BlocBuilder<EditNameCubit, EditNameState>(
-                          builder: (context, state) {
-                            if (state.status ==
-                                    EditNameStatus.nameEditSuccess &&
-                                data!.uid == authRepository.currentUser!.uid) {
-                              return Text(state.name!);
-                            }
-                            return Text(data!.name);
-                          },
-                        ),
-                        actions: [
-                          (_isLogedUser(authState))
-                              ? IconButton(
-                                  onPressed: () async {
-                                    if (isToMenu) {
-                                      isToMenu = false;
-                                      await context.push(APP_PAGE.menu.toPath,
-                                          extra: data!.uid);
-                                    }
-                                    isToMenu = true;
-                                  },
-                                  icon: Icon(MdiIcons.menu))
-                              : Container()
-                        ],
-                        backgroundColor: Colors.transparent,
-                        elevation: 0,
-                        foregroundColor: Colors.black,
-                      ),
-                      body: SizedBox(
-                          width: size.width,
-                          child: DefaultTabController(
-                            length: 2,
-                            child: RefreshIndicator(
-                              notificationPredicate: (notification) {
-                                // with NestedScrollView local(depth == 2) OverscrollNotification are not sent
-                                if (notification is OverscrollNotification ||
-                                    Platform.isIOS) {
-                                  return notification.depth == 2;
-                                }
-                                return notification.depth == 0;
-                              },
-                              onRefresh: () => Future.sync(() =>
-                                  BlocProvider.of<RefreshProfileCubit>(context)
-                                      .refreshProfile()),
-                              child: NestedScrollView(
-                                headerSliverBuilder:
-                                    (context, innerBoxIsScrolled) {
-                                  return [
-                                    SliverToBoxAdapter(
-                                      child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            topSectionView(data!),
-                                            SizedBox(
-                                              height: Dimens.DIMENS_8,
-                                            ),
-                                            bioSectionView(
-                                                uid: widget.uid ??
-                                                    authState.uid!),
-                                            gameFavView(
-                                                widget.uid ?? authState.uid!),
-                                            SizedBox(
-                                              height: Dimens.DIMENS_8,
-                                            ),
-                                            if ((widget.uid ?? authState.uid) ==
-                                                authRepository.currentUser!.uid)
-                                              Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.center,
-                                                children: [
-                                                  SizedBox(
-                                                    width: Dimens.DIMENS_12,
-                                                  ),
-                                                  Expanded(
-                                                    flex: 2,
-                                                    child: Material(
-                                                      color: COLOR_grey,
-                                                      shape:
-                                                          RoundedRectangleBorder(
-                                                              borderRadius:
-                                                                  BorderRadius
-                                                                      .circular(
-                                                                          5)),
-                                                      child: InkWell(
-                                                        borderRadius:
-                                                            BorderRadius
-                                                                .circular(5),
-                                                        onTap: () =>
-                                                            toEditProfile(
-                                                                data, context),
-                                                        child: Container(
-                                                          height:
-                                                              Dimens.DIMENS_34,
-                                                          alignment:
-                                                              Alignment.center,
-                                                          decoration:
-                                                              BoxDecoration(
-                                                            color: Colors
-                                                                .transparent,
-                                                            borderRadius:
-                                                                BorderRadius
-                                                                    .circular(
-                                                                        5),
-                                                          ),
-                                                          child: Text(
-                                                            LocaleKeys
-                                                                .label_edit_profile
-                                                                .tr(),
-                                                            textAlign: TextAlign
-                                                                .center,
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  SizedBox(
-                                                    width: Dimens.DIMENS_6,
-                                                  ),
-                                                  Expanded(
-                                                    child: Container(
-                                                        height:
-                                                            Dimens.DIMENS_34,
-                                                        decoration: BoxDecoration(
-                                                            color: COLOR_grey,
-                                                            borderRadius:
-                                                                BorderRadius
-                                                                    .circular(
-                                                                        5)),
-                                                        child: Icon(MdiIcons
-                                                            .accountPlus)),
-                                                  ),
-                                                  SizedBox(
-                                                    width: Dimens.DIMENS_12,
-                                                  ),
-                                                ],
-                                              )
-                                            else
-                                              Row(
-                                                children: [
-                                                  SizedBox(
-                                                    width: Dimens.DIMENS_12,
-                                                  ),
-                                                  BlocBuilder<FollowCubit,
-                                                      FollowState>(
-                                                    builder: (context, state) {
-                                                      bool isFollowig;
-                                                      debugPrint(
-                                                          'follow state $state');
-                                                      if (state is Followed) {
-                                                        isFollowig = true;
-                                                      } else if (state
-                                                          is UnFollowed) {
-                                                        isFollowig = false;
-                                                      } else {
-                                                        isFollowig =
-                                                            data.isFollowig;
-                                                      }
-
-                                                      return Expanded(
-                                                        child: Material(
-                                                          shape: RoundedRectangleBorder(
-                                                              borderRadius:
-                                                                  BorderRadius
-                                                                      .circular(
-                                                                          5)),
-                                                          color: isFollowig
-                                                              ? COLOR_grey
-                                                              : COLOR_black_ff121212,
-                                                          child: InkWell(
-                                                            onTap: () {
-                                                              if (isFollowig) {
-                                                                showDialog(
-                                                                    context:
-                                                                        context,
-                                                                    builder:
-                                                                        (_) {
-                                                                      return AlertDialog(
-                                                                        title: Text(LocaleKeys
-                                                                            .message_unfollow
-                                                                            .tr()),
-                                                                        actions: [
-                                                                          TextButton(
-                                                                            onPressed:
-                                                                                () {
-                                                                              context.pop();
-                                                                            },
-                                                                            child:
-                                                                                Text(LocaleKeys.label_cancel.tr()),
-                                                                          ),
-                                                                          TextButton(
-                                                                            onPressed:
-                                                                                () {
-                                                                              BlocProvider.of<FollowCubit>(context).followButtonHandle(currentUserUid: authRepository.currentUser!.uid, uid: widget.uid ?? authState.uid!, stateFromDatabase: data.isFollowig);
-                                                                              context.pop();
-                                                                            },
-                                                                            child:
-                                                                                Text(LocaleKeys.label_oke.tr()),
-                                                                          )
-                                                                        ],
-                                                                      );
-                                                                    });
-                                                              } else {
-                                                                BlocProvider.of<FollowCubit>(context).followButtonHandle(
-                                                                    currentUserUid:
-                                                                        authRepository
-                                                                            .currentUser!
-                                                                            .uid,
-                                                                    uid: widget
-                                                                        .uid!,
-                                                                    stateFromDatabase:
-                                                                        data.isFollowig);
-                                                              }
-                                                            },
-                                                            borderRadius:
-                                                                BorderRadius
-                                                                    .circular(
-                                                                        5),
-                                                            child: Container(
-                                                              height: Dimens
-                                                                  .DIMENS_34,
-                                                              alignment:
-                                                                  Alignment
-                                                                      .center,
-                                                              decoration: BoxDecoration(
-                                                                  color: Colors
-                                                                      .transparent,
-                                                                  borderRadius:
-                                                                      BorderRadius
-                                                                          .circular(
-                                                                              5)),
-                                                              child: Text(
-                                                                isFollowig
-                                                                    ? LocaleKeys
-                                                                        .label_following
-                                                                        .tr()
-                                                                    : LocaleKeys
-                                                                        .label_follow
-                                                                        .tr(),
-                                                                textAlign:
-                                                                    TextAlign
-                                                                        .center,
-                                                                style: TextStyle(
-                                                                    color: isFollowig
-                                                                        ? COLOR_black_ff121212
-                                                                        : COLOR_white_fff5f5f5),
-                                                              ),
-                                                            ),
-                                                          ),
-                                                        ),
-                                                      );
-                                                    },
-                                                  ),
-                                                  SizedBox(
-                                                    width: Dimens.DIMENS_6,
-                                                  ),
-                                                  Expanded(
-                                                    child: Container(
-                                                      height: Dimens.DIMENS_34,
-                                                      alignment:
-                                                          Alignment.center,
-                                                      decoration: BoxDecoration(
-                                                          color: COLOR_grey,
-                                                          borderRadius:
-                                                              BorderRadius
-                                                                  .circular(5)),
-                                                      child: Text(
-                                                        LocaleKeys.label_message
-                                                            .tr(),
-                                                        textAlign:
-                                                            TextAlign.center,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  SizedBox(
-                                                    width: Dimens.DIMENS_12,
-                                                  ),
-                                                ],
-                                              ),
-                                            SizedBox(
-                                              height: Dimens.DIMENS_8,
-                                            )
-                                          ]),
-                                    ),
-                                    SliverAppBar(
-                                      toolbarHeight: 0,
-                                      floating: false,
-                                      pinned: true,
-                                      elevation: 0,
-                                      backgroundColor: COLOR_white_fff5f5f5,
-                                      bottom: TabBar(
-                                        labelColor: COLOR_black_ff121212,
-                                        indicatorColor: COLOR_black_ff121212,
-                                        indicatorSize: TabBarIndicatorSize.tab,
-                                        indicatorWeight: 2,
-                                        tabs: [
-                                          Tab(
-                                            icon: Icon(MdiIcons.folderPlay),
-                                          ),
-                                          Tab(
-                                            icon: Icon(MdiIcons.heart),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ];
-                                },
-                                body: TabBarView(
-                                  children: [
-                                    // Content for Tab 1
-                                    KeepAlivePage(
-                                      child: VideoListView(
-                                        uid: widget.uid ??
-                                            authRepository.currentUser!.uid,
-                                        from: From.user,
-                                      ),
-                                    ),
-                                    // Content for Tab 2
-                                    KeepAlivePage(
-                                      child: VideoListView(
-                                        uid: widget.uid ??
-                                            authRepository.currentUser!.uid,
-                                        from: From.likes,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          )),
-                    );
-                  });
+              final authRepository =
+                  RepositoryProvider.of<AuthRepository>(context);
+              if (widget.payload == null &&
+                  authRepository.currentUser != null) {
+                futureUserData1 =
+                    repository.getUserData1(authRepository.currentUser!.uid);
+              }
             }
-            return Scaffold(
-                backgroundColor: COLOR_white_fff5f5f5,
-                appBar: AppBar(
-                  backgroundColor: COLOR_white_fff5f5f5,
-                  foregroundColor: COLOR_black_ff121212,
-                  elevation: 0,
-                  title: Text(LocaleKeys.title_profile.tr()),
-                ),
-                body: const NotAuthenticatedPage());
           },
+          child: Scaffold(
+            backgroundColor: COLOR_white_fff5f5f5,
+            appBar: AppBar(
+              backgroundColor: Colors.transparent,
+              foregroundColor: COLOR_black_ff121212,
+              elevation: 0,
+              title: BlocBuilder<AuthBloc, AuthState>(
+                builder: (context, state) {
+                  if (state.status == AuthStatus.notAuthenticated &&
+                      widget.payload == null) {
+                    return Text(LocaleKeys.title_profile.tr());
+                  }
+                  return FutureBuilder(
+                      future: futureUserData1,
+                      builder: (context, snapshot) {
+                        title = snapshot.data?.name;
+
+                        // if (widget.payload?.name != null) {
+                        //   title = widget.payload!.name;
+                        // }
+
+                        // if (!snapshot.hasData && widget.payload?.name == null ||
+                        //     authRepository.currentUser == null) {
+                        //   return Text(LocaleKeys.title_profile.tr());
+                        // }
+
+                        if (snapshot.hasData && widget.payload == null) {
+                          return _buildTitle(title);
+                        } else if (widget.payload != null) {
+                          return Text(widget.payload!.name);
+                        }
+                        return Text(LocaleKeys.title_profile.tr());
+                      });
+                },
+              ),
+              actions: <Widget>[
+                BlocBuilder<AuthBloc, AuthState>(
+                  builder: (context, state) {
+                    return _isShowMenuBtn(authRepository, state)
+                        ? IconButton(
+                            onPressed: () async {
+                              if (isToMenu) {
+                                isToMenu = false;
+                                await context.push(
+                                  APP_PAGE.menu.toPath,
+                                );
+                              }
+                              isToMenu = true;
+                            },
+                            icon: Icon(MdiIcons.menu))
+                        : Container();
+                  },
+                )
+              ],
+            ),
+            body: BlocBuilder<AuthBloc, AuthState>(
+              builder: (context, authState) {
+                debugPrint(authState.toString());
+
+                if (!_isAuthenticated(authState) && widget.payload == null) {
+                  return const NotAuthenticatedPage();
+                }
+
+                return _profileBody(size, context, authState, authRepository);
+
+                // if (_isAuthenticated(authState)) {
+                //   return FutureBuilder(
+                //       future: userRepository
+                //           .getUserData(widget.uid ?? authState.uid!),
+                //       builder: (context, snapshot) {
+                //         var data = snapshot.data;
+                //         if (!snapshot.hasData) {
+                //           return Scaffold(
+                //             backgroundColor: COLOR_white_fff5f5f5,
+                //             appBar: AppBar(
+                //               backgroundColor: Colors.transparent,
+                //               foregroundColor: COLOR_black_ff121212,
+                //               elevation: 0,
+                //               actions: [
+                //                 (_isLogedUser(authState))
+                //                     ? IconButton(
+                //                         onPressed: () async {
+                //                           if (isToMenu) {
+                //                             isToMenu = false;
+                //                             await context.push(
+                //                               APP_PAGE.menu.toPath,
+                //                             );
+                //                           }
+                //                           isToMenu = true;
+                //                         },
+                //                         icon: Icon(MdiIcons.menu))
+                //                     : Container()
+                //               ],
+                //             ),
+                //             body: Container(
+                //                 width: size.width,
+                //                 height: size.height,
+                //                 color: COLOR_white_fff5f5f5,
+                //                 alignment: Alignment.center,
+                //                 child: const CircularProgressIndicator()),
+                //           );
+                //         }
+
+                //         return Scaffold(
+                //           backgroundColor: COLOR_white_fff5f5f5,
+                //           appBar: AppBar(
+                //             title: BlocBuilder<EditNameCubit, EditNameState>(
+                //               builder: (context, state) {
+                //                 if (state.status ==
+                //                         EditNameStatus.nameEditSuccess &&
+                //                     data!.uid ==
+                //                         authRepository.currentUser!.uid) {
+                //                   return Text(state.name!);
+                //                 }
+                //                 return Text(data!.name);
+                //               },
+                //             ),
+                //             actions: [
+                //               (_isLogedUser(authState))
+                //                   ? IconButton(
+                //                       onPressed: () async {
+                //                         if (isToMenu) {
+                //                           isToMenu = false;
+                //                           await context.push(APP_PAGE.menu.toPath,
+                //                               extra: data!.uid);
+                //                         }
+                //                         isToMenu = true;
+                //                       },
+                //                       icon: Icon(MdiIcons.menu))
+                //                   : Container()
+                //             ],
+                //             backgroundColor: Colors.transparent,
+                //             elevation: 0,
+                //             foregroundColor: Colors.black,
+                //           ),
+                //           body: _profileBody(
+                //               size, context, data, authState, authRepository),
+                //         );
+                //       });
+                // }
+                // return Scaffold(
+                //     backgroundColor: COLOR_white_fff5f5f5,
+                //     appBar: AppBar(
+                //       backgroundColor: COLOR_white_fff5f5f5,
+                //       foregroundColor: COLOR_black_ff121212,
+                //       elevation: 0,
+                //       title: Text(LocaleKeys.title_profile.tr()),
+                //     ),
+                //     body: const NotAuthenticatedPage());
+              },
+            ),
+          ),
         );
       }),
     );
   }
 
+  BlocBuilder<EditNameCubit, EditNameState> _buildTitle(String? title) {
+    return BlocBuilder<EditNameCubit, EditNameState>(
+      builder: (context, state) {
+        if (state.status == EditNameStatus.nameEditSuccess &&
+            widget.payload == null) {
+          title = state.name;
+        }
+        return Text(title!);
+      },
+    );
+  }
+
+  SizedBox _profileBody(Size size, BuildContext context, AuthState authState,
+      AuthRepository authRepository) {
+    final userRepository = RepositoryProvider.of<UserRepository>(context);
+    return SizedBox(
+        width: size.width,
+        child: DefaultTabController(
+          length: 2,
+          child: RefreshIndicator(
+            notificationPredicate: (notification) {
+              // with NestedScrollView local(depth == 2) OverscrollNotification are not sent
+              if (notification is OverscrollNotification || Platform.isIOS) {
+                return notification.depth == 2;
+              }
+              return notification.depth == 0;
+            },
+            onRefresh: () => Future.sync(() =>
+                BlocProvider.of<RefreshProfileCubit>(context).refreshProfile()),
+            child: NestedScrollView(
+              headerSliverBuilder: (context, innerBoxIsScrolled) {
+                return [
+                  SliverToBoxAdapter(
+                    child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          topSectionView(authState),
+                          SizedBox(
+                            height: Dimens.DIMENS_8,
+                          ),
+                          bioSectionView(
+                              uid: widget.payload?.uid ?? authState.uid!),
+                          gameFavView(widget.payload?.uid ?? authState.uid!),
+                          SizedBox(
+                            height: Dimens.DIMENS_8,
+                          ),
+                          if ((widget.payload?.uid ?? authState.uid) ==
+                              authRepository.currentUser?.uid)
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                SizedBox(
+                                  width: Dimens.DIMENS_12,
+                                ),
+                                Expanded(
+                                  flex: 2,
+                                  child: Material(
+                                    color: COLOR_grey,
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(5)),
+                                    child: InkWell(
+                                      borderRadius: BorderRadius.circular(5),
+                                      onTap: () => toEditProfile(context),
+                                      child: Container(
+                                        height: Dimens.DIMENS_34,
+                                        alignment: Alignment.center,
+                                        decoration: BoxDecoration(
+                                          color: Colors.transparent,
+                                          borderRadius:
+                                              BorderRadius.circular(5),
+                                        ),
+                                        child: Text(
+                                          LocaleKeys.label_edit_profile.tr(),
+                                          textAlign: TextAlign.center,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(
+                                  width: Dimens.DIMENS_6,
+                                ),
+                                Expanded(
+                                  child: Container(
+                                      height: Dimens.DIMENS_34,
+                                      decoration: BoxDecoration(
+                                          color: COLOR_grey,
+                                          borderRadius:
+                                              BorderRadius.circular(5)),
+                                      child: Icon(MdiIcons.accountPlus)),
+                                ),
+                                SizedBox(
+                                  width: Dimens.DIMENS_12,
+                                ),
+                              ],
+                            )
+                          else
+                            Row(
+                              children: [
+                                SizedBox(
+                                  width: Dimens.DIMENS_12,
+                                ),
+                                FutureBuilder<bool>(
+                                    future: userRepository
+                                        .isFollowing(widget.payload!.uid),
+                                    builder: (context,
+                                        AsyncSnapshot<bool> snapshot) {
+                                      bool? isFollowing = snapshot.data;
+                                      if (!snapshot.hasData) {
+                                        return Expanded(
+                                          child: Container(
+                                            height: Dimens.DIMENS_34,
+                                            alignment: Alignment.center,
+                                            decoration: BoxDecoration(
+                                              color: COLOR_black_ff121212
+                                                  .withOpacity(0.5),
+                                              borderRadius:
+                                                  BorderRadius.circular(5),
+                                            ),
+                                            child: SizedBox(
+                                                width: Dimens.DIMENS_18,
+                                                height: Dimens.DIMENS_18,
+                                                child:
+                                                    CircularProgressIndicator(
+                                                  color: COLOR_white_fff5f5f5,
+                                                )),
+                                          ),
+                                        );
+                                      }
+
+                                      return BlocBuilder<FollowCubit,
+                                          FollowState>(
+                                        builder: (context, state) {
+                                          debugPrint('follow state $state');
+                                          if (state is Followed) {
+                                            isFollowing = true;
+                                          } else if (state is UnFollowed) {
+                                            isFollowing = false;
+                                          } else {
+                                            isFollowing = isFollowing;
+                                          }
+
+                                          return Expanded(
+                                            child: Material(
+                                              shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(5)),
+                                              color: isFollowing!
+                                                  ? COLOR_grey
+                                                  : COLOR_black_ff121212,
+                                              child: InkWell(
+                                                onTap: () {
+                                                  if (isFollowing!) {
+                                                    showDialog(
+                                                        context: context,
+                                                        builder: (_) {
+                                                          return AlertDialog(
+                                                            title: Text(LocaleKeys
+                                                                .message_unfollow
+                                                                .tr()),
+                                                            actions: [
+                                                              TextButton(
+                                                                onPressed: () {
+                                                                  context.pop();
+                                                                },
+                                                                child: Text(
+                                                                    LocaleKeys
+                                                                        .label_cancel
+                                                                        .tr()),
+                                                              ),
+                                                              TextButton(
+                                                                onPressed: () {
+                                                                  BlocProvider.of<FollowCubit>(context).followButtonHandle(
+                                                                      currentUserUid: authRepository
+                                                                          .currentUser!
+                                                                          .uid,
+                                                                      uid: widget
+                                                                              .payload
+                                                                              ?.uid ??
+                                                                          authState
+                                                                              .uid!,
+                                                                      stateFromDatabase:
+                                                                          isFollowing!);
+                                                                  context.pop();
+                                                                },
+                                                                child: Text(
+                                                                    LocaleKeys
+                                                                        .label_oke
+                                                                        .tr()),
+                                                              )
+                                                            ],
+                                                          );
+                                                        });
+                                                  } else {
+                                                    BlocProvider.of<
+                                                                FollowCubit>(
+                                                            context)
+                                                        .followButtonHandle(
+                                                            currentUserUid:
+                                                                authRepository
+                                                                    .currentUser!
+                                                                    .uid,
+                                                            uid: widget
+                                                                .payload!.uid,
+                                                            stateFromDatabase:
+                                                                isFollowing!);
+                                                  }
+                                                },
+                                                borderRadius:
+                                                    BorderRadius.circular(5),
+                                                child: Container(
+                                                  height: Dimens.DIMENS_34,
+                                                  alignment: Alignment.center,
+                                                  decoration: BoxDecoration(
+                                                      color: Colors.transparent,
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              5)),
+                                                  child: Text(
+                                                    isFollowing!
+                                                        ? LocaleKeys
+                                                            .label_following
+                                                            .tr()
+                                                        : LocaleKeys
+                                                            .label_follow
+                                                            .tr(),
+                                                    textAlign: TextAlign.center,
+                                                    style: TextStyle(
+                                                        color: isFollowing!
+                                                            ? COLOR_black_ff121212
+                                                            : COLOR_white_fff5f5f5),
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                      );
+                                    }),
+                                SizedBox(
+                                  width: Dimens.DIMENS_6,
+                                ),
+                                Expanded(
+                                  child: Container(
+                                    height: Dimens.DIMENS_34,
+                                    alignment: Alignment.center,
+                                    decoration: BoxDecoration(
+                                        color: COLOR_grey,
+                                        borderRadius: BorderRadius.circular(5)),
+                                    child: Text(
+                                      LocaleKeys.label_message.tr(),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(
+                                  width: Dimens.DIMENS_12,
+                                ),
+                              ],
+                            ),
+                          SizedBox(
+                            height: Dimens.DIMENS_8,
+                          )
+                        ]),
+                  ),
+                  SliverAppBar(
+                    toolbarHeight: 0,
+                    floating: false,
+                    pinned: true,
+                    elevation: 0,
+                    backgroundColor: COLOR_white_fff5f5f5,
+                    bottom: TabBar(
+                      labelColor: COLOR_black_ff121212,
+                      indicatorColor: COLOR_black_ff121212,
+                      indicatorSize: TabBarIndicatorSize.tab,
+                      indicatorWeight: 2,
+                      tabs: [
+                        Tab(
+                          icon: Icon(MdiIcons.folderPlay),
+                        ),
+                        Tab(
+                          icon: Icon(MdiIcons.heart),
+                        ),
+                      ],
+                    ),
+                  ),
+                ];
+              },
+              body: TabBarView(
+                children: [
+                  // Content for Tab 1
+                  KeepAlivePage(
+                    child: VideoListView(
+                      uid: widget.payload?.uid ??
+                          authRepository.currentUser!.uid,
+                      from: From.user,
+                    ),
+                  ),
+                  // Content for Tab 2
+                  KeepAlivePage(
+                    child: VideoListView(
+                      uid: widget.payload?.uid ??
+                          authRepository.currentUser!.uid,
+                      from: From.likes,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ));
+  }
+
+  bool _isShowMenuBtn(AuthRepository authRepository, AuthState authState) =>
+      authRepository.currentUser?.uid == widget.payload?.uid ||
+      widget.payload == null;
+
   bool _isAuthenticated(AuthState authState) =>
       authState.status == AuthStatus.authenticated;
 
-  bool _isLogedUser(AuthState authState) =>
-      widget.uid == authState.uid || widget.uid == null;
-
-  Future<void> toEditProfile(UserData data, BuildContext context) async {
+  Future<void> toEditProfile(BuildContext context) async {
+    User user = await futureUserData1!;
     ProfileData profileData = ProfileData(
-        name: data.name,
-        userName: data.userName,
+        name: widget.payload?.name ?? user.name!,
+        userName: widget.payload?.userName ?? user.userName!,
         bio: userBio,
-        photoUrl: data.photoURL,
-        updatedAt: data.updatedAt,
-        userNameUpdatedAt: data.userNameUpdatedAt,
+        photoUrl: widget.payload?.photoURL ?? user.photo!,
+        updatedAt: user.updatedAt!,
+        userNameUpdatedAt: user.userNameUpdatedAt!,
         gameFav: gameFavs,
         gameFavoritesId: []);
 
-    if (!isToEditProfile) {
+    if (!isToEditProfile && mounted) {
       isToEditProfile = true;
       await context.push(APP_PAGE.editProfile.toPath, extra: profileData);
     }
@@ -682,145 +804,223 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   /// username,photo ,follwers,folowing,likes
-  Row topSectionView(UserData data) {
+  Row topSectionView(AuthState authState) {
+    final repository = RepositoryProvider.of<UserRepository>(context);
     return Row(
       children: [
         SizedBox(
           width: Dimens.DIMENS_12,
         ),
         SizedBox(
-          width: 90,
+          width: 100,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              CircleAvatar(
-                backgroundColor: COLOR_grey,
-                radius: 35,
-                child: ClipRRect(
-                    borderRadius: BorderRadius.circular(50),
-                    child:
-                        BlocBuilder<EditProfilePictCubit, EditProfilePictState>(
-                      builder: (context, state) {
-                        String uid =
-                            RepositoryProvider.of<AuthRepository>(context)
-                                .currentUser!
-                                .uid;
-                        if (state.status == EditProfilePicStatus.success &&
-                            data.uid == uid) {
-                          return GestureDetector(
-                            onTap: () {
-                              showDialog(
-                                  context: context,
-                                  builder: (_) {
-                                    return Dialog(
-                                      backgroundColor: Colors.transparent,
-                                      child: Image.file(
-                                        state.imageFile!,
-                                        color: Colors.transparent,
-                                        width: 300,
-                                        fit: BoxFit.contain,
+              BlocBuilder<AuthBloc, AuthState>(
+                builder: (context, state) {
+                  // if (state.status == AuthStatus.notAuthenticated &&
+                  //     widget.payload == null) {
+                  //   return CircleAvatar(
+                  //       backgroundColor: COLOR_grey, radius: 35);
+                  // }else if(state.status == AuthStatus.authenticated && widget.payload==null){
+
+                  // }
+                  return FutureBuilder(
+                      future: futureUserData1,
+                      builder: (context, snapshot) {
+                        if (state.status == AuthStatus.authenticated &&
+                            widget.payload == null) {
+                          photoURL = snapshot.data?.photo;
+                        }
+
+                        if (!snapshot.hasData && widget.payload == null) {
+                          return CircleAvatar(
+                              backgroundColor: COLOR_grey, radius: 35);
+                        }
+
+                        return CircleAvatar(
+                          backgroundColor: COLOR_grey,
+                          radius: 35,
+                          child: ClipRRect(
+                              borderRadius: BorderRadius.circular(50),
+                              child: BlocBuilder<EditProfilePictCubit,
+                                  EditProfilePictState>(
+                                builder: (context, state) {
+                                  String? uid =
+                                      RepositoryProvider.of<AuthRepository>(
+                                              context)
+                                          .currentUser
+                                          ?.uid;
+                                  if (state.status ==
+                                          EditProfilePicStatus.success &&
+                                      widget.payload == null) {
+                                    return GestureDetector(
+                                      onTap: () {
+                                        showDialog(
+                                            context: context,
+                                            builder: (_) {
+                                              return Dialog(
+                                                backgroundColor:
+                                                    const Color.fromARGB(
+                                                        0, 216, 186, 186),
+                                                child: CachedNetworkImage(
+                                                  imageUrl: state.imageUrl!,
+                                                  width: 300,
+                                                  fit: BoxFit.contain,
+                                                ),
+                                              );
+                                            });
+                                      },
+                                      child: CachedNetworkImage(
+                                        imageUrl: state.imageUrl!,
+                                        width: double.infinity,
+                                        fit: BoxFit.fill,
                                       ),
                                     );
-                                  });
-                            },
-                            child: Image.file(
-                              state.imageFile!,
-                              width: double.infinity,
-                              fit: BoxFit.fill,
-                            ),
-                          );
-                        }
-                        return GestureDetector(
-                          onTap: () {
-                            showDialog(
-                                context: context,
-                                builder: (_) {
-                                  return Dialog(
-                                    child: CachedNetworkImage(
-                                      width: 300,
-                                      imageUrl: data.photoURL,
-                                      fit: BoxFit.contain,
+                                  }
+                                  return GestureDetector(
+                                    onTap: () {
+                                      showDialog(
+                                          context: context,
+                                          builder: (_) {
+                                            return Dialog(
+                                              child: CachedNetworkImage(
+                                                width: 300,
+                                                imageUrl: photoURL!,
+                                                fit: BoxFit.contain,
+                                              ),
+                                            );
+                                          });
+                                    },
+                                    child: BlocBuilder<AuthBloc, AuthState>(
+                                      builder: (context, state) {
+                                        return CachedNetworkImage(
+                                          imageUrl: photoURL!,
+                                          fit: BoxFit.cover,
+                                          width: double.infinity,
+                                        );
+                                      },
                                     ),
                                   );
-                                });
-                          },
-                          child: CachedNetworkImage(
-                            imageUrl: data.photoURL,
-                            fit: BoxFit.cover,
-                            width: double.infinity,
-                          ),
+                                },
+                              )),
                         );
-                      },
-                    )),
-              ),
-              BlocBuilder<EditUserNameCubit, EditUserNameState>(
-                builder: (context, state) {
-                  String uid = RepositoryProvider.of<AuthRepository>(context)
-                      .currentUser!
-                      .uid;
-                  if (state.status == EditUserNameStatus.success &&
-                      data.uid == uid) {
-                    return Text(
-                      '@${state.newUserName!}',
-                      style: const TextStyle(
-                          fontWeight: FontWeight.bold, fontSize: 14),
-                    );
-                  }
-                  return Text(
-                    '@${data.userName}',
-                    style: const TextStyle(
-                        fontWeight: FontWeight.bold, fontSize: 14),
-                  );
+                      });
                 },
               ),
+              FutureBuilder(
+                  future: futureUserData1,
+                  builder: (context, snapshot) {
+                    if (widget.payload == null) {
+                      userName = '@${snapshot.data?.userName}';
+                      // userName = '@${widget.payload!.userName}';
+                    }
+
+                    if (!snapshot.hasData && widget.payload == null) {
+                      return const Text('');
+                    }
+
+                    return BlocBuilder<EditUserNameCubit, EditUserNameState>(
+                      builder: (context, state) {
+                        String? uid =
+                            RepositoryProvider.of<AuthRepository>(context)
+                                .currentUser
+                                ?.uid;
+                        if (state.status == EditUserNameStatus.success &&
+                            widget.payload == null) {
+                          return Text(
+                            '@${state.newUserName!}',
+                            style: const TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 14),
+                          );
+                        }
+                        return Text(
+                          userName!,
+                          style: const TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 14),
+                        );
+                      },
+                    );
+                  }),
             ],
           ),
         ),
-        Expanded(
-          child: Column(
-            children: [
-              Text(
-                data.followers,
-                style:
-                    const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
-              ),
-              Text(LocaleKeys.label_followers.tr(),
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(fontSize: 12)),
-            ],
-          ),
+        BlocBuilder<AuthBloc, AuthState>(
+          builder: (context, state) {
+            return FutureBuilder<int>(
+                future: repository
+                    .getFollowerCount(widget.payload?.uid ?? state.uid!),
+                builder: (context, AsyncSnapshot<int> snapshot) {
+                  int? follwers = snapshot.data;
+                  return Expanded(
+                    child: Column(
+                      children: [
+                        Text(
+                          snapshot.hasData ? follwers.toString() : '0',
+                          style: const TextStyle(
+                              fontSize: 20, fontWeight: FontWeight.w600),
+                        ),
+                        Text(LocaleKeys.label_followers.tr(),
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(fontSize: 12)),
+                      ],
+                    ),
+                  );
+                });
+          },
         ),
-        Expanded(
-          child: Column(
-            children: [
-              Text(
-                data.following,
-                style:
-                    const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
-              ),
-              Text(
-                LocaleKeys.label_following.tr(),
-                textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 12),
-              ),
-            ],
-          ),
+        BlocBuilder<AuthBloc, AuthState>(
+          builder: (context, state) {
+            return FutureBuilder<int>(
+                future: repository
+                    .getFollowingCount(widget.payload?.uid ?? state.uid!),
+                builder: (context, AsyncSnapshot<int> snapshot) {
+                  int? following = snapshot.data;
+                  return Expanded(
+                    child: Column(
+                      children: [
+                        Text(
+                          snapshot.hasData ? following.toString() : '0',
+                          style: const TextStyle(
+                              fontSize: 20, fontWeight: FontWeight.w600),
+                        ),
+                        Text(
+                          LocaleKeys.label_following.tr(),
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(fontSize: 12),
+                        ),
+                      ],
+                    ),
+                  );
+                });
+          },
         ),
-        Expanded(
-          child: Column(
-            children: [
-              Text(
-                data.likes,
-                style:
-                    const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
-              ),
-              Text(
-                LocaleKeys.label_likes.tr(),
-                textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 12),
-              ),
-            ],
-          ),
+        BlocBuilder<AuthBloc, AuthState>(
+          builder: (context, state) {
+            return FutureBuilder<int>(
+                future:
+                    repository.getLikesCount(widget.payload?.uid ?? state.uid!),
+                builder: (context, AsyncSnapshot<int> snapshot) {
+                  int? likes = snapshot.data;
+
+                  return Expanded(
+                    child: Column(
+                      children: [
+                        Text(
+                          snapshot.hasData ? likes.toString() : '0',
+                          style: const TextStyle(
+                              fontSize: 20, fontWeight: FontWeight.w600),
+                        ),
+                        Text(
+                          LocaleKeys.label_likes.tr(),
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(fontSize: 12),
+                        ),
+                      ],
+                    ),
+                  );
+                });
+          },
         ),
         SizedBox(
           width: Dimens.DIMENS_12,

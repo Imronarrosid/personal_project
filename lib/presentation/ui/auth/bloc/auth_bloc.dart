@@ -3,7 +3,7 @@ import 'package:equatable/equatable.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
-import 'package:personal_project/domain/model/user.dart';
+import 'package:personal_project/domain/model/user.dart' as model;
 import 'package:personal_project/domain/reporsitory/auth_reposotory.dart';
 import 'package:personal_project/utils/check_network.dart';
 
@@ -18,6 +18,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
                 uid: authRepository.currentUser!.uid)
             : const AuthState(status: AuthStatus.notAuthenticated)) {
     on<LogInWithGoogle>((event, emit) async {
+      model.User user;
       try {
         authRepository.logInWithGoogle();
         bool isGoogleUserNotEmpty = await authRepository.isGoogleUserNotEmpty;
@@ -28,9 +29,15 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         bool isAuthenticated = await authRepository.isAuthenticated;
         debugPrint('isAuthenticated $isAuthenticated');
         if (isAuthenticated) {
+          user = await authRepository
+              .getVideoOwnerData(authRepository.currentUser!.uid);
+
           emit(AuthState(
               status: AuthStatus.authenticated,
-              uid: authRepository.currentUser!.uid));
+              uid: authRepository.currentUser!.uid,
+              name: user.name,
+              userName: user.userName,
+              photoURL: user.photo));
         } else {
           emit(const AuthState(status: AuthStatus.error));
         }
