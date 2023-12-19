@@ -6,9 +6,10 @@ import 'package:personal_project/constant/color.dart';
 import 'package:personal_project/constant/dimens.dart';
 import 'package:personal_project/presentation/ui/edit_profile/cubit/edit_name_cubit.dart';
 import 'package:personal_project/utils/edit_name_check.dart';
+import 'package:personal_project/utils/is_same_day.dart';
 
-void showEditNameModal(
-    BuildContext context, String name, Timestamp timestamp) async {
+void showEditNameModal(BuildContext context, String name, Timestamp timestamp,
+    Timestamp userCreatedAt) async {
   final controller = TextEditingController(text: name);
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
@@ -22,7 +23,8 @@ void showEditNameModal(
     return null; // Return null if the input is valid
   }
 
-  bool isCanEdit = await isCanEditName(timestamp);
+  bool isCanEdit = await isCanEditName(timestamp) ||
+      isSameDay(timestamp.toDate(), userCreatedAt.toDate());
   int daysCount = await daysUntilOneWeeks(timestamp);
   if (context.mounted) {
     showModalBottomSheet(

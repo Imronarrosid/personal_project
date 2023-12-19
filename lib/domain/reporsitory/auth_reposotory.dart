@@ -11,6 +11,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:personal_project/domain/model/user.dart';
 import 'package:personal_project/domain/services/firebase/firebase_service.dart';
 import 'package:personal_project/domain/usecase/auth_usecase_type.dart';
+import 'package:personal_project/utils/generate_string.dart';
 
 class LogInWithGoogleFailure implements Exception {
   /// {@macro log_in_with_google_failure}
@@ -75,10 +76,19 @@ class AuthRepository implements AuthUseCaseType {
   FirebaseFirestore firestore = FirebaseFirestore.instance;
 
   static final Completer<bool> _googleUserCompleter = Completer<bool>();
-  Future<bool> isGoogleUserNotEmpty = _googleUserCompleter.future;
-
+  static final Completer<bool> _createUserCompleter = Completer<bool>();
   static final Completer<bool> _authCompleter = Completer<bool>();
-  Future<bool> isAuthenticated = _authCompleter.future;
+  static final Completer<bool> _isUserFirstLogin = Completer<bool>();
+
+  Future<bool> get isGoogleUserNotEmpty => _googleUserCompleter.future;
+  Future<bool> get isAuthenticated => _authCompleter.future;
+  Future<bool> get isUserCreated => _createUserCompleter.future;
+  Future<bool> get isUserFirstLogin => _isUserFirstLogin.future;
+
+  /// Return [User] data created on firebase firestore
+  ///
+  /// Need to assign on log in.
+  User? _createdUser;
 
   /// Whether or not the current environment is web
   /// Should only be overridden for testing purposes. Otherwise,
@@ -102,6 +112,9 @@ class AuthRepository implements AuthUseCaseType {
       return user;
     });
   }
+
+  /// Return [User] data created on firebase firestore
+  User? get createdUser => _createdUser;
 
   /// Returns the current user.
   firebase_auth.User? get currentUser {
@@ -130,18 +143,23 @@ class AuthRepository implements AuthUseCaseType {
     FirebaseFirestore firestore = FirebaseFirestore.instance;
     var doc = await firestore.collection('users').doc(user.id).get();
     if (!doc.exists) {
-      firestore.collection('users').doc(user.id).set({
+      _isUserFirstLogin.complete(true);
+      await firestore.collection('users').doc(user.id).set({
         'uid': user.id,
+        'email': user.email,
         'createdAt': FieldValue.serverTimestamp(),
         'name': user.userName,
-        'userName': user.userName!.split(' ').toString(),
+        'userName': '',
         'photoUrl': user.photo,
         'lastSeen': FieldValue.serverTimestamp(),
         'metadata': user.metadata,
         'role': user.role?.toShortString(),
         'updatedAt': FieldValue.serverTimestamp(),
-        'searchKey': user.userName!.toLowerCase()
+        'searchKey': user.userName!.toLowerCase(),
+        'userNameUpdatedAt': FieldValue.serverTimestamp()
       });
+    } else {
+      _isUserFirstLogin.complete(false);
     }
   }
 
@@ -173,19 +191,20 @@ class AuthRepository implements AuthUseCaseType {
 
         if (user != null) {
           _authCompleter.complete(true);
+          User newUser = User(
+              id: user.uid,
+              userName: user.displayName,
+              email: user.email,
+              photo: user.photoURL);
+
+          // Store user data to firebase if [user.uid] not exist.
+
+          await _createUser(newUser);
+
+          listenForDocumentCreation(user.uid);
         } else {
           _authCompleter.complete(false);
         }
-
-        User newUser = User(
-            id: user!.uid,
-            userName: user.displayName,
-            email: user.email,
-            photo: user.photoURL);
-
-        // Store user data to firebase if [user.uid] not exist.
-
-        await _createUser(newUser);
       }
     } catch (e) {
       debugPrint(e.toString());
@@ -223,13 +242,10 @@ class AuthRepository implements AuthUseCaseType {
     }
   }
 
-  Future<User> getVideoOwnerData(String uid) async {
+  Future<User> getUserData(String uid) async {
     DocumentSnapshot docs =
         await firebaseFirestore.collection('users').doc(uid).get();
-    return User(
-        id: docs['uid'],
-        userName: docs['name'] ?? docs['userName'],
-        photo: docs['photo'] ?? docs['photoUrl']);
+    return User.fromSnap(docs);
   }
 
   Future<bool> isAdmin(String uid) async {
@@ -254,6 +270,35 @@ class AuthRepository implements AuthUseCaseType {
         .collection('gameFavorites')
         .doc(gameTitle)
         .set({'title': gameTitle, 'icon': gameImage});
+  }
+
+  void listenForDocumentCreation(String uid) {
+    // Replace 'your_collection' and 'your_document_id' with your actual collection and document ID
+    DocumentReference documentReference =
+        FirebaseFirestore.instance.collection('users').doc(uid);
+
+    // Create a real-time listener
+    StreamSubscription? subscription;
+    subscription =
+        documentReference.snapshots().listen((DocumentSnapshot snapshot) {
+      if (snapshot.exists) {
+        print('qwerty Document created or modified!');
+        // Do something with the document data if needed
+        print('qwerty Document data: ${snapshot.data()}');
+
+        _createdUser = User.fromSnap(snapshot);
+
+        // Perform cleanup and stop listening
+        if (_createdUser != null) {
+          _createUserCompleter.complete(true);
+          subscription!.cancel();
+        }
+      } else {
+        print('qwerty Document does not exist yet...');
+      }
+    }, onError: (error) {
+      print('Error listening for document changes: $error');
+    });
   }
 }
 

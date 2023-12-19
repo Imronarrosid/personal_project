@@ -1,6 +1,7 @@
 part of 'auth_bloc.dart';
 
 enum AuthStatus {
+  initial,
   authenticated,
   notAuthenticated,
   loading,
@@ -9,19 +10,20 @@ enum AuthStatus {
 
 class AuthState extends Equatable {
   final AuthStatus status;
-  final String? uid, name, userName, photoURL;
+  final User? user;
   final String? error;
+  final bool? isUserFirstLogin;
+  final bool? isNotiFy;
   const AuthState({
+    this.isUserFirstLogin = false,
+    this.isNotiFy = false,
     this.error,
-    this.uid,
-    this.name,
-    this.userName,
-    this.photoURL,
+    this.user,
     required this.status,
   });
 
   @override
-  List<Object?> get props => [status, uid, name, userName, photoURL];
+  List<Object?> get props => [status, user, isUserFirstLogin, isNotiFy];
 }
 
 // final class Authenticated extends AuthState {

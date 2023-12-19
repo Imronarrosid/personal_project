@@ -115,9 +115,12 @@ class _MyAppState extends State<MyApp> {
                 create: (context) => VideoPreviewBloc(),
               ),
               BlocProvider(
-                create: (context) => AuthBloc(
-                  RepositoryProvider.of<AuthRepository>(context),
-                ),
+                create: (context) {
+                  final AuthRepository repo =
+                      RepositoryProvider.of<AuthRepository>(context);
+
+                  return AuthBloc(repo)..add(InitAuth());
+                },
               ),
               BlocProvider(
                 create: (context) => UploadBloc(

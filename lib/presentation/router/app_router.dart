@@ -12,6 +12,7 @@ import 'package:personal_project/domain/reporsitory/video_repository.dart';
 import 'package:personal_project/domain/services/app/app_service.dart';
 import 'package:personal_project/presentation/router/route_utils.dart';
 import 'package:personal_project/presentation/ui/add_details/add_details_page.dart';
+import 'package:personal_project/presentation/ui/add_user_name/add_user_name_page.dart';
 import 'package:personal_project/presentation/ui/edit_profile/edit_page/edit_game_fav_page.dart';
 import 'package:personal_project/presentation/ui/language/language_page.dart';
 import 'package:personal_project/presentation/ui/play_single_video/play_single.dart';
@@ -28,6 +29,8 @@ import 'package:personal_project/presentation/ui/upload/upload.dart';
 import 'package:personal_project/presentation/ui/video/list_video/video_item.dart';
 import 'package:personal_project/presentation/ui/video_editor/video_editor_page.dart';
 import 'package:personal_project/presentation/ui/video_preview/video_previe_page.dart';
+import 'package:personal_project/utils/generate_string.dart';
+import 'package:uuid/v1.dart';
 
 class AppRouter {
   late final AppService appService;
@@ -121,19 +124,31 @@ class AppRouter {
             );
           }),
       GoRoute(
+          path: APP_PAGE.addUserName.toPath,
+          name: APP_PAGE.addUserName.toName,
+          builder: (context, state) {
+            String userName = state.extra as String;
+            return AddUserNamePage(
+              userName:
+                  '${userName.replaceAll(RegExp(r"\s\b|\b\s"), "")}_${generateRandomString(10)}',
+            );
+          }),
+      GoRoute(
         path: APP_PAGE.profile.toPath,
         name: APP_PAGE.profile.toName,
         builder: (context, state) {
           ProfilePayload data = state.extra as ProfilePayload;
-          return ProfilePage(payload: data);
+          return ProfilePage(
+            payload: data,
+            isForOtherUser: true,
+          );
         },
       ),
       GoRoute(
         path: APP_PAGE.editProfile.toPath,
         name: APP_PAGE.editProfile.toName,
         builder: (context, state) {
-          ProfileData profileData = state.extra as ProfileData;
-          return EditProfile(data: profileData);
+          return const EditProfile();
         },
       ),
       GoRoute(

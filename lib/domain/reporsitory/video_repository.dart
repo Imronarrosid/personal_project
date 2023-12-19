@@ -161,8 +161,11 @@ class VideoRepository implements VideoUseCaseType {
   Future<User> getVideoOwnerData(String uid) async {
     DocumentSnapshot docs =
         await firebaseFirestore.collection('users').doc(uid).get();
-    videoOwnerData =
-        User(id: docs['uid'], userName: docs['userName'], photo: docs['photo']);
+    videoOwnerData = User(
+        id: docs['uid'],
+        name: docs['name'],
+        userName: docs['userName'],
+        photo: docs['photoUrl']);
     return videoOwnerData;
   }
 

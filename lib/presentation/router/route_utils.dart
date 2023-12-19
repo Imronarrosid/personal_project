@@ -19,7 +19,8 @@ enum APP_PAGE {
   editGameFav,
   videoItem,
   cachesPage,
-  languagePage
+  languagePage,
+  addUserName
 }
 
 extension AppPageExtension on APP_PAGE {
@@ -63,6 +64,8 @@ extension AppPageExtension on APP_PAGE {
         return "/caches";
       case APP_PAGE.languagePage:
         return "/language";
+      case APP_PAGE.addUserName:
+        return "/add_username";
       default:
         return "/";
     }
@@ -108,6 +111,8 @@ extension AppPageExtension on APP_PAGE {
         return "CACHES-PAGE";
       case APP_PAGE.languagePage:
         return "LANGUAGE";
+      case APP_PAGE.addUserName:
+        return "ADD-USERNAME";
       default:
         return "HOME";
     }

@@ -8,11 +8,13 @@ class ProfileData {
   final String photoUrl;
   final Timestamp updatedAt;
   final Timestamp userNameUpdatedAt;
+  final Timestamp userCreatedAt;
   final List<String> gameFavoritesId;
   final List<GameFav> gameFav;
 
   ProfileData(
       {required this.userName,
+      required this.userCreatedAt,
       required this.photoUrl,
       required this.name,
       required this.updatedAt,
@@ -24,9 +26,10 @@ class ProfileData {
 
 class ProfilePayload {
   final String uid, name, userName, photoURL;
-  final Timestamp? nameUpdatedAt, userNameUpdatedAt;
+  final Timestamp? nameUpdatedAt, userNameUpdatedAt, userCreatedAt;
 
   ProfilePayload({
+    this.userCreatedAt,
     required this.uid,
     required this.name,
     required this.userName,

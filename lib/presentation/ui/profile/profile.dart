@@ -37,8 +37,14 @@ import 'package:personal_project/presentation/ui/profile/cubit/profile_cubit.dar
 import 'package:personal_project/presentation/ui/profile/cubit/refresh_profile_cubit.dart';
 
 class ProfilePage extends StatefulWidget {
+  /// [payload] need to required if
+  ///
+  /// to serve other user info
+  ///
+  /// other user mean is [ProfilePage] that not in [HomePage]
   final ProfilePayload? payload;
-  const ProfilePage({super.key, this.payload});
+  final bool? isForOtherUser;
+  const ProfilePage({super.key, this.payload, this.isForOtherUser = false});
 
   @override
   State<ProfilePage> createState() => _ProfilePageState();
@@ -50,7 +56,7 @@ class _ProfilePageState extends State<ProfilePage> {
   bool isToEditProfile = false;
   bool isToMenu = true;
 
-  String? title, userName, photoURL;
+  String? ui, title, userName, photoURL;
 
   Future<User>? futureUserData1;
 
@@ -97,19 +103,20 @@ class _ProfilePageState extends State<ProfilePage> {
       child: Builder(builder: (context) {
         return BlocListener<AuthBloc, AuthState>(
           listener: (context, state) {
-            //execute when first time login
-            if (state.status == AuthStatus.authenticated) {
-              final UserRepository repository =
-                  RepositoryProvider.of<UserRepository>(context);
+            // //execute when first time login
+            // if (state.status == AuthStatus.authenticated &&
+            //     !widget.isForOtherUser!) {
+            //   final UserRepository repository =
+            //       RepositoryProvider.of<UserRepository>(context);
 
-              final authRepository =
-                  RepositoryProvider.of<AuthRepository>(context);
-              if (widget.payload == null &&
-                  authRepository.currentUser != null) {
-                futureUserData1 =
-                    repository.getUserData1(authRepository.currentUser!.uid);
-              }
-            }
+            //   final authRepository =
+            //       RepositoryProvider.of<AuthRepository>(context);
+            //   if (widget.payload == null) {
+            //     debugPrint('uidcu ${authRepository.currentUser!.uid}');
+            //     futureUserData1 =
+            //         repository.getUserData1(authRepository.currentUser!.uid);
+            //   }
+            // }
           },
           child: Scaffold(
             backgroundColor: COLOR_white_fff5f5f5,
@@ -119,31 +126,18 @@ class _ProfilePageState extends State<ProfilePage> {
               elevation: 0,
               title: BlocBuilder<AuthBloc, AuthState>(
                 builder: (context, state) {
-                  if (state.status == AuthStatus.notAuthenticated &&
-                      widget.payload == null) {
-                    return Text(LocaleKeys.title_profile.tr());
+                  if ((state.status == AuthStatus.authenticated &&
+                      !widget.isForOtherUser!)) {
+                    title = state.user!.name;
+                  } else if ((state.status == AuthStatus.notAuthenticated &&
+                          !widget.isForOtherUser!) ||
+                      (state.status == AuthStatus.loading &&
+                          !widget.isForOtherUser!)) {
+                    title = LocaleKeys.title_profile.tr();
+                  } else if (widget.isForOtherUser!) {
+                    title = widget.payload!.name;
                   }
-                  return FutureBuilder(
-                      future: futureUserData1,
-                      builder: (context, snapshot) {
-                        title = snapshot.data?.name;
-
-                        // if (widget.payload?.name != null) {
-                        //   title = widget.payload!.name;
-                        // }
-
-                        // if (!snapshot.hasData && widget.payload?.name == null ||
-                        //     authRepository.currentUser == null) {
-                        //   return Text(LocaleKeys.title_profile.tr());
-                        // }
-
-                        if (snapshot.hasData && widget.payload == null) {
-                          return _buildTitle(title);
-                        } else if (widget.payload != null) {
-                          return Text(widget.payload!.name);
-                        }
-                        return Text(LocaleKeys.title_profile.tr());
-                      });
+                  return _buildTitle(title);
                 },
               ),
               actions: <Widget>[
@@ -170,6 +164,12 @@ class _ProfilePageState extends State<ProfilePage> {
               builder: (context, authState) {
                 debugPrint(authState.toString());
 
+                if (_isAuthenticatedButStillLoadingData(
+                    authRepository, authState)) {
+                  return const Center(
+                    child: CircularProgressIndicator(),
+                  );
+                }
                 if (!_isAuthenticated(authState) && widget.payload == null) {
                   return const NotAuthenticatedPage();
                 }
@@ -268,6 +268,13 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
+  bool _isAuthenticatedButStillLoadingData(
+      AuthRepository authRepository, AuthState authState) {
+    return authRepository.currentUser != null &&
+        widget.payload == null &&
+        authState.user == null;
+  }
+
   BlocBuilder<EditNameCubit, EditNameState> _buildTitle(String? title) {
     return BlocBuilder<EditNameCubit, EditNameState>(
       builder: (context, state) {
@@ -275,7 +282,7 @@ class _ProfilePageState extends State<ProfilePage> {
             widget.payload == null) {
           title = state.name;
         }
-        return Text(title!);
+        return Text(title ?? LocaleKeys.title_profile.tr());
       },
     );
   }
@@ -295,8 +302,10 @@ class _ProfilePageState extends State<ProfilePage> {
               }
               return notification.depth == 0;
             },
-            onRefresh: () => Future.sync(() =>
-                BlocProvider.of<RefreshProfileCubit>(context).refreshProfile()),
+            onRefresh: () => Future.sync(() {
+              setState(() {});
+              BlocProvider.of<RefreshProfileCubit>(context).refreshProfile();
+            }),
             child: NestedScrollView(
               headerSliverBuilder: (context, innerBoxIsScrolled) {
                 return [
@@ -305,16 +314,18 @@ class _ProfilePageState extends State<ProfilePage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           topSectionView(authState),
+                          _buildUserName(),
                           SizedBox(
                             height: Dimens.DIMENS_8,
                           ),
                           bioSectionView(
-                              uid: widget.payload?.uid ?? authState.uid!),
-                          gameFavView(widget.payload?.uid ?? authState.uid!),
+                              uid: widget.payload?.uid ?? authState.user!.id),
+                          gameFavView(
+                              widget.payload?.uid ?? authState.user!.id),
                           SizedBox(
                             height: Dimens.DIMENS_8,
                           ),
-                          if ((widget.payload?.uid ?? authState.uid) ==
+                          if ((widget.payload?.uid ?? authState.user!.id) ==
                               authRepository.currentUser?.uid)
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
@@ -448,7 +459,8 @@ class _ProfilePageState extends State<ProfilePage> {
                                                                               .payload
                                                                               ?.uid ??
                                                                           authState
-                                                                              .uid!,
+                                                                              .user!
+                                                                              .id,
                                                                       stateFromDatabase:
                                                                           isFollowing!);
                                                                   context.pop();
@@ -589,20 +601,23 @@ class _ProfilePageState extends State<ProfilePage> {
       authState.status == AuthStatus.authenticated;
 
   Future<void> toEditProfile(BuildContext context) async {
-    User user = await futureUserData1!;
-    ProfileData profileData = ProfileData(
-        name: widget.payload?.name ?? user.name!,
-        userName: widget.payload?.userName ?? user.userName!,
-        bio: userBio,
-        photoUrl: widget.payload?.photoURL ?? user.photo!,
-        updatedAt: user.updatedAt!,
-        userNameUpdatedAt: user.userNameUpdatedAt!,
-        gameFav: gameFavs,
-        gameFavoritesId: []);
+    // User user = await futureUserData1!;
+    // ProfileData profileData = ProfileData(
+    //     name: widget.payload?.name ?? user.name!,
+    //     userName: widget.payload?.userName ?? user.userName!,
+    //     bio: userBio,
+    //     photoUrl: widget.payload?.photoURL ?? user.photo!,
+    //     updatedAt: user.updatedAt!,
+    //     userNameUpdatedAt: user.userNameUpdatedAt!,
+    //     gameFav: gameFavs,
+    //     userCreatedAt: user.createdAt!,
+    //     gameFavoritesId: []);
 
     if (!isToEditProfile && mounted) {
       isToEditProfile = true;
-      await context.push(APP_PAGE.editProfile.toPath, extra: profileData);
+      await context.push(
+        APP_PAGE.editProfile.toPath,
+      );
     }
     isToEditProfile = false;
   }
@@ -720,7 +735,7 @@ class _ProfilePageState extends State<ProfilePage> {
               if (snapshot.hasData) {
                 userBio = bio!;
               }
-              if (!snapshot.hasData) {
+              if (!snapshot.hasData || userBio.isEmpty) {
                 return Container();
               }
               return BlocConsumer<EditBioCubit, EditBioState>(
@@ -825,123 +840,81 @@ class _ProfilePageState extends State<ProfilePage> {
                   // }else if(state.status == AuthStatus.authenticated && widget.payload==null){
 
                   // }
-                  return FutureBuilder(
-                      future: futureUserData1,
-                      builder: (context, snapshot) {
-                        if (state.status == AuthStatus.authenticated &&
-                            widget.payload == null) {
-                          photoURL = snapshot.data?.photo;
-                        }
+                  if (state.status == AuthStatus.authenticated &&
+                      !widget.isForOtherUser!) {
+                    photoURL = state.user!.photo;
+                  } else if (state.status == AuthStatus.notAuthenticated &&
+                      !widget.isForOtherUser!) {
+                    return CircleAvatar(
+                        backgroundColor: COLOR_grey, radius: 35);
+                  }
 
-                        if (!snapshot.hasData && widget.payload == null) {
-                          return CircleAvatar(
-                              backgroundColor: COLOR_grey, radius: 35);
-                        }
-
-                        return CircleAvatar(
-                          backgroundColor: COLOR_grey,
-                          radius: 35,
-                          child: ClipRRect(
-                              borderRadius: BorderRadius.circular(50),
-                              child: BlocBuilder<EditProfilePictCubit,
-                                  EditProfilePictState>(
-                                builder: (context, state) {
-                                  String? uid =
-                                      RepositoryProvider.of<AuthRepository>(
-                                              context)
-                                          .currentUser
-                                          ?.uid;
-                                  if (state.status ==
-                                          EditProfilePicStatus.success &&
-                                      widget.payload == null) {
-                                    return GestureDetector(
-                                      onTap: () {
-                                        showDialog(
-                                            context: context,
-                                            builder: (_) {
-                                              return Dialog(
-                                                backgroundColor:
-                                                    const Color.fromARGB(
-                                                        0, 216, 186, 186),
-                                                child: CachedNetworkImage(
-                                                  imageUrl: state.imageUrl!,
-                                                  width: 300,
-                                                  fit: BoxFit.contain,
-                                                ),
-                                              );
-                                            });
-                                      },
-                                      child: CachedNetworkImage(
-                                        imageUrl: state.imageUrl!,
-                                        width: double.infinity,
-                                        fit: BoxFit.fill,
-                                      ),
-                                    );
-                                  }
-                                  return GestureDetector(
-                                    onTap: () {
-                                      showDialog(
-                                          context: context,
-                                          builder: (_) {
-                                            return Dialog(
-                                              child: CachedNetworkImage(
-                                                width: 300,
-                                                imageUrl: photoURL!,
-                                                fit: BoxFit.contain,
-                                              ),
-                                            );
-                                          });
-                                    },
-                                    child: BlocBuilder<AuthBloc, AuthState>(
-                                      builder: (context, state) {
-                                        return CachedNetworkImage(
-                                          imageUrl: photoURL!,
-                                          fit: BoxFit.cover,
-                                          width: double.infinity,
+                  return CircleAvatar(
+                    backgroundColor: COLOR_grey,
+                    radius: 35,
+                    child: ClipRRect(
+                        borderRadius: BorderRadius.circular(50),
+                        child: BlocBuilder<EditProfilePictCubit,
+                            EditProfilePictState>(
+                          builder: (context, state) {
+                            String? uid =
+                                RepositoryProvider.of<AuthRepository>(context)
+                                    .currentUser
+                                    ?.uid;
+                            if (state.status == EditProfilePicStatus.success &&
+                                widget.payload == null) {
+                              return GestureDetector(
+                                onTap: () {
+                                  showDialog(
+                                      context: context,
+                                      builder: (_) {
+                                        return Dialog(
+                                          backgroundColor: const Color.fromARGB(
+                                              0, 216, 186, 186),
+                                          child: CachedNetworkImage(
+                                            imageUrl: state.imageUrl!,
+                                            width: 300,
+                                            fit: BoxFit.contain,
+                                          ),
                                         );
-                                      },
-                                    ),
+                                      });
+                                },
+                                child: CachedNetworkImage(
+                                  imageUrl: state.imageUrl!,
+                                  width: double.infinity,
+                                  fit: BoxFit.fill,
+                                ),
+                              );
+                            }
+                            return GestureDetector(
+                              onTap: () {
+                                showDialog(
+                                    context: context,
+                                    builder: (_) {
+                                      return Dialog(
+                                        child: CachedNetworkImage(
+                                          width: 300,
+                                          imageUrl: photoURL!,
+                                          fit: BoxFit.contain,
+                                        ),
+                                      );
+                                    });
+                              },
+                              child: BlocBuilder<AuthBloc, AuthState>(
+                                builder: (context, state) {
+                                  return CachedNetworkImage(
+                                    imageUrl: photoURL!,
+                                    fit: BoxFit.cover,
+                                    width: double.infinity,
                                   );
                                 },
-                              )),
-                        );
-                      });
+                              ),
+                            );
+                          },
+                        )),
+                  );
                 },
               ),
-              FutureBuilder(
-                  future: futureUserData1,
-                  builder: (context, snapshot) {
-                    if (widget.payload == null) {
-                      userName = '@${snapshot.data?.userName}';
-                      // userName = '@${widget.payload!.userName}';
-                    }
-
-                    if (!snapshot.hasData && widget.payload == null) {
-                      return const Text('');
-                    }
-
-                    return BlocBuilder<EditUserNameCubit, EditUserNameState>(
-                      builder: (context, state) {
-                        String? uid =
-                            RepositoryProvider.of<AuthRepository>(context)
-                                .currentUser
-                                ?.uid;
-                        if (state.status == EditUserNameStatus.success &&
-                            widget.payload == null) {
-                          return Text(
-                            '@${state.newUserName!}',
-                            style: const TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 14),
-                          );
-                        }
-                        return Text(
-                          userName!,
-                          style: const TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 14),
-                        );
-                      },
-                    );
-                  }),
             ],
           ),
         ),
@@ -949,7 +922,7 @@ class _ProfilePageState extends State<ProfilePage> {
           builder: (context, state) {
             return FutureBuilder<int>(
                 future: repository
-                    .getFollowerCount(widget.payload?.uid ?? state.uid!),
+                    .getFollowerCount(widget.payload?.uid ?? state.user!.id),
                 builder: (context, AsyncSnapshot<int> snapshot) {
                   int? follwers = snapshot.data;
                   return Expanded(
@@ -973,7 +946,7 @@ class _ProfilePageState extends State<ProfilePage> {
           builder: (context, state) {
             return FutureBuilder<int>(
                 future: repository
-                    .getFollowingCount(widget.payload?.uid ?? state.uid!),
+                    .getFollowingCount(widget.payload?.uid ?? state.user!.id),
                 builder: (context, AsyncSnapshot<int> snapshot) {
                   int? following = snapshot.data;
                   return Expanded(
@@ -998,8 +971,8 @@ class _ProfilePageState extends State<ProfilePage> {
         BlocBuilder<AuthBloc, AuthState>(
           builder: (context, state) {
             return FutureBuilder<int>(
-                future:
-                    repository.getLikesCount(widget.payload?.uid ?? state.uid!),
+                future: repository
+                    .getLikesCount(widget.payload?.uid ?? state.user!.id),
                 builder: (context, AsyncSnapshot<int> snapshot) {
                   int? likes = snapshot.data;
 
@@ -1026,6 +999,44 @@ class _ProfilePageState extends State<ProfilePage> {
           width: Dimens.DIMENS_12,
         ),
       ],
+    );
+  }
+
+  Padding _buildUserName() {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: Dimens.DIMENS_12),
+      child: BlocBuilder<AuthBloc, AuthState>(
+        builder: (context, state) {
+          if (state.status == AuthStatus.authenticated &&
+              !widget.isForOtherUser!) {
+            userName = '@${state.user!.userName}';
+          } else if (state.status == AuthStatus.notAuthenticated &&
+              !widget.isForOtherUser!) {
+            userName = '@${LocaleKeys.label_user_name.tr()}';
+          }
+
+          return BlocBuilder<EditUserNameCubit, EditUserNameState>(
+            builder: (context, state) {
+              String? uid = RepositoryProvider.of<AuthRepository>(context)
+                  .currentUser
+                  ?.uid;
+              if (state.status == EditUserNameStatus.success &&
+                  widget.payload == null) {
+                return Text(
+                  '@${state.newUserName!}',
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold, fontSize: 14),
+                );
+              }
+              return Text(
+                userName!,
+                style:
+                    const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+              );
+            },
+          );
+        },
+      ),
     );
   }
 }

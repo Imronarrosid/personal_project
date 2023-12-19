@@ -14,7 +14,7 @@ void showEditBioMpdal(BuildContext context, {required String bio}) {
       isScrollControlled: true,
       elevation: 0,
       context: context,
-      builder: (ctx) {
+      builder: (context) {
         return Padding(
           padding:
               EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),

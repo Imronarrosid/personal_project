@@ -49,25 +49,25 @@ class _HomePageState extends State<HomePage> {
     final authRepository = RepositoryProvider.of<AuthRepository>(context);
     final User? currentUser = authRepository.currentUser;
 
-    if (currentUser != null) {
-      final user = await firebaseFirestore
-          .collection('users')
-          .doc(currentUser.uid)
-          .get();
+    // if (currentUser != null) {
+    //   final user = await firebaseFirestore
+    //       .collection('users')
+    //       .doc(currentUser.uid)
+    //       .get();
 
-      userRepository.name = user['name'];
-      userRepository.photoUrl = user['photoUrl'];
-      userRepository.username = user['userName'];
-      userRepository.nameUpdated = user['updatedAt'];
-      userRepository.ueserNameUpdated = user['userNameUpdatedAt'];
-    }
+    //   userRepository.name = user['name'];
+    //   userRepository.photoUrl = user['photoUrl'];
+    //   userRepository.username = user['userName'];
+    //   userRepository.nameUpdated = user['updatedAt'];
+    //   userRepository.ueserNameUpdated = user['userNameUpdatedAt'];
+    // }
   }
 
   @override
   Widget build(BuildContext context) {
     List<Widget> pages = <Widget>[
       const VideoPage(),
-      SearchPage(),
+      const SearchPage(),
       const MessagePage(),
       const MessagePage(),
       const ProfilePage(),
@@ -101,8 +101,15 @@ class _HomePageState extends State<HomePage> {
                       ),
                       BlocListener<AuthBloc, AuthState>(
                         listener: (context, state) {
+                          debugPrint('asts ${state.status.name}');
                           if (state.status == AuthStatus.authenticated) {
-                            showLoginSuccessSnackBar(context);
+                            if (state.isUserFirstLogin!) {
+                              context.go(APP_PAGE.addUserName.toPath,
+                                  extra: state.user!.name);
+                            }
+                            if (state.isNotiFy!) {
+                              showLoginSuccessSnackBar(context);
+                            }
                           } else if (state.status == AuthStatus.error) {
                             showLoginErrorSnackBar(context);
                           }
@@ -172,7 +179,7 @@ class _HomePageState extends State<HomePage> {
                 ),
                 BlocBuilder<AuthBloc, AuthState>(
                   builder: (context, state) {
-                    if (state.status == AuthStatus.loading) {
+                    if (state.status == AuthStatus.loading && state.isNotiFy!) {
                       return Container(
                         color: Colors.black38,
                         child: const Align(
@@ -180,6 +187,7 @@ class _HomePageState extends State<HomePage> {
                             child: CircularProgressIndicator()),
                       );
                     }
+                    debugPrint('authstate ${state.status.name}');
                     return Container();
                   },
                 ),

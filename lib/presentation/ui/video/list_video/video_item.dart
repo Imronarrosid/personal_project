@@ -8,6 +8,7 @@ import 'package:material_design_icons_flutter/material_design_icons_flutter.dart
 import 'package:personal_project/constant/color.dart';
 import 'package:personal_project/constant/dimens.dart';
 import 'package:personal_project/data/repository/coment_repository.dart';
+import 'package:personal_project/domain/model/profile_data_model.dart';
 import 'package:personal_project/domain/model/user.dart';
 import 'package:personal_project/domain/model/video_model.dart';
 import 'package:personal_project/domain/reporsitory/auth_reposotory.dart';
@@ -436,14 +437,28 @@ class _VideoItemState extends State<VideoItem> {
   GestureDetector _buildProfilePictures(BuildContext context, User? data) {
     return GestureDetector(
       onTap: () {
-        context.push(APP_PAGE.profile.toPath, extra: widget.videoData.uid);
+        context.push(APP_PAGE.profile.toPath,
+            extra: ProfilePayload(
+                uid: data.id,
+                name: data.name!,
+                userName: data.userName!,
+                photoURL: data.photo!));
       },
-      child: CircleAvatar(
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(50),
-          child: CachedNetworkImage(
-            imageUrl: data!.photo!,
-            errorWidget: (context, url, error) => const Icon(Icons.error),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(100),
+          border: Border.all(color: COLOR_white_fff5f5f5),
+        ),
+        child: CircleAvatar(
+          backgroundColor: Colors.transparent,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(50),
+            child: CachedNetworkImage(
+              imageUrl: data!.photo!,
+              fit: BoxFit.cover,
+              width: double.infinity,
+              errorWidget: (context, url, error) => const Icon(Icons.error),
+            ),
           ),
         ),
       ),

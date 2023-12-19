@@ -256,13 +256,19 @@ class UserRepository implements UserUseCaseType {
 
   Future<String> getBio(String uid) async {
     String bio = '';
-    var doc = await firebaseFirestore
-        .collection('users')
-        .doc(uid)
-        .collection('otherInfo')
-        .doc('bio')
-        .get();
-    bio = doc['bio'];
+    try {
+      var doc = await firebaseFirestore
+          .collection('users')
+          .doc(uid)
+          .collection('otherInfo')
+          .doc('bio')
+          .get();
+      if (doc.exists) {
+        bio = doc['bio'] ?? '';
+      }
+    } on Exception catch (e) {
+      rethrow;
+    }
     return bio;
   }
 
@@ -385,24 +391,17 @@ class UserRepository implements UserUseCaseType {
 
       List<dynamic> gv = data['titles'];
 
-      debugPrint('reff${gv}');
-      var doc = await firebaseFirestore
-          .collection('users')
-          .doc(uid)
-          .collection('otherInfo')
-          .doc('bio')
-          .get();
-      debugPrint('bio: ${doc['bio'].runtimeType}');
-
       // debugPrint('games ${rfs.length}');
       for (var element in gv) {
         var game = await firebaseFirestore
             .collection('gameFavorites')
             .doc(element)
             .get();
-        gameFav.add(GameFav.fromSnap(game));
+        if (game.exists) {
+          gameFav.add(GameFav.fromSnap(game));
 
-        debugPrint('gameFav$element');
+          debugPrint('gameFav$element');
+        }
       }
     } catch (e) {
       rethrow;

@@ -1,19 +1,26 @@
 part of 'edit_user_name_cubit.dart';
 
-enum EditUserNameStatus { initial, loading, success, error }
+enum EditUserNameStatus {
+  initial,
+  loading,
+  success,
+  availlable,
+  userNameNotAvailable,
+  error
+}
 
 class EditUserNameState extends Equatable {
-  final EditUserNameStatus? status;
+  final EditUserNameStatus status;
   final String? newUserName;
   const EditUserNameState({
-    this.status,
+    required this.status,
     this.newUserName,
   });
 
   @override
-  List<Object> get props => [status!];
+  List<Object?> get props => [status, newUserName];
 }
 
 final class EditUserNameInitial extends EditUserNameState {
-  const EditUserNameInitial({super.status});
+  const EditUserNameInitial({required super.status});
 }
