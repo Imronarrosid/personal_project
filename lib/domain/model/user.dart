@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
+import 'package:firebase_auth/firebase_auth.dart' as fauth;
 
 /// All possible roles user can have.
 enum Role { admin, agent, moderator, user }
@@ -50,7 +51,7 @@ class User extends Equatable {
   final String? searchKey;
 
   /// Additional custom metadata or attributes related to the user.
-  final Map<String, dynamic>? metadata;
+  final fauth.UserMetadata? metadata;
 
   /// User [Role].
   final Role? role;

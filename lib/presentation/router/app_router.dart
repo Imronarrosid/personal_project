@@ -129,8 +129,7 @@ class AppRouter {
           builder: (context, state) {
             String userName = state.extra as String;
             return AddUserNamePage(
-              userName:
-                  '${userName.replaceAll(RegExp(r"\s\b|\b\s"), "")}_${generateRandomString(10)}',
+              userName: userName,
             );
           }),
       GoRoute(

@@ -401,10 +401,12 @@ class UserRepository implements UserUseCaseType {
           gameFav.add(GameFav.fromSnap(game));
 
           debugPrint('gameFav$element');
+        } else {
+          return [];
         }
       }
     } catch (e) {
-      rethrow;
+      debugPrint(e.toString());
     }
 
     return gameFav;

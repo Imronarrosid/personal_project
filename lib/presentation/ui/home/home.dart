@@ -105,7 +105,7 @@ class _HomePageState extends State<HomePage> {
                           if (state.status == AuthStatus.authenticated) {
                             if (state.isUserFirstLogin!) {
                               context.go(APP_PAGE.addUserName.toPath,
-                                  extra: state.user!.name);
+                                  extra: state.user!.userName);
                             }
                             if (state.isNotiFy!) {
                               showLoginSuccessSnackBar(context);

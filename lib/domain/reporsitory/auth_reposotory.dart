@@ -148,19 +148,22 @@ class AuthRepository implements AuthUseCaseType {
         'uid': user.id,
         'email': user.email,
         'createdAt': FieldValue.serverTimestamp(),
-        'name': user.userName,
-        'userName': '',
+        'name': user.name,
+        'userName': _createUserName(user.name!),
         'photoUrl': user.photo,
         'lastSeen': FieldValue.serverTimestamp(),
         'metadata': user.metadata,
         'role': user.role?.toShortString(),
         'updatedAt': FieldValue.serverTimestamp(),
-        'searchKey': user.userName!.toLowerCase(),
         'userNameUpdatedAt': FieldValue.serverTimestamp()
       });
     } else {
       _isUserFirstLogin.complete(false);
     }
+  }
+
+  String _createUserName(String userName) {
+    return '${userName.replaceAll(RegExp(r"\s\b|\b\s"), "")}_${generateRandomString(10)}';
   }
 
   @override
@@ -193,7 +196,7 @@ class AuthRepository implements AuthUseCaseType {
           _authCompleter.complete(true);
           User newUser = User(
               id: user.uid,
-              userName: user.displayName,
+              name: user.displayName,
               email: user.email,
               photo: user.photoURL);
 

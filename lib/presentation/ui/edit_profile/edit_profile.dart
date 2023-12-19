@@ -298,6 +298,7 @@ class _EditProfileState extends State<EditProfile> {
                                   future: userRepository.getSelectedGames(
                                       authRepository.currentUser!.uid),
                                   builder: (context, snapshot) {
+                                    debugPrint('poiuy  ${snapshot.data}');
                                     if (snapshot.hasData) {
                                       games = snapshot.data;
                                     }
@@ -360,6 +361,7 @@ class _EditProfileState extends State<EditProfile> {
                         ),
                         IconButton(
                             onPressed: () {
+                              debugPrint(games.toString());
                               if (games != null) {
                                 context.push(APP_PAGE.editGameFav.toPath,
                                     extra: games);
