@@ -75,9 +75,9 @@ class LanguagePage extends StatelessWidget {
     showDialog(
         context: context,
         builder: (_) => AlertDialog(
-              title: const Text(
-                'Ganti Bahasa?',
-                style: TextStyle(fontWeight: FontWeight.w400),
+              title: Text(
+                '${LocaleKeys.label_pick_language.tr()}?',
+                style: const TextStyle(fontWeight: FontWeight.w400),
               ),
               actions: [
                 TextButton(
