@@ -622,101 +622,120 @@ class _ProfilePageState extends State<ProfilePage> {
     isToEditProfile = false;
   }
 
-  Padding gameFavView(String uid) {
+  Theme gameFavView(String uid) {
     UserRepository repository = RepositoryProvider.of<UserRepository>(context);
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: Dimens.DIMENS_8),
-      child: BlocConsumer<GameFavCubit, GameFavState>(
-        listener: (context, state) {
-          if (state.sattus == GameFavSattus.succes) {
-            gameFavs = state.gameFav!;
-          }
-        },
-        builder: (context, state) {
-          return FutureBuilder(
-              future: repository.getSelectedGames(uid),
-              builder: (context, AsyncSnapshot<List<GameFav>> snapshot) {
-                List<GameFav>? games = snapshot.data;
+    return Theme(
+      data: ThemeData().copyWith(
+        useMaterial3: false,
+      ),
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: Dimens.DIMENS_8),
+        child: BlocConsumer<GameFavCubit, GameFavState>(
+          listener: (context, state) {
+            if (state.sattus == GameFavSattus.succes) {
+              gameFavs = state.gameFav!;
+            }
+          },
+          builder: (context, state) {
+            return FutureBuilder(
+                future: repository.getSelectedGames(uid),
+                builder: (context, AsyncSnapshot<List<GameFav>> snapshot) {
+                  List<GameFav>? games = snapshot.data;
 
-                if (!snapshot.hasData) {
-                  return Container();
-                }
-                if (snapshot.hasData) {
-                  gameFavs = games!;
-                }
-                return BlocBuilder<ProfileCubit, ProfileState>(
-                  buildWhen: (previous, current) {
-                    if (current is ShowLessBio) {
-                      return false;
-                    } else if (current is ShowMoreBio) {
-                      return false;
-                    }
-                    return true;
-                  },
-                  builder: (context, state) {
-                    List<Widget> items = [
-                      ...List<Widget>.generate(
+                  if (!snapshot.hasData) {
+                    return Container();
+                  }
+                  if (snapshot.hasData) {
+                    gameFavs = games!;
+                  }
+                  return BlocBuilder<ProfileCubit, ProfileState>(
+                    buildWhen: (previous, current) {
+                      if (current is ShowLessBio) {
+                        return false;
+                      } else if (current is ShowMoreBio) {
+                        return false;
+                      }
+                      return true;
+                    },
+                    builder: (context, state) {
+                      List<Widget> items = [
+                        ...List<Widget>.generate(
                           games!.length,
                           (index) => Chip(
-                                avatar: CircleAvatar(
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(50),
-                                    child: CachedNetworkImage(
-                                      imageUrl: games[index].gameImage!,
-                                      fit: BoxFit.cover,
-                                    ),
-                                  ),
+                            materialTapTargetSize:
+                                MaterialTapTargetSize.shrinkWrap,
+                            avatar: CircleAvatar(
+                              radius: 10,
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(50),
+                                child: CachedNetworkImage(
+                                  imageUrl: games[index].gameImage!,
+                                  fit: BoxFit.cover,
                                 ),
-                                label: Text(games[index].gameTitle!),
-                              )).toList(),
-                    ];
-                    if (state is ShowMoreGameFav) {
+                              ),
+                            ),
+                            label: Text(
+                              games[index].gameTitle!,
+                              style: TextStyle(fontSize: 12),
+                            ),
+                          ),
+                        ).toList(),
+                      ];
+                      if (state is ShowMoreGameFav) {
+                        return Wrap(
+                          spacing: 3,
+                          runSpacing: Dimens.DIMENS_3,
+                          children: [
+                            ...items,
+                            items.length > 3
+                                ? GestureDetector(
+                                    onTap: () {
+                                      BlocProvider.of<ProfileCubit>(context)
+                                          .seeMoreGameFavHandle();
+                                    },
+                                    child: Chip(
+                                      materialTapTargetSize:
+                                          MaterialTapTargetSize.shrinkWrap,
+                                      label: Text(LocaleKeys.label_see_less
+                                          .tr()
+                                          .replaceAll('.', '')),
+                                    ),
+                                  )
+                                : Container()
+                          ],
+                        );
+                      }
                       return Wrap(
-                        spacing: 3,
-                        children: [
-                          ...items,
-                          items.length > 3
-                              ? GestureDetector(
-                                  onTap: () {
-                                    BlocProvider.of<ProfileCubit>(context)
-                                        .seeMoreGameFavHandle();
-                                  },
-                                  child: Chip(
-                                    label: Text(LocaleKeys.label_see_less
-                                        .tr()
-                                        .replaceAll('.', '')),
-                                  ),
-                                )
-                              : Container()
-                        ],
-                      );
-                    }
-                    return Wrap(
-                        spacing: 3.0, // gap between adjacent chips
-                        runSpacing: 0,
-                        children: items.isEmpty
-                            ? []
-                            : [
-                                ...items.getRange(0, 3).toList(),
-                                items.length > 3
-                                    ? GestureDetector(
-                                        onTap: () {
-                                          BlocProvider.of<ProfileCubit>(context)
-                                              .seeMoreGameFavHandle();
-                                        },
-                                        child: Chip(
-                                          label: Icon(
-                                            Icons.more_horiz,
-                                            size: Dimens.DIMENS_20,
+                          spacing: 3.0, // gap between adjacent chips
+                          runSpacing: Dimens.DIMENS_3,
+                          children: items.isEmpty
+                              ? []
+                              : [
+                                  ...items.getRange(0, 3).toList(),
+                                  items.length > 3
+                                      ? GestureDetector(
+                                          onTap: () {
+                                            BlocProvider.of<ProfileCubit>(
+                                                    context)
+                                                .seeMoreGameFavHandle();
+                                          },
+                                          child: Chip(
+                                            materialTapTargetSize:
+                                                MaterialTapTargetSize
+                                                    .shrinkWrap,
+                                            label: Icon(
+                                              Icons.more_horiz,
+                                              size: Dimens.DIMENS_20,
+                                            ),
                                           ),
-                                        ),
-                                      )
-                                    : Container()
-                              ]);
-                  },
-                );
-              });
-        },
+                                        )
+                                      : Container()
+                                ]);
+                    },
+                  );
+                });
+          },
+        ),
       ),
     );
   }

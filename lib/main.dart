@@ -162,7 +162,8 @@ class _MyAppState extends State<MyApp> {
             child: MaterialApp.router(
               debugShowCheckedModeBanner: false,
               theme: ThemeData(
-                primarySwatch: PRIMARY,
+                colorScheme:
+                    ColorScheme.fromSeed(seedColor: Colors.deepPurpleAccent),
                 useMaterial3: true,
                 appBarTheme: const AppBarTheme(
                     surfaceTintColor: Colors.transparent,
