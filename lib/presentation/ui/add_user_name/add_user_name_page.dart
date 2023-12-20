@@ -6,10 +6,12 @@ import 'package:material_design_icons_flutter/material_design_icons_flutter.dart
 import 'package:personal_project/constant/color.dart';
 import 'package:personal_project/constant/dimens.dart';
 import 'package:personal_project/domain/reporsitory/user_repository.dart';
+import 'package:personal_project/domain/services/app/app_service.dart';
 import 'package:personal_project/presentation/l10n/stings.g.dart';
 import 'package:personal_project/presentation/router/route_utils.dart';
 import 'package:personal_project/presentation/ui/edit_profile/cubit/edit_name_cubit.dart';
 import 'package:personal_project/presentation/ui/edit_profile/cubit/edit_user_name_cubit.dart';
+import 'package:provider/provider.dart';
 
 class AddUserNamePage extends StatefulWidget {
   final String userName;
@@ -47,7 +49,8 @@ class _AddUserNamePageState extends State<AddUserNamePage> {
           _globalKey.currentState!.validate();
         }
         if (state.status == EditUserNameStatus.success) {
-          context.go(APP_PAGE.home.toPath);
+          _storeGameSelected(context);
+          _toHome(context);
         }
         debugPrint('qwerty ENC ${state.status.name}');
         // if (state.status == EditUserNameStatus.loading) {
@@ -146,6 +149,20 @@ class _AddUserNamePageState extends State<AddUserNamePage> {
         ),
       ),
     );
+  }
+
+  void _toHome(BuildContext context) {
+    context.go(APP_PAGE.home.toPath);
+  }
+
+  /// Store game selected if there a game selected
+  ///
+  /// on onboarding before.
+  void _storeGameSelected(BuildContext context) {
+    final repository = RepositoryProvider.of<UserRepository>(context);
+    final appService = Provider.of<AppService>(context, listen: false);
+    List<String> games = appService.getAllSelectedGameFav();
+    repository.editGameFav(games);
   }
 
   @override
