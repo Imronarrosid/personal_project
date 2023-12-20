@@ -694,23 +694,25 @@ class _ProfilePageState extends State<ProfilePage> {
                     return Wrap(
                         spacing: 3.0, // gap between adjacent chips
                         runSpacing: 0,
-                        children: [
-                          ...items.getRange(0, 3).toList(),
-                          items.length > 3
-                              ? GestureDetector(
-                                  onTap: () {
-                                    BlocProvider.of<ProfileCubit>(context)
-                                        .seeMoreGameFavHandle();
-                                  },
-                                  child: Chip(
-                                    label: Icon(
-                                      Icons.more_horiz,
-                                      size: Dimens.DIMENS_20,
-                                    ),
-                                  ),
-                                )
-                              : Container()
-                        ]);
+                        children: items.isEmpty
+                            ? []
+                            : [
+                                ...items.getRange(0, 3).toList(),
+                                items.length > 3
+                                    ? GestureDetector(
+                                        onTap: () {
+                                          BlocProvider.of<ProfileCubit>(context)
+                                              .seeMoreGameFavHandle();
+                                        },
+                                        child: Chip(
+                                          label: Icon(
+                                            Icons.more_horiz,
+                                            size: Dimens.DIMENS_20,
+                                          ),
+                                        ),
+                                      )
+                                    : Container()
+                              ]);
                   },
                 );
               });
