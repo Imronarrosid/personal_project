@@ -16,6 +16,7 @@ import 'package:personal_project/firebase_options.dart';
 import 'package:personal_project/presentation/l10n/l10n.dart';
 import 'package:personal_project/presentation/router/app_router.dart';
 import 'package:personal_project/presentation/ui/add_details/bloc/upload_bloc.dart';
+import 'package:personal_project/presentation/ui/add_details/select_game/cubit/select_game_cubit.dart';
 import 'package:personal_project/presentation/ui/auth/bloc/auth_bloc.dart';
 import 'package:personal_project/presentation/ui/edit_profile/cubit/edit_bio_cubit.dart';
 import 'package:personal_project/presentation/ui/edit_profile/cubit/edit_name_cubit.dart';
@@ -157,7 +158,10 @@ class _MyAppState extends State<MyApp> {
                 },
                 child: Container(),
               ),
-              BlocProvider(create: (_) => LanguageCubit())
+              BlocProvider(create: (_) => LanguageCubit()),
+              BlocProvider(
+                create: (context) => SelectGameCubit(),
+              )
             ],
             child: MaterialApp.router(
               debugShowCheckedModeBanner: false,

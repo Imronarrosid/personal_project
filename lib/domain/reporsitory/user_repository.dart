@@ -347,6 +347,12 @@ class UserRepository implements UserUseCaseType {
     return gameFav;
   }
 
+  Stream<QuerySnapshot<Map<String, dynamic>>>? gameStream() {
+    Stream<QuerySnapshot<Map<String, dynamic>>> snapshots =
+        firebaseFirestore.collection('gameFavorites').snapshots();
+    return snapshots;
+  }
+
   Future<void> editGameFav(List<String> gameFav) async {
     try {
       await firebaseFirestore

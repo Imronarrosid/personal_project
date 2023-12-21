@@ -1,10 +1,12 @@
 import 'dart:io';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:personal_project/constant/color.dart';
 import 'package:personal_project/constant/dimens.dart';
 import 'package:personal_project/constant/font_size.dart';
@@ -14,6 +16,7 @@ import 'package:personal_project/presentation/assets/images.dart';
 import 'package:personal_project/presentation/l10n/stings.g.dart';
 import 'package:personal_project/presentation/router/route_utils.dart';
 import 'package:personal_project/presentation/ui/add_details/bloc/upload_bloc.dart';
+import 'package:personal_project/presentation/ui/add_details/select_game/cubit/select_game_cubit.dart';
 import 'package:personal_project/presentation/ui/auth/auth.dart';
 import 'package:personal_project/utils/get_thumbnails.dart';
 
@@ -22,6 +25,7 @@ class AddDetailsPage extends StatelessWidget {
   AddDetailsPage({super.key, required this.videoFile});
 
   final TextEditingController textEditingController = TextEditingController();
+  String selectedGame = '';
 
   @override
   Widget build(BuildContext context) {
@@ -34,12 +38,23 @@ class AddDetailsPage extends StatelessWidget {
         debugPrint('unfocus');
         FocusScope.of(context).unfocus();
       },
-      child: BlocListener<UploadBloc, UploadState>(
-        listener: (context, state) {
-          if (state is Uploading) {
-            context.go(APP_PAGE.home.toPath);
-          }
-        },
+      child: MultiBlocListener(
+        listeners: [
+          BlocListener<UploadBloc, UploadState>(
+            listener: (context, state) {
+              if (state is Uploading) {
+                context.go(APP_PAGE.home.toPath);
+              }
+            },
+          ),
+          BlocListener<SelectGameCubit, SelectGameState>(
+            listener: (context, state) {
+              if (state.status == SelectGameStatus.selected) {
+                selectedGame = state.selectedGame!.gameTitle!;
+              }
+            },
+          ),
+        ],
         child: Scaffold(
           appBar: AppBar(
             title: Text(LocaleKeys.title_upload.tr()),
@@ -107,6 +122,40 @@ class AddDetailsPage extends StatelessWidget {
                 height: Dimens.DIMENS_12,
               ),
               const Divider(),
+              BlocBuilder<SelectGameCubit, SelectGameState>(
+                builder: (context, state) {
+                  if (state.status == SelectGameStatus.selected) {
+                    return ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: CircleAvatar(
+                        backgroundColor: COLOR_grey,
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(50),
+                          child: CachedNetworkImage(
+                            imageUrl: state.selectedGame!.gameImage!,
+                            fit: BoxFit.cover,
+                            width: double.infinity,
+                          ),
+                        ),
+                      ),
+                      trailing: Icon(Icons.keyboard_arrow_right),
+                      title: Text(state.selectedGame!.gameTitle!),
+                      onTap: () {
+                        context.push(APP_PAGE.selectGame.toPath);
+                      },
+                    );
+                  }
+                  return ListTile(
+                    leading: Icon(MdiIcons.controller),
+                    contentPadding: EdgeInsets.zero,
+                    title: Text('Game title(optional)'),
+                    trailing: Icon(Icons.keyboard_arrow_right),
+                    onTap: () {
+                      context.push(APP_PAGE.selectGame.toPath);
+                    },
+                  );
+                },
+              ),
               SizedBox(
                 height: Dimens.DIMENS_28,
               ),
@@ -137,7 +186,8 @@ class AddDetailsPage extends StatelessWidget {
                                 UploadVideoEvent(
                                     thumbnail: data!.path,
                                     videoPath: videoFile.path,
-                                    caption: textEditingController.text),
+                                    caption: textEditingController.text,
+                                    game: selectedGame),
                               );
                               debugPrint('Uploading');
                             }

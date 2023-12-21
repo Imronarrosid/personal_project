@@ -12,6 +12,7 @@ import 'package:personal_project/domain/reporsitory/video_repository.dart';
 import 'package:personal_project/domain/services/app/app_service.dart';
 import 'package:personal_project/presentation/router/route_utils.dart';
 import 'package:personal_project/presentation/ui/add_details/add_details_page.dart';
+import 'package:personal_project/presentation/ui/add_details/select_game/select_game_page.dart';
 import 'package:personal_project/presentation/ui/add_user_name/add_user_name_page.dart';
 import 'package:personal_project/presentation/ui/edit_profile/edit_page/edit_game_fav_page.dart';
 import 'package:personal_project/presentation/ui/language/language_page.dart';
@@ -189,6 +190,30 @@ class AppRouter {
         builder: (context, state) {
           Video videoData = state.extra as Video;
           return PlaySingleVideoPage(videoData: videoData);
+        },
+      ),
+      GoRoute(
+        path: APP_PAGE.selectGame.toPath,
+        name: APP_PAGE.selectGame.toName,
+        pageBuilder: (context, state) {
+          return CustomTransitionPage(
+            child: SelectGamePage(),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) =>
+                    SlideTransition(
+                        position: animation.drive(
+                          Tween<Offset>(
+                            begin: Offset(0.75, 0),
+                            end: Offset.zero,
+                          ).chain(
+                            CurveTween(curve: Curves.ease),
+                          ),
+                        ),
+                        child: child),
+          );
+        },
+        builder: (context, state) {
+          return SelectGamePage();
         },
       ),
       GoRoute(

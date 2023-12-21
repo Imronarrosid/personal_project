@@ -74,7 +74,8 @@ class VideoRepository implements VideoUseCaseType {
   uploapVideo(
       {required String songName,
       required String caption,
-      required String videoPath}) async {
+      required String videoPath,
+      required String game}) async {
     try {
       String uid = firebaseAuth.currentUser!.uid;
       DocumentSnapshot userDoc =
@@ -98,7 +99,7 @@ class VideoRepository implements VideoUseCaseType {
           commentCount: 0,
           shareCount: 0,
           createdAt: FieldValue.serverTimestamp(),
-          game: '',
+          game: game,
           views: []);
 
       await firebaseFirestore

@@ -20,7 +20,8 @@ enum APP_PAGE {
   videoItem,
   cachesPage,
   languagePage,
-  addUserName
+  addUserName,
+  selectGame
 }
 
 extension AppPageExtension on APP_PAGE {
@@ -58,6 +59,8 @@ extension AppPageExtension on APP_PAGE {
         return "/add-game-fav";
       case APP_PAGE.editGameFav:
         return "/edit-game-fav";
+      case APP_PAGE.selectGame:
+        return "/select-game";
       case APP_PAGE.videoItem:
         return "/video-item";
       case APP_PAGE.cachesPage:
@@ -105,6 +108,8 @@ extension AppPageExtension on APP_PAGE {
         return "ADD-GAME-FAV";
       case APP_PAGE.editGameFav:
         return "EDIT-GAME-FAV";
+      case APP_PAGE.selectGame:
+        return "SELECT-GAME";
       case APP_PAGE.videoItem:
         return "VIDEO-ITEM";
       case APP_PAGE.cachesPage:

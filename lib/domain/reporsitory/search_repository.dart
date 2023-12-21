@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:personal_project/domain/model/game_fav_modal.dart';
 import 'package:personal_project/domain/model/user.dart';
 import 'package:personal_project/domain/services/firebase/firebase_service.dart';
 
@@ -37,6 +38,24 @@ class SearchRepository {
           if (!searchResults.contains(User.fromSnap(element))) {
             searchResults.add(User.fromSnap(element));
           }
+        }
+      });
+    }
+    return searchResults;
+  }
+
+  StreamSubscription? searchGameSubscription;
+  Future<List<GameFav>> onSearchGame(String query) async {
+    List<GameFav> searchResults = [];
+    if (query.isNotEmpty) {
+      await firebaseFirestore
+          .collection('gameFavorites')
+          .where('title', isGreaterThanOrEqualTo: query)
+          .where('title', isLessThan: '${query}z')
+          .get()
+          .then((value) {
+        for (var element in value.docs) {
+          searchResults.add(GameFav.fromSnap(element));
         }
       });
     }

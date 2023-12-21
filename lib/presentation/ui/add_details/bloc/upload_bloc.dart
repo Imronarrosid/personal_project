@@ -21,7 +21,8 @@ class UploadBloc extends Bloc<UploadEvent, UploadState> {
         await videoRepository.uploapVideo(
             songName: 'tidak diketahui',
             caption: event.caption,
-            videoPath: event.videoPath);
+            videoPath: event.videoPath,
+            game: event.game);
         emit(VideoUploaded());
         _removeFile(event.videoPath);
       } catch (e) {
