@@ -10,6 +10,7 @@ import 'package:material_design_icons_flutter/material_design_icons_flutter.dart
 import 'package:personal_project/constant/color.dart';
 import 'package:personal_project/constant/dimens.dart';
 import 'package:personal_project/constant/font_size.dart';
+import 'package:personal_project/domain/model/game_fav_modal.dart';
 import 'package:personal_project/domain/model/preview_model.dart';
 import 'package:personal_project/domain/reporsitory/auth_reposotory.dart';
 import 'package:personal_project/presentation/assets/images.dart';
@@ -20,18 +21,30 @@ import 'package:personal_project/presentation/ui/add_details/select_game/cubit/s
 import 'package:personal_project/presentation/ui/auth/auth.dart';
 import 'package:personal_project/utils/get_thumbnails.dart';
 
-class AddDetailsPage extends StatelessWidget {
+class AddDetailsPage extends StatefulWidget {
   final File videoFile;
-  AddDetailsPage({super.key, required this.videoFile});
+  const AddDetailsPage({super.key, required this.videoFile});
 
+  @override
+  State<AddDetailsPage> createState() => _AddDetailsPageState();
+}
+
+class _AddDetailsPageState extends State<AddDetailsPage> {
   final TextEditingController textEditingController = TextEditingController();
-  String selectedGame = '';
+
+  GameFav? selectedGame;
+
+  @override
+  void initState() {
+    BlocProvider.of<SelectGameCubit>(context).initSelectGame();
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
 
-    Future<File> thumbnail = getTumbnail(videoFile.path);
+    Future<File> thumbnail = getTumbnail(widget.videoFile.path);
     return GestureDetector(
       onTap: () {
         // Dismiss the keyboard when tapping outside of text fields
@@ -50,7 +63,7 @@ class AddDetailsPage extends StatelessWidget {
           BlocListener<SelectGameCubit, SelectGameState>(
             listener: (context, state) {
               if (state.status == SelectGameStatus.selected) {
-                selectedGame = state.selectedGame!.gameTitle!;
+                selectedGame = state.selectedGame!;
               }
             },
           ),
@@ -79,11 +92,11 @@ class AddDetailsPage extends StatelessWidget {
                       onTap: () {
                         context.push(
                           APP_PAGE.videoPreview.toPath,
-                          extra: videoFile,
+                          extra: widget.videoFile,
                         );
                       },
                       child: FutureBuilder(
-                        future: getTumbnail(videoFile.path),
+                        future: getTumbnail(widget.videoFile.path),
                         builder: (context, snapshot) {
                           var thumbnailFile = snapshot.data;
 
@@ -185,7 +198,7 @@ class AddDetailsPage extends StatelessWidget {
                               BlocProvider.of<UploadBloc>(context).add(
                                 UploadVideoEvent(
                                     thumbnail: data!.path,
-                                    videoPath: videoFile.path,
+                                    videoPath: widget.videoFile.path,
                                     caption: textEditingController.text,
                                     game: selectedGame),
                               );

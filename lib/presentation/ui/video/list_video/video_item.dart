@@ -324,21 +324,28 @@ class _VideoItemState extends State<VideoItem> {
                                   SizedBox(
                                     height: Dimens.DIMENS_15,
                                   ),
-                                  Container(
-                                    width: Dimens.DIMENS_34,
-                                    height: Dimens.DIMENS_34,
-                                    alignment: Alignment.center,
-                                    decoration: BoxDecoration(
-                                      border: Border.all(
-                                          color: COLOR_white_fff5f5f5),
-                                      borderRadius: BorderRadius.circular(5),
-                                      color:
-                                          const Color.fromARGB(255, 27, 26, 26),
-                                    ),
-                                    child: Icon(
-                                      MdiIcons.controller,
-                                      color: COLOR_white_fff5f5f5,
-                                      size: Dimens.DIMENS_15,
+                                  GestureDetector(
+                                    onTap: () {},
+                                    child: Container(
+                                      width: Dimens.DIMENS_34,
+                                      height: Dimens.DIMENS_34,
+                                      alignment: Alignment.center,
+                                      decoration: BoxDecoration(
+                                        border: Border.all(
+                                            color: COLOR_white_fff5f5f5),
+                                        borderRadius: BorderRadius.circular(5),
+                                        color: const Color.fromARGB(
+                                            255, 27, 26, 26),
+                                      ),
+                                      child: videoData.game == null
+                                          ? Icon(
+                                              MdiIcons.controller,
+                                              color: COLOR_white_fff5f5f5,
+                                              size: Dimens.DIMENS_15,
+                                            )
+                                          : CachedNetworkImage(
+                                              imageUrl:
+                                                  videoData.game!.gameImage!),
                                     ),
                                   )
                                 ],

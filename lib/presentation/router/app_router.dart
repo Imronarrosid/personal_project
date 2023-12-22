@@ -8,10 +8,13 @@ import 'package:personal_project/domain/model/game_fav_modal.dart';
 import 'package:personal_project/domain/model/preview_model.dart';
 import 'package:personal_project/domain/model/profile_data_model.dart';
 import 'package:personal_project/domain/model/video_model.dart';
+import 'package:personal_project/domain/reporsitory/search_repository.dart';
 import 'package:personal_project/domain/reporsitory/video_repository.dart';
 import 'package:personal_project/domain/services/app/app_service.dart';
 import 'package:personal_project/presentation/router/route_utils.dart';
 import 'package:personal_project/presentation/ui/add_details/add_details_page.dart';
+import 'package:personal_project/presentation/ui/add_details/select_game/bloc/search_game_bloc.dart';
+import 'package:personal_project/presentation/ui/add_details/select_game/cubit/select_game_cubit.dart';
 import 'package:personal_project/presentation/ui/add_details/select_game/select_game_page.dart';
 import 'package:personal_project/presentation/ui/add_user_name/add_user_name_page.dart';
 import 'package:personal_project/presentation/ui/edit_profile/edit_page/edit_game_fav_page.dart';
@@ -100,9 +103,10 @@ class AppRouter {
           pageBuilder: (context, state) {
             File videoFile = state.extra as File;
             return MaterialPage(
-                child: AddDetailsPage(
-              videoFile: videoFile,
-            ));
+              child: AddDetailsPage(
+                videoFile: videoFile,
+              ),
+            );
           }),
 
       GoRoute(

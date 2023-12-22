@@ -4,18 +4,19 @@ sealed class UploadEvent extends Equatable {
   const UploadEvent();
 
   @override
-  List<Object> get props => [];
+  List<Object?> get props => [];
 }
 
 class UploadVideoEvent extends UploadEvent {
-  final String videoPath, caption, thumbnail, game;
+  final String videoPath, caption, thumbnail;
+  final GameFav? game;
 
   const UploadVideoEvent(
       {required this.videoPath,
       required this.thumbnail,
       required this.caption,
-      required this.game});
+      this.game});
 
   @override
-  List<Object> get props => [videoPath, caption, thumbnail, game];
+  List<Object?> get props => [videoPath, caption, thumbnail, game];
 }

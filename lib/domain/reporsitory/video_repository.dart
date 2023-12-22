@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:personal_project/domain/model/game_fav_modal.dart';
 import 'package:personal_project/domain/model/user.dart';
 import 'package:personal_project/domain/model/video_model.dart';
 import 'package:personal_project/domain/services/firebase/firebase_service.dart';
@@ -75,11 +76,9 @@ class VideoRepository implements VideoUseCaseType {
       {required String songName,
       required String caption,
       required String videoPath,
-      required String game}) async {
+      GameFav? game}) async {
     try {
       String uid = firebaseAuth.currentUser!.uid;
-      DocumentSnapshot userDoc =
-          await firebaseFirestore.collection('users').doc(uid).get();
       //Get id
       var allDocs = await firebaseFirestore.collection('videos').get();
       int len = allDocs.docs.length;
@@ -88,13 +87,11 @@ class VideoRepository implements VideoUseCaseType {
           await _uploadThumnailesToStorage("video $len", videoPath);
 
       Video video = Video(
-          username: (userDoc.data()! as Map<String, dynamic>)['name'],
           uid: uid,
           songName: songName,
           caption: caption,
           thumnail: thumnail,
           videoUrl: videoUrl,
-          profileImg: (userDoc.data()! as Map<String, dynamic>)['photo'],
           likes: [],
           commentCount: 0,
           shareCount: 0,

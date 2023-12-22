@@ -7,9 +7,12 @@ part 'select_game_state.dart';
 class SelectGameCubit extends Cubit<SelectGameState> {
   SelectGameCubit()
       : super(const SelectGameState(status: SelectGameStatus.initial));
+  void initSelectGame() {
+    emit(const SelectGameState(status: SelectGameStatus.initial));
+  }
 
-  selectGame(GameFav game) {
-    emit(SelectGameState(
-        status: SelectGameStatus.selected, selectedGame: game));
+  void selectGame(GameFav game) {
+    emit(
+        SelectGameState(status: SelectGameStatus.selected, selectedGame: game));
   }
 }

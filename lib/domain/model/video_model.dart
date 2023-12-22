@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import 'game_fav_modal.dart';
+
 class Video {
   /// [id] for [Video] document id on firestore
   ///
@@ -9,27 +11,23 @@ class Video {
   ///
   /// firestore will create [id] value
   final String? id;
-  final String username,
-      uid,
-      songName,
-      caption,
-      thumnail,
-      videoUrl,
-      game,
-      profileImg;
+  final String? username;
+  final String uid, songName, caption, thumnail, videoUrl;
+  final String? profileImg;
+  final GameFav? game;
   final dynamic createdAt;
   final List likes, views;
   final int commentCount, shareCount;
   Video(
       {this.id,
-      required this.username,
+      this.username,
       required this.uid,
       required this.songName,
       required this.caption,
       required this.thumnail,
       required this.videoUrl,
-      required this.profileImg,
-      required this.game,
+      this.profileImg,
+      this.game,
       required this.likes,
       required this.views,
       required this.commentCount,
@@ -50,7 +48,9 @@ class Video {
         "thumnail": thumnail,
         "createdAt": createdAt,
         "views": views,
-        "game": game
+        "game": game == null
+            ? null
+            : {"title": game?.gameTitle, "icon": game?.gameImage}
       };
   static Video fromSnap(DocumentSnapshot snapshot) {
     var snap = snapshot.data() as Map<String, dynamic>;
@@ -69,7 +69,10 @@ class Video {
       thumnail: snap["thumnail"],
       createdAt: snap["creaatedAt"],
       views: snap["views"],
-      game: snap['game'],
+      game: snap['game'] != null
+          ? GameFav(
+              gameTitle: snap['game']['title'], gameImage: snap['game']['icon'])
+          : null,
     );
   }
 }
