@@ -17,6 +17,8 @@ class VideoRepository implements VideoUseCaseType {
   FirebaseStorage firebaseStorage = FirebaseStorage.instance;
   final List<DocumentSnapshot> allDocs = [];
 
+  final List<DocumentSnapshot> allVideoFromGame = [];
+
   /// list videos each user
   final List<DocumentSnapshot> allUserVideosDocs = [];
   final List<DocumentSnapshot> likedVideosDocs = [];
@@ -150,6 +152,50 @@ class VideoRepository implements VideoUseCaseType {
         debugPrint('_LISTDOCS' + Video.fromSnap(element).videoUrl);
       }
       debugPrint('DOCUMENTSNAP ${querySnapshot.docs}');
+    } catch (e) {
+      debugPrint(e.toString());
+    }
+    return listDocs;
+  }
+
+  Future<List<DocumentSnapshot>> getListVideoFromGame(
+      {required int limit, required GameFav game}) async {
+    List<DocumentSnapshot> listDocs = [];
+
+    QuerySnapshot querySnapshot;
+    try {
+      if (allVideoFromGame.isEmpty) {
+        querySnapshot = await firebaseFirestore
+            .collection('videos')
+            .where('game', isEqualTo: {
+              'icon': game.gameImage,
+              'title': game.gameTitle,
+            })
+            .orderBy('createdAt', descending: true)
+            .limit(limit)
+            .get();
+      } else {
+        querySnapshot = await firebaseFirestore
+            .collection('videos')
+            .where('game', isEqualTo: {
+              'icon': game.gameImage,
+              'title': game.gameTitle,
+            })
+            .orderBy('createdAt', descending: true)
+            .startAfterDocument(allVideoFromGame.last)
+            .limit(limit)
+            .get();
+      }
+
+      ///List to get last documet
+      allVideoFromGame.addAll(querySnapshot.docs);
+
+      //list that send to infinity list package
+      listDocs.addAll(querySnapshot.docs);
+
+      for (var element in querySnapshot.docs) {
+        debugPrint(Video.fromSnap(element).videoUrl);
+      }
     } catch (e) {
       debugPrint(e.toString());
     }

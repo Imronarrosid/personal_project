@@ -21,7 +21,8 @@ enum APP_PAGE {
   cachesPage,
   languagePage,
   addUserName,
-  selectGame
+  selectGame,
+  videoFromGame,
 }
 
 extension AppPageExtension on APP_PAGE {
@@ -68,7 +69,9 @@ extension AppPageExtension on APP_PAGE {
       case APP_PAGE.languagePage:
         return "/language";
       case APP_PAGE.addUserName:
-        return "/add_username";
+        return "/add-username";
+      case APP_PAGE.videoFromGame:
+        return "/video-from-game";
       default:
         return "/";
     }
@@ -118,6 +121,8 @@ extension AppPageExtension on APP_PAGE {
         return "LANGUAGE";
       case APP_PAGE.addUserName:
         return "ADD-USERNAME";
+      case APP_PAGE.videoFromGame:
+        return "VIDEO-FROM-GAME";
       default:
         return "HOME";
     }

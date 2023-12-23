@@ -10,6 +10,7 @@ import 'package:personal_project/constant/dimens.dart';
 import 'package:personal_project/data/repository/coment_repository.dart';
 import 'package:personal_project/domain/model/profile_data_model.dart';
 import 'package:personal_project/domain/model/user.dart';
+import 'package:personal_project/domain/model/video_from_game_data_model.dart';
 import 'package:personal_project/domain/model/video_model.dart';
 import 'package:personal_project/domain/reporsitory/auth_reposotory.dart';
 import 'package:personal_project/domain/reporsitory/video_repository.dart';
@@ -325,7 +326,21 @@ class _VideoItemState extends State<VideoItem> {
                                     height: Dimens.DIMENS_15,
                                   ),
                                   GestureDetector(
-                                    onTap: () {},
+                                    onTap: () {
+                                      if (videoData.game != null) {
+                                        context.push(
+                                            APP_PAGE.videoFromGame.toPath,
+                                            extra: VideoFromGameData(
+                                                game: videoData.game!,
+                                                captions: videoData.caption,
+                                                profileImg: data!.photo!));
+                                      } else {
+                                        Fluttertoast.showToast(
+                                            gravity: ToastGravity.TOP,
+                                            msg:
+                                                'Tidak ada game yang dicantumkan');
+                                      }
+                                    },
                                     child: Container(
                                       width: Dimens.DIMENS_34,
                                       height: Dimens.DIMENS_34,

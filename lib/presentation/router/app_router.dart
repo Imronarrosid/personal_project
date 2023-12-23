@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:personal_project/domain/model/game_fav_modal.dart';
 import 'package:personal_project/domain/model/preview_model.dart';
 import 'package:personal_project/domain/model/profile_data_model.dart';
+import 'package:personal_project/domain/model/video_from_game_data_model.dart';
 import 'package:personal_project/domain/model/video_model.dart';
 import 'package:personal_project/domain/reporsitory/search_repository.dart';
 import 'package:personal_project/domain/reporsitory/video_repository.dart';
@@ -32,6 +33,7 @@ import 'package:personal_project/presentation/ui/ugf/ugf_page.dart';
 import 'package:personal_project/presentation/ui/upload/upload.dart';
 import 'package:personal_project/presentation/ui/video/list_video/video_item.dart';
 import 'package:personal_project/presentation/ui/video_editor/video_editor_page.dart';
+import 'package:personal_project/presentation/ui/video_from_game/video_from_game_page.dart';
 import 'package:personal_project/presentation/ui/video_preview/video_previe_page.dart';
 import 'package:personal_project/utils/generate_string.dart';
 import 'package:uuid/v1.dart';
@@ -194,6 +196,34 @@ class AppRouter {
         builder: (context, state) {
           Video videoData = state.extra as Video;
           return PlaySingleVideoPage(videoData: videoData);
+        },
+      ),
+      GoRoute(
+        path: APP_PAGE.videoFromGame.toPath,
+        name: APP_PAGE.videoFromGame.toName,
+        pageBuilder: (context, state) {
+          final VideoFromGameData data = state.extra as VideoFromGameData;
+          return CustomTransitionPage(
+            child: VideoFromGamePage(data: data),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) =>
+                    SlideTransition(
+                        position: animation.drive(
+                          Tween<Offset>(
+                            begin: Offset(0.75, 0),
+                            end: Offset.zero,
+                          ).chain(
+                            CurveTween(curve: Curves.ease),
+                          ),
+                        ),
+                        child: child),
+          );
+        },
+        builder: (context, state) {
+          final VideoFromGameData data = state.extra as VideoFromGameData;
+          return VideoFromGamePage(
+            data: data,
+          );
         },
       ),
       GoRoute(
