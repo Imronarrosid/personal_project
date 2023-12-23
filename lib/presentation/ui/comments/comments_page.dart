@@ -68,235 +68,246 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
               _newCommentItems.add(commentToMove);
             }
           },
-          child: DraggableScrollableSheet(
-            initialChildSize:
-                0.7, // Initial height as a fraction of the screen height
-            maxChildSize: 1.0, // Maximum height when fully expanded
-            minChildSize: 0.5, // Minimum height when collapsed,
-            snap: true,
-            snapSizes: const <double>[0.6, 1.0],
-            builder: (BuildContext context, ScrollController scrollController) {
-              //To prevent comments list overlaped by header.
-              scrollController.addListener(() {
-                debugPrint('offset: ${scrollController.offset}');
-                if (scrollController.offset > 0) {
-                  scrollController.jumpTo(0.0);
-                }
-              });
+          child: GestureDetector(
+            onTap: () {
+              FocusScope.of(context).unfocus();
+            },
+            child: DraggableScrollableSheet(
+              initialChildSize:
+                  0.7, // Initial height as a fraction of the screen height
+              maxChildSize: 1.0, // Maximum height when fully expanded
+              minChildSize: 0.5, // Minimum height when collapsed,
+              snap: true,
+              snapSizes: const <double>[0.6, 1.0],
+              builder:
+                  (BuildContext context, ScrollController scrollController) {
+                //To prevent comments list overlaped by header.
+                scrollController.addListener(() {
+                  debugPrint('offset: ${scrollController.offset}');
+                  if (scrollController.offset > 0) {
+                    scrollController.jumpTo(0.0);
+                  }
+                });
 
-              return Container(
-                height: MediaQuery.of(context).size.height,
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(10),
-                    topRight: Radius.circular(10),
+                return Container(
+                  height: MediaQuery.of(context).size.height,
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(10),
+                      topRight: Radius.circular(10),
+                    ),
                   ),
-                ),
-                child: Column(
-                  children: [
-                    Expanded(
-                      child: CustomScrollView(
-                        controller: scrollController,
-                        slivers: <Widget>[
-                          SliverAppBar(
-                            title: Text(LocaleKeys.title_comments.tr()),
-                            floating: false,
-                            pinned: true,
-                            backgroundColor: Colors.white,
-                            foregroundColor: COLOR_black_ff121212,
-                            elevation: 0,
-                            leading: Container(),
-                            leadingWidth: Dimens.DIMENS_3,
-                            actions: [
-                              IconButton(
-                                  onPressed: () {
-                                    context.pop();
-                                  },
-                                  icon: const Icon(Icons.close_rounded))
-                            ],
-                            shape: const RoundedRectangleBorder(
-                              borderRadius: BorderRadius.only(
-                                topLeft: Radius.circular(10),
-                                topRight: Radius.circular(10),
+                  child: Column(
+                    children: [
+                      Expanded(
+                        child: CustomScrollView(
+                          controller: scrollController,
+                          slivers: <Widget>[
+                            SliverAppBar(
+                              title: Text(LocaleKeys.title_comments.tr()),
+                              floating: false,
+                              pinned: true,
+                              backgroundColor: Colors.white,
+                              foregroundColor: COLOR_black_ff121212,
+                              elevation: 0,
+                              leading: Container(),
+                              leadingWidth: Dimens.DIMENS_3,
+                              actions: [
+                                IconButton(
+                                    onPressed: () {
+                                      context.pop();
+                                    },
+                                    icon: const Icon(Icons.close_rounded))
+                              ],
+                              shape: const RoundedRectangleBorder(
+                                borderRadius: BorderRadius.only(
+                                  topLeft: Radius.circular(10),
+                                  topRight: Radius.circular(10),
+                                ),
+                              ),
+                              bottom: PreferredSize(
+                                preferredSize: Size(
+                                    MediaQuery.of(context).size.width,
+                                    Dimens.DIMENS_3),
+                                child: Divider(
+                                  color: Colors.black,
+                                  height: Dimens.DIMENS_3,
+                                ),
                               ),
                             ),
-                            bottom: PreferredSize(
-                              preferredSize: Size(
-                                  MediaQuery.of(context).size.width,
-                                  Dimens.DIMENS_3),
-                              child: Divider(
-                                color: Colors.black,
-                                height: Dimens.DIMENS_3,
-                              ),
-                            ),
-                          ),
 
-                          SliverFillRemaining(
-                            child: RefreshIndicator(
-                              onRefresh: () {
-                                return _refreshComments(context);
-                              },
-                              child: SingleChildScrollView(
-                                child: Column(
-                                  children: [
-                                    BlocBuilder<CommentBloc, CommentState>(
-                                      builder: (context, state) {
-                                        return ListView.builder(
-                                          reverse: true,
-                                          shrinkWrap: true,
-                                          itemCount: _newCommentItems.length,
-                                          physics:
-                                              const NeverScrollableScrollPhysics(),
-                                          itemBuilder: ((context, index) {
-                                            return CommentItem(
-                                                comment:
-                                                    _newCommentItems[index],
-                                                postId: widget.postId);
-                                          }),
-                                        );
-                                      },
-                                    ),
-                                    BlocBuilder<CommentsPagingBloc,
-                                        CommentsPagingState>(
-                                      builder: (context, state) {
-                                        if (state
-                                            is CommentsPagingInitialized) {
-                                          return PagedListView<int, Comment>(
-                                            pagingController: state.controller!,
+                            SliverFillRemaining(
+                              child: RefreshIndicator(
+                                onRefresh: () {
+                                  return _refreshComments(context);
+                                },
+                                child: SingleChildScrollView(
+                                  child: Column(
+                                    children: [
+                                      BlocBuilder<CommentBloc, CommentState>(
+                                        builder: (context, state) {
+                                          return ListView.builder(
+                                            reverse: true,
                                             shrinkWrap: true,
+                                            itemCount: _newCommentItems.length,
                                             physics:
                                                 const NeverScrollableScrollPhysics(),
-                                            builderDelegate:
-                                                PagedChildBuilderDelegate(
-                                                    itemBuilder: (
-                                              context,
-                                              item,
-                                              index,
-                                            ) {
+                                            itemBuilder: ((context, index) {
                                               return CommentItem(
-                                                comment: item,
-                                                postId: widget.postId,
-                                              );
+                                                  comment:
+                                                      _newCommentItems[index],
+                                                  postId: widget.postId);
                                             }),
                                           );
-                                        }
-                                        return Container();
-                                      },
-                                    ),
-                                  ],
+                                        },
+                                      ),
+                                      BlocBuilder<CommentsPagingBloc,
+                                          CommentsPagingState>(
+                                        builder: (context, state) {
+                                          if (state
+                                              is CommentsPagingInitialized) {
+                                            return PagedListView<int, Comment>(
+                                              pagingController:
+                                                  state.controller!,
+                                              shrinkWrap: true,
+                                              physics:
+                                                  const NeverScrollableScrollPhysics(),
+                                              builderDelegate:
+                                                  PagedChildBuilderDelegate(
+                                                      itemBuilder: (
+                                                context,
+                                                item,
+                                                index,
+                                              ) {
+                                                return CommentItem(
+                                                  comment: item,
+                                                  postId: widget.postId,
+                                                );
+                                              }),
+                                            );
+                                          }
+                                          return Container();
+                                        },
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
 
-                          // Add more slivers as needed
-                        ],
+                            // Add more slivers as needed
+                          ],
+                        ),
                       ),
-                    ),
-                    Container(
-                      decoration: BoxDecoration(
-                          border: Border(
-                              top: BorderSide(
-                                  color:
-                                      COLOR_black_ff121212.withOpacity(0.4)))),
-                      padding: EdgeInsets.only(
-                          bottom: MediaQuery.of(context).viewInsets.bottom),
-                      child: Row(
-                        children: [
-                          SizedBox(
-                            width: Dimens.DIMENS_8,
-                          ),
-                          Expanded(
-                            child: Padding(
-                              padding: EdgeInsets.symmetric(
-                                  vertical: Dimens.DIMENS_6),
-                              child: Container(
-                                decoration: BoxDecoration(
-                                    color: COLOR_grey,
-                                    borderRadius: BorderRadius.circular(10)),
-                                child: TextField(
-                                  controller: _textEditingController,
-                                  decoration: InputDecoration(
-                                      contentPadding: EdgeInsets.symmetric(
-                                          horizontal: Dimens.DIMENS_8),
-                                      hintText: 'Tambahkan komentar',
-                                      border: const OutlineInputBorder(
-                                          borderSide: BorderSide.none)),
-                                  textAlignVertical: TextAlignVertical.center,
-                                  keyboardType: TextInputType.multiline,
-                                  minLines: 1,
-                                  maxLines: 3,
-                                  onTap: () {
-                                    final isAuthenticated =
-                                        RepositoryProvider.of<AuthRepository>(
-                                                    context)
-                                                .currentUser !=
-                                            null;
-                                    if (isAuthenticated) {
-                                      BlocProvider.of<CommentBloc>(context)
-                                          .add(AddComentEvent());
-                                    } else {
-                                      showAuthBottomSheetFunc(context);
-                                    }
-                                  },
-                                  onChanged: (text) {
-                                    if (text.endsWith('\n')) {
-                                      // Handle the Enter key press
+                      Container(
+                        decoration: BoxDecoration(
+                            border: Border(
+                                top: BorderSide(
+                                    color: COLOR_black_ff121212.withOpacity(
+                                        0.4)))),
+                        padding: EdgeInsets.only(
+                            bottom: MediaQuery.of(context).viewInsets.bottom),
+                        child: Row(
+                          children: [
+                            SizedBox(
+                              width: Dimens.DIMENS_8,
+                            ),
+                            Expanded(
+                              child: Padding(
+                                padding: EdgeInsets.symmetric(
+                                    vertical: Dimens.DIMENS_6),
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                      color: COLOR_grey,
+                                      borderRadius: BorderRadius.circular(10)),
+                                  child: TextField(
+                                    controller: _textEditingController,
+                                    decoration: InputDecoration(
+                                        contentPadding: EdgeInsets.symmetric(
+                                            horizontal: Dimens.DIMENS_8),
+                                        hintText: 'Tambahkan komentar',
+                                        border: const OutlineInputBorder(
+                                            borderSide: BorderSide.none)),
+                                    textAlignVertical: TextAlignVertical.center,
+                                    keyboardType: TextInputType.multiline,
+                                    minLines: 1,
+                                    maxLines: 3,
+                                    onTap: () {
+                                      final isAuthenticated =
+                                          RepositoryProvider.of<AuthRepository>(
+                                                      context)
+                                                  .currentUser !=
+                                              null;
+                                      if (isAuthenticated) {
+                                        BlocProvider.of<CommentBloc>(context)
+                                            .add(AddComentEvent());
+                                      } else {
+                                        showAuthBottomSheetFunc(context);
+                                      }
+                                    },
+                                    onChanged: (text) {
+                                      if (text.endsWith('\n')) {
+                                        // Handle the Enter key press
 
-                                      print('Enter key pressed. ');
-                                      // You can add your custom logic here
-                                    }
-                                  },
-                                  onSubmitted: (_) {
-                                    debugPrint('Submit');
-                                  },
+                                        print('Enter key pressed. ');
+                                        // You can add your custom logic here
+                                      }
+                                    },
+                                    onSubmitted: (_) {
+                                      debugPrint('Submit');
+                                    },
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                          BlocBuilder<CommentBloc, CommentState>(
-                            builder: (context, state) {
-                              if (state is AddComentState) {
-                                return ClipRRect(
-                                  borderRadius: BorderRadius.circular(50),
-                                  child: Material(
-                                    child: IconButton(
-                                      splashRadius: Dimens.DIMENS_70,
-                                      onPressed: () {
-                                        if (_textEditingController
-                                            .text.isNotEmpty) {
-                                          BlocProvider.of<CommentBloc>(context)
-                                              .add(PostCommentEvent(
+                            BlocBuilder<CommentBloc, CommentState>(
+                              builder: (context, state) {
+                                if (state is AddComentState) {
+                                  return ClipRRect(
+                                    borderRadius: BorderRadius.circular(50),
+                                    child: Material(
+                                      child: IconButton(
+                                        splashRadius: Dimens.DIMENS_70,
+                                        onPressed: () {
+                                          if (_textEditingController
+                                              .text.isNotEmpty) {
+                                            BlocProvider.of<CommentBloc>(
+                                                    context)
+                                                .add(
+                                              PostCommentEvent(
                                                   postId: widget.postId,
                                                   comment:
                                                       _textEditingController
-                                                          .text));
-                                          _textEditingController.clear();
-                                        }
-                                        debugPrint('plane');
-                                      },
-                                      icon: FaIcon(
-                                        FontAwesomeIcons.paperPlane,
-                                        color: COLOR_black_ff121212,
+                                                          .text),
+                                            );
+                                            _textEditingController.clear();
+                                            FocusScope.of(context).unfocus();
+                                          }
+                                          debugPrint('plane');
+                                        },
+                                        icon: FaIcon(
+                                          FontAwesomeIcons.paperPlane,
+                                          color: COLOR_black_ff121212,
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                );
-                              }
-                              return Container();
-                            },
-                          ),
-                          SizedBox(
-                            width: Dimens.DIMENS_8,
-                          ),
-                        ],
-                      ),
-                    )
-                  ],
-                ),
-              );
-            },
+                                  );
+                                }
+                                return Container();
+                              },
+                            ),
+                            SizedBox(
+                              width: Dimens.DIMENS_8,
+                            ),
+                          ],
+                        ),
+                      )
+                    ],
+                  ),
+                );
+              },
+            ),
           ),
         ),
       ),
@@ -356,7 +367,7 @@ class CommentItem extends StatelessWidget {
                 ),
                 title: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.end,
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     // FutureBuilder(
@@ -392,38 +403,36 @@ class CommentItem extends StatelessWidget {
                     //     }),
 
                     Text(
-                      data.userName!,
-                      style: const TextStyle(
-                          fontSize: 14,
-                          color: Colors.black,
-                          fontWeight: FontWeight.w500),
-                    ),
-                    SizedBox(
-                      width: size.width * 0.8,
-                      child: Text(
-                        comment.comment,
-                        style: TextStyle(
-                            color: COLOR_black_ff121212.withOpacity(0.6)),
-                      ),
-                    ),
-                    SizedBox(
-                      height: Dimens.DIMENS_3,
-                    ),
-                  ],
-                ),
-                subtitle: Row(
-                  children: [
-                    Text(
                       tago
                           .format(
                               DateTime.parse(
                                   comment.datePublished.toDate().toString()),
                               locale: 'id')
                           .toString(),
-                      style: const TextStyle(fontSize: 12, color: Colors.grey),
+                      style: const TextStyle(fontSize: 11, color: Colors.grey),
                     ),
-                    const SizedBox(
-                      width: 10,
+                    Text(
+                      '@${data.userName!}',
+                      style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.black,
+                          fontWeight: FontWeight.w500),
+                    ),
+                    SizedBox(
+                      width: Dimens.DIMENS_6,
+                    ),
+                  ],
+                ),
+                subtitle: Column(
+                  children: [
+                    SizedBox(
+                      width: size.width * 0.8,
+                      child: Text(
+                        comment.comment,
+                        style: TextStyle(
+                            fontSize: 16,
+                            color: COLOR_black_ff121212.withOpacity(0.6)),
+                      ),
                     ),
                   ],
                 ),

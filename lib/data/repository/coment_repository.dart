@@ -137,6 +137,7 @@ class CommentRepository {
     DocumentSnapshot docs =
         await firebaseFirestore.collection('users').doc(uid).get();
 
-    return User(id: docs['uid'], userName: docs['name'], photo: docs['photo']);
+    return User(
+        id: docs['uid'], userName: docs['userName'], photo: docs['photoUrl']);
   }
 }

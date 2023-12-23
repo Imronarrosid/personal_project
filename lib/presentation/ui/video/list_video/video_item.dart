@@ -9,6 +9,7 @@ import 'package:material_design_icons_flutter/material_design_icons_flutter.dart
 import 'package:personal_project/constant/color.dart';
 import 'package:personal_project/constant/dimens.dart';
 import 'package:personal_project/data/repository/coment_repository.dart';
+import 'package:personal_project/data/repository/video_player_repository.dart';
 import 'package:personal_project/domain/model/profile_data_model.dart';
 import 'package:personal_project/domain/model/user.dart';
 import 'package:personal_project/domain/model/video_from_game_data_model.dart';
@@ -66,6 +67,18 @@ class _VideoItemState extends State<VideoItem> {
             }
           },
           child: GestureDetector(
+            onTap: () {
+              final VideoPlayerRepository repo =
+                  RepositoryProvider.of<VideoPlayerRepository>(context);
+              VideoPlayerBloc bloc = BlocProvider.of<VideoPlayerBloc>(context);
+              if (repo.controller != null) {
+                if (repo.controller!.value.isPlaying) {
+                  bloc.add(const VideoPlayerEvent(actions: VideoEvent.pause));
+                } else {
+                  bloc.add(const VideoPlayerEvent(actions: VideoEvent.play));
+                }
+              }
+            },
             onDoubleTap: () {
               String? uid = RepositoryProvider.of<AuthRepository>(context)
                   .currentUser
@@ -128,58 +141,7 @@ class _VideoItemState extends State<VideoItem> {
                                       }
                                     }
                                   },
-                                  child: GestureDetector(
-                                      onTap: () {
-                                        VideoPlayerBloc bloc =
-                                            BlocProvider.of<VideoPlayerBloc>(
-                                                context);
-
-                                        if (state.controller!.value.isPlaying) {
-                                          bloc.add(const VideoPlayerEvent(
-                                              actions: VideoEvent.pause));
-                                        } else {
-                                          bloc.add(const VideoPlayerEvent(
-                                              actions: VideoEvent.play));
-                                        }
-                                      },
-                                      child: Container(
-                                        padding: EdgeInsets.only(
-                                            bottom: MediaQuery.of(context)
-                                                .viewInsets
-                                                .bottom),
-                                        child: CachedVideoPlayer(
-                                            state.controller!),
-                                      )),
-                                ),
-                                BlocBuilder<VideoPlayerBloc, VideoPlayerState>(
-                                  builder: (context, state) {
-                                    return Align(
-                                      alignment: Alignment.center,
-                                      child: AnimatedOpacity(
-                                        opacity: state.status ==
-                                                VideoPlayerStatus.paused
-                                            ? 1
-                                            : 0,
-                                        duration: kThemeAnimationDuration,
-                                        child: GestureDetector(
-                                          onTap: () {
-                                            BlocProvider.of<VideoPlayerBloc>(
-                                                    context)
-                                                .add(const VideoPlayerEvent(
-                                                    actions: VideoEvent.play));
-                                          },
-                                          child: FaIcon(
-                                            FontAwesomeIcons.play,
-                                            size: state.status ==
-                                                    VideoPlayerStatus.paused
-                                                ? Dimens.DIMENS_38
-                                                : Dimens.DIMENS_50,
-                                            color: COLOR_white_fff5f5f5,
-                                          ),
-                                        ),
-                                      ),
-                                    );
-                                  },
+                                  child: CachedVideoPlayer(state.controller!),
                                 ),
                               ],
                             ),
@@ -272,13 +234,11 @@ class _VideoItemState extends State<VideoItem> {
                                     create: (context) => CommentRepository(),
                                     child: GestureDetector(
                                       onTap: () {
-                                        MediaQuery.of(context)
-                                            .viewInsets
-                                            .bottom; ///////
                                         showModalBottomSheet(
                                             context: context,
                                             backgroundColor: Colors.transparent,
                                             useSafeArea: true,
+                                            elevation: 0,
                                             isScrollControlled: true,
                                             builder: (context) {
                                               debugPrint(
@@ -373,7 +333,33 @@ class _VideoItemState extends State<VideoItem> {
                 const Align(
                   alignment: Alignment.center,
                   child: LikeWidget(),
-                )
+                ),
+                BlocBuilder<VideoPlayerBloc, VideoPlayerState>(
+                  builder: (context, state) {
+                    return Align(
+                      alignment: Alignment.center,
+                      child: AnimatedOpacity(
+                        opacity:
+                            state.status == VideoPlayerStatus.paused ? 1 : 0,
+                        duration: kThemeAnimationDuration,
+                        child: GestureDetector(
+                          onTap: () {
+                            BlocProvider.of<VideoPlayerBloc>(context).add(
+                                const VideoPlayerEvent(
+                                    actions: VideoEvent.play));
+                          },
+                          child: FaIcon(
+                            FontAwesomeIcons.play,
+                            size: state.status == VideoPlayerStatus.paused
+                                ? Dimens.DIMENS_38
+                                : Dimens.DIMENS_50,
+                            color: COLOR_white_fff5f5f5,
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
               ]),
             ),
           ),
@@ -424,6 +410,7 @@ class _VideoItemState extends State<VideoItem> {
             .addViewsCount(videoData.id!);
         debugPrint('add views');
         isViewed = true;
+        state.controller!.removeListener(() {});
       }
     });
   }
@@ -488,12 +475,7 @@ class _VideoItemState extends State<VideoItem> {
   GestureDetector _buildProfilePictures(BuildContext context, User? data) {
     return GestureDetector(
       onTap: () {
-        context.push(APP_PAGE.profile.toPath,
-            extra: ProfilePayload(
-                uid: data.id,
-                name: data.name!,
-                userName: data.userName!,
-                photoURL: data.photo!));
+        _toProfile(context, data);
       },
       child: Container(
         decoration: BoxDecoration(
@@ -514,6 +496,15 @@ class _VideoItemState extends State<VideoItem> {
         ),
       ),
     );
+  }
+
+  void _toProfile(BuildContext context, User data) {
+    context.push(APP_PAGE.profile.toPath,
+        extra: ProfilePayload(
+            uid: data.id,
+            name: data.name!,
+            userName: data.userName!,
+            photoURL: data.photo!));
   }
 
   Align _buildProgerBarIndicatorView() {
@@ -561,9 +552,14 @@ class _VideoItemState extends State<VideoItem> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  '@${data!.userName!}',
-                  style: TextStyle(color: COLOR_white_fff5f5f5, fontSize: 14),
+                GestureDetector(
+                  onTap: () {
+                    _toProfile(context, data);
+                  },
+                  child: Text(
+                    '@${data!.userName!}',
+                    style: TextStyle(color: COLOR_white_fff5f5f5, fontSize: 14),
+                  ),
                 ),
                 BlocBuilder<CaptionsCubit, CaptionsState>(
                   builder: (context, state) {
@@ -631,35 +627,44 @@ class _VideoItemState extends State<VideoItem> {
                   },
                 ),
                 videoData.game != null
-                    ? Container(
-                        width: Dimens.DIMENS_150,
-                        height: Dimens.DIMENS_20,
-                        padding:
-                            EdgeInsets.symmetric(horizontal: Dimens.DIMENS_8),
-                        decoration: BoxDecoration(
-                            color: COLOR_grey.withOpacity(0.4),
-                            borderRadius: BorderRadius.circular(25)),
-                        child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Icon(
-                                MdiIcons.controller,
-                                color: COLOR_white_fff5f5f5,
-                                size: 14,
-                              ),
-                              const Padding(
-                                padding: EdgeInsets.symmetric(vertical: 3.0),
-                                child: VerticalDivider(),
-                              ),
-                              Text(
-                                videoData.game!.gameTitle!,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                    fontWeight: FontWeight.w500,
-                                    fontSize: 10,
-                                    color: COLOR_white_fff5f5f5),
-                              ),
-                            ]),
+                    ? GestureDetector(
+                        onTap: () {
+                          context.push(APP_PAGE.videoFromGame.toPath,
+                              extra: VideoFromGameData(
+                                  game: videoData.game!,
+                                  captions: videoData.caption,
+                                  profileImg: data.photo!));
+                        },
+                        child: Container(
+                          width: Dimens.DIMENS_150,
+                          height: Dimens.DIMENS_20,
+                          padding:
+                              EdgeInsets.symmetric(horizontal: Dimens.DIMENS_8),
+                          decoration: BoxDecoration(
+                              color: COLOR_grey.withOpacity(0.4),
+                              borderRadius: BorderRadius.circular(25)),
+                          child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  MdiIcons.controller,
+                                  color: COLOR_white_fff5f5f5,
+                                  size: 14,
+                                ),
+                                const Padding(
+                                  padding: EdgeInsets.symmetric(vertical: 3.0),
+                                  child: VerticalDivider(),
+                                ),
+                                Text(
+                                  videoData.game!.gameTitle!,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: 10,
+                                      color: COLOR_white_fff5f5f5),
+                                ),
+                              ]),
+                        ),
                       )
                     : Container()
               ],
