@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:easy_localization/easy_localization.dart' as ezl;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -14,6 +15,7 @@ import 'package:personal_project/domain/model/video_from_game_data_model.dart';
 import 'package:personal_project/domain/model/video_model.dart';
 import 'package:personal_project/domain/reporsitory/auth_reposotory.dart';
 import 'package:personal_project/domain/reporsitory/video_repository.dart';
+import 'package:personal_project/presentation/l10n/stings.g.dart';
 import 'package:personal_project/presentation/router/route_utils.dart';
 import 'package:personal_project/presentation/ui/auth/auth.dart';
 import 'package:personal_project/presentation/ui/comments/comments_page.dart';
@@ -222,7 +224,7 @@ class _VideoItemState extends State<VideoItem> {
                       return snapshot.hasData
                           ? Positioned(
                               right: Dimens.DIMENS_12,
-                              bottom: Dimens.DIMENS_20,
+                              bottom: Dimens.DIMENS_12,
                               child: Column(
                                 children: [
                                   _buildProfilePictures(context, data),
@@ -358,9 +360,7 @@ class _VideoItemState extends State<VideoItem> {
                                               color: COLOR_white_fff5f5f5,
                                               size: Dimens.DIMENS_15,
                                             )
-                                          : CachedNetworkImage(
-                                              imageUrl:
-                                                  videoData.game!.gameImage!),
+                                          : _buildGameImage(videoData),
                                     ),
                                   )
                                 ],
@@ -379,6 +379,35 @@ class _VideoItemState extends State<VideoItem> {
           ),
         );
       }),
+    );
+  }
+
+  ClipRRect _buildGameImage(Video videoData) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(5),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          CachedNetworkImage(imageUrl: videoData.game!.gameImage!),
+          Container(
+            decoration: BoxDecoration(
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.3),
+                  spreadRadius: 10,
+                  blurRadius: 5,
+                  offset: const Offset(0, 0),
+                ),
+              ],
+            ),
+            child: Icon(
+              MdiIcons.controller,
+              color: COLOR_white_fff5f5f5,
+              size: Dimens.DIMENS_15,
+            ),
+          )
+        ],
+      ),
     );
   }
 
@@ -527,7 +556,7 @@ class _VideoItemState extends State<VideoItem> {
         var data = snapshot.data;
         if (snapshot.hasData) {
           return Positioned(
-            bottom: Dimens.DIMENS_20,
+            bottom: Dimens.DIMENS_12,
             left: Dimens.DIMENS_12,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -584,8 +613,8 @@ class _VideoItemState extends State<VideoItem> {
                                       },
                                       child: Text(
                                         maxLines != null
-                                            ? '...selengkapnya'
-                                            : '..lebih sedikit',
+                                            ? LocaleKeys.label_see_more.tr()
+                                            : LocaleKeys.label_see_less.tr(),
                                         style: TextStyle(color: COLOR_grey),
                                       ),
                                     )
@@ -597,10 +626,37 @@ class _VideoItemState extends State<VideoItem> {
                     });
                   },
                 ),
-                Icon(
-                  MdiIcons.controller,
-                  color: COLOR_white_fff5f5f5,
-                )
+                videoData.game != null
+                    ? Container(
+                        width: Dimens.DIMENS_250,
+                        height: Dimens.DIMENS_24,
+                        padding:
+                            EdgeInsets.symmetric(horizontal: Dimens.DIMENS_8),
+                        decoration: BoxDecoration(
+                            color: COLOR_grey.withOpacity(0.4),
+                            borderRadius: BorderRadius.circular(25)),
+                        child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Icon(
+                                MdiIcons.controller,
+                                color: COLOR_white_fff5f5f5,
+                                size: 16,
+                              ),
+                              const Padding(
+                                padding: EdgeInsets.symmetric(vertical: 3.0),
+                                child: VerticalDivider(),
+                              ),
+                              Text(
+                                videoData.game!.gameTitle!,
+                                style: TextStyle(
+                                    fontWeight: FontWeight.w500,
+                                    fontSize: 12,
+                                    color: COLOR_white_fff5f5f5),
+                              ),
+                            ]),
+                      )
+                    : Container()
               ],
             ),
           );
