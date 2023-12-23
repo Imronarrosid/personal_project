@@ -9,16 +9,31 @@ class LikeCommentCubit extends Cubit<LikeCommentState> {
     this.repository,
   ) : super(LikeCommentInitial());
 
-   bool? isCommentLiked;
+  bool? _clientState;
   likeComment(
       {required String postId,
       required String commentId,
-      required bool isLiked}) async {
-    isCommentLiked ??= isLiked;
+      required bool stateFromDatabase,
+      required int databaseLikeCount}) async {
+    _clientState ??= stateFromDatabase;
     repository.likeComment(id: commentId, postId: postId);
 
-    isCommentLiked! ? emit(UnilkedComment()) : emit(CommentLiked());
-    isCommentLiked = !isCommentLiked!;
+    // _clientState! ? emit(UnilkedComment()) : emit(CommentLiked());
+    // _clientState = !_clientState!;
+
+    if (_clientState == true && stateFromDatabase == true) {
+      emit(UnilkedComment(likeCount: databaseLikeCount - 1));
+      _clientState = false;
+    } else if (_clientState == false && stateFromDatabase == true) {
+      emit(CommentLiked(likeCount: databaseLikeCount));
+      _clientState = true;
+    } else if (_clientState == true && stateFromDatabase == false) {
+      emit(UnilkedComment(likeCount: databaseLikeCount));
+      _clientState = false;
+    } else if (_clientState == false && stateFromDatabase == false) {
+      emit(CommentLiked(likeCount: databaseLikeCount + 1));
+      _clientState = true;
+    }
   }
 
   final CommentRepository repository;

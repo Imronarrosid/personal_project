@@ -445,7 +445,9 @@ class CommentItem extends StatelessWidget {
                               .likeComment(
                                   postId: postId,
                                   commentId: comment.id,
-                                  isLiked: comment.likes.contains(userUid));
+                                  databaseLikeCount: comment.likes.length,
+                                  stateFromDatabase:
+                                      comment.likes.contains(userUid));
                         } else {
                           showAuthBottomSheetFunc(context);
                         }
@@ -469,9 +471,21 @@ class CommentItem extends StatelessWidget {
                         },
                       ),
                     ),
-                    Text(
-                      comment.likes.length.toString(),
-                      style: const TextStyle(fontSize: 12, color: Colors.grey),
+                    BlocBuilder<LikeCommentCubit, LikeCommentState>(
+                      builder: (context, state) {
+                        int likes = comment.likes.length;
+
+                        if (state is CommentLiked) {
+                          likes = state.likeCount;
+                        } else if (state is UnilkedComment) {
+                          likes = state.likeCount;
+                        }
+                        return Text(
+                          likes.toString(),
+                          style:
+                              const TextStyle(fontSize: 12, color: Colors.grey),
+                        );
+                      },
                     ),
                   ],
                 ),
