@@ -596,13 +596,18 @@ class _VideoItemState extends State<VideoItem> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                videoData.caption,
-                                maxLines: maxLines,
-                                style: TextStyle(
-                                    color: COLOR_white_fff5f5f5,
-                                    fontSize: 14.0,
-                                    fontWeight: FontWeight.w400),
+                              videoData.caption.isEmpty
+                                  ? Container()
+                                  : Text(
+                                      videoData.caption,
+                                      maxLines: maxLines,
+                                      style: TextStyle(
+                                          color: COLOR_white_fff5f5f5,
+                                          fontSize: 14.0,
+                                          fontWeight: FontWeight.w400),
+                                    ),
+                              SizedBox(
+                                height: Dimens.DIMENS_6,
                               ),
                               lines > 2
                                   ? InkWell(
