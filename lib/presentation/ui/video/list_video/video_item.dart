@@ -344,8 +344,8 @@ class _VideoItemState extends State<VideoItem> {
                                       }
                                     },
                                     child: Container(
-                                      width: Dimens.DIMENS_34,
-                                      height: Dimens.DIMENS_34,
+                                      width: Dimens.DIMENS_30,
+                                      height: Dimens.DIMENS_30,
                                       alignment: Alignment.center,
                                       decoration: BoxDecoration(
                                         border: Border.all(
@@ -563,8 +563,7 @@ class _VideoItemState extends State<VideoItem> {
               children: [
                 Text(
                   '@${data!.userName!}',
-                  style: TextStyle(
-                      color: COLOR_white_fff5f5f5, fontSize: Dimens.DIMENS_18),
+                  style: TextStyle(color: COLOR_white_fff5f5f5, fontSize: 14),
                 ),
                 BlocBuilder<CaptionsCubit, CaptionsState>(
                   builder: (context, state) {
@@ -628,8 +627,8 @@ class _VideoItemState extends State<VideoItem> {
                 ),
                 videoData.game != null
                     ? Container(
-                        width: Dimens.DIMENS_250,
-                        height: Dimens.DIMENS_24,
+                        width: Dimens.DIMENS_150,
+                        height: Dimens.DIMENS_20,
                         padding:
                             EdgeInsets.symmetric(horizontal: Dimens.DIMENS_8),
                         decoration: BoxDecoration(
@@ -641,7 +640,7 @@ class _VideoItemState extends State<VideoItem> {
                               Icon(
                                 MdiIcons.controller,
                                 color: COLOR_white_fff5f5f5,
-                                size: 16,
+                                size: 14,
                               ),
                               const Padding(
                                 padding: EdgeInsets.symmetric(vertical: 3.0),
@@ -649,9 +648,10 @@ class _VideoItemState extends State<VideoItem> {
                               ),
                               Text(
                                 videoData.game!.gameTitle!,
+                                overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
                                     fontWeight: FontWeight.w500,
-                                    fontSize: 12,
+                                    fontSize: 10,
                                     color: COLOR_white_fff5f5f5),
                               ),
                             ]),
