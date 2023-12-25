@@ -23,6 +23,7 @@ enum APP_PAGE {
   addUserName,
   selectGame,
   videoFromGame,
+  followingNFonllowers
 }
 
 extension AppPageExtension on APP_PAGE {
@@ -72,6 +73,8 @@ extension AppPageExtension on APP_PAGE {
         return "/add-username";
       case APP_PAGE.videoFromGame:
         return "/video-from-game";
+      case APP_PAGE.followingNFonllowers:
+        return "/following-n-follwoers";
       default:
         return "/";
     }
@@ -123,6 +126,8 @@ extension AppPageExtension on APP_PAGE {
         return "ADD-USERNAME";
       case APP_PAGE.videoFromGame:
         return "VIDEO-FROM-GAME";
+      case APP_PAGE.followingNFonllowers:
+        return "FOLLOWING-N-FOLLOWERS";
       default:
         return "HOME";
     }

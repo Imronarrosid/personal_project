@@ -11,6 +11,7 @@ import 'package:material_design_icons_flutter/material_design_icons_flutter.dart
 import 'package:personal_project/constant/color.dart';
 import 'package:personal_project/constant/dimens.dart';
 import 'package:personal_project/data/repository/user_video_paging_repository.dart';
+import 'package:personal_project/domain/model/following_n_followers_data_model.dart';
 import 'package:personal_project/domain/model/game_fav_modal.dart';
 import 'package:personal_project/domain/model/profile_data_model.dart';
 import 'package:personal_project/domain/model/user.dart';
@@ -947,17 +948,27 @@ class _ProfilePageState extends State<ProfilePage> {
                 builder: (context, AsyncSnapshot<int> snapshot) {
                   int? follwers = snapshot.data;
                   return Expanded(
-                    child: Column(
-                      children: [
-                        Text(
-                          snapshot.hasData ? follwers.toString() : '0',
-                          style: const TextStyle(
-                              fontSize: 20, fontWeight: FontWeight.w600),
-                        ),
-                        Text(LocaleKeys.label_followers.tr(),
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(fontSize: 12)),
-                      ],
+                    child: GestureDetector(
+                      onTap: () {
+                        context.push(APP_PAGE.followingNFonllowers.toPath,
+                            extra: FollowingNFollowersData(
+                                initialIndex: 0,
+                                userName: widget.payload?.userName ??
+                                    state.user!.userName!,
+                                uid: widget.payload?.uid ?? state.user!.id));
+                      },
+                      child: Column(
+                        children: [
+                          Text(
+                            snapshot.hasData ? follwers.toString() : '0',
+                            style: const TextStyle(
+                                fontSize: 20, fontWeight: FontWeight.w600),
+                          ),
+                          Text(LocaleKeys.label_followers.tr(),
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(fontSize: 12)),
+                        ],
+                      ),
                     ),
                   );
                 });
@@ -971,19 +982,29 @@ class _ProfilePageState extends State<ProfilePage> {
                 builder: (context, AsyncSnapshot<int> snapshot) {
                   int? following = snapshot.data;
                   return Expanded(
-                    child: Column(
-                      children: [
-                        Text(
-                          snapshot.hasData ? following.toString() : '0',
-                          style: const TextStyle(
-                              fontSize: 20, fontWeight: FontWeight.w600),
-                        ),
-                        Text(
-                          LocaleKeys.label_following.tr(),
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(fontSize: 12),
-                        ),
-                      ],
+                    child: GestureDetector(
+                      onTap: () {
+                        context.push(APP_PAGE.followingNFonllowers.toPath,
+                            extra: FollowingNFollowersData(
+                                initialIndex: 1,
+                                userName: widget.payload?.userName ??
+                                    state.user!.userName!,
+                                uid: widget.payload?.uid ?? state.user!.id));
+                      },
+                      child: Column(
+                        children: [
+                          Text(
+                            snapshot.hasData ? following.toString() : '0',
+                            style: const TextStyle(
+                                fontSize: 20, fontWeight: FontWeight.w600),
+                          ),
+                          Text(
+                            LocaleKeys.label_following.tr(),
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(fontSize: 12),
+                          ),
+                        ],
+                      ),
                     ),
                   );
                 });

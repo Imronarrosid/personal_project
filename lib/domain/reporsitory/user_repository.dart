@@ -52,6 +52,18 @@ class UserRepository implements UserUseCaseType {
     return User.fromSnap(user);
   }
 
+  Future<User> getOtherUserData(String uid) async {
+    final user = await firebaseFirestore.collection('users').doc(uid).get();
+
+    _name = user['name'];
+    _photoURL = user['photoUrl'];
+    _userName = user['userName'];
+    _nameUpdated = user['updatedAt'];
+    _userNameUpdated = user['userNameUpdatedAt'];
+
+    return User.fromSnap(user);
+  }
+
   @override
   Future<UserData> getUserData(String uid) async {
     var myVideos = await firebaseFirestore

@@ -4,6 +4,7 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:personal_project/domain/model/following_n_followers_data_model.dart';
 import 'package:personal_project/domain/model/game_fav_modal.dart';
 import 'package:personal_project/domain/model/preview_model.dart';
 import 'package:personal_project/domain/model/profile_data_model.dart';
@@ -19,6 +20,7 @@ import 'package:personal_project/presentation/ui/add_details/select_game/cubit/s
 import 'package:personal_project/presentation/ui/add_details/select_game/select_game_page.dart';
 import 'package:personal_project/presentation/ui/add_user_name/add_user_name_page.dart';
 import 'package:personal_project/presentation/ui/edit_profile/edit_page/edit_game_fav_page.dart';
+import 'package:personal_project/presentation/ui/followings_n_followers/followings_n_followers.dart';
 import 'package:personal_project/presentation/ui/language/language_page.dart';
 import 'package:personal_project/presentation/ui/play_single_video/play_single.dart';
 import 'package:personal_project/presentation/ui/profile_pict_preview/profile_pict_preview.dart';
@@ -128,6 +130,15 @@ class AppRouter {
             List<GameFav> games = state.extra as List<GameFav>;
             return EditGameFavPage(
               gameFav: games,
+            );
+          }),
+      GoRoute(
+          path: APP_PAGE.followingNFonllowers.toPath,
+          name: APP_PAGE.followingNFonllowers.toName,
+          builder: (context, state) {
+            FollowingNFollowersData data = state.extra as FollowingNFollowersData;
+            return FollowingsNFollowers(
+              data: data,
             );
           }),
       GoRoute(
