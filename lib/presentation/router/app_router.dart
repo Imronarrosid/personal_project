@@ -136,7 +136,8 @@ class AppRouter {
           path: APP_PAGE.followingNFonllowers.toPath,
           name: APP_PAGE.followingNFonllowers.toName,
           builder: (context, state) {
-            FollowingNFollowersData data = state.extra as FollowingNFollowersData;
+            FollowingNFollowersData data =
+                state.extra as FollowingNFollowersData;
             return FollowingsNFollowers(
               data: data,
             );
@@ -158,6 +159,27 @@ class AppRouter {
           return ProfilePage(
             payload: data,
             isForOtherUser: true,
+          );
+        },
+        pageBuilder: (context, state) {
+          ProfilePayload data = state.extra as ProfilePayload;
+          return CustomTransitionPage(
+            child: ProfilePage(
+              payload: data,
+              isForOtherUser: true,
+            ),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) =>
+                    SlideTransition(
+                        position: animation.drive(
+                          Tween<Offset>(
+                            begin: Offset(0.75, 0),
+                            end: Offset.zero,
+                          ).chain(
+                            CurveTween(curve: Curves.ease),
+                          ),
+                        ),
+                        child: child),
           );
         },
       ),
