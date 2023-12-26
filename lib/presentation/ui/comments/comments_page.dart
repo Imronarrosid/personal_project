@@ -10,9 +10,12 @@ import 'package:personal_project/constant/dimens.dart';
 import 'package:personal_project/data/repository/coment_repository.dart';
 import 'package:personal_project/data/repository/coments_paging_repository.dart';
 import 'package:personal_project/domain/model/comment_model.dart';
+import 'package:personal_project/domain/model/profile_data_model.dart';
 import 'package:personal_project/domain/model/user.dart';
 import 'package:personal_project/domain/reporsitory/auth_reposotory.dart';
+import 'package:personal_project/presentation/l10n/locale_code.dart';
 import 'package:personal_project/presentation/l10n/stings.g.dart';
+import 'package:personal_project/presentation/router/route_utils.dart';
 import 'package:personal_project/presentation/ui/auth/auth.dart';
 import 'package:personal_project/presentation/ui/comments/bloc/comment_bloc.dart';
 import 'package:personal_project/presentation/ui/comments/bloc/comments_paging_bloc.dart';
@@ -110,7 +113,7 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                               pinned: true,
                               backgroundColor: Colors.white,
                               foregroundColor: COLOR_black_ff121212,
-                              elevation: 0,
+                              elevation: 1,
                               leading: Container(),
                               leadingWidth: Dimens.DIMENS_3,
                               actions: [
@@ -127,12 +130,11 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                                 ),
                               ),
                               bottom: PreferredSize(
-                                preferredSize: Size(
-                                    MediaQuery.of(context).size.width,
-                                    Dimens.DIMENS_3),
-                                child: Divider(
-                                  color: Colors.black,
-                                  height: Dimens.DIMENS_3,
+                                preferredSize:
+                                    Size(MediaQuery.of(context).size.width, 1),
+                                child: Container(
+                                  color: COLOR_black_ff121212.withOpacity(0.2),
+                                  height: 1,
                                 ),
                               ),
                             ),
@@ -225,8 +227,12 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                                     controller: _textEditingController,
                                     decoration: InputDecoration(
                                         contentPadding: EdgeInsets.symmetric(
-                                            horizontal: Dimens.DIMENS_8),
-                                        hintText: 'Tambahkan komentar',
+                                            horizontal: Dimens.DIMENS_12),
+                                        hintText: LocaleKeys
+                                            .message_add_comments
+                                            .tr(),
+                                        hintStyle: const TextStyle(
+                                            fontWeight: FontWeight.normal),
                                         border: const OutlineInputBorder(
                                             borderSide: BorderSide.none)),
                                     textAlignVertical: TextAlignVertical.center,
@@ -335,7 +341,11 @@ class CommentItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    tago.setLocaleMessages('id', tago.IdMessages());
+    if (context.locale.languageCode == LOCALE.id.code) {
+      tago.setLocaleMessages('id', tago.IdMessages());
+    } else if (context.locale.languageCode == LOCALE.en.code) {
+      tago.setLocaleMessages('en', tago.EnMessages());
+    }
 
     Size size = MediaQuery.of(context).size;
     final CommentRepository repository =
@@ -355,20 +365,30 @@ class CommentItem extends StatelessWidget {
               }
               return ListTile(
                 minLeadingWidth: Dimens.DIMENS_28,
-                leading: CircleAvatar(
-                  radius: Dimens.DIMENS_15,
-                  backgroundColor: Colors.black,
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(50),
-                    child: CachedNetworkImage(
-                      imageUrl: data!.photo!,
+                leading: GestureDetector(
+                  onTap: () {
+                    context.push(APP_PAGE.profile.toPath,
+                        extra: ProfilePayload(
+                            uid: data.id,
+                            name: data.name!,
+                            userName: data.userName!,
+                            photoURL: data.photo!));
+                  },
+                  child: CircleAvatar(
+                    radius: Dimens.DIMENS_15,
+                    backgroundColor: Colors.black,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(50),
+                      child: CachedNetworkImage(
+                        imageUrl: data!.photo!,
+                      ),
                     ),
                   ),
                 ),
-                title: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  mainAxisSize: MainAxisSize.min,
+                title: Row(
+                  // crossAxisAlignment: CrossAxisAlignment.start,
+                  // mainAxisAlignment: MainAxisAlignment.end,
+                  // mainAxisSize: MainAxisSize.min,
                   children: [
                     // FutureBuilder(
                     //     future: _checkVerified(comment.uid),
@@ -402,24 +422,34 @@ class CommentItem extends StatelessWidget {
                     //             );
                     //     }),
 
+                    GestureDetector(
+                      onTap: () {
+                        context.push(APP_PAGE.profile.toPath,
+                            extra: ProfilePayload(
+                                uid: data.id,
+                                name: data.name!,
+                                userName: data.userName!,
+                                photoURL: data.photo!));
+                      },
+                      child: Text(
+                        '@${data.userName!}',
+                        style: TextStyle(
+                            fontSize: 11,
+                            color: COLOR_black_ff121212.withOpacity(0.6),
+                            fontWeight: FontWeight.w500),
+                      ),
+                    ),
+                    SizedBox(
+                      width: Dimens.DIMENS_6,
+                    ),
                     Text(
                       tago
                           .format(
                               DateTime.parse(
                                   comment.datePublished.toDate().toString()),
-                              locale: 'id')
+                              locale: context.locale.languageCode)
                           .toString(),
-                      style: const TextStyle(fontSize: 11, color: Colors.grey),
-                    ),
-                    Text(
-                      '@${data.userName!}',
-                      style: const TextStyle(
-                          fontSize: 12,
-                          color: Colors.black,
-                          fontWeight: FontWeight.w500),
-                    ),
-                    SizedBox(
-                      width: Dimens.DIMENS_6,
+                      style: const TextStyle(fontSize: 8, color: Colors.grey),
                     ),
                   ],
                 ),
@@ -430,8 +460,7 @@ class CommentItem extends StatelessWidget {
                       child: Text(
                         comment.comment,
                         style: TextStyle(
-                            fontSize: 16,
-                            color: COLOR_black_ff121212.withOpacity(0.6)),
+                            fontSize: 14, color: COLOR_black_ff121212),
                       ),
                     ),
                   ],
@@ -480,11 +509,14 @@ class CommentItem extends StatelessWidget {
                         } else if (state is UnilkedComment) {
                           likes = state.likeCount;
                         }
-                        return Text(
-                          likes.toString(),
-                          style:
-                              const TextStyle(fontSize: 12, color: Colors.grey),
-                        );
+
+                        return likes == 0
+                            ? const SizedBox(width: 0, height: 0)
+                            : Text(
+                                likes.toString(),
+                                style: const TextStyle(
+                                    fontSize: 12, color: Colors.grey),
+                              );
                       },
                     ),
                   ],

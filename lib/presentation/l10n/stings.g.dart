@@ -56,5 +56,6 @@ abstract class  LocaleKeys {
   static const message_unfollow = 'message_unfollow';
   static const message_no_post = 'message_no_post';
   static const message_no_liked_post = 'message_no_liked_post';
+  static const message_add_comments = 'message_add_comments';
 
 }

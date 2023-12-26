@@ -3,7 +3,7 @@
     "title_upload": "Unggah",
     "title_profile": "Profil",
     "title_crop": "Potong",
-    "title_comments": "Komantar",
+    "title_comments": "Komentar",
     "title_menu": "Menu",
     "title_language": "Bahasa",
     "title_storage": "Penyimpanan",
@@ -18,7 +18,7 @@
     "label_oke": "Oke",
     "label_delete": "Hapus",
     "label_cancel": "Batal",
-    "label_signin": "Masuk ke GameTok",
+    "label_signin": "Masuk ke Gamepiun",
     "label_login": "Masuk",
     "label_signin_with_google": "Masuk dengan Google",
     "label_free": "Bebas",
@@ -53,5 +53,6 @@
     "message_delete_cache": "Hapus cache?",
     "message_unfollow": "Berhenti mengikuti?",
     "message_no_post": "Tidak ada postingan",
-    "message_no_liked_post": "Tidak ada postingan di sukai"
+    "message_no_liked_post": "Tidak ada postingan di sukai",
+    "message_add_comments": "Tambahkan komentar"
 }

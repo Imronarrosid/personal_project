@@ -53,5 +53,6 @@
     "message_delete_cache": "Remove cache?",
     "message_unfollow": "Unfollow?",
     "message_no_post": "No post yet",
-    "message_no_liked_post": "No liked post"
+    "message_no_liked_post": "No liked post",
+    "message_add_comments": "Add comments"
 }
