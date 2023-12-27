@@ -59,8 +59,6 @@ class _ProfilePageState extends State<ProfilePage> {
 
   String? ui, title, userName, photoURL;
 
-  Future<User>? futureUserData1;
-
   @override
   void initState() {
     if (widget.payload != null) {
@@ -68,15 +66,6 @@ class _ProfilePageState extends State<ProfilePage> {
       userName = '@${widget.payload!.userName}';
       photoURL = widget.payload!.photoURL;
       debugPrint('photo ${photoURL}');
-    } else {
-      final UserRepository repository =
-          RepositoryProvider.of<UserRepository>(context);
-
-      final authRepository = RepositoryProvider.of<AuthRepository>(context);
-      if (widget.payload == null && authRepository.currentUser != null) {
-        futureUserData1 =
-            repository.getUserData1(authRepository.currentUser!.uid);
-      }
     }
 
     super.initState();
@@ -120,7 +109,6 @@ class _ProfilePageState extends State<ProfilePage> {
             // }
           },
           child: Scaffold(
-            backgroundColor: COLOR_white_fff5f5f5,
             appBar: AppBar(
               backgroundColor: Colors.transparent,
               foregroundColor: COLOR_black_ff121212,
@@ -283,13 +271,17 @@ class _ProfilePageState extends State<ProfilePage> {
             widget.payload == null) {
           title = state.name;
         }
-        return Text(title ?? LocaleKeys.title_profile.tr());
+        return Text(
+          title ?? LocaleKeys.title_profile.tr(),
+          style: Theme.of(context).textTheme.titleLarge,
+        );
       },
     );
   }
 
   SizedBox _profileBody(Size size, BuildContext context, AuthState authState,
       AuthRepository authRepository) {
+    final ThemeData theme = Theme.of(context);
     final userRepository = RepositoryProvider.of<UserRepository>(context);
     return SizedBox(
         width: size.width,
@@ -337,7 +329,8 @@ class _ProfilePageState extends State<ProfilePage> {
                                 Expanded(
                                   flex: 2,
                                   child: Material(
-                                    color: COLOR_grey,
+                                    color:
+                                        Theme.of(context).colorScheme.tertiary,
                                     shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(5)),
                                     child: InkWell(
@@ -354,6 +347,9 @@ class _ProfilePageState extends State<ProfilePage> {
                                         child: Text(
                                           LocaleKeys.label_edit_profile.tr(),
                                           textAlign: TextAlign.center,
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .titleSmall,
                                         ),
                                       ),
                                     ),
@@ -366,7 +362,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                   child: Container(
                                       height: Dimens.DIMENS_34,
                                       decoration: BoxDecoration(
-                                          color: COLOR_grey,
+                                          color: theme.colorScheme.tertiary,
                                           borderRadius:
                                               BorderRadius.circular(5)),
                                       child: Icon(MdiIcons.accountPlus)),
@@ -429,7 +425,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                                       BorderRadius.circular(5)),
                                               color: isFollowing!
                                                   ? COLOR_grey
-                                                  : COLOR_black_ff121212,
+                                                  : Color(0xFF9C27B0),
                                               child: InkWell(
                                                 onTap: () {
                                                   if (isFollowing!) {
@@ -551,10 +547,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     floating: false,
                     pinned: true,
                     elevation: 0,
-                    backgroundColor: COLOR_white_fff5f5f5,
                     bottom: TabBar(
-                      labelColor: COLOR_black_ff121212,
-                      indicatorColor: COLOR_black_ff121212,
                       indicatorSize: TabBarIndicatorSize.tab,
                       indicatorWeight: 2,
                       tabs: [
@@ -626,7 +619,7 @@ class _ProfilePageState extends State<ProfilePage> {
   Theme gameFavView(String uid) {
     UserRepository repository = RepositoryProvider.of<UserRepository>(context);
     return Theme(
-      data: ThemeData().copyWith(
+      data: Theme.of(context).copyWith(
         useMaterial3: false,
       ),
       child: Padding(
@@ -637,7 +630,7 @@ class _ProfilePageState extends State<ProfilePage> {
               gameFavs = state.gameFav!;
             }
           },
-          builder: (context, state) {
+          builder: (_, state) {
             return FutureBuilder(
                 future: repository.getSelectedGames(uid),
                 builder: (context, AsyncSnapshot<List<GameFav>> snapshot) {
@@ -658,7 +651,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       }
                       return true;
                     },
-                    builder: (context, state) {
+                    builder: (_, state) {
                       List<Widget> items = [
                         ...List<Widget>.generate(
                           games!.length,
@@ -667,6 +660,8 @@ class _ProfilePageState extends State<ProfilePage> {
                                 MaterialTapTargetSize.shrinkWrap,
                             avatar: CircleAvatar(
                               radius: 10,
+                              backgroundColor:
+                                  Theme.of(context).colorScheme.secondary,
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(50),
                                 child: CachedNetworkImage(
@@ -695,12 +690,14 @@ class _ProfilePageState extends State<ProfilePage> {
                                           .seeMoreGameFavHandle();
                                     },
                                     child: Chip(
-                                      materialTapTargetSize:
-                                          MaterialTapTargetSize.shrinkWrap,
-                                      label: Text(LocaleKeys.label_see_less
-                                          .tr()
-                                          .replaceAll('.', '')),
-                                    ),
+                                        materialTapTargetSize:
+                                            MaterialTapTargetSize.shrinkWrap,
+                                        label: Text(
+                                          LocaleKeys.label_see_less
+                                              .tr()
+                                              .replaceAll('.', ''),
+                                          style: const TextStyle(fontSize: 11),
+                                        )),
                                   )
                                 : Container()
                           ],

@@ -3,11 +3,14 @@
 import 'package:flutter/material.dart';
 
 Color COLOR_black_ff121212 = const Color(0xFF121212);
+Color COLOR_black_800 = const Color(0xFF3B3B3B);
+Color COLOR_black_900 = const Color(0xFF222222);
 int _COLOR_black_ff121212 = 0xFF121212;
 Color COLOR_black = Colors.black;
 Color COLOR_white_fff5f5f5 = const Color(0xFFf5f5f5);
 Color COLOR_red = Colors.red;
 Color COLOR_grey = const Color(0xFFdddddd);
+Color COLOR_purple = const Color(0xFF9C27B0);
 
 MaterialColor PRIMARY = MaterialColor(
   _COLOR_black_ff121212,

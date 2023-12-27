@@ -4,6 +4,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:personal_project/config/theme.dart';
 import 'package:personal_project/constant/color.dart';
 import 'package:personal_project/data/repository/file_repository.dart';
 import 'package:personal_project/domain/model/user.dart';
@@ -165,15 +166,7 @@ class _MyAppState extends State<MyApp> {
             ],
             child: MaterialApp.router(
               debugShowCheckedModeBanner: false,
-              theme: ThemeData(
-                colorScheme:
-                    ColorScheme.fromSeed(seedColor: Colors.deepPurpleAccent),
-                useMaterial3: true,
-                appBarTheme: const AppBarTheme(
-                    surfaceTintColor: Colors.transparent,
-                    scrolledUnderElevation: 0,
-                    elevation: 0),
-              ),
+              theme: AppTheme.darkTheme,
               locale: context.locale,
               supportedLocales: context.supportedLocales,
               localizationsDelegates: context.localizationDelegates,
