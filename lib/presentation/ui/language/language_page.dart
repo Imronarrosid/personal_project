@@ -1,13 +1,10 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:personal_project/constant/color.dart';
 import 'package:personal_project/constant/dimens.dart';
 import 'package:personal_project/presentation/l10n/locale_code.dart';
 import 'package:personal_project/presentation/l10n/stings.g.dart';
-import 'package:personal_project/presentation/router/route_utils.dart';
 import 'package:personal_project/presentation/ui/language/cubit/language_cubit.dart';
 
 class LanguagePage extends StatelessWidget {
@@ -16,11 +13,8 @@ class LanguagePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: COLOR_white_fff5f5f5,
       appBar: AppBar(
         elevation: 0,
-        foregroundColor: COLOR_black_ff121212,
-        backgroundColor: COLOR_white_fff5f5f5,
         title: Text(LocaleKeys.title_language.tr()),
       ),
       body: BlocBuilder<LanguageCubit, LanguageState>(
@@ -41,7 +35,6 @@ class LanguagePage extends StatelessWidget {
                     borderRadius: BorderRadius.only(
                         topLeft: Radius.circular(10),
                         topRight: Radius.circular(10))),
-                tileColor: Colors.white,
                 groupValue: context.locale.languageCode,
                 value: LOCALE.id.code,
                 onChanged: (value) {
@@ -54,7 +47,6 @@ class LanguagePage extends StatelessWidget {
                     borderRadius: BorderRadius.only(
                         bottomLeft: Radius.circular(10),
                         bottomRight: Radius.circular(10))),
-                tileColor: Colors.white,
                 groupValue: context.locale.languageCode,
                 value: LOCALE.en.code,
                 onChanged: (value) {
@@ -84,10 +76,9 @@ class LanguagePage extends StatelessWidget {
                     onPressed: () {
                       context.pop();
                     },
-                    style: TextButton.styleFrom(
-                        textStyle: TextStyle(color: COLOR_white_fff5f5f5)),
-                    child: Text(LocaleKeys.label_cancel.tr(),
-                        style: TextStyle(color: COLOR_black.withOpacity(0.5)))),
+                    child: Text(
+                      LocaleKeys.label_cancel.tr(),
+                    )),
                 TextButton(
                     onPressed: () {
                       context.setLocale(Locale(selected));
