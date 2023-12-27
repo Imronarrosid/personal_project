@@ -24,15 +24,13 @@ class MenuPage extends StatefulWidget {
 class _MenuPageState extends State<MenuPage> {
   @override
   Widget build(BuildContext context) {
+    final ThemeData themeData = Theme.of(context);
     AuthRepository authRepository =
         RepositoryProvider.of<AuthRepository>(context);
 
 //  User user =            authRepository.getVideoOwnerData(authRepository.currentUser!.uid);
     return Scaffold(
-      backgroundColor: COLOR_white_fff5f5f5,
       appBar: AppBar(
-        foregroundColor: COLOR_black_ff121212,
-        backgroundColor: COLOR_white_fff5f5f5,
         elevation: 0,
         title: Text(LocaleKeys.title_menu.tr()),
       ),
@@ -49,7 +47,7 @@ class _MenuPageState extends State<MenuPage> {
           BlocBuilder<AuthBloc, AuthState>(builder: (context, state) {
             if (state.status == AuthStatus.authenticated) {
               return ListTile(
-                tileColor: Colors.white,
+                tileColor: themeData.colorScheme.tertiary,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),
@@ -66,44 +64,13 @@ class _MenuPageState extends State<MenuPage> {
                 ),
                 title: _buildTitle(state.user!.name!),
                 subtitle: _buildSubtitle(state.user!.userName!),
-                trailing: InkWell(
-                  onTap: () {
-                    showDialog(
-                        context: context,
-                        builder: (_) {
-                          return AlertDialog(
-                            title: Text(LocaleKeys.label_logout.tr()),
-                            actions: [
-                              TextButton(
-                                  onPressed: () => context.pop(),
-                                  child: Text(LocaleKeys.label_cancel.tr())),
-                              TextButton(
-                                  onPressed: () {
-                                    BlocProvider.of<AuthBloc>(context)
-                                        .add(LogOut());
-                                    context.pop();
-                                  },
-                                  child: Text(LocaleKeys.label_oke.tr()))
-                            ],
-                          );
-                        });
-                  },
-                  child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 15, vertical: 7),
-                    decoration: BoxDecoration(
-                        color: COLOR_black_ff121212,
-                        borderRadius: BorderRadius.circular(5)),
-                    child: Text(
-                      LocaleKeys.label_logout.tr(),
-                      style: TextStyle(color: COLOR_white_fff5f5f5),
-                    ),
-                  ),
-                ),
+                trailing: const Icon(Icons.keyboard_arrow_right),
+                onTap: () {
+                  context.push(APP_PAGE.editProfile.toPath);
+                },
               );
             }
             return ListTile(
-              tileColor: Colors.white,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
               ),
@@ -148,7 +115,6 @@ class _MenuPageState extends State<MenuPage> {
                 topRight: Radius.circular(10),
               ),
             ),
-            tileColor: Colors.white,
             leading: Icon(MdiIcons.web),
             title: Text(LocaleKeys.title_language.tr()),
             onTap: () {
@@ -162,7 +128,6 @@ class _MenuPageState extends State<MenuPage> {
                 bottomRight: Radius.circular(10),
               ),
             ),
-            tileColor: Colors.white,
             leading: Icon(MdiIcons.database),
             title: Text(LocaleKeys.title_storage.tr()),
             onTap: () {
@@ -170,7 +135,43 @@ class _MenuPageState extends State<MenuPage> {
             },
           ),
           SizedBox(
+            height: Dimens.DIMENS_16,
+          ),
+          _menuTitle(LocaleKeys.label_settings.tr()),
+          SizedBox(
             height: Dimens.DIMENS_8,
+          ),
+          ListTile(
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(10),
+                bottomRight: Radius.circular(10),
+                topLeft: Radius.circular(10),
+                topRight: Radius.circular(10),
+              ),
+            ),
+            title: Text(LocaleKeys.label_logout.tr()),
+            leading: Icon(MdiIcons.logout),
+            onTap: () {
+              showDialog(
+                  context: context,
+                  builder: (_) {
+                    return AlertDialog(
+                      title: Text(LocaleKeys.label_logout.tr()),
+                      actions: [
+                        TextButton(
+                            onPressed: () => context.pop(),
+                            child: Text(LocaleKeys.label_cancel.tr())),
+                        TextButton(
+                            onPressed: () {
+                              BlocProvider.of<AuthBloc>(context).add(LogOut());
+                              context.pop();
+                            },
+                            child: Text(LocaleKeys.label_oke.tr()))
+                      ],
+                    );
+                  });
+            },
           ),
           BlocBuilder<AuthBloc, AuthState>(
             builder: (context, state) {

@@ -48,6 +48,9 @@ class AppTheme {
         color: COLOR_white_fff5f5f5,
       ),
     ),
+    listTileTheme: ListTileThemeData(
+      tileColor: COLOR_black_900
+    ),
     tabBarTheme: TabBarTheme(
         unselectedLabelColor: Colors.white38,
         overlayColor: MaterialStateProperty.all<Color>(Colors.black12)),
