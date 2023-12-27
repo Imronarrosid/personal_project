@@ -54,5 +54,7 @@
     "message_unfollow": "Unfollow?",
     "message_no_post": "No post yet",
     "message_no_liked_post": "No liked post",
-    "message_add_comments": "Add comments"
+    "message_add_comments": "Add comments",
+    "message_no_game": "No game",
+    "message_share_feature_not_ready": "Share feature not ready"
 }

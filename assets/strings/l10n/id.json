@@ -54,5 +54,7 @@
     "message_unfollow": "Berhenti mengikuti?",
     "message_no_post": "Tidak ada postingan",
     "message_no_liked_post": "Tidak ada postingan di sukai",
-    "message_add_comments": "Tambahkan komentar"
+    "message_add_comments": "Tambahkan komentar",
+    "message_no_game": "Tidak ada game dicantumkan",
+    "message_share_featur_not_ready": "Fitur share belum ready"
 }

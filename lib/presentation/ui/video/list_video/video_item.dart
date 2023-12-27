@@ -23,6 +23,7 @@ import 'package:personal_project/presentation/ui/comments/comments_page.dart';
 import 'package:personal_project/presentation/ui/video/list_video/bloc/video_player_bloc.dart';
 import 'package:personal_project/presentation/ui/video/list_video/cubit/captions_cubit.dart';
 import 'package:personal_project/presentation/ui/video/list_video/cubit/like_video_cubit.dart';
+import 'package:personal_project/utils/number_format.dart';
 import 'package:video_cached_player/video_cached_player.dart';
 import 'package:video_player/video_player.dart';
 import 'package:visibility_detector/visibility_detector.dart';
@@ -186,14 +187,17 @@ class _VideoItemState extends State<VideoItem> {
                       return snapshot.hasData
                           ? Positioned(
                               right: Dimens.DIMENS_12,
-                              bottom: Dimens.DIMENS_12,
+                              bottom: Dimens.DIMENS_18,
                               child: Column(
                                 children: [
                                   _buildProfilePictures(context, data),
                                   SizedBox(
-                                    height: Dimens.DIMENS_38,
+                                    height: Dimens.DIMENS_25,
                                   ),
                                   _buildLikeButton(context, videoData),
+                                  SizedBox(
+                                    height: Dimens.DIMENS_5,
+                                  ),
                                   BlocBuilder<LikeVideoCubit, LikeVideoState>(
                                     buildWhen: (previous, current) {
                                       if (current is ShowDobleTapLikeWidget ||
@@ -214,13 +218,16 @@ class _VideoItemState extends State<VideoItem> {
                                               fontSize: _IC_LABEL_FONTSIZE),
                                         );
                                       } else if (state is UnilkedVideo) {
-                                        return Text(state.likeCount.toString(),
+                                        return Text(
+                                            numberFormat(context.locale,
+                                                state.likeCount),
                                             style: TextStyle(
                                                 color: COLOR_white_fff5f5f5,
                                                 fontSize: _IC_LABEL_FONTSIZE));
                                       }
                                       return Text(
-                                        videoData.likes.length.toString(),
+                                        numberFormat(context.locale,
+                                            videoData.likes.length),
                                         style: TextStyle(
                                             color: COLOR_white_fff5f5f5,
                                             fontSize: _IC_LABEL_FONTSIZE),
@@ -228,7 +235,7 @@ class _VideoItemState extends State<VideoItem> {
                                     },
                                   ),
                                   SizedBox(
-                                    height: Dimens.DIMENS_12,
+                                    height: Dimens.DIMENS_25,
                                   ),
                                   RepositoryProvider(
                                     create: (context) => CommentRepository(),
@@ -241,8 +248,6 @@ class _VideoItemState extends State<VideoItem> {
                                             elevation: 0,
                                             isScrollControlled: true,
                                             builder: (context) {
-                                              debugPrint(
-                                                  'bottomInset${MediaQuery.of(context).viewInsets.bottom}');
                                               return CommentBottomSheet(
                                                 postId: widget.videoData.id!,
                                               );
@@ -255,19 +260,25 @@ class _VideoItemState extends State<VideoItem> {
                                       ),
                                     ),
                                   ),
+                                  SizedBox(
+                                    height: Dimens.DIMENS_5,
+                                  ),
                                   Text(
-                                    videoData.commentCount.toString(),
+                                    numberFormat(
+                                        context.locale, videoData.commentCount),
                                     style: TextStyle(
                                         color: COLOR_white_fff5f5f5,
                                         fontSize: _IC_LABEL_FONTSIZE),
                                   ),
                                   SizedBox(
-                                    height: Dimens.DIMENS_12,
+                                    height: Dimens.DIMENS_20,
                                   ),
                                   GestureDetector(
                                     onTap: () {
                                       Fluttertoast.showToast(
-                                          msg: "Fitur share belum ada, Maap",
+                                          msg: LocaleKeys
+                                              .message_share_feature_not_ready
+                                              .tr(),
                                           toastLength: Toast.LENGTH_SHORT,
                                           gravity: ToastGravity.TOP,
                                           timeInSecForIosWeb: 1,
@@ -285,7 +296,7 @@ class _VideoItemState extends State<VideoItem> {
                                     ),
                                   ),
                                   SizedBox(
-                                    height: Dimens.DIMENS_15,
+                                    height: Dimens.DIMENS_25,
                                   ),
                                   GestureDetector(
                                     onTap: () {
@@ -299,8 +310,8 @@ class _VideoItemState extends State<VideoItem> {
                                       } else {
                                         Fluttertoast.showToast(
                                             gravity: ToastGravity.TOP,
-                                            msg:
-                                                'Tidak ada game yang dicantumkan');
+                                            msg: LocaleKeys.message_no_game
+                                                .tr());
                                       }
                                     },
                                     child: Container(
@@ -547,7 +558,7 @@ class _VideoItemState extends State<VideoItem> {
         var data = snapshot.data;
         if (snapshot.hasData) {
           return Positioned(
-            bottom: Dimens.DIMENS_12,
+            bottom: Dimens.DIMENS_18,
             left: Dimens.DIMENS_12,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -559,6 +570,12 @@ class _VideoItemState extends State<VideoItem> {
                   child: Text(
                     '@${data!.userName!}',
                     style: TextStyle(color: COLOR_white_fff5f5f5, fontSize: 14),
+                  ),
+                ),
+                Visibility(
+                  visible: videoData.caption.isNotEmpty,
+                  child: SizedBox(
+                    height: Dimens.DIMENS_10,
                   ),
                 ),
                 BlocBuilder<CaptionsCubit, CaptionsState>(
@@ -602,8 +619,12 @@ class _VideoItemState extends State<VideoItem> {
                                           fontSize: 14.0,
                                           fontWeight: FontWeight.w400),
                                     ),
-                              SizedBox(
-                                height: Dimens.DIMENS_6,
+                              Visibility(
+                                visible: videoData.caption.isNotEmpty ||
+                                    videoData.game != null,
+                                child: SizedBox(
+                                  height: Dimens.DIMENS_10,
+                                ),
                               ),
                               lines > 2
                                   ? InkWell(
@@ -637,7 +658,7 @@ class _VideoItemState extends State<VideoItem> {
                         },
                         child: Container(
                           width: Dimens.DIMENS_150,
-                          height: Dimens.DIMENS_20,
+                          height: Dimens.DIMENS_24,
                           padding:
                               EdgeInsets.symmetric(horizontal: Dimens.DIMENS_8),
                           decoration: BoxDecoration(

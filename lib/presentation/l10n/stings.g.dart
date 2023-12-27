@@ -57,5 +57,7 @@ abstract class  LocaleKeys {
   static const message_no_post = 'message_no_post';
   static const message_no_liked_post = 'message_no_liked_post';
   static const message_add_comments = 'message_add_comments';
+  static const message_no_game = 'message_no_game';
+  static const message_share_feature_not_ready = 'message_share_feature_not_ready';
 
 }
