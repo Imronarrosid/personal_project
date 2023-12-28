@@ -36,20 +36,19 @@ class FollowingsNFollowers extends StatelessWidget {
             headerSliverBuilder: (context, innerBoxIsScrolled) {
               return [
                 SliverAppBar(
+                  elevation: 1,
+                  scrolledUnderElevation: 0,
                   pinned: true,
+                  shape: Border(bottom: BorderSide(color: Theme.of(context).colorScheme.primary,width: 0.2)),
                   title: Text(data.userName),
-                  bottom: TabBar(
-                      labelColor: COLOR_black_ff121212,
-                      indicatorColor: COLOR_black_ff121212,
-                      indicatorSize: TabBarIndicatorSize.tab,
-                      tabs: const [
-                        Tab(
-                          text: 'Followers',
-                        ),
-                        Tab(
-                          text: 'Following',
-                        ),
-                      ]),
+                  bottom: TabBar(indicatorSize: TabBarIndicatorSize.tab, tabs: [
+                    Tab(
+                      text: LocaleKeys.label_followers.tr(),
+                    ),
+                    Tab(
+                      text: LocaleKeys.label_following.tr(),
+                    ),
+                  ]),
                 ),
               ];
             },

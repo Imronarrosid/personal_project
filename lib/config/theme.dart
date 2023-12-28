@@ -43,7 +43,6 @@ class AppTheme {
     indicatorColor: COLOR_white_fff5f5f5,
     appBarTheme: AppBarTheme(
       surfaceTintColor: Colors.transparent,
-      shadowColor: Colors.transparent,
       iconTheme: IconThemeData(
         color: COLOR_white_fff5f5f5,
       ),
