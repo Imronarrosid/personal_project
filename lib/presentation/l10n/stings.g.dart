@@ -44,6 +44,7 @@ abstract class  LocaleKeys {
   static const label_user_name = 'label_user_name';
   static const label_bio = 'label_bio';
   static const label_favorite_games = 'label_favorite_games';
+  static const label_others = 'label_others';
   static const message_delete_video = 'message_delete_video';
   static const message_wait = 'message_wait';
   static const message_write_something = 'message_write_something';

@@ -42,6 +42,7 @@
     "label_user_name": "User name",
     "label_bio": "Bio",
     "label_favorite_games": "Favorite games",
+    "label_others": "Others",
     "message_delete_video": "Remove Video?",
     "message_wait": "Wait a minute",
     "message_write_something": "Write something",
