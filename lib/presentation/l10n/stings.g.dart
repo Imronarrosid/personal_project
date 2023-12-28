@@ -45,6 +45,7 @@ abstract class  LocaleKeys {
   static const label_bio = 'label_bio';
   static const label_favorite_games = 'label_favorite_games';
   static const label_others = 'label_others';
+  static const label_save = 'label_save';
   static const message_delete_video = 'message_delete_video';
   static const message_wait = 'message_wait';
   static const message_write_something = 'message_write_something';
@@ -60,5 +61,9 @@ abstract class  LocaleKeys {
   static const message_add_comments = 'message_add_comments';
   static const message_no_game = 'message_no_game';
   static const message_share_feature_not_ready = 'message_share_feature_not_ready';
+  static const message_edit_can_name_every_7_day = 'message_edit_can_name_every_7_day';
+  static const message_edit_name_day_later = 'message_edit_name_day_later';
+  static const message_dont_start_with_whitespace = 'message_dont_start_with_whitespace';
+  static const message_name_cant_empty = 'message_name_cant_empty';
 
 }

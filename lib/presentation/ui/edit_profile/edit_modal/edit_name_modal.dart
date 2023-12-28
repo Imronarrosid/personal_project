@@ -1,9 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:personal_project/constant/color.dart';
 import 'package:personal_project/constant/dimens.dart';
+import 'package:personal_project/presentation/l10n/stings.g.dart';
 import 'package:personal_project/presentation/ui/edit_profile/cubit/edit_name_cubit.dart';
 import 'package:personal_project/utils/edit_name_check.dart';
 import 'package:personal_project/utils/is_same_day.dart';
@@ -16,9 +18,9 @@ void showEditNameModal(BuildContext context, String name, Timestamp timestamp,
 
   String? validator(String? value) {
     if (value!.trim().isEmpty) {
-      return 'Nama tidak boleh diawali spasi.';
+      return LocaleKeys.message_dont_start_with_whitespace.tr();
     } else if (value.isEmpty) {
-      return 'Nama tidak boleh kosong.';
+      return LocaleKeys.message_name_cant_empty.tr();
     }
     return null; // Return null if the input is valid
   }
@@ -47,7 +49,7 @@ void showEditNameModal(BuildContext context, String name, Timestamp timestamp,
                 child: Container(
                   padding: EdgeInsets.all(Dimens.DIMENS_12),
                   decoration: BoxDecoration(
-                      color: COLOR_white_fff5f5f5,
+                      color: Theme.of(context).colorScheme.secondary,
                       borderRadius: BorderRadius.circular(10)),
                   height: 250,
                   child: Column(
@@ -57,9 +59,9 @@ void showEditNameModal(BuildContext context, String name, Timestamp timestamp,
                           alignment: Alignment.center,
                           child: Container(
                             width: Dimens.DIMENS_50,
-                            height: Dimens.DIMENS_8,
+                            height: Dimens.DIMENS_5,
                             decoration: BoxDecoration(
-                                color: COLOR_grey,
+                                color: Theme.of(context).colorScheme.tertiary,
                                 borderRadius: BorderRadius.circular(50)),
                           ),
                         ),
@@ -67,48 +69,44 @@ void showEditNameModal(BuildContext context, String name, Timestamp timestamp,
                           height: Dimens.DIMENS_6,
                         ),
                         Text(
-                          'Nama',
+                          LocaleKeys.label_name.tr(),
                           style: TextStyle(
                               fontSize: 18, fontWeight: FontWeight.w600),
                         ),
                         SizedBox(
                           height: Dimens.DIMENS_8,
                         ),
-                        Theme(
-                          data: ThemeData().copyWith(
-                              colorScheme: ThemeData()
-                                  .colorScheme
-                                  .copyWith(primary: COLOR_black_ff121212)),
-                          child: Form(
-                            key: _formKey,
-                            child: TextFormField(
-                              validator: validator,
-                              controller: controller,
-                              onChanged: (value) {
-                                _formKey.currentState!.validate();
-                              },
-                              enabled: isCanEdit,
-                              autofocus: true,
-                              decoration: InputDecoration(
-                                  border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(10))),
-                            ),
+                        Form(
+                          key: _formKey,
+                          child: TextFormField(
+                            validator: validator,
+                            controller: controller,
+                            onChanged: (value) {
+                              _formKey.currentState!.validate();
+                            },
+                            enabled: isCanEdit,
+                            autofocus: true,
+                            decoration: InputDecoration(
+                                border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10))),
                           ),
                         ),
                         SizedBox(
                           height: Dimens.DIMENS_8,
                         ),
                         isCanEdit
-                            ? Text('Kamu bisa mengganti nama 7 hari sekali')
-                            : Text(
-                                'Kamu dapat mengganti nama $daysCount hari lagi'),
+                            ? Text(LocaleKeys.message_edit_can_name_every_7_day
+                                .tr())
+                            : Text(LocaleKeys.message_edit_name_day_later
+                                .tr(args: [daysCount.toString()])),
                         SizedBox(
                           height: Dimens.DIMENS_18,
                         ),
                         InkWell(
                           onTap: isCanEdit
                               ? () {
-                                  if (_formKey.currentState!.validate()) {
+                                  if (_formKey.currentState!.validate() &&
+                                      name != controller.text) {
                                     BlocProvider.of<EditNameCubit>(context)
                                         .editName(controller.text);
                                     debugPrint('editname');
@@ -121,27 +119,32 @@ void showEditNameModal(BuildContext context, String name, Timestamp timestamp,
                             alignment: Alignment.center,
                             decoration: BoxDecoration(
                                 color: isCanEdit
-                                    ? COLOR_black_ff121212
-                                    : COLOR_grey,
+                                    ? Theme.of(context).colorScheme.primary
+                                    : Theme.of(context).colorScheme.tertiary,
                                 borderRadius: BorderRadius.circular(50)),
                             child: BlocBuilder<EditNameCubit, EditNameState>(
                               builder: (context, state) {
                                 debugPrint('state ${state.status}');
                                 if (state.status ==
                                     EditNameStatus.editProccess) {
-                                  return Container(
+                                  return SizedBox(
                                     width: Dimens.DIMENS_18,
                                     height: Dimens.DIMENS_18,
                                     child: CircularProgressIndicator(
-                                      color: COLOR_white_fff5f5f5,
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .secondary,
                                     ),
                                   );
                                 }
                                 return Text(
-                                  'Simpan',
+                                  LocaleKeys.label_save.tr(),
                                   style: TextStyle(
-                                      color: isCanEdit
-                                          ? COLOR_white_fff5f5f5
+                                      color: isCanEdit &&
+                                              name != controller.text.trim()
+                                          ? Theme.of(context)
+                                              .colorScheme
+                                              .secondary
                                           : COLOR_black_ff121212),
                                 );
                               },

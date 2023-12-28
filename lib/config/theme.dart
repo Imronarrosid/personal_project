@@ -63,6 +63,7 @@ class AppTheme {
         onSecondary: COLOR_black_ff121212,
         secondary: COLOR_black_ff121212,
         onSurface: COLOR_white_fff5f5f5,
+        onTertiary: COLOR_purple,
         tertiary: COLOR_black_900),
     iconTheme: IconThemeData(
       color: COLOR_white_fff5f5f5,
