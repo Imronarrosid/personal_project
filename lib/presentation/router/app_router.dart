@@ -201,6 +201,20 @@ class AppRouter {
       GoRoute(
         path: APP_PAGE.cachesPage.toPath,
         name: APP_PAGE.cachesPage.toName,
+        pageBuilder: (context, state) => CustomTransitionPage(
+          child: const CachesPage(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) =>
+              SlideTransition(
+                  position: animation.drive(
+                    Tween<Offset>(
+                      begin: Offset(0.75, 0),
+                      end: Offset.zero,
+                    ).chain(
+                      CurveTween(curve: Curves.ease),
+                    ),
+                  ),
+                  child: child),
+        ),
         builder: (context, state) {
           return const CachesPage();
         },
