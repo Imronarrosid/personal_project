@@ -42,15 +42,13 @@ class AppTheme {
     scaffoldBackgroundColor: COLOR_black_ff121212,
     indicatorColor: COLOR_white_fff5f5f5,
     appBarTheme: AppBarTheme(
-      color: COLOR_black_ff121212,
       surfaceTintColor: Colors.transparent,
+      shadowColor: Colors.transparent,
       iconTheme: IconThemeData(
         color: COLOR_white_fff5f5f5,
       ),
     ),
-    listTileTheme: ListTileThemeData(
-      tileColor: COLOR_black_900
-    ),
+    listTileTheme: ListTileThemeData(tileColor: COLOR_black_900),
     tabBarTheme: TabBarTheme(
         unselectedLabelColor: Colors.white38,
         overlayColor: MaterialStateProperty.all<Color>(Colors.black12)),

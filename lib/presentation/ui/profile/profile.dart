@@ -111,7 +111,8 @@ class _ProfilePageState extends State<ProfilePage> {
           child: Scaffold(
             appBar: AppBar(
               backgroundColor: Colors.transparent,
-              foregroundColor: COLOR_black_ff121212,
+              surfaceTintColor: Colors.transparent,
+              scrolledUnderElevation: 0,
               elevation: 0,
               title: BlocBuilder<AuthBloc, AuthState>(
                 builder: (context, state) {
