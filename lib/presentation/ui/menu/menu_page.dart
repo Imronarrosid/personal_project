@@ -137,7 +137,7 @@ class _MenuPageState extends State<MenuPage> {
           SizedBox(
             height: Dimens.DIMENS_16,
           ),
-          _menuTitle(LocaleKeys.label_settings.tr()),
+          _menuTitle(LocaleKeys.label_others.tr()),
           SizedBox(
             height: Dimens.DIMENS_8,
           ),

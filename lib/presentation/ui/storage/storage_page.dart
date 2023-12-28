@@ -21,10 +21,7 @@ class CachesPage extends StatelessWidget {
         )..getCacheSize(),
         child: Builder(builder: (context) {
           return Scaffold(
-            backgroundColor: COLOR_white_fff5f5f5,
             appBar: AppBar(
-              backgroundColor: COLOR_white_fff5f5f5,
-              foregroundColor: COLOR_black_ff121212,
               elevation: 0,
               title: Text(LocaleKeys.title_storage.tr()),
             ),
@@ -39,43 +36,48 @@ class CachesPage extends StatelessWidget {
                     if (state.status == StorageStatus.loaded) {
                       size = state.size!;
                     }
-                    return ListTile(
-                      tileColor: Colors.white,
-                      minVerticalPadding: Dimens.DIMENS_12,
-                      title: Padding(
-                        padding: EdgeInsets.only(bottom: Dimens.DIMENS_12),
-                        child: Row(
-                          children: [
-                            Text(LocaleKeys.label_caches.tr(args: [size]),
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.bold)),
-                            const Spacer(),
-                            Material(
-                              color: COLOR_grey,
-                              borderRadius: BorderRadius.circular(5),
-                              child: InkWell(
+                    return Padding(
+                      padding: EdgeInsets.symmetric(horizontal:Dimens.DIMENS_12),
+                      child: ListTile(
+                        minVerticalPadding: Dimens.DIMENS_12,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10)
+                        ),
+                        title: Padding(
+                          padding: EdgeInsets.only(bottom: Dimens.DIMENS_12),
+                          child: Row(
+                            children: [
+                              Text(LocaleKeys.label_caches.tr(args: [size]),
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.bold)),
+                              const Spacer(),
+                              Material(
+                                color: COLOR_grey,
                                 borderRadius: BorderRadius.circular(5),
-                                onTap: () {
-                                  _clearCachesDialog(context);
-                                },
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 15, vertical: 7),
-                                  decoration: BoxDecoration(
-                                      color: Colors.transparent,
-                                      borderRadius: BorderRadius.circular(5)),
-                                  child: Text(
-                                    LocaleKeys.label_delete.tr(),
-                                    style:
-                                        TextStyle(color: COLOR_black_ff121212),
+                                child: InkWell(
+                                  borderRadius: BorderRadius.circular(5),
+                                  onTap: () {
+                                    _clearCachesDialog(context);
+                                  },
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 15, vertical: 7),
+                                    decoration: BoxDecoration(
+                                        color: Colors.transparent,
+                                        borderRadius: BorderRadius.circular(5)),
+                                    child: Text(
+                                      LocaleKeys.label_delete.tr(),
+                                      style:
+                                          TextStyle(color: COLOR_black_ff121212),
+                                    ),
                                   ),
                                 ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
+                        subtitle: Text(LocaleKeys.message_caches.tr()),
                       ),
-                      subtitle: Text(LocaleKeys.message_caches.tr()),
                     );
                   },
                 )
