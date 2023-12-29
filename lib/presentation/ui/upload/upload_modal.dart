@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
@@ -5,19 +6,21 @@ import 'package:material_design_icons_flutter/material_design_icons_flutter.dart
 import 'package:personal_project/constant/color.dart';
 import 'package:personal_project/constant/dimens.dart';
 import 'package:personal_project/domain/services/firebase/image_picker.dart';
+import 'package:personal_project/presentation/l10n/stings.g.dart';
 import 'package:personal_project/presentation/router/route_utils.dart';
 
 void showUploadModal(BuildContext context) {
   showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
+      elevation: 0,
       builder: (_) {
         return Padding(
           padding: const EdgeInsets.all(8.0),
           child: Container(
               padding: EdgeInsets.all(Dimens.DIMENS_12),
               decoration: BoxDecoration(
-                  color: COLOR_white_fff5f5f5,
+                  color: Theme.of(context).colorScheme.secondary,
                   borderRadius: BorderRadius.circular(10)),
               height: 230,
               child: Column(
@@ -27,9 +30,9 @@ void showUploadModal(BuildContext context) {
                     alignment: Alignment.center,
                     child: Container(
                       width: Dimens.DIMENS_50,
-                      height: Dimens.DIMENS_8,
+                      height: Dimens.DIMENS_5,
                       decoration: BoxDecoration(
-                          color: COLOR_grey,
+                          color: Theme.of(context).colorScheme.tertiary,
                           borderRadius: BorderRadius.circular(50)),
                     ),
                   ),
@@ -43,47 +46,61 @@ void showUploadModal(BuildContext context) {
                   SizedBox(
                     height: Dimens.DIMENS_6,
                   ),
-                  ListTile(
-                    leading: Icon(MdiIcons.camera),
-                    title: const Text('Camera'),
-                    onTap: () async {
-                      Future<XFile?> video = pickVideoFromCamera();
+                  Material(
+                    child: ListTile(
+                      leading: Icon(MdiIcons.camera),
+                      title: Text(LocaleKeys.label_camera.tr()),
+                      shape: const RoundedRectangleBorder(
+                          borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(10),
+                        topRight: Radius.circular(10),
+                      )),
+                      onTap: () async {
+                        Future<XFile?> video = pickVideoFromCamera();
 
-                      Future.delayed(const Duration(milliseconds: 100), () {
-                        _loadFileModal(context);
-                      });
-                      XFile? pickVideo = await video;
+                        Future.delayed(const Duration(milliseconds: 100), () {
+                          _loadFileModal(context);
+                        });
+                        XFile? pickVideo = await video;
 
-                      if (pickVideo != null && context.mounted) {
-                        context.pop();
-                        debugPrint('picked');
-                        context.push(APP_PAGE.videoEditor.toPath,
-                            extra: pickVideo);
-                      } else if (pickVideo == null && context.mounted) {
-                        context.pop();
-                      }
-                    },
+                        if (pickVideo != null && context.mounted) {
+                          context.pop();
+                          debugPrint('picked');
+                          context.push(APP_PAGE.videoEditor.toPath,
+                              extra: pickVideo);
+                        } else if (pickVideo == null && context.mounted) {
+                          context.pop();
+                        }
+                      },
+                    ),
                   ),
-                  ListTile(
-                    leading: Icon(MdiIcons.image),
-                    title: const Text('Galery'),
-                    onTap: () async {
-                      Future<XFile?> video = pickVideoFromGalery();
+                  Material(
+                    child: ListTile(
+                      leading: Icon(MdiIcons.image),
+                      title: Text(LocaleKeys.label_galery.tr()),
+                      shape: const RoundedRectangleBorder(
+                          borderRadius: BorderRadius.only(
+                        bottomLeft: Radius.circular(10),
+                        bottomRight: Radius.circular(10),
+                      )),
+                      onTap: () async {
+                        Future<XFile?> video = pickVideoFromGalery();
 
-                      Future.delayed(const Duration(milliseconds: 100), () {
-                        _loadFileModal(context);
-                      });
-                      XFile? pickVideo = await video;
+                        Future.delayed(const Duration(milliseconds: 100), () {
+                          _loadFileModal(context);
+                        });
+                        XFile? pickVideo = await video;
 
-                      if (pickVideo != null && context.mounted) {
-                        context.pop();
-                        debugPrint('picked');
-                        context.push(APP_PAGE.videoEditor.toPath,
-                            extra: pickVideo);
-                      } else if (pickVideo == null && context.mounted) {
-                        context.pop();
-                      }
-                    },
+                        if (pickVideo != null && context.mounted) {
+                          context.pop();
+                          debugPrint('picked');
+                          context.push(APP_PAGE.videoEditor.toPath,
+                              extra: pickVideo);
+                        } else if (pickVideo == null && context.mounted) {
+                          context.pop();
+                        }
+                      },
+                    ),
                   )
                 ],
               )),
