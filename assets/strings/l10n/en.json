@@ -62,5 +62,11 @@
     "message_edit_can_name_every_7_day": "You can update your name every 7 days",
     "message_edit_name_day_later": "You can update your name {} days later",
     "message_dont_start_with_whitespace": "Don't start with whitespace.",
-    "message_name_cant_empty": "Name can't empty."
+    "message_name_cant_empty": "Name can't empty.",
+    "message_dont_start_username_with_whitespace": "User name can't start with whitespace.",
+    "message_user_name_cant_empty": "User name can't empty.",
+    "message_user_name_cant_contain_whitespace": "User name can't contains whitespace.",
+    "message_user_name_not_available": "User name not available.",
+    "message_usename_can_update_every_14_days": "You can update user name every 14 days",
+    "message_username_can_update_days_later": "You can update user name {} dyas later"
 }

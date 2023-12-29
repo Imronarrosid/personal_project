@@ -1,10 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:personal_project/constant/color.dart';
 import 'package:personal_project/constant/dimens.dart';
+import 'package:personal_project/presentation/l10n/stings.g.dart';
 import 'package:personal_project/presentation/ui/edit_profile/cubit/edit_user_name_cubit.dart';
 import 'package:personal_project/utils/is_same_day.dart';
 import 'package:personal_project/utils/validator_edit_user_name.dart';
@@ -51,7 +53,7 @@ void showEditUserNameModal(BuildContext context,
               child: Container(
                 padding: EdgeInsets.all(Dimens.DIMENS_12),
                 decoration: BoxDecoration(
-                    color: COLOR_white_fff5f5f5,
+                    color: Theme.of(context).colorScheme.secondary,
                     borderRadius: BorderRadius.circular(10)),
                 height: 270,
                 child: Column(
@@ -61,9 +63,9 @@ void showEditUserNameModal(BuildContext context,
                         alignment: Alignment.center,
                         child: Container(
                           width: Dimens.DIMENS_50,
-                          height: Dimens.DIMENS_8,
+                          height: Dimens.DIMENS_5,
                           decoration: BoxDecoration(
-                              color: COLOR_grey,
+                              color: Theme.of(context).colorScheme.tertiary,
                               borderRadius: BorderRadius.circular(50)),
                         ),
                       ),
@@ -71,52 +73,45 @@ void showEditUserNameModal(BuildContext context,
                         height: Dimens.DIMENS_6,
                       ),
                       Text(
-                        'Nama Pengguna',
-                        style: TextStyle(
+                        LocaleKeys.label_user_name.tr(),
+                        style: const TextStyle(
                             fontSize: 18, fontWeight: FontWeight.w600),
                       ),
                       SizedBox(
                         height: Dimens.DIMENS_8,
                       ),
-                      Theme(
-                        data: ThemeData().copyWith(
-                            colorScheme: ThemeData()
-                                .colorScheme
-                                .copyWith(primary: COLOR_black_ff121212)),
-                        child: Form(
-                          key: formKey,
-                          child: TextFormField(
-                            enabled: isCanEdit,
-                            controller: controller,
-                            validator: (value) {
-                              return _validator(value, isAvailable);
-                            },
-                            onChanged: (value) {
-                              BlocProvider.of<EditUserNameCubit>(context)
-                                  .checkUserNameAvailability(value);
-                            },
-                            autofocus: true,
-                            decoration: InputDecoration(
-                              prefixIcon: Icon(MdiIcons.at),
-                              border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(10)),
-                              suffix: BlocBuilder<EditUserNameCubit,
-                                  EditUserNameState>(
-                                builder: (context, state) {
-                                  if (state.status ==
-                                      EditUserNameStatus.loading) {
-                                    return SizedBox(
-                                        width: Dimens.DIMENS_12,
-                                        height: Dimens.DIMENS_12,
-                                        child:
-                                            const CircularProgressIndicator());
-                                  }
-                                  return const SizedBox(
-                                    width: 0,
-                                    height: 0,
-                                  );
-                                },
-                              ),
+                      Form(
+                        key: formKey,
+                        child: TextFormField(
+                          enabled: isCanEdit,
+                          controller: controller,
+                          validator: (value) {
+                            return _validator(value, isAvailable);
+                          },
+                          onChanged: (value) {
+                            BlocProvider.of<EditUserNameCubit>(context)
+                                .checkUserNameAvailability(value);
+                          },
+                          autofocus: true,
+                          decoration: InputDecoration(
+                            prefixIcon: Icon(MdiIcons.at),
+                            border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10)),
+                            suffix: BlocBuilder<EditUserNameCubit,
+                                EditUserNameState>(
+                              builder: (context, state) {
+                                if (state.status ==
+                                    EditUserNameStatus.loading) {
+                                  return SizedBox(
+                                      width: Dimens.DIMENS_12,
+                                      height: Dimens.DIMENS_12,
+                                      child: const CircularProgressIndicator());
+                                }
+                                return const SizedBox(
+                                  width: 0,
+                                  height: 0,
+                                );
+                              },
                             ),
                           ),
                         ),
@@ -125,10 +120,13 @@ void showEditUserNameModal(BuildContext context,
                         height: Dimens.DIMENS_8,
                       ),
                       isCanEdit
-                          ? Text(
-                              'Kamu bisa mengganti nama pengguna 14 hari sekali')
+                          ? Text(LocaleKeys
+                              .message_usename_can_update_every_14_days
+                              .tr())
                           : Text(
-                              'Kamu bisa mengganti nama pengguna $daysCount hari lagi'),
+                              LocaleKeys.message_username_can_update_days_later
+                                  .tr(args: [daysCount.toString()]),
+                            ),
                       SizedBox(
                         height: Dimens.DIMENS_18,
                       ),
@@ -138,8 +136,8 @@ void showEditUserNameModal(BuildContext context,
                             color: isCanEdit ||
                                     state.status ==
                                         EditUserNameStatus.availlable
-                                ? COLOR_black_ff121212
-                                : COLOR_grey,
+                                ? Theme.of(context).colorScheme.primary
+                                : Theme.of(context).colorScheme.tertiary,
                             shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(50)),
                             child: InkWell(
@@ -174,18 +172,22 @@ void showEditUserNameModal(BuildContext context,
                                         width: Dimens.DIMENS_18,
                                         height: Dimens.DIMENS_18,
                                         child: CircularProgressIndicator(
-                                          color: COLOR_white_fff5f5f5,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .secondary,
                                         ),
                                       );
                                     }
                                     return Text(
-                                      'Simpan',
+                                      LocaleKeys.label_save.tr(),
                                       style: TextStyle(
                                           color: isCanEdit ||
                                                   state.status ==
                                                       EditUserNameStatus
                                                           .availlable
-                                              ? COLOR_white_fff5f5f5
+                                              ? Theme.of(context)
+                                                  .colorScheme
+                                                  .secondary
                                               : COLOR_black_ff121212),
                                     );
                                   },
@@ -205,13 +207,13 @@ void showEditUserNameModal(BuildContext context,
 
 String? _validator(String? value, bool isAvailable) {
   if (value!.contains(RegExp(r'\s'))) {
-    return 'Nama pengguna tidak boleh menggunakan spasi.';
+    return LocaleKeys.message_user_name_cant_contain_whitespace.tr();
   } else if (value.isEmpty) {
-    return 'Nama Pengguna tidak boleh kosong.';
+    return LocaleKeys.message_user_name_cant_empty.tr();
   } else if (value.trim().isEmpty) {
-    return 'Nama pengguna tidak boleh diawali spasi.';
+    return LocaleKeys.message_user_name_cant_empty.tr();
   } else if (isAvailable == false) {
-    return 'User name not available.';
+    return LocaleKeys.message_user_name_not_available.tr();
   }
   debugPrint('qwerty isacjaklv $isAvailable');
   return null; // Return null if the input is valid

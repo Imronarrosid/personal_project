@@ -65,5 +65,11 @@ abstract class  LocaleKeys {
   static const message_edit_name_day_later = 'message_edit_name_day_later';
   static const message_dont_start_with_whitespace = 'message_dont_start_with_whitespace';
   static const message_name_cant_empty = 'message_name_cant_empty';
+  static const message_dont_start_username_with_whitespace = 'message_dont_start_username_with_whitespace';
+  static const message_user_name_cant_empty = 'message_user_name_cant_empty';
+  static const message_user_name_cant_contain_whitespace = 'message_user_name_cant_contain_whitespace';
+  static const message_user_name_not_available = 'message_user_name_not_available';
+  static const message_usename_can_update_every_14_days = 'message_usename_can_update_every_14_days';
+  static const message_username_can_update_days_later = 'message_username_can_update_days_later';
 
 }

@@ -62,5 +62,11 @@
     "message_edit_can_name_every_7_day": "Kamu bisa mengganti nama 7 hari sekali",
     "message_edit_name_day_later": "Kamu dapat mengganti nama {} hari lagi",
     "message_dont_start_with_whitespace": "Nama tidak boleh diawali spasi.",
-    "message_name_cant_empty": "Nama tidak boleh kosong."
+    "message_name_cant_empty": "Nama tidak boleh kosong.",
+    "message_dont_start_username_with_whitespace": "Nama pengguna tidak boleh diawali spasi.",
+    "message_user_name_cant_empty": "Nama pengguna tidak boleh kosong.",
+    "message_user_name_cant_contain_whitespace": "Nama pengguna tidak boleh menggunakan spasi.",
+    "message_user_name_not_available": "Nama pengguana tidak tersedia.",
+    "message_usename_can_update_every_14_days": "Kamu bisa mengganti nama pengguna 14 hari sekali",
+    "message_username_can_update_days_later": "Kamu bisa mengganti nama pengguna {} hari sekali"
 }
