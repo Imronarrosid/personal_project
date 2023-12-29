@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:personal_project/constant/color.dart';
 import 'package:personal_project/constant/dimens.dart';
 import 'package:personal_project/presentation/assets/images.dart';
@@ -17,12 +18,9 @@ class NotAuthenticatedPage extends StatelessWidget {
       width: size.width,
       height: size.width,
       child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-        SizedBox(
-          width: Dimens.DIMENS_70,
-          child: SvgPicture.asset(
-            Images.IC_PERSON_2_OUTLINE,
-            width: Dimens.DIMENS_70,
-          ),
+        Icon(
+          MdiIcons.account,
+          size: Dimens.DIMENS_80,
         ),
         SizedBox(
           height: Dimens.DIMENS_20,
@@ -31,20 +29,24 @@ class NotAuthenticatedPage extends StatelessWidget {
         SizedBox(
           height: Dimens.DIMENS_20,
         ),
-        InkWell(
-          onTap: () {
-            showAuthBottomSheetFunc(context);
-          },
-          child: Container(
-            alignment: Alignment.center,
-            width: Dimens.DIMENS_250,
-            height: Dimens.DIMENS_38,
-            decoration: BoxDecoration(
-                color: COLOR_black_ff121212,
-                borderRadius: BorderRadius.circular(8)),
-            child: Text(
-              LocaleKeys.label_login.tr(),
-              style: TextStyle(color: COLOR_white_fff5f5f5),
+        Material(
+          color: Theme.of(context).colorScheme.onTertiary,
+          borderRadius: BorderRadius.circular(8),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(8),
+            onTap: () {
+              showAuthBottomSheetFunc(context);
+            },
+            child: Container(
+              alignment: Alignment.center,
+              width: Dimens.DIMENS_250,
+              height: Dimens.DIMENS_38,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                LocaleKeys.label_login.tr(),
+              ),
             ),
           ),
         )

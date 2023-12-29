@@ -18,7 +18,6 @@ void showAuthBottomSheetFunc(BuildContext context) {
       enableDrag: true,
       elevation: 4,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
       builder: (context) {
         return BlocListener<AuthBloc, AuthState>(
           listener: (context, state) {
@@ -28,11 +27,10 @@ void showAuthBottomSheetFunc(BuildContext context) {
             }
           },
           child: Container(
-            decoration: BoxDecoration(
-              color: COLOR_white_fff5f5f5,
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(10),
-                topRight: Radius.circular(10),
+            decoration: const BoxDecoration(
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(8),
+                topRight: Radius.circular(8),
               ),
             ),
             width: MediaQuery.of(context).size.width,
@@ -43,7 +41,7 @@ void showAuthBottomSheetFunc(BuildContext context) {
                 Container(
                   width: MediaQuery.of(context).size.width,
                   alignment: Alignment.centerLeft,
-                  margin: const EdgeInsets.all(0),
+                  padding: EdgeInsets.all(Dimens.DIMENS_10),
                   child: IconButton(
                     padding: const EdgeInsets.all(0),
                     icon: const Icon(Icons.close_rounded),

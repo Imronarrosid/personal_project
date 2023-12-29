@@ -1,13 +1,14 @@
 import 'package:chips_choice/chips_choice.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:personal_project/constant/color.dart';
 import 'package:personal_project/constant/dimens.dart';
 import 'package:personal_project/domain/model/game_fav_modal.dart';
 import 'package:personal_project/domain/reporsitory/user_repository.dart';
 import 'package:personal_project/domain/services/app/app_service.dart';
+import 'package:personal_project/presentation/l10n/stings.g.dart';
 import 'package:personal_project/presentation/router/route_utils.dart';
 import 'package:provider/provider.dart';
 
@@ -23,44 +24,57 @@ List<String> titleList = [];
 class _OnBoardingPageState extends State<OnBoardingPage> {
   @override
   Widget build(BuildContext context) {
-    final appService = Provider.of<AppService>(context);
     UserRepository userRepository =
         RepositoryProvider.of<UserRepository>(context);
 
     return Scaffold(
       appBar: AppBar(
-        foregroundColor: COLOR_black_ff121212,
         backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: GestureDetector(
-          onTap: cancel,
-          child: Align(
-            alignment: Alignment.center,
-            child: Text(
-              'Lewati',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                  color: COLOR_black_ff121212.withOpacity(0.6)),
+        leading: Padding(
+          padding: EdgeInsets.only(left: Dimens.DIMENS_12),
+          child: GestureDetector(
+            onTap: cancel,
+            child: Align(
+              alignment: Alignment.center,
+              child: Text(
+                LocaleKeys.label_skip.tr(),
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                    color:
+                        Theme.of(context).colorScheme.primary.withOpacity(0.6)),
+              ),
             ),
           ),
         ),
         leadingWidth: Dimens.DIMENS_70,
         actions: [
-          GestureDetector(
-            onTap: titleList.isNotEmpty ? _saveSelected : null,
-            child: Align(
-              alignment: Alignment.center,
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(
-                  'Selanjutnya',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
+          Padding(
+            padding: EdgeInsets.only(right: Dimens.DIMENS_12),
+            child: InkWell(
+              onTap: titleList.isNotEmpty ? _saveSelected : null,
+              borderRadius: BorderRadius.circular(10),
+              child: Container(
+                height: Dimens.DIMENS_42,
+                padding: EdgeInsets.symmetric(horizontal: Dimens.DIMENS_15),
+                decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                    color: titleList.isEmpty
+                        ? Theme.of(context).colorScheme.tertiary
+                        : Theme.of(context).colorScheme.onTertiary),
+                alignment: Alignment.center,
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(
+                    LocaleKeys.label_next.tr(),
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
-                      color: COLOR_black_ff121212),
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -74,16 +88,18 @@ class _OnBoardingPageState extends State<OnBoardingPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Game Favorite',
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900),
+              Text(
+                LocaleKeys.label_favorite_games.tr(),
+                style:
+                    const TextStyle(fontSize: 22, fontWeight: FontWeight.w900),
               ),
               SizedBox(
                 height: Dimens.DIMENS_16,
               ),
-              const Text(
-                'Pilih game favorit Kamu',
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900),
+              Text(
+                LocaleKeys.message_select_your_game_favorite.tr(),
+                style:
+                    const TextStyle(fontSize: 22, fontWeight: FontWeight.w900),
               ),
             ],
           ),
@@ -109,6 +125,7 @@ class _OnBoardingPageState extends State<OnBoardingPage> {
                         NetworkImage(gameFav[index].gameImage!),
                   ),
                   choiceStyle: C2ChipStyle.toned(
+                    selectedStyle: C2ChipStyle.filled(),
                     borderRadius: const BorderRadius.all(
                       Radius.circular(50),
                     ),
