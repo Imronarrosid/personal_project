@@ -151,7 +151,22 @@ class _AddDetailsPageState extends State<AddDetailsPage> {
                           ),
                         ),
                       ),
-                      trailing: const Icon(Icons.keyboard_arrow_right),
+                      trailing: IconButton(
+                          iconSize: Dimens.DIMENS_18,
+                          onPressed: () {
+                            BlocProvider.of<SelectGameCubit>(context)
+                                .initSelectGame();
+                          },
+                          style: IconButton.styleFrom(
+                            padding: EdgeInsets.zero,
+                            minimumSize:
+                                Size(Dimens.DIMENS_30, Dimens.DIMENS_30),
+                            maximumSize:
+                                Size(Dimens.DIMENS_30, Dimens.DIMENS_30),
+                            backgroundColor:
+                                Theme.of(context).colorScheme.tertiary,
+                          ),
+                          icon: const Icon(Icons.close)),
                       title: Text(state.selectedGame!.gameTitle!),
                       onTap: () {
                         context.push(APP_PAGE.selectGame.toPath);
