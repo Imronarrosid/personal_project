@@ -35,7 +35,7 @@ void showEditBioMpdal(BuildContext context, {required String bio}) {
                         width: Dimens.DIMENS_50,
                         height: Dimens.DIMENS_5,
                         decoration: BoxDecoration(
-                            color: COLOR_grey,
+                            color: Theme.of(context).colorScheme.tertiary,
                             borderRadius: BorderRadius.circular(50)),
                       ),
                     ),
@@ -44,8 +44,8 @@ void showEditBioMpdal(BuildContext context, {required String bio}) {
                     ),
                     Text(
                       LocaleKeys.label_bio.tr(),
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                      style: const TextStyle(
+                          fontSize: 18, fontWeight: FontWeight.w600),
                     ),
                     SizedBox(
                       height: Dimens.DIMENS_8,

@@ -1,9 +1,10 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
-import 'package:personal_project/constant/color.dart';
 import 'package:personal_project/constant/dimens.dart';
+import 'package:personal_project/presentation/l10n/stings.g.dart';
 import 'package:personal_project/presentation/router/route_utils.dart';
 
 showEditPPModal(BuildContext context) {
@@ -20,7 +21,7 @@ showEditPPModal(BuildContext context) {
             height: 200,
             padding: EdgeInsets.all(Dimens.DIMENS_12),
             decoration: BoxDecoration(
-                color: COLOR_white_fff5f5f5,
+                color: Theme.of(context).colorScheme.secondary,
                 borderRadius: BorderRadius.circular(10)),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -29,9 +30,9 @@ showEditPPModal(BuildContext context) {
                   alignment: Alignment.center,
                   child: Container(
                     width: Dimens.DIMENS_50,
-                    height: Dimens.DIMENS_8,
+                    height: Dimens.DIMENS_5,
                     decoration: BoxDecoration(
-                        color: COLOR_grey,
+                        color: Theme.of(context).colorScheme.tertiary,
                         borderRadius: BorderRadius.circular(50)),
                   ),
                 ),
@@ -39,13 +40,19 @@ showEditPPModal(BuildContext context) {
                   height: Dimens.DIMENS_6,
                 ),
                 Text(
-                  'Foto Profil',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                  LocaleKeys.label_profile_pict.tr(),
+                  style: const TextStyle(
+                      fontSize: 18, fontWeight: FontWeight.w600),
                 ),
                 Material(
                   child: ListTile(
                     leading: Icon(MdiIcons.camera),
-                    title: Text('Camera'),
+                    shape: const RoundedRectangleBorder(
+                        borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(10),
+                      topRight: Radius.circular(10),
+                    )),
+                    title: Text(LocaleKeys.label_camera.tr()),
                     onTap: () async {
                       XFile? file =
                           await picker.pickImage(source: ImageSource.camera);
@@ -58,7 +65,12 @@ showEditPPModal(BuildContext context) {
                 Material(
                   child: ListTile(
                     leading: Icon(MdiIcons.image),
-                    title: Text('Galeri'),
+                    shape: const RoundedRectangleBorder(
+                        borderRadius: BorderRadius.only(
+                      bottomLeft: Radius.circular(10),
+                      bottomRight: Radius.circular(10),
+                    )),
+                    title: Text(LocaleKeys.label_galery.tr()),
                     onTap: () async {
                       XFile? file = await picker.pickImage(
                           source: ImageSource.gallery, imageQuality: 15);

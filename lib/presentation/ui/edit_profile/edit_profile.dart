@@ -335,6 +335,7 @@ class _EditProfileState extends State<EditProfile> {
                                           ).toList());
                                         }
                                         return Wrap(
+                                           spacing: Dimens.DIMENS_8,
                                             children: List<Chip>.generate(
                                           games!.length,
                                           (index) => Chip(
