@@ -53,8 +53,9 @@ class AppTheme {
         overlayColor: MaterialStateProperty.all<Color>(Colors.black12)),
     chipTheme: ChipThemeData(
       backgroundColor: COLOR_black_900,
-      surfaceTintColor: Colors.transparent,
-      disabledColor: Colors.transparent,
+      selectedColor: COLOR_white_fff5f5f5,
+      secondarySelectedColor: COLOR_white_fff5f5f5,
+      secondaryLabelStyle: TextStyle(color: COLOR_black_ff121212),
       labelStyle: TextStyle(color: COLOR_white_fff5f5f5),
     ),
     colorScheme: ColorScheme.dark(

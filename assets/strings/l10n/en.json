@@ -68,5 +68,6 @@
     "message_user_name_cant_contain_whitespace": "User name can't contains whitespace.",
     "message_user_name_not_available": "User name not available.",
     "message_usename_can_update_every_14_days": "You can update user name every 14 days",
-    "message_username_can_update_days_later": "You can update user name {} dyas later"
+    "message_username_can_update_days_later": "You can update user name {} dyas later",
+    "message_select_your_game_favorite": "Select your favorite games"
 }

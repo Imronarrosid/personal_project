@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:chips_choice/chips_choice.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -8,6 +9,7 @@ import 'package:personal_project/constant/color.dart';
 import 'package:personal_project/constant/dimens.dart';
 import 'package:personal_project/domain/model/game_fav_modal.dart';
 import 'package:personal_project/domain/reporsitory/user_repository.dart';
+import 'package:personal_project/presentation/l10n/stings.g.dart';
 import 'package:personal_project/presentation/ui/edit_profile/cubit/game_fav_cubit.dart';
 
 class EditGameFavPage extends StatefulWidget {
@@ -65,16 +67,18 @@ class _EditGameFavPageState extends State<EditGameFavPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Game Favorite',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                Text(
+                  LocaleKeys.label_favorite_games.tr(),
+                  style: const TextStyle(
+                      fontSize: 20, fontWeight: FontWeight.bold),
                 ),
                 SizedBox(
                   height: Dimens.DIMENS_16,
                 ),
-                const Text(
-                  'Pilih game favorit untuk di tampilkan di profil',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                Text(
+                  LocaleKeys.message_select_your_game_favorite.tr(),
+                  style: const TextStyle(
+                      fontSize: 16, fontWeight: FontWeight.w500),
                 ),
               ],
             ),
@@ -101,7 +105,9 @@ class _EditGameFavPageState extends State<EditGameFavPage> {
                     avatarImage: (index, item) =>
                         NetworkImage(gameFav[index].gameImage!),
                   ),
+
                   choiceStyle: C2ChipStyle.toned(
+                    selectedStyle: C2ChipStyle.filled(),
                     borderRadius: const BorderRadius.all(
                       Radius.circular(5),
                     ),
@@ -118,6 +124,7 @@ class _EditGameFavPageState extends State<EditGameFavPage> {
                   //   icon: const Icon(Icons.remove_circle),
                   //   onPressed: () => setState(() => options.removeLast()),
                   // ),
+
                   wrapped: true,
                 );
               }),
