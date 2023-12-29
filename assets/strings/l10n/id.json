@@ -72,5 +72,6 @@
     "message_user_name_not_available": "Nama pengguana tidak tersedia.",
     "message_usename_can_update_every_14_days": "Kamu bisa mengganti nama pengguna 14 hari sekali",
     "message_username_can_update_days_later": "Kamu bisa mengganti nama pengguna {} hari sekali",
-    "message_select_your_game_favorite":"Pilih game favorite kamu"
+    "message_select_your_game_favorite":"Pilih game favorite kamu",
+    "message_game_title":"Judul game (opsional)"
 }

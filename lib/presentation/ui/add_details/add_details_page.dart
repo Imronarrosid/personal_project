@@ -11,7 +11,6 @@ import 'package:personal_project/constant/color.dart';
 import 'package:personal_project/constant/dimens.dart';
 import 'package:personal_project/constant/font_size.dart';
 import 'package:personal_project/domain/model/game_fav_modal.dart';
-import 'package:personal_project/domain/model/preview_model.dart';
 import 'package:personal_project/domain/reporsitory/auth_reposotory.dart';
 import 'package:personal_project/presentation/assets/images.dart';
 import 'package:personal_project/presentation/l10n/stings.g.dart';
@@ -71,19 +70,17 @@ class _AddDetailsPageState extends State<AddDetailsPage> {
         child: Scaffold(
           appBar: AppBar(
             title: Text(LocaleKeys.title_upload.tr()),
-            foregroundColor: COLOR_black,
-            backgroundColor: Colors.transparent,
             elevation: 0,
             centerTitle: true,
           ),
-          body: Container(
+          body: SizedBox(
             width: size.width,
             height: size.height,
-            padding: EdgeInsets.symmetric(horizontal: Dimens.DIMENS_12),
             child: Column(children: [
-              SizedBox(
+              Container(
                 width: size.width,
                 height: Dimens.DIMENS_120,
+                padding: EdgeInsets.symmetric(horizontal: Dimens.DIMENS_12),
                 child: Row(children: [
                   SizedBox(
                     width: Dimens.DIMENS_85,
@@ -134,12 +131,15 @@ class _AddDetailsPageState extends State<AddDetailsPage> {
               SizedBox(
                 height: Dimens.DIMENS_12,
               ),
-              const Divider(),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: Dimens.DIMENS_12),
+                child: const Divider(),
+              ),
               BlocBuilder<SelectGameCubit, SelectGameState>(
                 builder: (context, state) {
                   if (state.status == SelectGameStatus.selected) {
                     return ListTile(
-                      contentPadding: EdgeInsets.zero,
+                      tileColor: Colors.transparent,
                       leading: CircleAvatar(
                         backgroundColor: COLOR_grey,
                         child: ClipRRect(
@@ -151,7 +151,7 @@ class _AddDetailsPageState extends State<AddDetailsPage> {
                           ),
                         ),
                       ),
-                      trailing: Icon(Icons.keyboard_arrow_right),
+                      trailing: const Icon(Icons.keyboard_arrow_right),
                       title: Text(state.selectedGame!.gameTitle!),
                       onTap: () {
                         context.push(APP_PAGE.selectGame.toPath);
@@ -159,10 +159,11 @@ class _AddDetailsPageState extends State<AddDetailsPage> {
                     );
                   }
                   return ListTile(
+                    tileColor: Colors.transparent,
                     leading: Icon(MdiIcons.controller),
                     contentPadding: EdgeInsets.zero,
-                    title: Text('Game title(optional)'),
-                    trailing: Icon(Icons.keyboard_arrow_right),
+                    title: Text(LocaleKeys.message_game_title.tr()),
+                    trailing: const Icon(Icons.keyboard_arrow_right),
                     onTap: () {
                       context.push(APP_PAGE.selectGame.toPath);
                     },
@@ -172,70 +173,78 @@ class _AddDetailsPageState extends State<AddDetailsPage> {
               SizedBox(
                 height: Dimens.DIMENS_28,
               ),
-              Container(
-                height: Dimens.DIMENS_38,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                    color: COLOR_black_ff121212,
-                    borderRadius: BorderRadius.circular(50)),
-                child: FutureBuilder(
-                    future: thumbnail,
-                    builder: (context, asyncSnapshot) {
-                      var data = asyncSnapshot.data;
-                      return Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          splashColor: COLOR_white_fff5f5f5.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(50),
-                          onTap: () {
-                            var isUserEmpty =
-                                RepositoryProvider.of<AuthRepository>(context)
-                                    .currentUser;
-                            if (isUserEmpty == null) {
-                              showAuthBottomSheetFunc(context);
-                            } else if (asyncSnapshot.hasData) {
-                              //will upload videos
-                              BlocProvider.of<UploadBloc>(context).add(
-                                UploadVideoEvent(
-                                    thumbnail: data!.path,
-                                    videoPath: widget.videoFile.path,
-                                    caption: textEditingController.text,
-                                    game: selectedGame),
-                              );
-                              debugPrint('Uploading');
-                            }
-                          },
-                          child: asyncSnapshot.hasData
-                              ? SizedBox(
-                                  height: Dimens.DIMENS_38,
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      SvgPicture.asset(
-                                        Images.IC_UPLOAD_2,
-                                        width: Dimens.DIMENS_18,
-                                      ),
-                                      SizedBox(
-                                        width: Dimens.DIMENS_6,
-                                      ),
-                                      Text(
-                                        LocaleKeys.title_upload.tr(),
-                                        style: TextStyle(
-                                            color: COLOR_white_fff5f5f5,
-                                            fontSize: FontSize.FONT_SIZE_12),
-                                      ),
-                                    ],
-                                  ))
-                              : SizedBox(
-                                  width: 20,
-                                  height: 20,
-                                  child: CircularProgressIndicator(
-                                    color: COLOR_white_fff5f5f5,
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: Dimens.DIMENS_12),
+                child: Container(
+                  height: Dimens.DIMENS_38,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.primary,
+                      borderRadius: BorderRadius.circular(50)),
+                  child: FutureBuilder(
+                      future: thumbnail,
+                      builder: (context, asyncSnapshot) {
+                        var data = asyncSnapshot.data;
+                        return Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            splashColor: COLOR_white_fff5f5f5.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(50),
+                            onTap: () {
+                              var isUserEmpty =
+                                  RepositoryProvider.of<AuthRepository>(context)
+                                      .currentUser;
+                              if (isUserEmpty == null) {
+                                showAuthBottomSheetFunc(context);
+                              } else if (asyncSnapshot.hasData) {
+                                //will upload videos
+                                BlocProvider.of<UploadBloc>(context).add(
+                                  UploadVideoEvent(
+                                      thumbnail: data!.path,
+                                      videoPath: widget.videoFile.path,
+                                      caption: textEditingController.text,
+                                      game: selectedGame),
+                                );
+                                debugPrint('Uploading');
+                              }
+                            },
+                            child: asyncSnapshot.hasData
+                                ? SizedBox(
+                                    height: Dimens.DIMENS_38,
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        SvgPicture.asset(
+                                          Images.IC_UPLOAD_2,
+                                          width: Dimens.DIMENS_18,
+                                        ),
+                                        SizedBox(
+                                          width: Dimens.DIMENS_6,
+                                        ),
+                                        Text(
+                                          LocaleKeys.title_upload.tr(),
+                                          style: TextStyle(
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .secondary,
+                                              fontSize: FontSize.FONT_SIZE_12),
+                                        ),
+                                      ],
+                                    ))
+                                : SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .secondary,
+                                    ),
                                   ),
-                                ),
-                        ),
-                      );
-                    }),
+                          ),
+                        );
+                      }),
+                ),
               ),
             ]),
           ),
