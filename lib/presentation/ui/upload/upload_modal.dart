@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
-import 'package:personal_project/constant/color.dart';
 import 'package:personal_project/constant/dimens.dart';
 import 'package:personal_project/domain/services/firebase/image_picker.dart';
 import 'package:personal_project/presentation/l10n/stings.g.dart';
@@ -120,9 +119,7 @@ Future<dynamic> _loadFileModal(BuildContext context) {
           ),
           child: Container(
             padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-                color: COLOR_white_fff5f5f5,
-                borderRadius: BorderRadius.circular(10)),
+            decoration: BoxDecoration(borderRadius: BorderRadius.circular(10)),
             child: Row(
               children: [
                 SizedBox(
@@ -132,7 +129,7 @@ Future<dynamic> _loadFileModal(BuildContext context) {
                 SizedBox(
                   width: Dimens.DIMENS_8,
                 ),
-                const Text('Memuat file')
+                Text(LocaleKeys.message_load_file.tr())
               ],
             ),
           ),

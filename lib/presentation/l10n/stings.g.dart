@@ -76,5 +76,6 @@ abstract class  LocaleKeys {
   static const message_username_can_update_days_later = 'message_username_can_update_days_later';
   static const message_select_your_game_favorite = 'message_select_your_game_favorite';
   static const message_game_title = 'message_game_title';
+  static const message_load_file = 'message_load_file';
 
 }

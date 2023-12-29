@@ -73,5 +73,6 @@
     "message_usename_can_update_every_14_days": "You can update user name every 14 days",
     "message_username_can_update_days_later": "You can update user name {} dyas later",
     "message_select_your_game_favorite": "Select your favorite games",
-    "message_game_title": "Game title (optional)"
+    "message_game_title": "Game title (optional)",
+    "message_load_file": "Load file"
 }
