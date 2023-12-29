@@ -161,7 +161,6 @@ class _AddDetailsPageState extends State<AddDetailsPage> {
                   return ListTile(
                     tileColor: Colors.transparent,
                     leading: Icon(MdiIcons.controller),
-                    contentPadding: EdgeInsets.zero,
                     title: Text(LocaleKeys.message_game_title.tr()),
                     trailing: const Icon(Icons.keyboard_arrow_right),
                     onTap: () {
