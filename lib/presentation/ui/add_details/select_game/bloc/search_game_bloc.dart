@@ -4,7 +4,6 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:personal_project/domain/model/game_fav_modal.dart';
-import 'package:personal_project/domain/model/user.dart';
 import 'package:personal_project/domain/reporsitory/search_repository.dart';
 
 part 'search_game_event.dart';
@@ -16,9 +15,12 @@ class SearchGameBloc extends Bloc<SearchGameEvent, SearchState> {
       : super(const SearchState(results: [], status: SearchStatus.initial)) {
     on<SearchGameEvent>((event, emit) async {
       var searchResult = await repository.onSearchGame(event.query);
-      if (searchResult.isEmpty && event.query.isNotEmpty) {
-        emit(const SearchState(results: [], status: SearchStatus.noItemFound));
-      } else {
+      if (searchResult.isEmpty) {
+        emit(SearchState(
+            results: const [],
+            status: SearchStatus.noItemFound,
+            query: event.query));
+      } else if (searchResult.isEmpty && event.query.isNotEmpty) {
         debugPrint('search ${searchResult.length}');
 
         emit(SearchState(results: searchResult, status: SearchStatus.success));

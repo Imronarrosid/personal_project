@@ -77,5 +77,6 @@ abstract class  LocaleKeys {
   static const message_select_your_game_favorite = 'message_select_your_game_favorite';
   static const message_game_title = 'message_game_title';
   static const message_load_file = 'message_load_file';
+  static const message_not_found = 'message_not_found';
 
 }

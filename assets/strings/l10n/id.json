@@ -74,5 +74,6 @@
     "message_username_can_update_days_later": "Kamu bisa mengganti nama pengguna {} hari sekali",
     "message_select_your_game_favorite": "Pilih game favorite kamu",
     "message_game_title": "Judul game (opsional)",
-    "message_load_file": "Memuat file"
+    "message_load_file": "Memuat file",
+    "message_not_found": "\"{}\" tidak ditemukan"
 }

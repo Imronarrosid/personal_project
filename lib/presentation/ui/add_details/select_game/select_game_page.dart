@@ -7,11 +7,9 @@ import 'package:go_router/go_router.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:personal_project/constant/color.dart';
 import 'package:personal_project/domain/model/game_fav_modal.dart';
-import 'package:personal_project/domain/model/profile_data_model.dart';
 import 'package:personal_project/domain/reporsitory/search_repository.dart';
 import 'package:personal_project/domain/reporsitory/user_repository.dart';
 import 'package:personal_project/presentation/l10n/stings.g.dart';
-import 'package:personal_project/presentation/router/route_utils.dart';
 import 'package:personal_project/presentation/ui/add_details/select_game/bloc/search_game_bloc.dart';
 import 'package:personal_project/presentation/ui/add_details/select_game/cubit/select_game_cubit.dart';
 
@@ -38,14 +36,12 @@ class _SelectGamePageState extends State<SelectGamePage> {
           return GestureDetector(
             onTap: () => FocusScope.of(context).unfocus(),
             child: Scaffold(
-              backgroundColor: COLOR_white_fff5f5f5,
               appBar: AppBar(
                   elevation: 0,
                   toolbarHeight: 80,
-                  backgroundColor: COLOR_white_fff5f5f5,
                   title: Container(
                     decoration: BoxDecoration(
-                        color: COLOR_grey.withOpacity(0.4),
+                        color: Theme.of(context).colorScheme.tertiary,
                         borderRadius: BorderRadius.circular(10)),
                     child: TextField(
                       controller: _textEditingController,
@@ -56,7 +52,6 @@ class _SelectGamePageState extends State<SelectGamePage> {
                       },
                       decoration: InputDecoration(
                         prefixIcon: const Icon(Icons.search),
-                        prefixIconColor: COLOR_black_ff121212,
                         hintText: LocaleKeys.label_search.tr(),
                         contentPadding: const EdgeInsets.all(5),
                         suffixIcon: GestureDetector(
@@ -75,8 +70,8 @@ class _SelectGamePageState extends State<SelectGamePage> {
                 builder: (_, state) {
                   if (state.status == SearchStatus.noItemFound) {
                     return Center(
-                        child: Text(
-                            '"${_textEditingController.text}" Tidak ditemukan'));
+                        child: Text(LocaleKeys.message_not_found
+                            .tr(args: [state.query!])));
                   }
                   if (state.status == SearchStatus.success) {
                     return ListView.builder(

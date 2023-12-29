@@ -4,10 +4,15 @@ enum SearchStatus { success, initial, noItemFound }
 
 class SearchState extends Equatable {
   final SearchStatus status;
+  final String? query;
   final List<GameFav>? results;
 
-  const SearchState({this.results, required this.status});
+  const SearchState({
+    this.results,
+    required this.status,
+    this.query,
+  });
 
   @override
-  List<Object?> get props => [results, status];
+  List<Object?> get props => [results, status, query];
 }
