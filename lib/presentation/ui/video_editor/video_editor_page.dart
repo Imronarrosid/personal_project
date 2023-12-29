@@ -180,7 +180,7 @@ class _VideoEditorState extends State<VideoEditor> {
                                   ),
                                 ),
                                 Container(
-                                  height: 200,
+                                  height: 210,
                                   margin: const EdgeInsets.only(top: 10),
                                   child: Column(
                                     children: [
@@ -328,11 +328,12 @@ class _VideoEditorState extends State<VideoEditor> {
                     height: Dimens.DIMENS_38,
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
-                        color: Colors.transparent,
+                        color: Theme.of(context).colorScheme.primary,
                         borderRadius: BorderRadius.circular(50)),
                     child: Text(
                       LocaleKeys.label_next.tr(),
                       style: TextStyle(
+                          color: Theme.of(context).colorScheme.secondary,
                           fontSize: FontSize.FONT_SIZE_12,
                           fontWeight: FontWeight.bold),
                     )),
