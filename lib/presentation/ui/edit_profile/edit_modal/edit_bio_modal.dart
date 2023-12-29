@@ -24,7 +24,7 @@ void showEditBioMpdal(BuildContext context, {required String bio}) {
               height: 300,
               padding: EdgeInsets.all(Dimens.DIMENS_12),
               decoration: BoxDecoration(
-                  color: COLOR_white_fff5f5f5,
+                  color: Theme.of(context).colorScheme.secondary,
                   borderRadius: BorderRadius.circular(10)),
               child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -33,7 +33,7 @@ void showEditBioMpdal(BuildContext context, {required String bio}) {
                       alignment: Alignment.center,
                       child: Container(
                         width: Dimens.DIMENS_50,
-                        height: Dimens.DIMENS_8,
+                        height: Dimens.DIMENS_5,
                         decoration: BoxDecoration(
                             color: COLOR_grey,
                             borderRadius: BorderRadius.circular(50)),
@@ -50,21 +50,15 @@ void showEditBioMpdal(BuildContext context, {required String bio}) {
                     SizedBox(
                       height: Dimens.DIMENS_8,
                     ),
-                    Theme(
-                      data: ThemeData().copyWith(
-                          colorScheme: ThemeData()
-                              .colorScheme
-                              .copyWith(primary: COLOR_black_ff121212)),
-                      child: TextField(
-                        controller: controller,
-                        autofocus: true,
-                        maxLines: 4,
-                        minLines: 4,
-                        maxLength: 150,
-                        decoration: InputDecoration(
-                            border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10))),
-                      ),
+                    TextField(
+                      controller: controller,
+                      autofocus: true,
+                      maxLines: 4,
+                      minLines: 4,
+                      maxLength: 150,
+                      decoration: InputDecoration(
+                          border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10))),
                     ),
                     SizedBox(
                       height: Dimens.DIMENS_18,
@@ -72,7 +66,7 @@ void showEditBioMpdal(BuildContext context, {required String bio}) {
                     Material(
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(50)),
-                      color: COLOR_black_ff121212,
+                      color: Theme.of(context).colorScheme.primary,
                       child: InkWell(
                         borderRadius: BorderRadius.circular(50),
                         onTap: () {
@@ -93,12 +87,17 @@ void showEditBioMpdal(BuildContext context, {required String bio}) {
                                     width: Dimens.DIMENS_18,
                                     height: Dimens.DIMENS_18,
                                     child: CircularProgressIndicator(
-                                      color: COLOR_white_fff5f5f5,
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .secondary,
                                     ));
                               }
                               return Text(
-                                'Simpan',
-                                style: TextStyle(color: COLOR_white_fff5f5f5),
+                                LocaleKeys.label_save.tr(),
+                                style: TextStyle(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .secondary),
                               );
                             },
                             listener:
