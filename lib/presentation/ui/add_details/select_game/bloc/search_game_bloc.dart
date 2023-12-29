@@ -14,6 +14,7 @@ class SearchGameBloc extends Bloc<SearchGameEvent, SearchState> {
   SearchGameBloc(this.repository)
       : super(const SearchState(results: [], status: SearchStatus.initial)) {
     on<SearchGameEvent>((event, emit) async {
+      emit(const SearchState(results: [], status: SearchStatus.loading));
       var searchResult = await repository.onSearchGame(event.query);
       if (searchResult.isEmpty) {
         emit(SearchState(

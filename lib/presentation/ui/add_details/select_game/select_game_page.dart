@@ -68,6 +68,9 @@ class _SelectGamePageState extends State<SelectGamePage> {
                   )),
               body: BlocBuilder<SearchGameBloc, SearchState>(
                 builder: (_, state) {
+                  if (state.status == SearchStatus.loading) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
                   if (state.status == SearchStatus.noItemFound) {
                     return Center(
                         child: Text(LocaleKeys.message_not_found
