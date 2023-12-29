@@ -94,9 +94,9 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
 
                 return Container(
                   height: MediaQuery.of(context).size.height,
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.only(
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.secondary,
+                    borderRadius: const BorderRadius.only(
                       topLeft: Radius.circular(10),
                       topRight: Radius.circular(10),
                     ),
@@ -111,9 +111,10 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                               title: Text(LocaleKeys.title_comments.tr()),
                               floating: false,
                               pinned: true,
-                              backgroundColor: Colors.white,
-                              foregroundColor: COLOR_black_ff121212,
-                              elevation: 1,
+                              elevation: 0.2,
+                              scrolledUnderElevation: 1,
+                              shadowColor: COLOR_white_fff5f5f5,
+                              forceElevated: true,
                               leading: Container(),
                               leadingWidth: Dimens.DIMENS_3,
                               actions: [
@@ -210,103 +211,115 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                                         0.4)))),
                         padding: EdgeInsets.only(
                             bottom: MediaQuery.of(context).viewInsets.bottom),
-                        child: Row(
-                          children: [
-                            SizedBox(
-                              width: Dimens.DIMENS_8,
-                            ),
-                            Expanded(
-                              child: Padding(
-                                padding: EdgeInsets.symmetric(
-                                    vertical: Dimens.DIMENS_6),
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                      color: COLOR_grey,
-                                      borderRadius: BorderRadius.circular(10)),
-                                  child: TextField(
-                                    controller: _textEditingController,
-                                    decoration: InputDecoration(
-                                        contentPadding: EdgeInsets.symmetric(
-                                            horizontal: Dimens.DIMENS_12),
-                                        hintText: LocaleKeys
-                                            .message_add_comments
-                                            .tr(),
-                                        hintStyle: const TextStyle(
-                                            fontWeight: FontWeight.normal),
-                                        border: const OutlineInputBorder(
-                                            borderSide: BorderSide.none)),
-                                    textAlignVertical: TextAlignVertical.center,
-                                    keyboardType: TextInputType.multiline,
-                                    minLines: 1,
-                                    maxLines: 3,
-                                    onTap: () {
-                                      final isAuthenticated =
-                                          RepositoryProvider.of<AuthRepository>(
-                                                      context)
-                                                  .currentUser !=
-                                              null;
-                                      if (isAuthenticated) {
-                                        BlocProvider.of<CommentBloc>(context)
-                                            .add(AddComentEvent());
-                                      } else {
-                                        showAuthBottomSheetFunc(context);
-                                      }
-                                    },
-                                    onChanged: (text) {
-                                      if (text.endsWith('\n')) {
-                                        // Handle the Enter key press
+                        child: Container(
+                          padding:
+                              EdgeInsets.symmetric(vertical: Dimens.DIMENS_6),
+                          decoration: BoxDecoration(
+                              color: Theme.of(context).colorScheme.tertiary),
+                          child: Row(
+                            children: [
+                              SizedBox(
+                                width: Dimens.DIMENS_8,
+                              ),
+                              Expanded(
+                                child: Padding(
+                                  padding: EdgeInsets.symmetric(
+                                      vertical: Dimens.DIMENS_6),
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .tertiary,
+                                        borderRadius:
+                                            BorderRadius.circular(10)),
+                                    child: TextField(
+                                      controller: _textEditingController,
+                                      decoration: InputDecoration(
+                                          contentPadding: EdgeInsets.symmetric(
+                                              horizontal: Dimens.DIMENS_12),
+                                          hintText: LocaleKeys
+                                              .message_add_comments
+                                              .tr(),
+                                          hintStyle: const TextStyle(
+                                              fontWeight: FontWeight.normal),
+                                          border: OutlineInputBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(10))),
+                                      textAlignVertical:
+                                          TextAlignVertical.center,
+                                      keyboardType: TextInputType.multiline,
+                                      minLines: 1,
+                                      maxLines: 3,
+                                      onTap: () {
+                                        final isAuthenticated =
+                                            RepositoryProvider.of<
+                                                        AuthRepository>(context)
+                                                    .currentUser !=
+                                                null;
+                                        if (isAuthenticated) {
+                                          BlocProvider.of<CommentBloc>(context)
+                                              .add(AddComentEvent());
+                                        } else {
+                                          showAuthBottomSheetFunc(context);
+                                        }
+                                      },
+                                      onChanged: (text) {
+                                        if (text.endsWith('\n')) {
+                                          // Handle the Enter key press
 
-                                        print('Enter key pressed. ');
-                                        // You can add your custom logic here
-                                      }
-                                    },
-                                    onSubmitted: (_) {
-                                      debugPrint('Submit');
-                                    },
+                                          // You can add your custom logic here
+                                        }
+                                      },
+                                      onSubmitted: (_) {
+                                        debugPrint('Submit');
+                                      },
+                                    ),
                                   ),
                                 ),
                               ),
-                            ),
-                            BlocBuilder<CommentBloc, CommentState>(
-                              builder: (context, state) {
-                                if (state is AddComentState) {
-                                  return ClipRRect(
-                                    borderRadius: BorderRadius.circular(50),
-                                    child: Material(
-                                      child: IconButton(
-                                        splashRadius: Dimens.DIMENS_70,
-                                        onPressed: () {
-                                          if (_textEditingController
-                                              .text.isNotEmpty) {
-                                            BlocProvider.of<CommentBloc>(
-                                                    context)
-                                                .add(
-                                              PostCommentEvent(
-                                                  postId: widget.postId,
-                                                  comment:
-                                                      _textEditingController
-                                                          .text),
-                                            );
-                                            _textEditingController.clear();
-                                            FocusScope.of(context).unfocus();
-                                          }
-                                          debugPrint('plane');
-                                        },
-                                        icon: FaIcon(
-                                          FontAwesomeIcons.paperPlane,
-                                          color: COLOR_black_ff121212,
+                              SizedBox(
+                                width: Dimens.DIMENS_5,
+                              ),
+                              BlocBuilder<CommentBloc, CommentState>(
+                                builder: (context, state) {
+                                  if (state is AddComentState) {
+                                    return ClipRRect(
+                                      borderRadius: BorderRadius.circular(50),
+                                      child: Material(
+                                        child: IconButton(
+                                          splashRadius: Dimens.DIMENS_70,
+                                          onPressed: () {
+                                            if (_textEditingController
+                                                .text.isNotEmpty) {
+                                              BlocProvider.of<CommentBloc>(
+                                                      context)
+                                                  .add(
+                                                PostCommentEvent(
+                                                    postId: widget.postId,
+                                                    comment:
+                                                        _textEditingController
+                                                            .text),
+                                              );
+                                              _textEditingController.clear();
+                                              FocusScope.of(context).unfocus();
+                                            }
+                                            debugPrint('plane');
+                                          },
+                                          icon: const FaIcon(
+                                            FontAwesomeIcons.paperPlane,
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                  );
-                                }
-                                return Container();
-                              },
-                            ),
-                            SizedBox(
-                              width: Dimens.DIMENS_8,
-                            ),
-                          ],
+                                    );
+                                  }
+                                  return Container();
+                                },
+                              ),
+                              SizedBox(
+                                width: Dimens.DIMENS_8,
+                              ),
+                            ],
+                          ),
                         ),
                       )
                     ],
@@ -433,10 +446,8 @@ class CommentItem extends StatelessWidget {
                       },
                       child: Text(
                         '@${data.userName!}',
-                        style: TextStyle(
-                            fontSize: 11,
-                            color: COLOR_black_ff121212.withOpacity(0.6),
-                            fontWeight: FontWeight.w500),
+                        style: const TextStyle(
+                            fontSize: 11, fontWeight: FontWeight.w500),
                       ),
                     ),
                     SizedBox(
@@ -459,8 +470,9 @@ class CommentItem extends StatelessWidget {
                       width: size.width * 0.8,
                       child: Text(
                         comment.comment,
-                        style: TextStyle(
-                            fontSize: 14, color: COLOR_black_ff121212),
+                        style: const TextStyle(
+                          fontSize: 14,
+                        ),
                       ),
                     ),
                   ],
