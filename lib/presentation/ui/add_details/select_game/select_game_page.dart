@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -22,6 +24,7 @@ class SelectGamePage extends StatefulWidget {
 
 class _SelectGamePageState extends State<SelectGamePage> {
   final TextEditingController _textEditingController = TextEditingController();
+  Timer? _debounce;
 
   @override
   Widget build(BuildContext context) {
@@ -46,9 +49,14 @@ class _SelectGamePageState extends State<SelectGamePage> {
                     child: TextField(
                       controller: _textEditingController,
                       onChanged: (query) {
-                        final searchBloc =
-                            BlocProvider.of<SearchGameBloc>(context);
-                        searchBloc.add(SearchGameEvent(query));
+                        if (_debounce?.isActive ?? false) _debounce?.cancel();
+                        _debounce =
+                            Timer(const Duration(milliseconds: 500), () {
+                          // do something with query
+                          final searchBloc =
+                              BlocProvider.of<SearchGameBloc>(context);
+                          searchBloc.add(SearchGameEvent(query));
+                        });
                       },
                       decoration: InputDecoration(
                         prefixIcon: const Icon(Icons.search),

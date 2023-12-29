@@ -21,7 +21,7 @@ class SearchGameBloc extends Bloc<SearchGameEvent, SearchState> {
             results: const [],
             status: SearchStatus.noItemFound,
             query: event.query));
-      } else if (searchResult.isEmpty && event.query.isNotEmpty) {
+      } else if (searchResult.isNotEmpty && event.query.isNotEmpty) {
         debugPrint('search ${searchResult.length}');
 
         emit(SearchState(results: searchResult, status: SearchStatus.success));
