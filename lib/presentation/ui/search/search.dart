@@ -76,8 +76,8 @@ class _SearchPageState extends State<SearchPage> {
                   }
                   if (state.status == SearchStatus.noItemFound) {
                     return Center(
-                        child: Text(
-                            '"${_textEditingController.text}" Tidak ditemukan'));
+                        child: Text(LocaleKeys.message_not_found
+                            .tr(args: [_textEditingController.text])));
                   }
                   if (state.status == SearchStatus.success) {
                     return ListView.builder(
