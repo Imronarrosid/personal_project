@@ -39,9 +39,10 @@ void showUploadModal(BuildContext context) {
                   SizedBox(
                     height: Dimens.DIMENS_6,
                   ),
-                  const Text(
-                    'Upload',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                  Text(
+                    LocaleKeys.title_upload.tr(),
+                    style: const TextStyle(
+                        fontSize: 18, fontWeight: FontWeight.w600),
                   ),
                   SizedBox(
                     height: Dimens.DIMENS_6,

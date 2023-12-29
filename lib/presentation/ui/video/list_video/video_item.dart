@@ -275,9 +275,11 @@ class _VideoItemState extends State<VideoItem> {
                                   ),
                                   GestureDetector(
                                     onTap: () {
+                                      debugPrint(
+                                          'lmnop${LocaleKeys.message_share_featur_not_ready.tr()}');
                                       Fluttertoast.showToast(
                                           msg: LocaleKeys
-                                              .message_share_feature_not_ready
+                                              .message_share_featur_not_ready
                                               .tr(),
                                           toastLength: Toast.LENGTH_SHORT,
                                           gravity: ToastGravity.TOP,

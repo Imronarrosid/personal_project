@@ -63,7 +63,7 @@ abstract class  LocaleKeys {
   static const message_no_liked_post = 'message_no_liked_post';
   static const message_add_comments = 'message_add_comments';
   static const message_no_game = 'message_no_game';
-  static const message_share_feature_not_ready = 'message_share_feature_not_ready';
+  static const message_share_featur_not_ready = 'message_share_featur_not_ready';
   static const message_edit_can_name_every_7_day = 'message_edit_can_name_every_7_day';
   static const message_edit_name_day_later = 'message_edit_name_day_later';
   static const message_dont_start_with_whitespace = 'message_dont_start_with_whitespace';

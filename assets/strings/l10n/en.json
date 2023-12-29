@@ -61,7 +61,7 @@
     "message_no_liked_post": "No liked post",
     "message_add_comments": "Add comments",
     "message_no_game": "No game",
-    "message_share_feature_not_ready": "Share feature not ready",
+    "message_share_featur_not_ready": "Share feature not ready",
     "message_edit_can_name_every_7_day": "You can update your name every 7 days",
     "message_edit_name_day_later": "You can update your name {} days later",
     "message_dont_start_with_whitespace": "Don't start with whitespace.",
