@@ -425,8 +425,9 @@ class _ProfilePageState extends State<ProfilePage> {
                                                   borderRadius:
                                                       BorderRadius.circular(5)),
                                               color: isFollowing!
-                                                  ? COLOR_grey
-                                                  : Color(0xFF9C27B0),
+                                                  ? theme.colorScheme.tertiary
+                                                  : theme
+                                                      .colorScheme.onTertiary,
                                               child: InkWell(
                                                 onTap: () {
                                                   if (isFollowing!) {
@@ -506,9 +507,8 @@ class _ProfilePageState extends State<ProfilePage> {
                                                             .tr(),
                                                     textAlign: TextAlign.center,
                                                     style: TextStyle(
-                                                        color: isFollowing!
-                                                            ? COLOR_black_ff121212
-                                                            : COLOR_white_fff5f5f5),
+                                                        color: theme.colorScheme
+                                                            .primary),
                                                   ),
                                                 ),
                                               ),
@@ -525,7 +525,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                     height: Dimens.DIMENS_34,
                                     alignment: Alignment.center,
                                     decoration: BoxDecoration(
-                                        color: COLOR_grey,
+                                        color: theme.colorScheme.tertiary,
                                         borderRadius: BorderRadius.circular(5)),
                                     child: Text(
                                       LocaleKeys.label_message.tr(),

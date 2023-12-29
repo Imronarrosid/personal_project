@@ -14,6 +14,7 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
   SearchBloc(this.repository)
       : super(const SearchState(results: [], status: SearchStatus.initial)) {
     on<SearchEvent>((event, emit) async {
+      emit(const SearchState(status: SearchStatus.loading));
       var searchResult = await repository.onSearchChanged(event.query);
       if (searchResult.isEmpty && event.query.isNotEmpty) {
         emit(const SearchState(results: [], status: SearchStatus.noItemFound));

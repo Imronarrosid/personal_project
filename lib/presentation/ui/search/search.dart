@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -20,6 +22,7 @@ class SearchPage extends StatefulWidget {
 
 class _SearchPageState extends State<SearchPage> {
   final TextEditingController _textEditingController = TextEditingController();
+  Timer? _debounce;
 
   @override
   Widget build(BuildContext context) {
@@ -32,24 +35,26 @@ class _SearchPageState extends State<SearchPage> {
           return GestureDetector(
             onTap: () => FocusScope.of(context).unfocus(),
             child: Scaffold(
-              backgroundColor: COLOR_white_fff5f5f5,
               appBar: AppBar(
                   elevation: 0,
                   toolbarHeight: 80,
-                  backgroundColor: COLOR_white_fff5f5f5,
                   title: Container(
                     decoration: BoxDecoration(
-                        color: COLOR_grey.withOpacity(0.4),
+                        color: Theme.of(context).colorScheme.tertiary,
                         borderRadius: BorderRadius.circular(10)),
                     child: TextField(
                       controller: _textEditingController,
                       onChanged: (query) {
                         final searchBloc = BlocProvider.of<SearchBloc>(context);
-                        searchBloc.add(SearchEvent(query));
+                        if (_debounce?.isActive ?? false) _debounce?.cancel();
+                        _debounce =
+                            Timer(const Duration(milliseconds: 500), () {
+                          // do something with query
+                          searchBloc.add(SearchEvent(query));
+                        });
                       },
                       decoration: InputDecoration(
                         prefixIcon: const Icon(Icons.search),
-                        prefixIconColor: COLOR_black_ff121212,
                         hintText: LocaleKeys.label_search.tr(),
                         contentPadding: const EdgeInsets.all(5),
                         suffixIcon: GestureDetector(
@@ -66,6 +71,9 @@ class _SearchPageState extends State<SearchPage> {
                   )),
               body: BlocBuilder<SearchBloc, SearchState>(
                 builder: (context, state) {
+                  if (state.status == SearchStatus.loading) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
                   if (state.status == SearchStatus.noItemFound) {
                     return Center(
                         child: Text(
