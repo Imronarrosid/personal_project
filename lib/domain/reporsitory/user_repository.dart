@@ -306,6 +306,10 @@ class UserRepository implements UserUseCaseType {
         'userName': newName,
         'userNameUpdatedAt': FieldValue.serverTimestamp()
       });
+      await firebaseFirestore
+          .collection('userNames')
+          .doc(firebaseAuth.currentUser!.uid)
+          .update({'userName': newName});
     } catch (e) {
       rethrow;
     }
@@ -329,14 +333,19 @@ class UserRepository implements UserUseCaseType {
       Reference ref = firebaseStorage
           .ref()
           .child('pofilePicts')
-          .child('profilePicts ${FieldValue.serverTimestamp()}');
+          .child('profilePicts ${firebaseAuth.currentUser!.uid}');
       UploadTask uploadTask = ref.putFile(imageFile);
+
       TaskSnapshot snapshot = await uploadTask;
       String downloaUrl = await snapshot.ref.getDownloadURL();
       await firebaseFirestore
           .collection('users')
           .doc(firebaseAuth.currentUser!.uid)
           .update({'photoUrl': downloaUrl});
+      await firebaseFirestore
+          .collection('avatars')
+          .doc(firebaseAuth.currentUser!.uid)
+          .update({'avatar': downloaUrl});
       return downloaUrl;
     } catch (e) {
       rethrow;
@@ -428,5 +437,35 @@ class UserRepository implements UserUseCaseType {
     }
 
     return gameFav;
+  }
+
+  Future<String> getAvatar(String uid) async {
+    try {
+      String avatar;
+
+      DocumentSnapshot snap =
+          await firebaseFirestore.collection('avatars').doc(uid).get();
+
+      avatar = snap['avatar'];
+      return avatar;
+    } catch (e) {
+      debugPrint(e.toString());
+      return '';
+    }
+  }
+
+  Future<String> getUserNameOnly(String uid) async {
+    try {
+      String avatar;
+
+      DocumentSnapshot snap =
+          await firebaseFirestore.collection('userNames').doc(uid).get();
+
+      avatar = snap['userName'];
+      return avatar;
+    } catch (e) {
+      debugPrint(e.toString());
+      return '';
+    }
   }
 }

@@ -68,7 +68,7 @@ class _HomePageState extends State<HomePage> {
     List<Widget> pages = <Widget>[
       const VideoPage(),
       const SearchPage(),
-      const MessagePage(),
+       Container(),
       const MessagePage(),
       const ProfilePage(),
     ];

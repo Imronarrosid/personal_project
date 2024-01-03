@@ -75,6 +75,16 @@ dependencies:
   fluttertoast: ^8.2.4
   uuid: ^4.2.1
   restart_app: ^1.2.1
+  flutter_firebase_chat_core:
+    git:
+      url: https://github.com/Imronarrosid/flutter_firebase_chat_core.git
+      ref: 09d6b09c42d0cceb4400e5792a73395bc90bc48
+  flutter_chat_types: ^3.6.2
+  open_filex: ^4.3.4
+  flutter_chat_ui: 
+    git:
+      url: https://github.com/Imronarrosid/flutter_chat_ui.git
+      ref: e9c061d2872bdf68c053c6cd3e90ff693bfdeb7e
 
 dev_dependencies:
   flutter_test:

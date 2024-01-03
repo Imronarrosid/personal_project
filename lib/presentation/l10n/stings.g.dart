@@ -50,6 +50,8 @@ abstract class  LocaleKeys {
   static const label_galery = 'label_galery';
   static const label_profile_pict = 'label_profile_pict';
   static const label_skip = 'label_skip';
+  static const label_file = 'label_file';
+  static const label_photo = 'label_photo';
   static const message_delete_video = 'message_delete_video';
   static const message_wait = 'message_wait';
   static const message_write_something = 'message_write_something';

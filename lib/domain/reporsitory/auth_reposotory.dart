@@ -142,6 +142,7 @@ class AuthRepository implements AuthUseCaseType {
   Future _createUser(User user) async {
     FirebaseFirestore firestore = FirebaseFirestore.instance;
     var doc = await firestore.collection('users').doc(user.id).get();
+    final String userName = _createUserName(user.name!);
     if (!doc.exists) {
       _isUserFirstLogin.complete(true);
       await firestore.collection('users').doc(user.id).set({
@@ -149,7 +150,7 @@ class AuthRepository implements AuthUseCaseType {
         'email': user.email,
         'createdAt': FieldValue.serverTimestamp(),
         'name': user.name,
-        'userName': _createUserName(user.name!),
+        'userName': userName,
         'photoUrl': user.photo,
         'lastSeen': FieldValue.serverTimestamp(),
         'metadata': user.metadata,
@@ -157,9 +158,17 @@ class AuthRepository implements AuthUseCaseType {
         'updatedAt': FieldValue.serverTimestamp(),
         'userNameUpdatedAt': FieldValue.serverTimestamp()
       });
+      _storeUserName(userName);
     } else {
       _isUserFirstLogin.complete(false);
     }
+  }
+
+  Future<void> _storeUserName(String userName) async {
+    await firebaseFirestore
+        .collection('userNames')
+        .doc(currentUser!.uid)
+        .set({'userName': userName});
   }
 
   String _createUserName(String userName) {

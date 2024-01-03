@@ -4,6 +4,7 @@ enum APP_PAGE {
   splash,
   login,
   home,
+  chat,
   upload,
   error,
   profile,
@@ -75,6 +76,8 @@ extension AppPageExtension on APP_PAGE {
         return "/video-from-game";
       case APP_PAGE.followingNFonllowers:
         return "/following-n-follwoers";
+      case APP_PAGE.chat:
+        return "/chat";
       default:
         return "/";
     }
@@ -128,6 +131,8 @@ extension AppPageExtension on APP_PAGE {
         return "VIDEO-FROM-GAME";
       case APP_PAGE.followingNFonllowers:
         return "FOLLOWING-N-FOLLOWERS";
+      case APP_PAGE.chat:
+        return "chat";
       default:
         return "HOME";
     }

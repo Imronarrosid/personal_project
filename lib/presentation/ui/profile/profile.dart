@@ -5,12 +5,14 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:easy_localization/easy_localization.dart' as localization;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_firebase_chat_core/flutter_firebase_chat_core.dart';
 import 'package:go_router/go_router.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:personal_project/constant/color.dart';
 import 'package:personal_project/constant/dimens.dart';
 import 'package:personal_project/data/repository/user_video_paging_repository.dart';
+import 'package:personal_project/domain/model/chat_data_models.dart';
 import 'package:personal_project/domain/model/following_n_followers_data_model.dart';
 import 'package:personal_project/domain/model/game_fav_modal.dart';
 import 'package:personal_project/domain/model/profile_data_model.dart';
@@ -27,6 +29,7 @@ import 'package:personal_project/presentation/shared_components/keep_alive_page.
 import 'package:personal_project/presentation/shared_components/not_authenticated_page.dart';
 import 'package:personal_project/presentation/ui/add_details/bloc/upload_bloc.dart';
 import 'package:personal_project/presentation/ui/auth/bloc/auth_bloc.dart';
+import 'package:personal_project/presentation/ui/chat/chat_page.dart';
 import 'package:personal_project/presentation/ui/edit_profile/cubit/edit_bio_cubit.dart';
 import 'package:personal_project/presentation/ui/edit_profile/cubit/edit_name_cubit.dart';
 import 'package:personal_project/presentation/ui/edit_profile/cubit/edit_profile_pict_cubit.dart';
@@ -36,6 +39,7 @@ import 'package:personal_project/presentation/ui/profile/bloc/user_video_paging_
 import 'package:personal_project/presentation/ui/profile/cubit/follow_cubit.dart';
 import 'package:personal_project/presentation/ui/profile/cubit/profile_cubit.dart';
 import 'package:personal_project/presentation/ui/profile/cubit/refresh_profile_cubit.dart';
+import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
 
 class ProfilePage extends StatefulWidget {
   /// [payload] need to required if
@@ -521,15 +525,46 @@ class _ProfilePageState extends State<ProfilePage> {
                                   width: Dimens.DIMENS_6,
                                 ),
                                 Expanded(
-                                  child: Container(
-                                    height: Dimens.DIMENS_34,
-                                    alignment: Alignment.center,
-                                    decoration: BoxDecoration(
-                                        color: theme.colorScheme.tertiary,
-                                        borderRadius: BorderRadius.circular(5)),
-                                    child: Text(
-                                      LocaleKeys.label_message.tr(),
-                                      textAlign: TextAlign.center,
+                                  child: InkWell(
+                                    onTap: () async {
+                                      User user = await userRepository
+                                          .getUserData1(widget.payload!.uid);
+                                      types.User otherUser = types.User(
+                                          id: widget.payload!.uid,
+                                          createdAt: user.createdAt!
+                                                  .toDate()
+                                                  .millisecondsSinceEpoch ~/
+                                              1000,
+                                          firstName: user.userName);
+                                      if (!mounted) return;
+
+                                      // final navigator = Navigator.of(context);
+                                      final room = await FirebaseChatCore
+                                          .instance
+                                          .createRoom(otherUser);
+
+                                      if (!mounted) return;
+                                      context.pop();
+                                      context.push(
+                                        APP_PAGE.chat.toPath,
+                                        extra: ChatData(
+                                          room: room,
+                                          userName: user.userName!,
+                                          avatar: user.photo!,
+                                        ),
+                                      );
+                                    },
+                                    child: Container(
+                                      height: Dimens.DIMENS_34,
+                                      alignment: Alignment.center,
+                                      decoration: BoxDecoration(
+                                          color: theme.colorScheme.tertiary,
+                                          borderRadius:
+                                              BorderRadius.circular(5)),
+                                      child: Text(
+                                        LocaleKeys.label_message.tr(),
+                                        textAlign: TextAlign.center,
+                                      ),
                                     ),
                                   ),
                                 ),

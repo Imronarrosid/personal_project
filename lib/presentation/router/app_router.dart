@@ -4,6 +4,7 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:personal_project/domain/model/chat_data_models.dart';
 import 'package:personal_project/domain/model/following_n_followers_data_model.dart';
 import 'package:personal_project/domain/model/game_fav_modal.dart';
 import 'package:personal_project/domain/model/preview_model.dart';
@@ -19,6 +20,7 @@ import 'package:personal_project/presentation/ui/add_details/select_game/bloc/se
 import 'package:personal_project/presentation/ui/add_details/select_game/cubit/select_game_cubit.dart';
 import 'package:personal_project/presentation/ui/add_details/select_game/select_game_page.dart';
 import 'package:personal_project/presentation/ui/add_user_name/add_user_name_page.dart';
+import 'package:personal_project/presentation/ui/chat/chat_page.dart';
 import 'package:personal_project/presentation/ui/edit_profile/edit_page/edit_game_fav_page.dart';
 import 'package:personal_project/presentation/ui/followings_n_followers/followings_n_followers.dart';
 import 'package:personal_project/presentation/ui/language/language_page.dart';
@@ -217,6 +219,34 @@ class AppRouter {
         ),
         builder: (context, state) {
           return const CachesPage();
+        },
+      ),
+      GoRoute(
+        path: APP_PAGE.chat.toPath,
+        name: APP_PAGE.chat.toName,
+        pageBuilder: (context, state) {
+          final ChatData data = state.extra as ChatData;
+          return CustomTransitionPage(
+            child: ChatPage(data: data),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) =>
+                    SlideTransition(
+                        position: animation.drive(
+                          Tween<Offset>(
+                            begin: const Offset(0.75, 0),
+                            end: Offset.zero,
+                          ).chain(
+                            CurveTween(curve: Curves.ease),
+                          ),
+                        ),
+                        child: child),
+          );
+        },
+        builder: (context, state) {
+          final ChatData data = state.extra as ChatData;
+          return ChatPage(
+            data: data,
+          );
         },
       ),
       GoRoute(
