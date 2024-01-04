@@ -454,6 +454,27 @@ class UserRepository implements UserUseCaseType {
     }
   }
 
+  Future<List<User>>? getUserListWithLimit(int limit) async {
+    List<User> users = <User>[];
+    try {
+      QuerySnapshot snapshot = await firebaseFirestore
+          .collection('users')
+          .doc(firebaseAuth.currentUser!.uid)
+          .collection('following')
+          .limit(limit)
+          .get();
+      for (var element in snapshot.docs) {
+        DocumentSnapshot docs =
+            await firebaseFirestore.collection('users').doc(element.id).get();
+        users.add(User.fromSnap(docs));
+      }
+      return users;
+    } catch (e) {
+      debugPrint(e.toString());
+      return [];
+    }
+  }
+
   Future<String> getUserNameOnly(String uid) async {
     try {
       String avatar;

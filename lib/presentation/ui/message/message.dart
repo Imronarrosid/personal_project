@@ -3,12 +3,15 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
 import 'package:flutter_firebase_chat_core/flutter_firebase_chat_core.dart';
 import 'package:go_router/go_router.dart';
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:personal_project/constant/color.dart';
+import 'package:personal_project/constant/dimens.dart';
 import 'package:personal_project/domain/model/chat_data_models.dart';
 import 'package:personal_project/domain/model/user.dart' as models;
 import 'package:personal_project/domain/reporsitory/auth_reposotory.dart';
@@ -114,7 +117,8 @@ class _MessagePageState extends State<MessagePage> {
     if (!_initialized) {
       return Container();
     }
-
+    final UserRepository userRepository =
+        RepositoryProvider.of<UserRepository>(context);
     return Scaffold(
       appBar: AppBar(
         actions: [
@@ -141,102 +145,271 @@ class _MessagePageState extends State<MessagePage> {
       ),
       body: _user == null
           ? const NotAuthenticatedPage()
-          : StreamBuilder<List<types.Room>>(
-              stream: FirebaseChatCore.instance.rooms(),
-              initialData: const [],
-              builder: (context, snapshot) {
-                if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return Container(
-                    alignment: Alignment.center,
-                    margin: const EdgeInsets.only(
-                      bottom: 200,
-                    ),
-                    child: const Text('No rooms'),
-                  );
-                }
+          : SingleChildScrollView(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: EdgeInsets.only(
+                        top: Dimens.DIMENS_18, left: Dimens.DIMENS_12),
+                    child: Text('Saran'),
+                  ),
+                  SizedBox(
+                    width: MediaQuery.of(context).size.width,
+                    height: Dimens.DIMENS_105,
+                    child: FutureBuilder<List<models.User>>(
+                        future: userRepository.getUserListWithLimit(7),
+                        builder: (context,
+                            AsyncSnapshot<List<models.User>>? snapshot) {
+                          List<models.User>? users = snapshot?.data;
 
-                return ListView.builder(
-                  itemCount: snapshot.data!.length,
-                  itemBuilder: (context, index) {
-                    final room = snapshot.data![index];
-
-                    return FutureBuilder(
-                        future: _getOtherUsersData(room),
-                        builder:
-                            (context, AsyncSnapshot<models.User> snapshot) {
-                          models.User? data = snapshot.data;
-                          if (!snapshot.hasData) {
+                          if (!snapshot!.hasData || snapshot.hasError) {
                             return Container();
                           }
-                          return StreamBuilder<List<types.Message>>(
-                              stream: FirebaseChatCore.instance
-                                  .getLastMessages(room),
-                              builder: (context,
-                                  AsyncSnapshot<List<types.Message>> snapshot) {
-                                final UserRepository userRepository =
-                                    RepositoryProvider.of<UserRepository>(
-                                        context);
-                                types.Message? message = snapshot.data?.first;
-                                if (!snapshot.hasData &&
-                                    snapshot.data == null) {
-                                  return Container();
-                                }
-                                return ListTile(
-                                  tileColor: Colors.transparent,
-                                  onTap: () {
+
+                          return ListView(
+                            shrinkWrap: true,
+                            scrollDirection: Axis.horizontal,
+                            children: [
+                              ...List.generate(users!.length, (index) {
+                                models.User user = users[index];
+                                return InkWell(
+                                  onTap: () async {
+                                    types.User otherUser = types.User(
+                                        id: user.id,
+                                        createdAt: user.createdAt!
+                                                .toDate()
+                                                .millisecondsSinceEpoch ~/
+                                            1000,
+                                        firstName: user.userName);
+                                    if (!mounted) return;
+
+                                    final room = await FirebaseChatCore.instance
+                                        .createRoom(otherUser);
+
+                                    if (!mounted) return;
                                     context.push(
                                       APP_PAGE.chat.toPath,
                                       extra: ChatData(
                                         room: room,
-                                        userName: data.userName!,
-                                        avatar: data.photo!,
+                                        userName: user.userName!,
+                                        avatar: user.photo!,
                                       ),
                                     );
                                   },
-                                  leading: _buildAvatar(room, data!.photo!),
-                                  title: Expanded(
-                                    child: Row(
+                                  child: Container(
+                                    width: Dimens.DIMENS_85,
+                                    padding: EdgeInsets.all(Dimens.DIMENS_10),
+                                    alignment: Alignment.center,
+                                    child: Column(
                                       mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
+                                          MainAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
                                       children: [
-                                        Text(room.name!.isNotEmpty
-                                            ? room.name ?? ''
-                                            : data.userName!),
+                                        SizedBox(
+                                          height: Dimens.DIMENS_6,
+                                        ),
+                                        CircleAvatar(
+                                          radius: Dimens.DIMENS_28,
+                                          child: ClipRRect(
+                                            borderRadius:
+                                                BorderRadius.circular(50),
+                                            child: CachedNetworkImage(
+                                              imageUrl: user.photo!,
+                                              width: double.infinity,
+                                              height: double.infinity,
+                                              fit: BoxFit.cover,
+                                            ),
+                                          ),
+                                        ),
+                                        SizedBox(
+                                          height: Dimens.DIMENS_6,
+                                        ),
                                         Text(
-                                          DateFormat('HH:mm').format(DateTime
-                                              .fromMillisecondsSinceEpoch(message
-                                                      ?.createdAt ??
-                                                  DateTime.now()
-                                                      .millisecondsSinceEpoch)),
+                                          user.userName!,
+                                          overflow: TextOverflow.ellipsis,
+                                          textAlign: TextAlign.center,
                                           style: Theme.of(context)
                                               .textTheme
-                                              .bodySmall!
-                                              .apply(color: COLOR_grey),
+                                              .bodySmall,
                                         )
                                       ],
                                     ),
                                   ),
-                                  subtitle: FutureBuilder<String>(
-                                    future: userRepository.getUserNameOnly(
-                                        message?.author.id ?? ''),
-                                    builder: (context, snapshot) {
-                                      if (!snapshot.hasData) {
-                                        return Container();
-                                      }
-                                      return Text(
-                                        '${snapshot.data!}: ${_getMessage(message!.type, message: message)}',
-                                        overflow: TextOverflow.ellipsis,
-                                      );
-                                    },
-                                  ),
                                 );
-                              });
-                        });
-                  },
-                );
-              },
+                              }),
+                              InkWell(
+                                onTap: () {},
+                                child: Container(
+                                  padding: EdgeInsets.all(Dimens.DIMENS_10),
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    children: [
+                                      SizedBox(
+                                        height: Dimens.DIMENS_6,
+                                      ),
+                                      CircleAvatar(
+                                        backgroundColor: Theme.of(context)
+                                            .colorScheme
+                                            .onTertiary,
+                                        radius: Dimens.DIMENS_28,
+                                        child: Icon(MdiIcons.plus),
+                                      ),
+                                      SizedBox(
+                                        height: Dimens.DIMENS_6,
+                                      ),
+                                      Text(
+                                        LocaleKeys.label_others.tr(),
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodySmall,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          );
+                        }),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.only(left: Dimens.DIMENS_12),
+                    child: Text(LocaleKeys.label_message.tr()),
+                  ),
+                  StreamBuilder<List<types.Room>>(
+                    stream: FirebaseChatCore.instance.rooms(),
+                    initialData: const [],
+                    builder: (context, snapshot) {
+                      if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                        return Container(
+                          alignment: Alignment.center,
+                          margin: const EdgeInsets.only(
+                            bottom: 200,
+                          ),
+                          child: const Text('No rooms'),
+                        );
+                      }
+
+                      return ListView.builder(
+                        physics: const NeverScrollableScrollPhysics(),
+                        shrinkWrap: true,
+                        itemCount: snapshot.data!.length,
+                        itemBuilder: (context, index) {
+                          final room = snapshot.data![index];
+
+                          return _buildRoom(room);
+                        },
+                      );
+                    },
+                  ),
+                ],
+              ),
             ),
     );
+  }
+
+  FutureBuilder<models.User> _buildRoom(types.Room room) {
+    return FutureBuilder(
+        future: _getOtherUsersData(room),
+        builder: (context, AsyncSnapshot<models.User> snapshot) {
+          models.User? data = snapshot.data;
+          if (!snapshot.hasData) {
+            return Container();
+          }
+          return StreamBuilder<List<types.Message>>(
+              stream: FirebaseChatCore.instance.getLastMessages(room),
+              builder: (context, AsyncSnapshot<List<types.Message>> snapshot) {
+                final UserRepository userRepository =
+                    RepositoryProvider.of<UserRepository>(context);
+                types.Message? message = snapshot.data?.first;
+                if (!snapshot.hasData && snapshot.data == null) {
+                  return Container();
+                }
+                return ListTile(
+                  tileColor: Colors.transparent,
+                  onTap: () {
+                    context.push(
+                      APP_PAGE.chat.toPath,
+                      extra: ChatData(
+                        room: room,
+                        userName: data.userName!,
+                        avatar: data.photo!,
+                      ),
+                    );
+                  },
+                  leading: _buildAvatar(room, data!.photo!),
+                  title: SizedBox(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(room.name!.isNotEmpty
+                            ? room.name ?? ''
+                            : data.userName!),
+                        _isDifferentDay(message?.createdAt ??
+                                DateTime.now().millisecondsSinceEpoch)
+                            ? Text(
+                                DateFormat('HH:mm').format(
+                                    DateTime.fromMillisecondsSinceEpoch(message
+                                            ?.createdAt ??
+                                        DateTime.now().millisecondsSinceEpoch)),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodySmall!
+                                    .apply(color: COLOR_grey),
+                              )
+                            : Text(
+                                DateFormat('D/MM/yy').format(
+                                    DateTime.fromMillisecondsSinceEpoch(message!
+                                            .createdAt ??
+                                        DateTime.now().millisecondsSinceEpoch)),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodySmall!
+                                    .apply(color: COLOR_grey),
+                              )
+                      ],
+                    ),
+                  ),
+                  subtitle: FutureBuilder<String>(
+                    future: userRepository.getUserNameOnly(message!.author.id),
+                    builder: (context, snapshot) {
+                      if (!snapshot.hasData) {
+                        return Container();
+                      }
+                      return _buildMessage(snapshot, message, room.type!);
+                    },
+                  ),
+                );
+              });
+        });
+  }
+
+  Text _buildMessage(AsyncSnapshot<String> snapshot, types.Message message,
+      types.RoomType roomType) {
+    String currentUser =
+        RepositoryProvider.of<AuthRepository>(context).currentUser!.uid;
+    if (message.author.id == currentUser) {
+      return Text(
+        'Anda: ${_getMessage(message.type, message: message)}',
+        overflow: TextOverflow.ellipsis,
+      );
+    } else if (roomType == types.RoomType.group) {
+      return Text(
+        '${snapshot.data!}: ${_getMessage(message.type, message: message)}',
+        overflow: TextOverflow.ellipsis,
+      );
+    }
+    return Text(
+      '${snapshot.data!}: ${_getMessage(message.type, message: message)}',
+      overflow: TextOverflow.ellipsis,
+    );
+  }
+
+  bool _isDifferentDay(int createdAt) {
+    return DateTime.fromMillisecondsSinceEpoch(createdAt).day <=
+        DateTime.now().day;
   }
 
   String _getMessage(types.MessageType type, {required types.Message message}) {

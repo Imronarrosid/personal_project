@@ -346,11 +346,15 @@ class _ChatPageState extends State<ChatPage> {
         builder: (context, AsyncSnapshot<String> snapshot) {
           String? avatar = snapshot.data;
           if (!snapshot.hasData) {
-            return const CircleAvatar();
+            return Padding(
+              padding: EdgeInsets.only(right: Dimens.DIMENS_8),
+              child: const CircleAvatar(),
+            );
           }
           return Padding(
             padding: EdgeInsets.only(right: Dimens.DIMENS_8),
             child: CircleAvatar(
+              backgroundColor: Colors.transparent,
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(50),
                 child: CachedNetworkImage(
