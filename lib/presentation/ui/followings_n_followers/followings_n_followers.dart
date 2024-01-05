@@ -26,41 +26,41 @@ class FollowingsNFollowers extends StatelessWidget {
   Widget build(BuildContext context) {
     final UserRepository userRepository =
         RepositoryProvider.of<UserRepository>(context);
-    return BlocProvider(
-      create: (context) => FollowCubit(userRepository),
-      child: Scaffold(
-        body: DefaultTabController(
-          initialIndex: data.initialIndex,
-          length: 2,
-          child: NestedScrollView(
-            headerSliverBuilder: (context, innerBoxIsScrolled) {
-              return [
-                SliverAppBar(
-                  elevation: 1,
-                  scrolledUnderElevation: 0,
-                  pinned: true,
-                  shape: Border(bottom: BorderSide(color: Theme.of(context).colorScheme.primary,width: 0.2)),
-                  title: Text(data.userName),
-                  bottom: TabBar(indicatorSize: TabBarIndicatorSize.tab, tabs: [
-                    Tab(
-                      text: LocaleKeys.label_followers.tr(),
-                    ),
-                    Tab(
-                      text: LocaleKeys.label_following.tr(),
-                    ),
-                  ]),
-                ),
-              ];
-            },
-            body: TabBarView(children: [
-              KeepAlivePage(
-                  child: FollowingNFollowersTab(
-                      uid: data.uid, tabFor: TabFor.followers)),
-              KeepAlivePage(
-                  child: FollowingNFollowersTab(
-                      uid: data.uid, tabFor: TabFor.following)),
-            ]),
-          ),
+    return Scaffold(
+      body: DefaultTabController(
+        initialIndex: data.initialIndex,
+        length: 2,
+        child: NestedScrollView(
+          headerSliverBuilder: (context, innerBoxIsScrolled) {
+            return [
+              SliverAppBar(
+                elevation: 1,
+                scrolledUnderElevation: 0,
+                pinned: true,
+                shape: Border(
+                    bottom: BorderSide(
+                        color: Theme.of(context).colorScheme.primary,
+                        width: 0.2)),
+                title: Text(data.userName),
+                bottom: TabBar(indicatorSize: TabBarIndicatorSize.tab, tabs: [
+                  Tab(
+                    text: LocaleKeys.label_followers.tr(),
+                  ),
+                  Tab(
+                    text: LocaleKeys.label_following.tr(),
+                  ),
+                ]),
+              ),
+            ];
+          },
+          body: TabBarView(children: [
+            KeepAlivePage(
+                child: FollowingNFollowersTab(
+                    uid: data.uid, tabFor: TabFor.followers)),
+            KeepAlivePage(
+                child: FollowingNFollowersTab(
+                    uid: data.uid, tabFor: TabFor.following)),
+          ]),
         ),
       ),
     );
@@ -78,6 +78,8 @@ class FollowingNFollowersTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final UserRepository userRepository =
+        RepositoryProvider.of<UserRepository>(context);
     return RepositoryProvider(
       create: (context) => FollowingNFollowersRepository(),
       child: BlocProvider(
@@ -110,185 +112,194 @@ class FollowingNFollowersTab extends StatelessWidget {
                             .currentUser
                             ?.uid;
 
-                    return FutureBuilder(
-                        future: repository.getOtherUserData(otherUserUid),
-                        builder: (context, snapshot) {
-                          User? user = snapshot.data;
+                    return BlocProvider(
+                      create: (context) => FollowCubit(userRepository),
+                      child: FutureBuilder(
+                          future: repository.getOtherUserData(otherUserUid),
+                          builder: (context, snapshot) {
+                            User? user = snapshot.data;
 
-                          if (!snapshot.hasData) {
-                            return Container();
-                          }
-                          return ListTile(
-                            onTap: () {
-                              context.push(APP_PAGE.profile.toPath,
-                                  extra: ProfilePayload(
-                                      uid: user.id,
-                                      name: user.name!,
-                                      userName: user.userName!,
-                                      photoURL: user.photo!));
-                            },
-                            leading: CircleAvatar(
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(50),
-                                child:
-                                    CachedNetworkImage(imageUrl: user!.photo!),
+                            if (!snapshot.hasData) {
+                              return Container();
+                            }
+                            return ListTile(
+                              onTap: () {
+                                context.push(APP_PAGE.profile.toPath,
+                                    extra: ProfilePayload(
+                                        uid: user.id,
+                                        name: user.name!,
+                                        userName: user.userName!,
+                                        photoURL: user.photo!));
+                              },
+                              leading: CircleAvatar(
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(50),
+                                  child: CachedNetworkImage(
+                                      imageUrl: user!.photo!),
+                                ),
                               ),
-                            ),
-                            title: Text(user.name!),
-                            subtitle: Text(user.userName!),
-                            trailing: user.id == logedUserUid
-                                ? null
-                                : SizedBox(
-                                    width: 90,
-                                    height: 30,
-                                    child: FutureBuilder<bool>(
-                                        future: repository.isFollowing(user.id),
-                                        builder: (context,
-                                            AsyncSnapshot<bool> snapshot) {
-                                          bool? isFollowing = snapshot.data;
-                                          if (!snapshot.hasData) {
-                                            return Container(
-                                              height: Dimens.DIMENS_34,
-                                              alignment: Alignment.center,
-                                              decoration: BoxDecoration(
-                                                color: COLOR_black_ff121212
-                                                    .withOpacity(0.5),
-                                                borderRadius:
-                                                    BorderRadius.circular(5),
-                                              ),
-                                              child: SizedBox(
-                                                width: Dimens.DIMENS_18,
-                                                height: Dimens.DIMENS_18,
-                                                child:
-                                                    CircularProgressIndicator(
-                                                  color: COLOR_white_fff5f5f5,
-                                                ),
-                                              ),
-                                            );
-                                          }
-                                          return BlocBuilder<FollowCubit,
-                                              FollowState>(
-                                            builder: (context, state) {
-                                              debugPrint('follow state $state');
-                                              if (state is Followed) {
-                                                isFollowing = true;
-                                              } else if (state is UnFollowed) {
-                                                isFollowing = false;
-                                              } else {
-                                                isFollowing = isFollowing;
-                                              }
-
-                                              return Material(
-                                                shape: RoundedRectangleBorder(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            5)),
-                                                color: isFollowing!
-                                                    ? COLOR_grey
-                                                    : COLOR_black_ff121212,
-                                                child: InkWell(
-                                                  onTap: () {
-                                                    if (isFollowing!) {
-                                                      showDialog(
-                                                          context: context,
-                                                          builder: (_) {
-                                                            return AlertDialog(
-                                                              title: Text(LocaleKeys
-                                                                  .message_unfollow
-                                                                  .tr()),
-                                                              actions: [
-                                                                TextButton(
-                                                                  onPressed:
-                                                                      () {
-                                                                    context
-                                                                        .pop();
-                                                                  },
-                                                                  child: Text(
-                                                                      LocaleKeys
-                                                                          .label_cancel
-                                                                          .tr()),
-                                                                ),
-                                                                TextButton(
-                                                                  onPressed:
-                                                                      () {
-                                                                    final AuthRepository
-                                                                        authRepository =
-                                                                        RepositoryProvider.of<AuthRepository>(
-                                                                            context);
-                                                                    BlocProvider.of<FollowCubit>(context).followButtonHandle(
-                                                                        uid: user
-                                                                            .id,
-                                                                        currentUserUid: authRepository
-                                                                            .currentUser!
-                                                                            .uid,
-                                                                        stateFromDatabase:
-                                                                            isFollowing!);
-                                                                    context
-                                                                        .pop();
-                                                                  },
-                                                                  child: Text(
-                                                                      LocaleKeys
-                                                                          .label_oke
-                                                                          .tr()),
-                                                                )
-                                                              ],
-                                                            );
-                                                          });
-                                                    } else {
-                                                      final AuthRepository
-                                                          authRepository =
-                                                          RepositoryProvider.of<
-                                                                  AuthRepository>(
-                                                              context);
-
-                                                      BlocProvider.of<
-                                                                  FollowCubit>(
-                                                              context)
-                                                          .followButtonHandle(
-                                                              currentUserUid:
-                                                                  authRepository
-                                                                      .currentUser!
-                                                                      .uid,
-                                                              uid: user.id,
-                                                              stateFromDatabase:
-                                                                  isFollowing!);
-                                                    }
-                                                  },
+                              title: Text(user.name!),
+                              subtitle: Text(user.userName!),
+                              trailing: user.id == logedUserUid
+                                  ? null
+                                  : SizedBox(
+                                      width: 90,
+                                      height: 30,
+                                      child: FutureBuilder<bool>(
+                                          future:
+                                              repository.isFollowing(user.id),
+                                          builder: (context,
+                                              AsyncSnapshot<bool> snapshot) {
+                                            bool? isFollowing = snapshot.data;
+                                            if (!snapshot.hasData) {
+                                              return Container(
+                                                height: Dimens.DIMENS_34,
+                                                alignment: Alignment.center,
+                                                decoration: BoxDecoration(
+                                                  color: COLOR_black_ff121212
+                                                      .withOpacity(0.5),
                                                   borderRadius:
                                                       BorderRadius.circular(5),
-                                                  child: Container(
-                                                    height: Dimens.DIMENS_34,
-                                                    alignment: Alignment.center,
-                                                    decoration: BoxDecoration(
-                                                        color:
-                                                            Colors.transparent,
-                                                        borderRadius:
-                                                            BorderRadius
-                                                                .circular(5)),
-                                                    child: Text(
-                                                      isFollowing!
-                                                          ? LocaleKeys
-                                                              .label_following
-                                                              .tr()
-                                                          : LocaleKeys
-                                                              .label_follow
-                                                              .tr(),
-                                                      textAlign:
-                                                          TextAlign.center,
-                                                      style: TextStyle(
-                                                          color: isFollowing!
-                                                              ? COLOR_black_ff121212
-                                                              : COLOR_white_fff5f5f5),
-                                                    ),
+                                                ),
+                                                child: SizedBox(
+                                                  width: Dimens.DIMENS_18,
+                                                  height: Dimens.DIMENS_18,
+                                                  child:
+                                                      CircularProgressIndicator(
+                                                    color: COLOR_white_fff5f5f5,
                                                   ),
                                                 ),
                                               );
-                                            },
-                                          );
-                                        }),
-                                  ),
-                          );
-                        });
+                                            }
+                                            return BlocBuilder<FollowCubit,
+                                                FollowState>(
+                                              builder: (context, state) {
+                                                debugPrint(
+                                                    'follow state $state');
+                                                if (state is Followed) {
+                                                  isFollowing = true;
+                                                } else if (state
+                                                    is UnFollowed) {
+                                                  isFollowing = false;
+                                                } else {
+                                                  isFollowing = isFollowing;
+                                                }
+
+                                                return Material(
+                                                  shape: RoundedRectangleBorder(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              5)),
+                                                  color: isFollowing!
+                                                      ? COLOR_grey
+                                                      : COLOR_black_ff121212,
+                                                  child: InkWell(
+                                                    onTap: () {
+                                                      if (isFollowing!) {
+                                                        showDialog(
+                                                            context: context,
+                                                            builder: (_) {
+                                                              return AlertDialog(
+                                                                title: Text(
+                                                                    LocaleKeys
+                                                                        .message_unfollow
+                                                                        .tr()),
+                                                                actions: [
+                                                                  TextButton(
+                                                                    onPressed:
+                                                                        () {
+                                                                      context
+                                                                          .pop();
+                                                                    },
+                                                                    child: Text(
+                                                                        LocaleKeys
+                                                                            .label_cancel
+                                                                            .tr()),
+                                                                  ),
+                                                                  TextButton(
+                                                                    onPressed:
+                                                                        () {
+                                                                      final AuthRepository
+                                                                          authRepository =
+                                                                          RepositoryProvider.of<AuthRepository>(
+                                                                              context);
+                                                                      BlocProvider.of<FollowCubit>(context).followButtonHandle(
+                                                                          uid: user
+                                                                              .id,
+                                                                          currentUserUid: authRepository
+                                                                              .currentUser!
+                                                                              .uid,
+                                                                          stateFromDatabase:
+                                                                              isFollowing!);
+                                                                      context
+                                                                          .pop();
+                                                                    },
+                                                                    child: Text(
+                                                                        LocaleKeys
+                                                                            .label_oke
+                                                                            .tr()),
+                                                                  )
+                                                                ],
+                                                              );
+                                                            });
+                                                      } else {
+                                                        final AuthRepository
+                                                            authRepository =
+                                                            RepositoryProvider
+                                                                .of<AuthRepository>(
+                                                                    context);
+
+                                                        BlocProvider.of<
+                                                                    FollowCubit>(
+                                                                context)
+                                                            .followButtonHandle(
+                                                                currentUserUid:
+                                                                    authRepository
+                                                                        .currentUser!
+                                                                        .uid,
+                                                                uid: user.id,
+                                                                stateFromDatabase:
+                                                                    isFollowing!);
+                                                      }
+                                                    },
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            5),
+                                                    child: Container(
+                                                      height: Dimens.DIMENS_34,
+                                                      alignment:
+                                                          Alignment.center,
+                                                      decoration: BoxDecoration(
+                                                          color: Colors
+                                                              .transparent,
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(5)),
+                                                      child: Text(
+                                                        isFollowing!
+                                                            ? LocaleKeys
+                                                                .label_following
+                                                                .tr()
+                                                            : LocaleKeys
+                                                                .label_follow
+                                                                .tr(),
+                                                        textAlign:
+                                                            TextAlign.center,
+                                                        style: TextStyle(
+                                                            color: isFollowing!
+                                                                ? COLOR_black_ff121212
+                                                                : COLOR_white_fff5f5f5),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                );
+                                              },
+                                            );
+                                          }),
+                                    ),
+                            );
+                          }),
+                    );
                   },
                 ),
                 pagingController: state.controller!);
