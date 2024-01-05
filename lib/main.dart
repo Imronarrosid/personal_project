@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:personal_project/config/theme.dart';
 import 'package:personal_project/constant/color.dart';
+import 'package:personal_project/data/repository/chat_repository.dart';
 import 'package:personal_project/data/repository/file_repository.dart';
 import 'package:personal_project/domain/model/user.dart';
 import 'package:personal_project/domain/reporsitory/auth_reposotory.dart';
@@ -107,6 +108,9 @@ class _MyAppState extends State<MyApp> {
             RepositoryProvider(
               create: (context) => UserRepository(),
             ),
+            RepositoryProvider(
+              create: (context) => ChatRepository(),
+            )
           ],
           child: MultiBlocProvider(
             providers: [

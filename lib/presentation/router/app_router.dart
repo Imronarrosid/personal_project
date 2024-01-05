@@ -32,6 +32,7 @@ import 'package:personal_project/presentation/ui/home/home.dart';
 import 'package:personal_project/presentation/ui/onboarding/onboarding.dart';
 import 'package:personal_project/presentation/ui/profile/profile.dart';
 import 'package:personal_project/presentation/ui/menu/menu_page.dart';
+import 'package:personal_project/presentation/ui/search_room/search_room_page.dart';
 import 'package:personal_project/presentation/ui/storage/storage_page.dart';
 import 'package:personal_project/presentation/ui/ugf/ugf_page.dart';
 import 'package:personal_project/presentation/ui/upload/upload.dart';
@@ -247,6 +248,30 @@ class AppRouter {
           return ChatPage(
             data: data,
           );
+        },
+      ),
+      GoRoute(
+        path: APP_PAGE.searchRoom.toPath,
+        name: APP_PAGE.searchRoom.toName,
+        pageBuilder: (context, state) {
+          return CustomTransitionPage(
+            child: const SearchRoomPage(),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) =>
+                    SlideTransition(
+                        position: animation.drive(
+                          Tween<Offset>(
+                            begin: const Offset(0.75, 0),
+                            end: Offset.zero,
+                          ).chain(
+                            CurveTween(curve: Curves.ease),
+                          ),
+                        ),
+                        child: child),
+          );
+        },
+        builder: (context, state) {
+          return const SearchRoomPage();
         },
       ),
       GoRoute(

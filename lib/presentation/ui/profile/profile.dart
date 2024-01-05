@@ -527,8 +527,9 @@ class _ProfilePageState extends State<ProfilePage> {
                                 Expanded(
                                   child: InkWell(
                                     onTap: () async {
-                                      User user = await userRepository
-                                          .getUserData1(widget.payload!.uid);
+                                      User user =
+                                          await userRepository.getOtherUserData(
+                                              widget.payload!.uid);
                                       types.User otherUser = types.User(
                                           id: widget.payload!.uid,
                                           createdAt: user.createdAt!

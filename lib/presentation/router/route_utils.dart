@@ -24,7 +24,8 @@ enum APP_PAGE {
   addUserName,
   selectGame,
   videoFromGame,
-  followingNFonllowers
+  followingNFonllowers,
+  searchRoom
 }
 
 extension AppPageExtension on APP_PAGE {
@@ -78,6 +79,8 @@ extension AppPageExtension on APP_PAGE {
         return "/following-n-follwoers";
       case APP_PAGE.chat:
         return "/chat";
+      case APP_PAGE.searchRoom:
+        return "/search-room";
       default:
         return "/";
     }
@@ -132,7 +135,9 @@ extension AppPageExtension on APP_PAGE {
       case APP_PAGE.followingNFonllowers:
         return "FOLLOWING-N-FOLLOWERS";
       case APP_PAGE.chat:
-        return "chat";
+        return "CHAT";
+      case APP_PAGE.searchRoom:
+        return "SEARCH-ROOM";
       default:
         return "HOME";
     }

@@ -133,6 +133,7 @@ class _MessagePageState extends State<MessagePage> {
                     //     builder: (context) => const UsersPage(),
                     //   ),
                     // );
+                    context.push(APP_PAGE.searchRoom.toPath);
                   },
           ),
         ],
@@ -241,7 +242,9 @@ class _MessagePageState extends State<MessagePage> {
                                 );
                               }),
                               InkWell(
-                                onTap: () {},
+                                onTap: () {
+                                  context.push(APP_PAGE.searchRoom.toPath);
+                                },
                                 child: Container(
                                   padding: EdgeInsets.all(Dimens.DIMENS_10),
                                   child: Column(
@@ -319,12 +322,24 @@ class _MessagePageState extends State<MessagePage> {
             return Container();
           }
           return StreamBuilder<List<types.Message>>(
+              initialData: [],
               stream: FirebaseChatCore.instance.getLastMessages(room),
               builder: (context, AsyncSnapshot<List<types.Message>> snapshot) {
                 final UserRepository userRepository =
                     RepositoryProvider.of<UserRepository>(context);
-                types.Message? message = snapshot.data?.first;
+
+                List<types.Message>? messages = snapshot.data;
+                types.Message? message;
+                if (snapshot.hasData && messages!.isNotEmpty) {
+                  message = messages.first;
+                }
                 if (!snapshot.hasData && snapshot.data == null) {
+                  return Container();
+                }
+                if (snapshot.hasError) {
+                  return Container();
+                }
+                if (snapshot.data!.isEmpty) {
                   return Container();
                 }
                 return ListTile(
@@ -378,7 +393,10 @@ class _MessagePageState extends State<MessagePage> {
                       if (!snapshot.hasData) {
                         return Container();
                       }
-                      return _buildMessage(snapshot, message, room.type!);
+                      if (messages!.isEmpty) {
+                        return Container();
+                      }
+                      return _buildMessage(snapshot, message!, room.type!);
                     },
                   ),
                 );
