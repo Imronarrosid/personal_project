@@ -84,7 +84,7 @@ dependencies:
   flutter_chat_ui: 
     git:
       url: https://github.com/Imronarrosid/flutter_chat_ui.git
-      ref: e9c061d2872bdf68c053c6cd3e90ff693bfdeb7e
+      ref: 82e150fcde413c72d7d564fac48902599c0805cf
 
 dev_dependencies:
   flutter_test:
