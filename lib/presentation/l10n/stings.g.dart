@@ -89,5 +89,6 @@ abstract class  LocaleKeys {
   static const message_system_message = 'message_system_message';
   static const message_unsupported_message = 'message_unsupported_message';
   static const message_send_video = 'message_send_video';
+  static const message_no_comment_yet = 'message_no_comment_yet';
 
 }
