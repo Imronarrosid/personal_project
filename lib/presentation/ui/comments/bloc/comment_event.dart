@@ -7,7 +7,9 @@ sealed class CommentEvent extends Equatable {
   List<Object> get props => [];
 }
 
-class AddComentEvent extends CommentEvent {}
+class TapCommentForm extends CommentEvent {}
+
+class InputComments extends CommentEvent {}
 
 class RefreshComentEvent extends CommentEvent {}
 

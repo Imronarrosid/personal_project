@@ -1,23 +1,23 @@
 part of 'comment_bloc.dart';
 
-sealed class CommentState extends Equatable {
-  const CommentState();
-
-  @override
-  List<Object> get props => [];
+enum CommentStatus {
+  initial,
+  open,
+  typing,
+  uploading,
+  succes,
+  refresh,
+  errorr,
 }
 
-final class CommentInitial extends CommentState {}
-
-final class AddComentState extends CommentState {}
-
-final class RefreshComentState extends CommentState {}
-
-final class ComentAddedState extends CommentState {
-  final Comment comment;
-
-  const ComentAddedState({required this.comment});
+final class CommentState extends Equatable {
+  final CommentStatus status;
+  final Comment? comment;
+  const CommentState({
+    required this.status,
+    this.comment,
+  });
 
   @override
-  List<Object> get props => [comment];
+  List<Object?> get props => [status, comment];
 }
