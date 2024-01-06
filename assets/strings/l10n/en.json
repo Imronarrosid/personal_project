@@ -50,6 +50,7 @@
     "label_skip": "Leawati",
     "label_file": "File",
     "label_photo": "Photo",
+    "label_you": "You",
     "message_delete_video": "Remove Video?",
     "message_wait": "Wait a minute",
     "message_write_something": "Write something",
@@ -78,5 +79,12 @@
     "message_select_your_game_favorite": "Select your favorite games",
     "message_game_title": "Game title (optional)",
     "message_load_file": "Load file",
-    "message_not_found": "\"{}\" not found"
+    "message_not_found": "\"{}\" not found",
+    "message_audio_message": "Send a audio",
+    "message_custom_message": "Custom message",
+    "message_send_file": "Send a file",
+    "message_send_image": "Send an image",
+    "message_system_message": "Message system",
+    "message_unsupported_message": "Message unsupported",
+    "message_send_video": "Send a video"
 }

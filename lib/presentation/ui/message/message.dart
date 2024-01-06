@@ -410,7 +410,7 @@ class _MessagePageState extends State<MessagePage> {
         RepositoryProvider.of<AuthRepository>(context).currentUser!.uid;
     if (message.author.id == currentUser) {
       return Text(
-        'Anda: ${_getMessage(message.type, message: message)}',
+        '${LocaleKeys.label_you.tr()}: ${_getMessage(message.type, message: message)}',
         overflow: TextOverflow.ellipsis,
       );
     } else if (roomType == types.RoomType.group) {
@@ -433,21 +433,21 @@ class _MessagePageState extends State<MessagePage> {
   String _getMessage(types.MessageType type, {required types.Message message}) {
     switch (type) {
       case types.MessageType.audio:
-        return 'Mengirim audio';
+        return LocaleKeys.message_audio_message.tr();
       case types.MessageType.custom:
-        return 'Pesan custom';
+        return LocaleKeys.message_custom_message.tr();
       case types.MessageType.file:
-        return 'Mengirim file';
+        return LocaleKeys.message_send_file.tr();
       case types.MessageType.image:
-        return 'Mengirim gambar';
+        return LocaleKeys.message_send_image.tr();
       case types.MessageType.system:
-        return 'Pesan system';
+        return LocaleKeys.message_system_message.tr();
       case types.MessageType.text:
         return types.TextMessage.fromJson(message.toJson()).text;
       case types.MessageType.unsupported:
-        return 'Pesan tidak di support';
+        return LocaleKeys.message_unsupported_message.tr();
       case types.MessageType.video:
-        return "Mengirim video";
+        return LocaleKeys.message_send_video.tr();
     }
   }
 

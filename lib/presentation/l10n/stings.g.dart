@@ -52,6 +52,7 @@ abstract class  LocaleKeys {
   static const label_skip = 'label_skip';
   static const label_file = 'label_file';
   static const label_photo = 'label_photo';
+  static const label_you = 'label_you';
   static const message_delete_video = 'message_delete_video';
   static const message_wait = 'message_wait';
   static const message_write_something = 'message_write_something';
@@ -81,5 +82,12 @@ abstract class  LocaleKeys {
   static const message_game_title = 'message_game_title';
   static const message_load_file = 'message_load_file';
   static const message_not_found = 'message_not_found';
+  static const message_audio_message = 'message_audio_message';
+  static const message_custom_message = 'message_custom_message';
+  static const message_send_file = 'message_send_file';
+  static const message_send_image = 'message_send_image';
+  static const message_system_message = 'message_system_message';
+  static const message_unsupported_message = 'message_unsupported_message';
+  static const message_send_video = 'message_send_video';
 
 }

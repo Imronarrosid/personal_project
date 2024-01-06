@@ -50,6 +50,7 @@
     "label_skip": "Lewati",
     "label_file": "File",
     "label_photo": "Foto",
+    "label_you": "Anda",
     "message_delete_video": "Hapus vidio?",
     "message_wait": "Tunggu sebentar",
     "message_write_something": "Tulis sesuatu",
@@ -78,5 +79,12 @@
     "message_select_your_game_favorite": "Pilih game favorite kamu",
     "message_game_title": "Judul game (opsional)",
     "message_load_file": "Memuat file",
-    "message_not_found": "\"{}\" tidak ditemukan"
+    "message_not_found": "\"{}\" tidak ditemukan",
+    "message_audio_message": "Mengirim audio",
+    "message_custom_message": "Pesan custom",
+    "message_send_file": "Mengirim file",
+    "message_send_image": "Mengirim gambar",
+    "message_system_message": "Pesan sistem",
+    "message_unsupported_message": "Pesan tidak di support",
+    "message_send_video": "Mengirim video"
 }
