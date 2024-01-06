@@ -141,36 +141,59 @@ class _MenuPageState extends State<MenuPage> {
           SizedBox(
             height: Dimens.DIMENS_8,
           ),
-          ListTile(
-            shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(10),
-                bottomRight: Radius.circular(10),
-                topLeft: Radius.circular(10),
-                topRight: Radius.circular(10),
-              ),
-            ),
-            title: Text(LocaleKeys.label_logout.tr()),
-            leading: Icon(MdiIcons.logout),
-            onTap: () {
-              showDialog(
-                  context: context,
-                  builder: (_) {
-                    return AlertDialog(
-                      title: Text(LocaleKeys.label_logout.tr()),
-                      actions: [
-                        TextButton(
-                            onPressed: () => context.pop(),
-                            child: Text(LocaleKeys.label_cancel.tr())),
-                        TextButton(
-                            onPressed: () {
-                              BlocProvider.of<AuthBloc>(context).add(LogOut());
-                              context.pop();
-                            },
-                            child: Text(LocaleKeys.label_oke.tr()))
-                      ],
-                    );
-                  });
+          BlocBuilder<AuthBloc, AuthState>(
+            builder: (context, state) {
+              if (state.status == AuthStatus.notAuthenticated ||
+                  state.status == AuthStatus.loading) {
+                return ListTile(
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.only(
+                      bottomLeft: Radius.circular(10),
+                      bottomRight: Radius.circular(10),
+                      topLeft: Radius.circular(10),
+                      topRight: Radius.circular(10),
+                    ),
+                  ),
+                  title: Text(LocaleKeys.label_login.tr()),
+                  leading: Icon(MdiIcons.login),
+                  onTap: () {
+                    showAuthBottomSheetFunc(context);
+                  },
+                );
+              }
+              return ListTile(
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.only(
+                    bottomLeft: Radius.circular(10),
+                    bottomRight: Radius.circular(10),
+                    topLeft: Radius.circular(10),
+                    topRight: Radius.circular(10),
+                  ),
+                ),
+                title: Text(LocaleKeys.label_logout.tr()),
+                leading: Icon(MdiIcons.logout),
+                onTap: () {
+                  showDialog(
+                      context: context,
+                      builder: (_) {
+                        return AlertDialog(
+                          title: Text(LocaleKeys.label_logout.tr()),
+                          actions: [
+                            TextButton(
+                                onPressed: () => context.pop(),
+                                child: Text(LocaleKeys.label_cancel.tr())),
+                            TextButton(
+                                onPressed: () {
+                                  BlocProvider.of<AuthBloc>(context)
+                                      .add(LogOut());
+                                  context.pop();
+                                },
+                                child: Text(LocaleKeys.label_oke.tr()))
+                          ],
+                        );
+                      });
+                },
+              );
             },
           ),
           BlocBuilder<AuthBloc, AuthState>(
