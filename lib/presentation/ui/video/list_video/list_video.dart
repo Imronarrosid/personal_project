@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
@@ -8,6 +9,7 @@ import 'package:personal_project/data/repository/paging_repository.dart';
 import 'package:personal_project/data/repository/video_player_repository.dart';
 import 'package:personal_project/domain/model/video_model.dart';
 import 'package:personal_project/domain/reporsitory/video_repository.dart';
+import 'package:personal_project/presentation/l10n/stings.g.dart';
 import 'package:personal_project/presentation/shared_components/video_player_item.dart';
 import 'package:personal_project/presentation/ui/video/list_video/bloc/paging_bloc.dart';
 import 'package:personal_project/presentation/ui/video/list_video/bloc/video_player_bloc.dart';
@@ -62,6 +64,8 @@ class ListVideo extends StatelessWidget {
                             auto: true,
                           );
                         },
+                        noItemsFoundIndicatorBuilder: (_) => Center(
+                            child: Text(LocaleKeys.message_no_post.tr())),
                         newPageProgressIndicatorBuilder: (_) =>
                             const Center(child: CircularProgressIndicator()),
                         newPageErrorIndicatorBuilder: (_) => const Text('eror'),
