@@ -17,7 +17,6 @@ import 'package:personal_project/domain/model/following_n_followers_data_model.d
 import 'package:personal_project/domain/model/game_fav_modal.dart';
 import 'package:personal_project/domain/model/profile_data_model.dart';
 import 'package:personal_project/domain/model/user.dart';
-import 'package:personal_project/domain/model/user_data_model.dart';
 import 'package:personal_project/domain/model/video_model.dart';
 import 'package:personal_project/domain/reporsitory/auth_reposotory.dart';
 import 'package:personal_project/domain/reporsitory/user_repository.dart';
@@ -29,7 +28,6 @@ import 'package:personal_project/presentation/shared_components/keep_alive_page.
 import 'package:personal_project/presentation/shared_components/not_authenticated_page.dart';
 import 'package:personal_project/presentation/ui/add_details/bloc/upload_bloc.dart';
 import 'package:personal_project/presentation/ui/auth/bloc/auth_bloc.dart';
-import 'package:personal_project/presentation/ui/chat/chat_page.dart';
 import 'package:personal_project/presentation/ui/edit_profile/cubit/edit_bio_cubit.dart';
 import 'package:personal_project/presentation/ui/edit_profile/cubit/edit_name_cubit.dart';
 import 'package:personal_project/presentation/ui/edit_profile/cubit/edit_profile_pict_cubit.dart';
@@ -69,7 +67,7 @@ class _ProfilePageState extends State<ProfilePage> {
       title = widget.payload!.name;
       userName = '@${widget.payload!.userName}';
       photoURL = widget.payload!.photoURL;
-      debugPrint('photo ${photoURL}');
+      debugPrint('photo $photoURL');
     }
 
     super.initState();
@@ -709,7 +707,7 @@ class _ProfilePageState extends State<ProfilePage> {
                             ),
                             label: Text(
                               games[index].gameTitle!,
-                              style: TextStyle(fontSize: 12),
+                              style: const TextStyle(fontSize: 12),
                             ),
                           ),
                         ).toList(),

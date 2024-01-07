@@ -25,7 +25,7 @@ class AppTheme {
       onPrimary: Colors.white,
       secondary: COLOR_grey,
     ),
-    textTheme: TextTheme(
+    textTheme: const TextTheme(
       titleLarge: TextStyle(
         color: Colors.white,
         fontSize: 20.0,

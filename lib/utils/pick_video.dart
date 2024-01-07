@@ -4,9 +4,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:personal_project/domain/model/preview_model.dart';
 import 'package:personal_project/presentation/router/route_utils.dart';
-import 'package:personal_project/presentation/ui/video_editor/video_editor_page.dart';
 import 'package:video_player/video_player.dart';
 
 Future<void> pickVideo(BuildContext context) async {
@@ -59,12 +57,12 @@ Future<void> pickVideo(BuildContext context) async {
 Future<bool> isMoreThan3minutes(File videoFile) async {
   bool isMoreThan3minutes = false;
 
-  late VideoPlayerController _controller;
-  _controller = VideoPlayerController.file(videoFile);
+  late VideoPlayerController controller;
+  controller = VideoPlayerController.file(videoFile);
 
-  await _controller.initialize();
+  await controller.initialize();
   // Video duration is available in milliseconds
-  int videoDurationMilliseconds = _controller.value.duration.inMilliseconds;
+  int videoDurationMilliseconds = controller.value.duration.inMilliseconds;
 
   // Convert video duration to minutes
   double videoDurationMinutes = videoDurationMilliseconds / 60000.0;

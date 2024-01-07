@@ -1,7 +1,5 @@
 import 'dart:async';
 import 'package:flutter/cupertino.dart';
-import 'package:personal_project/presentation/l10n/locale_code.dart';
-import 'package:personal_project/presentation/router/route_utils.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 // ignore: non_constant_identifier_names

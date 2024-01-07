@@ -3,12 +3,8 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
-import 'package:personal_project/data/repository/coment_repository.dart';
-import 'package:personal_project/data/repository/coment_repository.dart';
-import 'package:personal_project/domain/model/comment_model.dart';
 import 'package:personal_project/domain/model/video_model.dart';
 import 'package:personal_project/domain/reporsitory/video_repository.dart';
-import 'package:personal_project/domain/services/firebase/firebase_service.dart';
 
 enum From { user, likes, bookmark }
 
@@ -16,7 +12,7 @@ class UserVideoPagingRepository {
   PagingController<int, String>? controller;
   VideoRepository videoRepository = VideoRepository();
 
-  int _pageSize = 4;
+  final int _pageSize = 4;
   final List<Video> currentLoadedVideo = [];
 
   clearLikeVideo() {
@@ -49,7 +45,7 @@ class UserVideoPagingRepository {
             await videoRepository.getUserVideo(limit: _pageSize, uid: uid);
 
         for (var element in newItems) {
-          debugPrint('Fetch data video user:' + element.id);
+          debugPrint('Fetch data video user:${element.id}');
           // listVideo.add(Video.fromSnap(element));
           listVideo.add(element.id);
         }
@@ -62,7 +58,7 @@ class UserVideoPagingRepository {
       }
       final isLastPage = newItems.length < _pageSize;
 
-      debugPrint('new items video user' + newItems.toString());
+      debugPrint('new items video user$newItems');
 
       //Add loaded comment to [curentLoadedComments]
       for (var element in listVideo) {

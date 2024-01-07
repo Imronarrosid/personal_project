@@ -12,5 +12,5 @@ class EditNameState extends Equatable {
 }
 
 final class EditNameInitial extends EditNameState {
-  EditNameInitial({super.status});
+  const EditNameInitial({super.status});
 }

@@ -1,20 +1,11 @@
-import 'dart:async';
 
-import 'package:camera/camera.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:personal_project/constant/color.dart';
-import 'package:personal_project/constant/dimens.dart';
-import 'package:personal_project/domain/model/profile_data_model.dart';
-import 'package:personal_project/domain/reporsitory/auth_reposotory.dart';
-import 'package:personal_project/domain/reporsitory/user_repository.dart';
-import 'package:personal_project/domain/services/app/app_service.dart';
-import 'package:personal_project/domain/services/firebase/firebase_service.dart';
 import 'package:personal_project/presentation/l10n/stings.g.dart';
 import 'package:personal_project/presentation/router/route_utils.dart';
 import 'package:personal_project/presentation/shared_components/custom_snackbar.dart';
@@ -22,13 +13,10 @@ import 'package:personal_project/presentation/ui/add_details/bloc/upload_bloc.da
 import 'package:personal_project/presentation/ui/auth/bloc/auth_bloc.dart';
 import 'package:personal_project/presentation/ui/home/cubit/home_cubit.dart';
 import 'package:personal_project/presentation/ui/message/message.dart';
-import 'package:personal_project/presentation/ui/upload/bloc/camera_bloc.dart';
-import 'package:personal_project/presentation/ui/upload/upload.dart';
 import 'package:personal_project/presentation/ui/profile/profile.dart';
 import 'package:personal_project/presentation/ui/search/search.dart';
 import 'package:personal_project/presentation/ui/upload/upload_modal.dart';
 import 'package:personal_project/presentation/ui/video/video.dart';
-import 'package:provider/provider.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});

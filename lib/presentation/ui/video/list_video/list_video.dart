@@ -6,14 +6,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:personal_project/constant/color.dart';
 import 'package:personal_project/data/repository/paging_repository.dart';
-import 'package:personal_project/data/repository/video_player_repository.dart';
 import 'package:personal_project/domain/model/video_model.dart';
-import 'package:personal_project/domain/reporsitory/video_repository.dart';
 import 'package:personal_project/presentation/l10n/stings.g.dart';
 import 'package:personal_project/presentation/shared_components/video_player_item.dart';
 import 'package:personal_project/presentation/ui/video/list_video/bloc/paging_bloc.dart';
-import 'package:personal_project/presentation/ui/video/list_video/bloc/video_player_bloc.dart';
-import 'package:personal_project/presentation/ui/video/list_video/video_item.dart';
 
 class ListVideo extends StatelessWidget {
   ListVideo({super.key});

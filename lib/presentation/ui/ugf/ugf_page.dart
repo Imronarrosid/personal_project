@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
@@ -33,14 +32,14 @@ class _UGFPageState extends State<UGFPage> {
                   });
                 }
               },
-              icon: Icon(Icons.check))
+              icon: const Icon(Icons.check))
         ],
       ),
       body: Column(
         children: [
           TextField(
             controller: controller,
-            decoration: InputDecoration(label: Text('Game Title')),
+            decoration: const InputDecoration(label: Text('Game Title')),
           ),
           ElevatedButton(
               onPressed: () async {
@@ -54,7 +53,7 @@ class _UGFPageState extends State<UGFPage> {
                   });
                 }
               },
-              child: Text('Game Image')),
+              child: const Text('Game Image')),
           imageFile != null ? Image.file(imageFile!) : Container()
         ],
       ),

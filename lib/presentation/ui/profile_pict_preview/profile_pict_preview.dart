@@ -23,7 +23,7 @@ class PrevewProfilePictPage extends StatelessWidget {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: Text('Foto Profil'),
+          title: const Text('Foto Profil'),
           backgroundColor: Colors.transparent,
           foregroundColor: COLOR_black_ff121212,
           elevation: 0,

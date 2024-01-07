@@ -3,7 +3,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
@@ -21,8 +20,6 @@ import 'package:personal_project/presentation/l10n/stings.g.dart';
 import 'package:personal_project/presentation/router/route_utils.dart';
 import 'package:personal_project/presentation/shared_components/not_authenticated_page.dart';
 import 'package:personal_project/presentation/theme/user_profile_theme.dart';
-import 'package:personal_project/presentation/ui/chat/chat_page.dart';
-import 'package:timeago/timeago.dart';
 
 // import 'chat.dart';
 // import 'login.dart';
@@ -154,7 +151,7 @@ class _MessagePageState extends State<MessagePage> {
                   Padding(
                     padding: EdgeInsets.only(
                         top: Dimens.DIMENS_18, left: Dimens.DIMENS_12),
-                    child: Text('Saran'),
+                    child: const Text('Saran'),
                   ),
                   SizedBox(
                     width: MediaQuery.of(context).size.width,
@@ -322,7 +319,7 @@ class _MessagePageState extends State<MessagePage> {
             return Container();
           }
           return StreamBuilder<List<types.Message>>(
-              initialData: [],
+              initialData: const [],
               stream: FirebaseChatCore.instance.getLastMessages(room),
               builder: (context, AsyncSnapshot<List<types.Message>> snapshot) {
                 final UserRepository userRepository =

@@ -1,4 +1,3 @@
-import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -15,7 +14,7 @@ class EditName extends StatelessWidget {
     final controller = TextEditingController(text: name);
     return Scaffold(
       appBar: AppBar(
-        title: Text('Name'),
+        title: const Text('Name'),
         leading: IconButton(
           onPressed: () {
             context.pop();

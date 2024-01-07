@@ -24,7 +24,6 @@ import 'package:flutter/foundation.dart';
 import 'package:get_thumbnail_video/index.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
-import 'package:personal_project/presentation/shared_components/export_result.dart';
 import 'package:video_editor_2/domain/entities/file_format.dart';
 import 'package:video_editor_2/video_editor.dart';
 import 'package:get_thumbnail_video/video_thumbnail.dart';

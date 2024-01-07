@@ -11,7 +11,7 @@ class PlayButtonCubit extends Cubit<PlayButtonState> {
       emit(const PlayButtonState(PlayStatus.pause));
     } else {
       Future.delayed(
-        Duration(milliseconds: 200),
+        const Duration(milliseconds: 200),
         () => emit(const PlayButtonState(PlayStatus.play)),
       );
     }

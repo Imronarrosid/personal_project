@@ -17,7 +17,6 @@ import 'package:material_design_icons_flutter/material_design_icons_flutter.dart
 import 'package:mime/mime.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:personal_project/constant/color.dart';
 import 'package:personal_project/constant/dimens.dart';
 import 'package:personal_project/domain/model/chat_data_models.dart';
 import 'package:personal_project/domain/reporsitory/user_repository.dart';
@@ -273,7 +272,7 @@ class _ChatPageState extends State<ChatPage> {
                   PopupMenuItem(
                       height: Dimens.DIMENS_38,
                       onTap: () {},
-                      child: Text('See profile'))
+                      child: const Text('See profile'))
                 ];
               },
             )

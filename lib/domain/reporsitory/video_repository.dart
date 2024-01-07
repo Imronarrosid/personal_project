@@ -149,7 +149,7 @@ class VideoRepository implements VideoUseCaseType {
         debugPrint(Video.fromSnap(element).videoUrl);
       }
       for (var element in allDocs) {
-        debugPrint('_LISTDOCS' + Video.fromSnap(element).videoUrl);
+        debugPrint('_LISTDOCS${Video.fromSnap(element).videoUrl}');
       }
       debugPrint('DOCUMENTSNAP ${querySnapshot.docs}');
     } catch (e) {
@@ -294,11 +294,11 @@ class VideoRepository implements VideoUseCaseType {
         debugPrint(Video.fromSnap(element).videoUrl);
       }
       for (var element in allDocs) {
-        debugPrint('_LISTDOCS user video' + Video.fromSnap(element).videoUrl);
+        debugPrint('_LISTDOCS user video${Video.fromSnap(element).videoUrl}');
       }
       debugPrint('DOCUMENTSNAP user video ${querySnapshot.docs}');
     } catch (e) {
-      debugPrint('get video User error' + e.toString());
+      debugPrint('get video User error$e');
     }
     return listDocs;
   }
@@ -342,11 +342,11 @@ class VideoRepository implements VideoUseCaseType {
         debugPrint(Video.fromSnap(element).videoUrl);
       }
       for (var element in allDocs) {
-        debugPrint('_LISTDOCS liked video' + Video.fromSnap(element).videoUrl);
+        debugPrint('_LISTDOCS liked video${Video.fromSnap(element).videoUrl}');
       }
       debugPrint('DOCUMENTSNAP liked video ${querySnapshot.docs}');
     } catch (e) {
-      debugPrint('get video User error' + e.toString());
+      debugPrint('get video User error$e');
     }
     return listDocs;
   }
@@ -386,11 +386,11 @@ class VideoRepository implements VideoUseCaseType {
         debugPrint(Video.fromSnap(element).videoUrl);
       }
       for (var element in allDocs) {
-        debugPrint('_LISTDOCS liked video' + Video.fromSnap(element).videoUrl);
+        debugPrint('_LISTDOCS liked video${Video.fromSnap(element).videoUrl}');
       }
       debugPrint('DOCUMENTSNAP liked video ${querySnapshot.docs}');
     } catch (e) {
-      debugPrint('get video User error' + e.toString());
+      debugPrint('get video User error$e');
     }
     return listDocs;
   }

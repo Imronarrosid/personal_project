@@ -1,4 +1,3 @@
-import 'package:personal_project/domain/model/user.dart';
 import 'package:personal_project/domain/model/user_data_model.dart';
 
 abstract class UserUseCaseType {

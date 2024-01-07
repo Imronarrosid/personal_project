@@ -14,7 +14,7 @@ void showEditNameModal(BuildContext context, String name, Timestamp timestamp,
     Timestamp userCreatedAt) async {
   final controller = TextEditingController(text: name);
 
-  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final GlobalKey<FormState> formKey = GlobalKey<FormState>();
 
   String? validator(String? value) {
     if (value!.trim().isEmpty) {
@@ -70,19 +70,19 @@ void showEditNameModal(BuildContext context, String name, Timestamp timestamp,
                         ),
                         Text(
                           LocaleKeys.label_name.tr(),
-                          style: TextStyle(
+                          style: const TextStyle(
                               fontSize: 18, fontWeight: FontWeight.w600),
                         ),
                         SizedBox(
                           height: Dimens.DIMENS_8,
                         ),
                         Form(
-                          key: _formKey,
+                          key: formKey,
                           child: TextFormField(
                             validator: validator,
                             controller: controller,
                             onChanged: (value) {
-                              _formKey.currentState!.validate();
+                              formKey.currentState!.validate();
                             },
                             enabled: isCanEdit,
                             autofocus: true,
@@ -105,7 +105,7 @@ void showEditNameModal(BuildContext context, String name, Timestamp timestamp,
                         InkWell(
                           onTap: isCanEdit
                               ? () {
-                                  if (_formKey.currentState!.validate() &&
+                                  if (formKey.currentState!.validate() &&
                                       name != controller.text) {
                                     BlocProvider.of<EditNameCubit>(context)
                                         .editName(controller.text);

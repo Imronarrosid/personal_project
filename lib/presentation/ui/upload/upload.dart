@@ -4,25 +4,15 @@ import 'package:camera/camera.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:gal/gal.dart';
 import 'package:go_router/go_router.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:personal_project/constant/color.dart';
 import 'package:personal_project/constant/dimens.dart';
-import 'package:personal_project/constant/font_size.dart';
-import 'package:personal_project/data/repository/file_repository.dart';
-import 'package:personal_project/domain/model/preview_model.dart';
 import 'package:personal_project/presentation/assets/images.dart';
 import 'package:personal_project/presentation/l10n/stings.g.dart';
 import 'package:personal_project/presentation/router/route_utils.dart';
 import 'package:personal_project/presentation/shared_components/timer_widget.dart';
 import 'package:personal_project/presentation/ui/upload/bloc/camera_bloc.dart';
-import 'package:file_selector/file_selector.dart';
 import 'package:personal_project/utils/pick_video.dart';
-import 'package:video_player/video_player.dart';
 
 class UploadPage extends StatefulWidget {
   final List<CameraDescription>? cameras;
@@ -422,7 +412,7 @@ class _UploadPageState extends State<UploadPage>
                                         border: Border.all(
                                             color: COLOR_white_fff5f5f5,
                                             width: 3.0)),
-                                    padding: EdgeInsets.all(3),
+                                    padding: const EdgeInsets.all(3),
                                     child: Container(
                                       decoration: BoxDecoration(
                                           color: COLOR_red,

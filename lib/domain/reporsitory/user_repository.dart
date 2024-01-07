@@ -6,7 +6,6 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:personal_project/domain/model/game_fav_modal.dart';
 import 'package:personal_project/domain/model/user.dart';
-import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 import 'package:personal_project/domain/model/user_data_model.dart';
 import 'package:personal_project/domain/services/firebase/firebase_service.dart';
 import 'package:personal_project/domain/usecase/user_usecase_type.dart';
@@ -278,7 +277,7 @@ class UserRepository implements UserUseCaseType {
       if (doc.exists) {
         bio = doc['bio'] ?? '';
       }
-    } on Exception catch (e) {
+    } on Exception {
       rethrow;
     }
     return bio;
