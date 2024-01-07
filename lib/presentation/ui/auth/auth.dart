@@ -23,7 +23,7 @@ void showAuthBottomSheetFunc(BuildContext context) {
           listener: (context, state) {
             debugPrint('auth state $state');
             if (state.status == AuthStatus.loading) {
-              context.pop();
+              // context.pop();
             }
           },
           child: Container(
