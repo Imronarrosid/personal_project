@@ -340,8 +340,8 @@ class _ChatPageState extends State<ChatPage> {
 
   Widget _buildAvatar(types.User author) {
     final UserRepository repo = RepositoryProvider.of<UserRepository>(context);
-    return FutureBuilder(
-        future: repo.getAvatar(author.id),
+    return StreamBuilder(
+        stream: repo.getAvatar(author.id),
         builder: (context, AsyncSnapshot<String> snapshot) {
           String? avatar = snapshot.data;
           if (!snapshot.hasData) {
