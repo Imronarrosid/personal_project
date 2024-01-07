@@ -1,11 +1,13 @@
 import 'dart:io';
 
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:personal_project/constant/color.dart';
+import 'package:personal_project/presentation/l10n/stings.g.dart';
 import 'package:personal_project/presentation/ui/edit_profile/cubit/edit_profile_pict_cubit.dart';
 
 class PrevewProfilePictPage extends StatelessWidget {
@@ -15,15 +17,10 @@ class PrevewProfilePictPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocListener<EditProfilePictCubit, EditProfilePictState>(
-      listener: (context, state) {
-        if (state.status == EditProfilePicStatus.success) {
-          context.pop();
-          context.pop();
-        }
-      },
+      listener: (context, state) {},
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Foto Profil'),
+          title: Text(LocaleKeys.label_profile_pict.tr()),
           backgroundColor: Colors.transparent,
           foregroundColor: COLOR_black_ff121212,
           elevation: 0,
@@ -36,12 +33,7 @@ class PrevewProfilePictPage extends StatelessWidget {
                 BlocProvider.of<EditProfilePictCubit>(context).editProfilePict(
                   File(imageFile!.path),
                 );
-                showDialog(
-                    context: context,
-                    barrierDismissible: false,
-                    builder: (_) {
-                      return const Center(child: CircularProgressIndicator());
-                    });
+                context.pop();
               },
             ),
           ],

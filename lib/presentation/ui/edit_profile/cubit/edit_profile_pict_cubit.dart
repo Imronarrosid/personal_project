@@ -13,9 +13,10 @@ class EditProfilePictCubit extends Cubit<EditProfilePictState> {
   Future<void> editProfilePict(File imageFile) async {
     try {
       emit(const EditProfilePictState(status: EditProfilePicStatus.loading));
-      String imageUrl = await _repository.editProfilePict(imageFile);
-      emit(EditProfilePictState(
-          status: EditProfilePicStatus.success, imageUrl: imageUrl));
+      await _repository.editProfilePict(imageFile);
+      emit(const EditProfilePictState(
+        status: EditProfilePicStatus.success,
+      ));
     } catch (e) {
       emit(const EditProfilePictState(status: EditProfilePicStatus.error));
     }

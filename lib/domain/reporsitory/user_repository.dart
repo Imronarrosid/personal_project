@@ -327,7 +327,7 @@ class UserRepository implements UserUseCaseType {
     }
   }
 
-  Future<String> editProfilePict(File imageFile) async {
+  Future<void> editProfilePict(File imageFile) async {
     try {
       Reference ref = firebaseStorage
           .ref()
@@ -344,8 +344,9 @@ class UserRepository implements UserUseCaseType {
       await firebaseFirestore
           .collection('avatars')
           .doc(firebaseAuth.currentUser!.uid)
-          .update({'avatar': downloaUrl});
-      return downloaUrl;
+          .set({'avatar': downloaUrl});
+
+      imageFile.deleteSync(recursive: true);
     } catch (e) {
       rethrow;
     }
@@ -438,18 +439,19 @@ class UserRepository implements UserUseCaseType {
     return gameFav;
   }
 
-  Future<String> getAvatar(String uid) async {
+  Stream<String>? getAvatar(String uid) {
     try {
-      String avatar;
+      return firebaseFirestore
+          .collection('avatars')
+          .doc(uid)
+          .snapshots()
+          .map((event) => event['avatar']);
 
-      DocumentSnapshot snap =
-          await firebaseFirestore.collection('avatars').doc(uid).get();
-
-      avatar = snap['avatar'];
-      return avatar;
+      // avatar = snap['avatar'];
+      // return avatar;
     } catch (e) {
       debugPrint(e.toString());
-      return '';
+      return null;
     }
   }
 

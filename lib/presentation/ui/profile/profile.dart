@@ -30,7 +30,6 @@ import 'package:personal_project/presentation/ui/add_details/bloc/upload_bloc.da
 import 'package:personal_project/presentation/ui/auth/bloc/auth_bloc.dart';
 import 'package:personal_project/presentation/ui/edit_profile/cubit/edit_bio_cubit.dart';
 import 'package:personal_project/presentation/ui/edit_profile/cubit/edit_name_cubit.dart';
-import 'package:personal_project/presentation/ui/edit_profile/cubit/edit_profile_pict_cubit.dart';
 import 'package:personal_project/presentation/ui/edit_profile/cubit/edit_user_name_cubit.dart';
 import 'package:personal_project/presentation/ui/edit_profile/cubit/game_fav_cubit.dart';
 import 'package:personal_project/presentation/ui/profile/bloc/user_video_paging_bloc.dart';
@@ -875,6 +874,8 @@ class _ProfilePageState extends State<ProfilePage> {
   /// username,photo ,follwers,folowing,likes
   Row topSectionView(AuthState authState) {
     final repository = RepositoryProvider.of<UserRepository>(context);
+    String? uid =
+        RepositoryProvider.of<AuthRepository>(context).currentUser?.uid;
     return Row(
       children: [
         SizedBox(
@@ -903,70 +904,43 @@ class _ProfilePageState extends State<ProfilePage> {
                         backgroundColor: COLOR_grey, radius: 35);
                   }
 
-                  return CircleAvatar(
-                    backgroundColor: COLOR_grey,
-                    radius: 35,
-                    child: ClipRRect(
-                        borderRadius: BorderRadius.circular(50),
-                        child: BlocBuilder<EditProfilePictCubit,
-                            EditProfilePictState>(
-                          builder: (context, state) {
-                            String? uid =
-                                RepositoryProvider.of<AuthRepository>(context)
-                                    .currentUser
-                                    ?.uid;
-                            if (state.status == EditProfilePicStatus.success &&
-                                widget.payload == null) {
-                              return GestureDetector(
-                                onTap: () {
-                                  showDialog(
-                                      context: context,
-                                      builder: (_) {
-                                        return Dialog(
-                                          backgroundColor: const Color.fromARGB(
-                                              0, 216, 186, 186),
-                                          child: CachedNetworkImage(
-                                            imageUrl: state.imageUrl!,
-                                            width: 300,
-                                            fit: BoxFit.contain,
-                                          ),
-                                        );
-                                      });
-                                },
-                                child: CachedNetworkImage(
-                                  imageUrl: state.imageUrl!,
-                                  width: double.infinity,
-                                  fit: BoxFit.fill,
-                                ),
-                              );
-                            }
-                            return GestureDetector(
-                              onTap: () {
-                                showDialog(
-                                    context: context,
-                                    builder: (_) {
-                                      return Dialog(
-                                        child: CachedNetworkImage(
-                                          width: 300,
-                                          imageUrl: photoURL!,
-                                          fit: BoxFit.contain,
-                                        ),
-                                      );
-                                    });
-                              },
-                              child: BlocBuilder<AuthBloc, AuthState>(
-                                builder: (context, state) {
-                                  return CachedNetworkImage(
-                                    imageUrl: photoURL!,
-                                    fit: BoxFit.cover,
-                                    width: double.infinity,
-                                  );
-                                },
-                              ),
-                            );
-                          },
-                        )),
-                  );
+                  return StreamBuilder<String>(
+                      stream: repository.getAvatar(widget.payload?.uid ?? uid!),
+                      builder: (context, snapshot) {
+                        String? avatar = snapshot.data;
+                        if (!snapshot.hasData || snapshot.hasError) {
+                          return CircleAvatar(
+                            backgroundColor: COLOR_grey,
+                            radius: 35,
+                          );
+                        }
+                        return CircleAvatar(
+                          backgroundColor: COLOR_grey,
+                          radius: 35,
+                          backgroundImage: CachedNetworkImageProvider(
+                            avatar!,
+                          ),
+                          child: GestureDetector(
+                            onTap: () {
+                              showDialog(
+                                  context: context,
+                                  builder: (_) {
+                                    return Dialog(
+                                      elevation: 0,
+                                      surfaceTintColor: Colors.transparent,
+                                      shadowColor: Colors.transparent,
+                                      backgroundColor: Colors.transparent,
+                                      child: CachedNetworkImage(
+                                        width: 300,
+                                        imageUrl: avatar,
+                                        fit: BoxFit.contain,
+                                      ),
+                                    );
+                                  });
+                            },
+                          ),
+                        );
+                      });
                 },
               ),
             ],
