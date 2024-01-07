@@ -87,5 +87,6 @@
     "message_system_message": "Message system",
     "message_unsupported_message": "Message unsupported",
     "message_send_video": "Send a video",
-    "message_no_comment_yet": "No comments yet"
+    "message_no_comment_yet": "No comments yet",
+    "message_profile_picture_chaged": "Profile picture changed"
 }

@@ -87,5 +87,6 @@
     "message_system_message": "Pesan sistem",
     "message_unsupported_message": "Pesan tidak di support",
     "message_send_video": "Mengirim video",
-    "message_no_comment_yet": "Belum ada komentar"
+    "message_no_comment_yet": "Belum ada komentar",
+    "message_profile_picture_chaged": "Foto profil diganti"
 }
