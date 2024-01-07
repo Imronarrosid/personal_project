@@ -275,20 +275,25 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                           ///Because new comment is not in this paging widget
                           ///if [_newCommentItems] is not empty but the paging widget
                           ///is empty ,this emty state widget will removed
-                          return _newCommentItems.isEmpty
-                              ? Container()
-                              : Padding(
-                                  padding:
-                                      EdgeInsets.only(top: Dimens.DIMENS_50),
-                                  child: Center(
-                                    child: Text(
-                                      LocaleKeys.message_no_comment_yet.tr(),
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .titleMedium,
-                                    ),
-                                  ),
-                                );
+                          return BlocBuilder<CommentBloc, CommentState>(
+                            builder: (context, state) {
+                              return _newCommentItems.isNotEmpty
+                                  ? Container()
+                                  : Padding(
+                                      padding: EdgeInsets.only(
+                                          top: Dimens.DIMENS_50),
+                                      child: Center(
+                                        child: Text(
+                                          LocaleKeys.message_no_comment_yet
+                                              .tr(),
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .titleMedium,
+                                        ),
+                                      ),
+                                    );
+                            },
+                          );
                         }, itemBuilder: (
                           context,
                           item,
