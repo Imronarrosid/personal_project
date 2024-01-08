@@ -360,7 +360,7 @@ class _MessagePageState extends State<MessagePage> {
                         Text(room.name!.isNotEmpty
                             ? room.name ?? ''
                             : data.userName!),
-                        _isDifferentDay(message?.createdAt ??
+                        _isSameDay(message?.createdAt ??
                                 DateTime.now().millisecondsSinceEpoch)
                             ? Text(
                                 DateFormat('HH:mm').format(
@@ -423,8 +423,8 @@ class _MessagePageState extends State<MessagePage> {
     );
   }
 
-  bool _isDifferentDay(int createdAt) {
-    return DateTime.fromMillisecondsSinceEpoch(createdAt).day <=
+  bool _isSameDay(int createdAt) {
+    return DateTime.fromMillisecondsSinceEpoch(createdAt).day ==
         DateTime.now().day;
   }
 
