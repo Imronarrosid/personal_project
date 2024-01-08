@@ -387,9 +387,9 @@ class _ChatPageState extends State<ChatPage> {
         builder: (context, AsyncSnapshot<String> snapshot) {
           String? avatar = snapshot.data;
           if (!snapshot.hasData) {
-            return Padding(
-              padding: EdgeInsets.only(right: Dimens.DIMENS_8),
-              child: const CircleAvatar(),
+            return SizedBox(
+              width: Dimens.DIMENS_38,
+              height: Dimens.DIMENS_38,
             );
           }
           return Material(
