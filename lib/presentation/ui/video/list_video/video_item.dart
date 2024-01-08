@@ -1,3 +1,4 @@
+import 'package:bootstrap_icons/bootstrap_icons.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_localization/easy_localization.dart' as ezl;
 import 'package:flutter/material.dart';
@@ -15,11 +16,13 @@ import 'package:personal_project/domain/model/user.dart';
 import 'package:personal_project/domain/model/video_from_game_data_model.dart';
 import 'package:personal_project/domain/model/video_model.dart';
 import 'package:personal_project/domain/reporsitory/auth_reposotory.dart';
+import 'package:personal_project/domain/reporsitory/user_repository.dart';
 import 'package:personal_project/domain/reporsitory/video_repository.dart';
 import 'package:personal_project/presentation/l10n/stings.g.dart';
 import 'package:personal_project/presentation/router/route_utils.dart';
 import 'package:personal_project/presentation/ui/auth/auth.dart';
 import 'package:personal_project/presentation/ui/comments/comments_page.dart';
+import 'package:personal_project/presentation/ui/profile/cubit/follow_cubit.dart';
 import 'package:personal_project/presentation/ui/video/list_video/bloc/video_player_bloc.dart';
 import 'package:personal_project/presentation/ui/video/list_video/cubit/captions_cubit.dart';
 import 'package:personal_project/presentation/ui/video/list_video/cubit/like_video_cubit.dart';
@@ -214,23 +217,27 @@ class _VideoItemState extends State<VideoItem> {
                                         return Text(
                                           state.likeCount.toString(),
                                           style: TextStyle(
-                                              color: COLOR_white_fff5f5f5,
-                                              fontSize: _IC_LABEL_FONTSIZE),
+                                            color: COLOR_white_fff5f5f5,
+                                            fontSize: _IC_LABEL_FONTSIZE,
+                                          ),
                                         );
                                       } else if (state is UnilkedVideo) {
                                         return Text(
-                                            numberFormat(context.locale,
-                                                state.likeCount),
-                                            style: TextStyle(
-                                                color: COLOR_white_fff5f5f5,
-                                                fontSize: _IC_LABEL_FONTSIZE));
+                                          numberFormat(
+                                              context.locale, state.likeCount),
+                                          style: TextStyle(
+                                            color: COLOR_white_fff5f5f5,
+                                            fontSize: _IC_LABEL_FONTSIZE,
+                                          ),
+                                        );
                                       }
                                       return Text(
                                         numberFormat(context.locale,
                                             videoData.likes.length),
                                         style: TextStyle(
-                                            color: COLOR_white_fff5f5f5,
-                                            fontSize: _IC_LABEL_FONTSIZE),
+                                          color: COLOR_white_fff5f5f5,
+                                          fontSize: _IC_LABEL_FONTSIZE,
+                                        ),
                                       );
                                     },
                                   ),
@@ -254,7 +261,7 @@ class _VideoItemState extends State<VideoItem> {
                                             });
                                       },
                                       child: Icon(
-                                        MdiIcons.messageText,
+                                        BootstrapIcons.chat_dots_fill,
                                         color: COLOR_white_fff5f5f5,
                                         size: Dimens.DIMENS_28,
                                       ),
@@ -265,10 +272,13 @@ class _VideoItemState extends State<VideoItem> {
                                   ),
                                   Text(
                                     numberFormat(
-                                        context.locale, videoData.commentCount),
+                                      context.locale,
+                                      videoData.commentCount,
+                                    ),
                                     style: TextStyle(
-                                        color: COLOR_white_fff5f5f5,
-                                        fontSize: _IC_LABEL_FONTSIZE),
+                                      color: COLOR_white_fff5f5f5,
+                                      fontSize: _IC_LABEL_FONTSIZE,
+                                    ),
                                   ),
                                   SizedBox(
                                     height: Dimens.DIMENS_20,
@@ -278,20 +288,21 @@ class _VideoItemState extends State<VideoItem> {
                                       debugPrint(
                                           'lmnop${LocaleKeys.message_share_featur_not_ready.tr()}');
                                       Fluttertoast.showToast(
-                                          msg: LocaleKeys
-                                              .message_share_featur_not_ready
-                                              .tr(),
-                                          toastLength: Toast.LENGTH_SHORT,
-                                          gravity: ToastGravity.TOP,
-                                          timeInSecForIosWeb: 1,
-                                          backgroundColor: COLOR_black_ff121212,
-                                          textColor: Colors.white,
-                                          fontSize: 16.0);
+                                        msg: LocaleKeys
+                                            .message_share_featur_not_ready
+                                            .tr(),
+                                        toastLength: Toast.LENGTH_SHORT,
+                                        gravity: ToastGravity.TOP,
+                                        timeInSecForIosWeb: 1,
+                                        backgroundColor: COLOR_black_ff121212,
+                                        textColor: Colors.white,
+                                        fontSize: 16.0,
+                                      );
                                     },
                                     child: Transform.flip(
                                       flipX: true,
                                       child: Icon(
-                                        MdiIcons.reply,
+                                        BootstrapIcons.reply_fill,
                                         color: COLOR_white_fff5f5f5,
                                         size: Dimens.DIMENS_34,
                                       ),
@@ -384,29 +395,7 @@ class _VideoItemState extends State<VideoItem> {
   ClipRRect _buildGameImage(Video videoData) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(5),
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          CachedNetworkImage(imageUrl: videoData.game!.gameImage!),
-          Container(
-            decoration: BoxDecoration(
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.3),
-                  spreadRadius: 10,
-                  blurRadius: 5,
-                  offset: const Offset(0, 0),
-                ),
-              ],
-            ),
-            child: Icon(
-              MdiIcons.controller,
-              color: COLOR_white_fff5f5f5,
-              size: Dimens.DIMENS_15,
-            ),
-          )
-        ],
-      ),
+      child: CachedNetworkImage(imageUrl: videoData.game!.gameImage!),
     );
   }
 
@@ -565,14 +554,44 @@ class _VideoItemState extends State<VideoItem> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                GestureDetector(
-                  onTap: () {
-                    _toProfile(context, data);
-                  },
-                  child: Text(
-                    '@${data!.userName!}',
-                    style: TextStyle(color: COLOR_white_fff5f5f5, fontSize: 14),
-                  ),
+                Row(
+                  children: [
+                    GestureDetector(
+                      onTap: () {
+                        _toProfile(context, data);
+                      },
+                      child: Text(
+                        '@${data!.userName!}',
+                        style: TextStyle(
+                            color: COLOR_white_fff5f5f5, fontSize: 14),
+                      ),
+                    ),
+                    SizedBox(
+                      width: Dimens.DIMENS_10,
+                    ),
+                    BlocProvider(
+                      create: (context) => FollowCubit(
+                          RepositoryProvider.of<UserRepository>(context)),
+                      child: BlocBuilder<FollowCubit, FollowState>(
+                        builder: (context, state) {
+                          return Container(
+                            padding: EdgeInsets.symmetric(
+                              vertical: Dimens.DIMENS_6,
+                              horizontal: Dimens.DIMENS_13,
+                            ),
+                            decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(5),
+                                color:
+                                    Theme.of(context).colorScheme.onTertiary),
+                            child: Text(
+                              LocaleKeys.label_follow.tr(),
+                              style: Theme.of(context).textTheme.bodySmall,
+                            ),
+                          );
+                        },
+                      ),
+                    )
+                  ],
                 ),
                 Visibility(
                   visible: videoData.caption.isNotEmpty,
@@ -652,39 +671,37 @@ class _VideoItemState extends State<VideoItem> {
                 videoData.game != null
                     ? GestureDetector(
                         onTap: () {
-                          context.push(APP_PAGE.videoFromGame.toPath,
-                              extra: VideoFromGameData(
-                                  game: videoData.game!,
-                                  captions: videoData.caption,
-                                  profileImg: data.photo!));
+                          context.push(
+                            APP_PAGE.videoFromGame.toPath,
+                            extra: VideoFromGameData(
+                              game: videoData.game!,
+                              captions: videoData.caption,
+                              profileImg: data.photo!,
+                            ),
+                          );
                         },
-                        child: Container(
+                        child: SizedBox(
                           width: Dimens.DIMENS_150,
                           height: Dimens.DIMENS_24,
-                          padding:
-                              EdgeInsets.symmetric(horizontal: Dimens.DIMENS_8),
-                          decoration: BoxDecoration(
-                              color: COLOR_grey.withOpacity(0.4),
-                              borderRadius: BorderRadius.circular(25)),
                           child: Row(
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
                                 Icon(
-                                  MdiIcons.controller,
+                                  BootstrapIcons.controller,
                                   color: COLOR_white_fff5f5f5,
-                                  size: 14,
+                                  size: 16,
                                 ),
-                                const Padding(
-                                  padding: EdgeInsets.symmetric(vertical: 3.0),
-                                  child: VerticalDivider(),
+                                SizedBox(
+                                  width: Dimens.DIMENS_10,
                                 ),
                                 Text(
                                   videoData.game!.gameTitle!,
                                   overflow: TextOverflow.ellipsis,
                                   style: TextStyle(
-                                      fontWeight: FontWeight.w500,
-                                      fontSize: 10,
-                                      color: COLOR_white_fff5f5f5),
+                                    fontWeight: FontWeight.w300,
+                                    fontSize: 12,
+                                    color: COLOR_white_fff5f5f5,
+                                  ),
                                 ),
                               ]),
                         ),
