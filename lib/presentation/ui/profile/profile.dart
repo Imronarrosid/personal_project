@@ -896,13 +896,41 @@ class _ProfilePageState extends State<ProfilePage> {
                   // }else if(state.status == AuthStatus.authenticated && widget.payload==null){
 
                   // }
-                  if (state.status == AuthStatus.authenticated &&
-                      !widget.isForOtherUser!) {
-                    photoURL = state.user!.photo;
-                  } else if (state.status == AuthStatus.notAuthenticated &&
-                      !widget.isForOtherUser!) {
+                  // if (state.status == AuthStatus.authenticated &&
+                  //     !widget.isForOtherUser!) {
+                  //   photoURL = state.user!.photo;
+                  // } else if (state.status == AuthStatus.notAuthenticated &&
+                  //     !widget.isForOtherUser!) {
+                  //   return CircleAvatar(
+                  //       backgroundColor: COLOR_grey, radius: 35);
+                  // }
+                  if (widget.payload != null) {
                     return CircleAvatar(
-                        backgroundColor: COLOR_grey, radius: 35);
+                      backgroundColor: COLOR_grey,
+                      radius: 35,
+                      backgroundImage: CachedNetworkImageProvider(
+                        widget.payload!.photoURL,
+                      ),
+                      child: GestureDetector(
+                        onTap: () {
+                          showDialog(
+                              context: context,
+                              builder: (_) {
+                                return Dialog(
+                                  elevation: 0,
+                                  surfaceTintColor: Colors.transparent,
+                                  shadowColor: Colors.transparent,
+                                  backgroundColor: Colors.transparent,
+                                  child: CachedNetworkImage(
+                                    width: 300,
+                                    imageUrl: widget.payload!.photoURL,
+                                    fit: BoxFit.contain,
+                                  ),
+                                );
+                              });
+                        },
+                      ),
+                    );
                   }
 
                   return StreamBuilder<String>(
