@@ -70,7 +70,7 @@ showEditPPModal(BuildContext context) {
                         if (context.mounted && cropedFile != null) {
                           BlocProvider.of<EditProfilePictCubit>(context)
                               .editProfilePict(
-                            File(file.path),
+                            File(cropedFile.path),
                           );
                         }
                       }
@@ -97,7 +97,7 @@ showEditPPModal(BuildContext context) {
                         if (context.mounted && cropedFile != null) {
                           BlocProvider.of<EditProfilePictCubit>(context)
                               .editProfilePict(
-                            File(file.path),
+                            File(cropedFile.path),
                           );
                         }
                       }
