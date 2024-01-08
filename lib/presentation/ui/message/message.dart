@@ -12,6 +12,7 @@ import 'package:material_design_icons_flutter/material_design_icons_flutter.dart
 import 'package:personal_project/constant/color.dart';
 import 'package:personal_project/constant/dimens.dart';
 import 'package:personal_project/domain/model/chat_data_models.dart';
+import 'package:personal_project/domain/model/profile_data_model.dart';
 import 'package:personal_project/domain/model/user.dart' as models;
 import 'package:personal_project/domain/reporsitory/auth_reposotory.dart';
 import 'package:personal_project/domain/reporsitory/user_repository.dart';
@@ -65,7 +66,8 @@ class _MessagePageState extends State<MessagePage> {
     await FirebaseAuth.instance.signOut();
   }
 
-  Widget _buildAvatar(types.Room room, String profilePict) {
+  Widget _buildAvatar(types.Room room,
+      {required String profilePict, uid, name, userName}) {
     var color = Colors.transparent;
 
     if (room.type == types.RoomType.direct) {
@@ -81,26 +83,48 @@ class _MessagePageState extends State<MessagePage> {
     }
 
     final hasImage = room.imageUrl != null;
-    final name = room.name ?? '';
 
     return Container(
-      margin: const EdgeInsets.only(right: 16),
-      child: CircleAvatar(
-        backgroundColor: hasImage ? Colors.transparent : color,
-        radius: 20,
-        child: hasImage
-            ? ClipRRect(
-                borderRadius: BorderRadius.circular(50),
-                child: CachedNetworkImage(imageUrl: room.imageUrl!))
-            : ClipRRect(
-                borderRadius: BorderRadius.circular(50),
-                child: CachedNetworkImage(imageUrl: profilePict)),
-        // child: !hasImage
-        //     ? Text(
-        //         name.isEmpty ? '' : name[0].toUpperCase(),
-        //         style: const TextStyle(color: Colors.white),
-        //       )
-        //     : null,
+      width: Dimens.DIMENS_45,
+      height: Dimens.DIMENS_45,
+      alignment: Alignment.center,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(50),
+        onTap: () {
+          if (room.type == types.RoomType.direct) {
+            context.push(APP_PAGE.profile.toPath,
+                extra: ProfilePayload(
+                  uid: uid,
+                  name: name,
+                  userName: userName,
+                  photoURL: profilePict,
+                ));
+          }
+        },
+        child: Container(
+          width: Dimens.DIMENS_45,
+          height: Dimens.DIMENS_45,
+          padding: EdgeInsets.all(Dimens.DIMENS_5),
+          alignment: Alignment.center,
+          child: CircleAvatar(
+            backgroundColor: hasImage ? Colors.transparent : color,
+
+            radius: 20,
+            child: hasImage
+                ? ClipRRect(
+                    borderRadius: BorderRadius.circular(50),
+                    child: CachedNetworkImage(imageUrl: room.imageUrl!))
+                : ClipRRect(
+                    borderRadius: BorderRadius.circular(50),
+                    child: CachedNetworkImage(imageUrl: profilePict)),
+            // child: !hasImage
+            //     ? Text(
+            //         name.isEmpty ? '' : name[0].toUpperCase(),
+            //         style: const TextStyle(color: Colors.white),
+            //       )
+            //     : null,
+          ),
+        ),
       ),
     );
   }
@@ -352,7 +376,14 @@ class _MessagePageState extends State<MessagePage> {
                       ),
                     );
                   },
-                  leading: _buildAvatar(room, data!.photo!),
+                  leading: _buildAvatar(
+                    room,
+                    profilePict: data!.photo!,
+                    name: data.name,
+                    uid: data.id,
+                    userName: data.userName,
+                  ),
+                  visualDensity: VisualDensity.compact,
                   title: SizedBox(
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -360,28 +391,7 @@ class _MessagePageState extends State<MessagePage> {
                         Text(room.name!.isNotEmpty
                             ? room.name ?? ''
                             : data.userName!),
-                        _isSameDay(message?.createdAt ??
-                                DateTime.now().millisecondsSinceEpoch)
-                            ? Text(
-                                DateFormat('HH:mm').format(
-                                    DateTime.fromMillisecondsSinceEpoch(message
-                                            ?.createdAt ??
-                                        DateTime.now().millisecondsSinceEpoch)),
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodySmall!
-                                    .apply(color: COLOR_grey),
-                              )
-                            : Text(
-                                DateFormat('D/MM/yy').format(
-                                    DateTime.fromMillisecondsSinceEpoch(message!
-                                            .createdAt ??
-                                        DateTime.now().millisecondsSinceEpoch)),
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodySmall!
-                                    .apply(color: COLOR_grey),
-                              )
+                        _messageCreated(message, context)
                       ],
                     ),
                   ),
@@ -400,6 +410,25 @@ class _MessagePageState extends State<MessagePage> {
                 );
               });
         });
+  }
+
+  Text _messageCreated(types.Message? message, BuildContext context) {
+    return _isSameDay(
+            message?.createdAt ?? DateTime.now().millisecondsSinceEpoch)
+        ? Text(
+            DateFormat('HH:mm').format(DateTime.fromMillisecondsSinceEpoch(
+                message?.createdAt ?? DateTime.now().millisecondsSinceEpoch)),
+            style:
+                Theme.of(context).textTheme.bodySmall!.apply(color: COLOR_grey),
+          )
+        : Text(
+            DateFormat('D/MM/yy').format(
+              DateTime.fromMillisecondsSinceEpoch(
+                  message!.createdAt ?? DateTime.now().millisecondsSinceEpoch),
+            ),
+            style:
+                Theme.of(context).textTheme.bodySmall!.apply(color: COLOR_grey),
+          );
   }
 
   Text _buildMessage(AsyncSnapshot<String> snapshot, types.Message message,
