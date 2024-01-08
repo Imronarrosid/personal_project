@@ -85,6 +85,7 @@ dependencies:
     git:
       url: https://github.com/Imronarrosid/flutter_chat_ui.git
       ref: 82e150fcde413c72d7d564fac48902599c0805cf
+  image_cropper: ^5.0.1
 
 dev_dependencies:
   flutter_test:

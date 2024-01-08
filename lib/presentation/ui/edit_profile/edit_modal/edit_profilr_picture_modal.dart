@@ -1,11 +1,14 @@
+import 'dart:io';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:personal_project/constant/dimens.dart';
 import 'package:personal_project/presentation/l10n/stings.g.dart';
-import 'package:personal_project/presentation/router/route_utils.dart';
+import 'package:personal_project/presentation/ui/crop_image/crop_image.dart';
+import 'package:personal_project/presentation/ui/edit_profile/cubit/edit_profile_pict_cubit.dart';
 
 showEditPPModal(BuildContext context) {
   var picker = ImagePicker();
@@ -48,16 +51,28 @@ showEditPPModal(BuildContext context) {
                   child: ListTile(
                     leading: Icon(MdiIcons.camera),
                     shape: const RoundedRectangleBorder(
-                        borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(10),
-                      topRight: Radius.circular(10),
-                    )),
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(10),
+                        topRight: Radius.circular(10),
+                      ),
+                    ),
                     title: Text(LocaleKeys.label_camera.tr()),
                     onTap: () async {
                       XFile? file =
                           await picker.pickImage(source: ImageSource.camera);
                       if (context.mounted && file != null) {
-                        context.push(APP_PAGE.cropImage.toPath, extra: file);
+                        // context.push(APP_PAGE.cropImage.toPath, extra: file);
+                        File? cropedFile = await cropImage(
+                          context,
+                          pickedFile: File(file.path),
+                        );
+
+                        if (context.mounted && cropedFile != null) {
+                          BlocProvider.of<EditProfilePictCubit>(context)
+                              .editProfilePict(
+                            File(file.path),
+                          );
+                        }
                       }
                     },
                   ),
@@ -75,7 +90,16 @@ showEditPPModal(BuildContext context) {
                       XFile? file = await picker.pickImage(
                           source: ImageSource.gallery, imageQuality: 15);
                       if (context.mounted && file != null) {
-                        context.push(APP_PAGE.cropImage.toPath, extra: file);
+                        File? cropedFile = await cropImage(
+                          context,
+                          pickedFile: File(file.path),
+                        );
+                        if (context.mounted && cropedFile != null) {
+                          BlocProvider.of<EditProfilePictCubit>(context)
+                              .editProfilePict(
+                            File(file.path),
+                          );
+                        }
                       }
                     },
                   ),

@@ -69,7 +69,6 @@ class _EditProfileState extends State<EditProfile> {
         resizeToAvoidBottomInset: false,
         appBar: AppBar(
           title: Text(LocaleKeys.label_edit_profile.tr()),
-          foregroundColor: COLOR_black_ff121212,
           backgroundColor: Colors.transparent,
           elevation: 0,
         ),
