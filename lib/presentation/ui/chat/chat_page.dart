@@ -19,9 +19,12 @@ import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:personal_project/constant/dimens.dart';
 import 'package:personal_project/domain/model/chat_data_models.dart';
+import 'package:personal_project/domain/model/profile_data_model.dart';
+import 'package:personal_project/domain/reporsitory/auth_reposotory.dart';
 import 'package:personal_project/domain/reporsitory/user_repository.dart';
 import 'package:personal_project/presentation/l10n/locale_code.dart';
 import 'package:personal_project/presentation/l10n/stings.g.dart';
+import 'package:personal_project/presentation/router/route_utils.dart';
 
 class ChatPage extends StatefulWidget {
   const ChatPage({
@@ -251,17 +254,31 @@ class _ChatPageState extends State<ChatPage> {
           backgroundColor: Theme.of(context).colorScheme.tertiary,
           title: ListTile(
             contentPadding: EdgeInsets.zero,
-            leading: CircleAvatar(
-                child: ClipRRect(
-              borderRadius: BorderRadius.circular(50),
-              child: CachedNetworkImage(
-                imageUrl: widget.data.avatar,
-                fit: BoxFit.cover,
-                width: double.infinity,
-                height: double.infinity,
+            leading: Ink(
+              width: Dimens.DIMENS_42,
+              height: Dimens.DIMENS_42,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(50),
+                image: DecorationImage(
+                  fit: BoxFit.cover,
+                  image: CachedNetworkImageProvider(
+                    widget.data.avatar,
+                  ),
+                ),
               ),
-            )),
-            title: Text(widget.data.userName),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(50),
+                onTap: () {
+                  _toProfile(context);
+                },
+              ),
+            ),
+            title: GestureDetector(
+              onTap: () {
+                _toProfile(context);
+              },
+              child: Text(widget.data.userName),
+            ),
           ),
           actions: [
             PopupMenuButton(
@@ -270,9 +287,14 @@ class _ChatPageState extends State<ChatPage> {
               itemBuilder: (_) {
                 return [
                   PopupMenuItem(
-                      height: Dimens.DIMENS_38,
-                      onTap: () {},
-                      child: const Text('See profile'))
+                    height: Dimens.DIMENS_38,
+                    onTap: () {
+                      _toProfile(context);
+                    },
+                    child: Text(
+                      LocaleKeys.label_see_profile.tr(),
+                    ),
+                  )
                 ];
               },
             )
@@ -306,6 +328,22 @@ class _ChatPageState extends State<ChatPage> {
           ),
         ),
       );
+
+  void _toProfile(BuildContext context) {
+    final AuthRepository repo = RepositoryProvider.of<AuthRepository>(context);
+    if (widget.data.room.type == types.RoomType.direct) {
+      types.User user = widget.data.room.users
+          .firstWhere((element) => element.id != repo.currentUser!.uid);
+      context.push(
+        APP_PAGE.profile.toPath,
+        extra: ProfilePayload(
+            uid: user.id,
+            name: widget.data.name!,
+            userName: widget.data.userName,
+            photoURL: widget.data.avatar),
+      );
+    }
+  }
 
   DefaultChatTheme _chatTheme(BuildContext context) {
     return DefaultChatTheme(

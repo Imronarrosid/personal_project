@@ -135,6 +135,7 @@ class _SearchRoomPageState extends State<SearchRoomPage> {
                             room: room,
                             userName: user.userName!,
                             avatar: user.photo!,
+                            name: user.name,
                           ),
                         );
                       },
@@ -266,6 +267,7 @@ class _InitialViewState extends State<InitialView> {
                   room: room,
                   userName: user.userName!,
                   avatar: user.photo!,
+                  name: user.name,
                 ),
               );
             },

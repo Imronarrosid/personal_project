@@ -190,10 +190,10 @@ class _MessagePageState extends State<MessagePage> {
                                     context.push(
                                       APP_PAGE.chat.toPath,
                                       extra: ChatData(
-                                        room: room,
-                                        userName: user.userName!,
-                                        avatar: user.photo!,
-                                      ),
+                                          room: room,
+                                          userName: user.userName!,
+                                          avatar: user.photo!,
+                                          name: user.name),
                                     );
                                   },
                                   child: Container(
@@ -348,6 +348,7 @@ class _MessagePageState extends State<MessagePage> {
                         room: room,
                         userName: data.userName!,
                         avatar: data.photo!,
+                        name: data.name,
                       ),
                     );
                   },

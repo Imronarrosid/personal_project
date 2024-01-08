@@ -549,6 +549,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                           room: room,
                                           userName: user.userName!,
                                           avatar: user.photo!,
+                                          name: user.name,
                                         ),
                                       );
                                     },
