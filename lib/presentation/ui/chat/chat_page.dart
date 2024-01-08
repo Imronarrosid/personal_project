@@ -392,17 +392,30 @@ class _ChatPageState extends State<ChatPage> {
               child: const CircleAvatar(),
             );
           }
-          return Padding(
-            padding: EdgeInsets.only(right: Dimens.DIMENS_8),
-            child: CircleAvatar(
-              backgroundColor: Colors.transparent,
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(50),
-                child: CachedNetworkImage(
-                  imageUrl: avatar!,
-                  fit: BoxFit.cover,
-                  width: double.infinity,
-                  height: double.infinity,
+          return Material(
+            borderRadius: BorderRadius.circular(50),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(50),
+              radius: Dimens.DIMENS_20,
+              onTap: () {
+                _toProfile(context);
+              },
+              child: Container(
+                width: Dimens.DIMENS_38,
+                height: Dimens.DIMENS_38,
+                padding: EdgeInsets.all(Dimens.DIMENS_5),
+                child: CircleAvatar(
+                  backgroundColor: Colors.transparent,
+                  radius: Dimens.DIMENS_13,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(50),
+                    child: CachedNetworkImage(
+                      imageUrl: avatar!,
+                      fit: BoxFit.cover,
+                      width: double.infinity,
+                      height: double.infinity,
+                    ),
+                  ),
                 ),
               ),
             ),
