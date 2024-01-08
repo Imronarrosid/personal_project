@@ -277,7 +277,11 @@ class _ChatPageState extends State<ChatPage> {
               onTap: () {
                 _toProfile(context);
               },
-              child: Text(widget.data.userName),
+              child: Text(
+                widget.data.userName,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
           ),
           actions: [
