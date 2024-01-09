@@ -5,7 +5,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:personal_project/constant/color.dart';
@@ -144,19 +143,18 @@ class _HomePageState extends State<HomePage> {
                         items: [
                           BottomNavigationBarItem(
                             icon: const Icon(BootstrapIcons.house_door),
-                            activeIcon:
-                                const FaIcon(BootstrapIcons.house_door_fill),
+                            activeIcon: const Icon(
+                              BootstrapIcons.house_door_fill,
+                            ),
                             label: LocaleKeys.label_home.tr(),
                             tooltip: LocaleKeys.label_home.tr(),
                           ),
                           BottomNavigationBarItem(
                             icon: const Icon(
-                              Icons.search_rounded,
-                              size: 29,
+                              BootstrapIcons.search,
                             ),
                             activeIcon: const Icon(
-                              Icons.search_rounded,
-                              size: 29,
+                              BootstrapIcons.search,
                             ),
                             label: LocaleKeys.label_search.tr(),
                             tooltip: LocaleKeys.label_search.tr(),
@@ -165,11 +163,18 @@ class _HomePageState extends State<HomePage> {
                             icon: Container(
                               decoration: BoxDecoration(
                                 border: Border.all(
-                                    color:
-                                        Theme.of(context).colorScheme.primary),
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .primary
+                                      .withOpacity(0.6),
+                                  width: 1.4,
+                                ),
                                 borderRadius: BorderRadius.circular(6),
                               ),
-                              child: const Icon(Icons.add),
+                              child: const Icon(
+                                Icons.add,
+                                size: 22.5,
+                              ),
                             ),
                             label: '',
                             tooltip: LocaleKeys.title_upload.tr(),
@@ -199,7 +204,7 @@ class _HomePageState extends State<HomePage> {
                                       }
                                       return Container(
                                         padding:
-                                            EdgeInsets.all(Dimens.DIMENS_3),
+                                            EdgeInsets.all(Dimens.DIMENS_2),
                                         decoration: BoxDecoration(
                                           border: Border.all(
                                             color: state.index == 4
@@ -213,6 +218,7 @@ class _HomePageState extends State<HomePage> {
                                         ),
                                         child: CircleAvatar(
                                           radius: Dimens.DIMENS_10,
+                                          backgroundColor: Colors.transparent,
                                           backgroundImage:
                                               CachedNetworkImageProvider(
                                             avatar!,

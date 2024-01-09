@@ -1,11 +1,14 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names
 
 class Dimens {
+  static double get DIMENS_1 => 1.0;
+  static double get DIMENS_2 => 2.0;
   static double get DIMENS_3 => 3.0;
   static double get DIMENS_5 => 5.0;
   static double get DIMENS_6 => 6.0;
   static double get DIMENS_8 => 8.0;
   static double get DIMENS_10 => 10.0;
+  static double get DIMENS_11 => 11.0;
   static double get DIMENS_12 => 12.0;
   static double get DIMENS_13 => 13.0;
   static double get DIMENS_16 => 16.0;
