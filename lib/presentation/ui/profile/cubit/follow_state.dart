@@ -1,14 +1,9 @@
 part of 'follow_cubit.dart';
 
-sealed class FollowState extends Equatable {
-  const FollowState();
+final class FollowState extends Equatable {
+  final BlocStatus status;
+  const FollowState({required this.status});
 
   @override
-  List<Object> get props => [];
+  List<Object> get props => [status];
 }
-
-final class FollowInitial extends FollowState {}
-
-final class Followed extends FollowState {}
-
-final class UnFollowed extends FollowState {}

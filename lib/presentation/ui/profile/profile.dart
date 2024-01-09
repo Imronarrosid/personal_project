@@ -9,6 +9,7 @@ import 'package:flutter_firebase_chat_core/flutter_firebase_chat_core.dart';
 import 'package:go_router/go_router.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+import 'package:personal_project/config/bloc_status_enum.dart';
 import 'package:personal_project/constant/color.dart';
 import 'package:personal_project/constant/dimens.dart';
 import 'package:personal_project/data/repository/user_video_paging_repository.dart';
@@ -412,9 +413,11 @@ class _ProfilePageState extends State<ProfilePage> {
                                           FollowState>(
                                         builder: (context, state) {
                                           debugPrint('follow state $state');
-                                          if (state is Followed) {
+                                          if (state.status ==
+                                              BlocStatus.following) {
                                             isFollowing = true;
-                                          } else if (state is UnFollowed) {
+                                          } else if (state.status ==
+                                              BlocStatus.notFollowing) {
                                             isFollowing = false;
                                           } else {
                                             isFollowing = isFollowing;

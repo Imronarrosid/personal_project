@@ -148,6 +148,20 @@ class UserRepository implements UserUseCaseType {
     }
   }
 
+  Stream<bool>? isFollowingStream(String uid) {
+    try {
+      return firebaseFirestore
+          .collection('users')
+          .doc(uid)
+          .collection('followers')
+          .doc(firebaseAuth.currentUser!.uid)
+          .snapshots()
+          .map((event) => event.exists);
+    } catch (e) {
+      return null;
+    }
+  }
+
   Future<int> getFollowingCount(uid) async {
     int following = 0;
     var followingDoc = await firebaseFirestore

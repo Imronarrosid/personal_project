@@ -1,11 +1,15 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:personal_project/config/bloc_status_enum.dart';
 import 'package:personal_project/domain/reporsitory/user_repository.dart';
 
 part 'follow_state.dart';
 
 class FollowCubit extends Cubit<FollowState> {
-  FollowCubit(this.repository) : super(FollowInitial());
+  FollowCubit(this.repository)
+      : super(const FollowState(
+          status: BlocStatus.initial,
+        ));
 
   bool? _clientState;
   void followButtonHandle(
@@ -18,16 +22,16 @@ class FollowCubit extends Cubit<FollowState> {
 
     if (_clientState == true && stateFromDatabase == true) {
       // emit(UnilkedVideo(likeCount: databaseLikeCount - 1));
-      emit(UnFollowed());
+      emit(const FollowState(status: BlocStatus.notFollowing));
       _clientState = false;
     } else if (_clientState == false && stateFromDatabase == true) {
-      emit(Followed());
+      emit(const FollowState(status: BlocStatus.following));
       _clientState = true;
     } else if (_clientState == true && stateFromDatabase == false) {
-      emit(UnFollowed());
+      emit(const FollowState(status: BlocStatus.notFollowing));
       _clientState = false;
     } else if (_clientState == false && stateFromDatabase == false) {
-      emit(Followed());
+      emit(const FollowState(status: BlocStatus.following));
       _clientState = true;
     }
   }

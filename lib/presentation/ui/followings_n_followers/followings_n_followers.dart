@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
+import 'package:personal_project/config/bloc_status_enum.dart';
 import 'package:personal_project/constant/color.dart';
 import 'package:personal_project/constant/dimens.dart';
 import 'package:personal_project/data/repository/following_n_followers_repository.dart';
@@ -176,10 +177,11 @@ class FollowingNFollowersTab extends StatelessWidget {
                                               builder: (context, state) {
                                                 debugPrint(
                                                     'follow state $state');
-                                                if (state is Followed) {
+                                                if (state.status ==
+                                                    BlocStatus.following) {
                                                   isFollowing = true;
-                                                } else if (state
-                                                    is UnFollowed) {
+                                                } else if (state.status ==
+                                                    BlocStatus.notFollowing) {
                                                   isFollowing = false;
                                                 } else {
                                                   isFollowing = isFollowing;

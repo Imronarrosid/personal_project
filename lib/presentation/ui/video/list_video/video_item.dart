@@ -7,6 +7,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+import 'package:personal_project/config/bloc_status_enum.dart';
 import 'package:personal_project/constant/color.dart';
 import 'package:personal_project/constant/dimens.dart';
 import 'package:personal_project/data/repository/coment_repository.dart';
@@ -18,6 +19,7 @@ import 'package:personal_project/domain/model/video_model.dart';
 import 'package:personal_project/domain/reporsitory/auth_reposotory.dart';
 import 'package:personal_project/domain/reporsitory/user_repository.dart';
 import 'package:personal_project/domain/reporsitory/video_repository.dart';
+import 'package:personal_project/domain/services/firebase/firebase_service.dart';
 import 'package:personal_project/presentation/l10n/stings.g.dart';
 import 'package:personal_project/presentation/router/route_utils.dart';
 import 'package:personal_project/presentation/ui/auth/auth.dart';
@@ -48,7 +50,7 @@ class _VideoItemState extends State<VideoItem> {
   // ignore: non_constant_identifier_names
   final double _IC_LABEL_FONTSIZE = 12;
   bool isViewed = false;
-
+  bool isActive = true;
   @override
   Widget build(BuildContext context) {
     debugPrint('Its Rebuild${widget.videoData.caption}');
@@ -67,7 +69,10 @@ class _VideoItemState extends State<VideoItem> {
           listener: (context, state) {
             if (state.status == VideoPlayerStatus.initialized) {
               debugPrint('vidnitialize');
-              addViews(state: state, videoData: videoData);
+
+              if (isViewed == false) {
+                addViews(state: state, videoData: videoData);
+              }
             }
           },
           child: GestureDetector(
@@ -127,7 +132,9 @@ class _VideoItemState extends State<VideoItem> {
                                         controller = state.controller;
                                     var visiblePercentage =
                                         info.visibleFraction * 100;
-                                    if (visiblePercentage < 5 && widget.auto) {
+                                    if (visiblePercentage < 30 &&
+                                        widget.auto &&
+                                        isActive) {
                                       if (controller!.value.isInitialized) {
                                         BlocProvider.of<VideoPlayerBloc>(
                                                 context)
@@ -137,7 +144,8 @@ class _VideoItemState extends State<VideoItem> {
                                     } else {
                                       // Point the controller is initialized
                                       if (controller!.value.isInitialized &&
-                                          widget.auto) {
+                                          widget.auto &&
+                                          isActive) {
                                         BlocProvider.of<VideoPlayerBloc>(
                                                 context)
                                             .add(const VideoPlayerEvent(
@@ -152,7 +160,13 @@ class _VideoItemState extends State<VideoItem> {
                           ),
                         );
                       } else if (state is VideoPlayerInitial) {
-                        return const CircularProgressIndicator();
+                        return SizedBox(
+                          width: MediaQuery.of(context).size.width,
+                          child: CachedNetworkImage(
+                            imageUrl: videoData.thumnail,
+                            fit: BoxFit.fitWidth,
+                          ),
+                        );
                       }
                       return Column(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -392,6 +406,12 @@ class _VideoItemState extends State<VideoItem> {
     );
   }
 
+  @override
+  void deactivate() {
+    isActive = false;
+    super.deactivate();
+  }
+
   ClipRRect _buildGameImage(Video videoData) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(5),
@@ -403,8 +423,6 @@ class _VideoItemState extends State<VideoItem> {
     state.controller!.addListener(() {
       int duratio = state.controller!.value.duration.inSeconds;
       double minDur = 3 / 10 * duratio;
-
-      debugPrint('add views $minDur');
 
       if (state.controller!.value.position.inSeconds > minDur.toInt() &&
           !isViewed) {
@@ -542,6 +560,8 @@ class _VideoItemState extends State<VideoItem> {
 
   FutureBuilder<User> _buildUserNameView(
       BuildContext context, Video videoData) {
+    final UserRepository userRepository =
+        RepositoryProvider.of<UserRepository>(context);
     return FutureBuilder(
       future: RepositoryProvider.of<VideoRepository>(context)
           .getVideoOwnerData(widget.videoData.uid),
@@ -569,28 +589,81 @@ class _VideoItemState extends State<VideoItem> {
                     SizedBox(
                       width: Dimens.DIMENS_10,
                     ),
-                    BlocProvider(
-                      create: (context) => FollowCubit(
-                          RepositoryProvider.of<UserRepository>(context)),
-                      child: BlocBuilder<FollowCubit, FollowState>(
-                        builder: (context, state) {
-                          return Container(
-                            padding: EdgeInsets.symmetric(
-                              vertical: Dimens.DIMENS_6,
-                              horizontal: Dimens.DIMENS_13,
-                            ),
-                            decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(5),
-                                color:
-                                    Theme.of(context).colorScheme.onTertiary),
-                            child: Text(
-                              LocaleKeys.label_follow.tr(),
-                              style: Theme.of(context).textTheme.bodySmall,
-                            ),
-                          );
-                        },
-                      ),
-                    )
+                    data.id == firebaseAuth.currentUser!.uid
+                        ? Container()
+                        : FutureBuilder<bool>(
+                            future: userRepository.isFollowing(data.id),
+                            builder: (context, AsyncSnapshot<bool> snapshot) {
+                              bool? isFollowing = snapshot.data;
+                              if (!snapshot.hasData ||
+                                  snapshot.hasError ||
+                                  isFollowing!) {
+                                return Container();
+                              }
+                              debugPrint('oioi $isFollowing}');
+                              debugPrint('oioi ${data.id}');
+
+                              return BlocProvider(
+                                create: (context) => FollowCubit(
+                                    RepositoryProvider.of<UserRepository>(
+                                        context)),
+                                child: BlocBuilder<FollowCubit, FollowState>(
+                                  builder: (context, state) {
+                                    return InkWell(
+                                      onTap: () {
+                                        if (firebaseAuth.currentUser == null) {
+                                          showAuthBottomSheetFunc(context);
+                                        } else {
+                                          BlocProvider.of<FollowCubit>(context)
+                                              .followButtonHandle(
+                                            currentUserUid:
+                                                firebaseAuth.currentUser!.uid,
+                                            uid: data.id,
+                                            stateFromDatabase: isFollowing!,
+                                          );
+                                        }
+                                      },
+                                      child: Container(
+                                        padding: EdgeInsets.symmetric(
+                                          vertical: Dimens.DIMENS_6,
+                                          horizontal: Dimens.DIMENS_13,
+                                        ),
+                                        decoration: BoxDecoration(
+                                            border: Border.all(
+                                              color: state.status ==
+                                                          BlocStatus
+                                                              .following ||
+                                                      isFollowing!
+                                                  ? Theme.of(context)
+                                                      .colorScheme
+                                                      .primary
+                                                  : Colors.transparent,
+                                            ),
+                                            borderRadius:
+                                                BorderRadius.circular(5),
+                                            color: state.status ==
+                                                        BlocStatus.following ||
+                                                    isFollowing!
+                                                ? Colors.transparent
+                                                : Theme.of(context)
+                                                    .colorScheme
+                                                    .onTertiary),
+                                        child: Text(
+                                          state.status ==
+                                                      BlocStatus.following ||
+                                                  isFollowing!
+                                              ? LocaleKeys.label_following.tr()
+                                              : LocaleKeys.label_follow.tr(),
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .bodySmall,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              );
+                            })
                   ],
                 ),
                 Visibility(
