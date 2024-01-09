@@ -20,4 +20,11 @@ class FollowingNFollowersBloc
   }
 
   final FollowingNFollowersRepository repository;
+  @override
+  Future<void> close() {
+    if (repository.controller != null) {
+      repository.controller!.dispose();
+    }
+    return super.close();
+  }
 }
