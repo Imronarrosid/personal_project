@@ -986,7 +986,11 @@ class _ProfilePageState extends State<ProfilePage> {
                 builder: (context, AsyncSnapshot<int> snapshot) {
                   int? follwers = snapshot.data;
                   return Expanded(
-                    child: GestureDetector(
+                    child: InkWell(
+                      splashColor: Colors.transparent,
+                      overlayColor: const MaterialStatePropertyAll<Color>(
+                        Colors.transparent,
+                      ),
                       onTap: () {
                         context.push(APP_PAGE.followingNFonllowers.toPath,
                             extra: FollowingNFollowersData(
@@ -1020,7 +1024,11 @@ class _ProfilePageState extends State<ProfilePage> {
                 builder: (context, AsyncSnapshot<int> snapshot) {
                   int? following = snapshot.data;
                   return Expanded(
-                    child: GestureDetector(
+                    child: InkWell(
+                      splashColor: Colors.transparent,
+                      overlayColor: const MaterialStatePropertyAll<Color>(
+                        Colors.transparent,
+                      ),
                       onTap: () {
                         context.push(APP_PAGE.followingNFonllowers.toPath,
                             extra: FollowingNFollowersData(
@@ -1097,9 +1105,6 @@ class _ProfilePageState extends State<ProfilePage> {
 
           return BlocBuilder<EditUserNameCubit, EditUserNameState>(
             builder: (context, state) {
-              String? uid = RepositoryProvider.of<AuthRepository>(context)
-                  .currentUser
-                  ?.uid;
               if (state.status == EditUserNameStatus.success &&
                   widget.payload == null) {
                 return Text(
