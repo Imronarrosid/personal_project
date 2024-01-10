@@ -153,107 +153,112 @@ class _ProfilePageState extends State<ProfilePage> {
                 )
               ],
             ),
-            body: BlocBuilder<AuthBloc, AuthState>(
-              builder: (context, authState) {
-                debugPrint(authState.toString());
-
-                if (_isAuthenticatedButStillLoadingData(
-                    authRepository, authState)) {
-                  return const Center(
-                    child: CircularProgressIndicator(),
-                  );
-                }
-                if (!_isAuthenticated(authState) && widget.payload == null) {
-                  return const NotAuthenticatedPage();
-                }
-
-                return _profileBody(size, context, authState, authRepository);
-
-                // if (_isAuthenticated(authState)) {
-                //   return FutureBuilder(
-                //       future: userRepository
-                //           .getUserData(widget.uid ?? authState.uid!),
-                //       builder: (context, snapshot) {
-                //         var data = snapshot.data;
-                //         if (!snapshot.hasData) {
-                //           return Scaffold(
-                //             backgroundColor: COLOR_white_fff5f5f5,
-                //             appBar: AppBar(
-                //               backgroundColor: Colors.transparent,
-                //               foregroundColor: COLOR_black_ff121212,
-                //               elevation: 0,
-                //               actions: [
-                //                 (_isLogedUser(authState))
-                //                     ? IconButton(
-                //                         onPressed: () async {
-                //                           if (isToMenu) {
-                //                             isToMenu = false;
-                //                             await context.push(
-                //                               APP_PAGE.menu.toPath,
-                //                             );
-                //                           }
-                //                           isToMenu = true;
-                //                         },
-                //                         icon: Icon(MdiIcons.menu))
-                //                     : Container()
-                //               ],
-                //             ),
-                //             body: Container(
-                //                 width: size.width,
-                //                 height: size.height,
-                //                 color: COLOR_white_fff5f5f5,
-                //                 alignment: Alignment.center,
-                //                 child: const CircularProgressIndicator()),
-                //           );
-                //         }
-
-                //         return Scaffold(
-                //           backgroundColor: COLOR_white_fff5f5f5,
-                //           appBar: AppBar(
-                //             title: BlocBuilder<EditNameCubit, EditNameState>(
-                //               builder: (context, state) {
-                //                 if (state.status ==
-                //                         EditNameStatus.nameEditSuccess &&
-                //                     data!.uid ==
-                //                         authRepository.currentUser!.uid) {
-                //                   return Text(state.name!);
-                //                 }
-                //                 return Text(data!.name);
-                //               },
-                //             ),
-                //             actions: [
-                //               (_isLogedUser(authState))
-                //                   ? IconButton(
-                //                       onPressed: () async {
-                //                         if (isToMenu) {
-                //                           isToMenu = false;
-                //                           await context.push(APP_PAGE.menu.toPath,
-                //                               extra: data!.uid);
-                //                         }
-                //                         isToMenu = true;
-                //                       },
-                //                       icon: Icon(MdiIcons.menu))
-                //                   : Container()
-                //             ],
-                //             backgroundColor: Colors.transparent,
-                //             elevation: 0,
-                //             foregroundColor: Colors.black,
-                //           ),
-                //           body: _profileBody(
-                //               size, context, data, authState, authRepository),
-                //         );
-                //       });
-                // }
-                // return Scaffold(
-                //     backgroundColor: COLOR_white_fff5f5f5,
-                //     appBar: AppBar(
-                //       backgroundColor: COLOR_white_fff5f5f5,
-                //       foregroundColor: COLOR_black_ff121212,
-                //       elevation: 0,
-                //       title: Text(LocaleKeys.title_profile.tr()),
-                //     ),
-                //     body: const NotAuthenticatedPage());
+            body: GestureDetector(
+              onTap: () {
+                FocusScope.of(context).unfocus();
               },
+              child: BlocBuilder<AuthBloc, AuthState>(
+                builder: (context, authState) {
+                  debugPrint(authState.toString());
+
+                  if (_isAuthenticatedButStillLoadingData(
+                      authRepository, authState)) {
+                    return const Center(
+                      child: CircularProgressIndicator(),
+                    );
+                  }
+                  if (!_isAuthenticated(authState) && widget.payload == null) {
+                    return const NotAuthenticatedPage();
+                  }
+
+                  return _profileBody(size, context, authState, authRepository);
+
+                  // if (_isAuthenticated(authState)) {
+                  //   return FutureBuilder(
+                  //       future: userRepository
+                  //           .getUserData(widget.uid ?? authState.uid!),
+                  //       builder: (context, snapshot) {
+                  //         var data = snapshot.data;
+                  //         if (!snapshot.hasData) {
+                  //           return Scaffold(
+                  //             backgroundColor: COLOR_white_fff5f5f5,
+                  //             appBar: AppBar(
+                  //               backgroundColor: Colors.transparent,
+                  //               foregroundColor: COLOR_black_ff121212,
+                  //               elevation: 0,
+                  //               actions: [
+                  //                 (_isLogedUser(authState))
+                  //                     ? IconButton(
+                  //                         onPressed: () async {
+                  //                           if (isToMenu) {
+                  //                             isToMenu = false;
+                  //                             await context.push(
+                  //                               APP_PAGE.menu.toPath,
+                  //                             );
+                  //                           }
+                  //                           isToMenu = true;
+                  //                         },
+                  //                         icon: Icon(MdiIcons.menu))
+                  //                     : Container()
+                  //               ],
+                  //             ),
+                  //             body: Container(
+                  //                 width: size.width,
+                  //                 height: size.height,
+                  //                 color: COLOR_white_fff5f5f5,
+                  //                 alignment: Alignment.center,
+                  //                 child: const CircularProgressIndicator()),
+                  //           );
+                  //         }
+
+                  //         return Scaffold(
+                  //           backgroundColor: COLOR_white_fff5f5f5,
+                  //           appBar: AppBar(
+                  //             title: BlocBuilder<EditNameCubit, EditNameState>(
+                  //               builder: (context, state) {
+                  //                 if (state.status ==
+                  //                         EditNameStatus.nameEditSuccess &&
+                  //                     data!.uid ==
+                  //                         authRepository.currentUser!.uid) {
+                  //                   return Text(state.name!);
+                  //                 }
+                  //                 return Text(data!.name);
+                  //               },
+                  //             ),
+                  //             actions: [
+                  //               (_isLogedUser(authState))
+                  //                   ? IconButton(
+                  //                       onPressed: () async {
+                  //                         if (isToMenu) {
+                  //                           isToMenu = false;
+                  //                           await context.push(APP_PAGE.menu.toPath,
+                  //                               extra: data!.uid);
+                  //                         }
+                  //                         isToMenu = true;
+                  //                       },
+                  //                       icon: Icon(MdiIcons.menu))
+                  //                   : Container()
+                  //             ],
+                  //             backgroundColor: Colors.transparent,
+                  //             elevation: 0,
+                  //             foregroundColor: Colors.black,
+                  //           ),
+                  //           body: _profileBody(
+                  //               size, context, data, authState, authRepository),
+                  //         );
+                  //       });
+                  // }
+                  // return Scaffold(
+                  //     backgroundColor: COLOR_white_fff5f5f5,
+                  //     appBar: AppBar(
+                  //       backgroundColor: COLOR_white_fff5f5f5,
+                  //       foregroundColor: COLOR_black_ff121212,
+                  //       elevation: 0,
+                  //       title: Text(LocaleKeys.title_profile.tr()),
+                  //     ),
+                  //     body: const NotAuthenticatedPage());
+                },
+              ),
             ),
           ),
         );
@@ -924,7 +929,13 @@ class _ProfilePageState extends State<ProfilePage> {
                                   child: CachedNetworkImage(
                                     width: 300,
                                     imageUrl: widget.payload!.photoURL,
-                                    errorWidget: (_, __, ___) => Container(),
+                                    errorWidget: (_, __, ___) => Container(
+                                      width: 300,
+                                      height: 300,
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .tertiary,
+                                    ),
                                     fit: BoxFit.contain,
                                   ),
                                 );
@@ -965,8 +976,13 @@ class _ProfilePageState extends State<ProfilePage> {
                                         width: 300,
                                         imageUrl: avatar,
                                         fit: BoxFit.contain,
-                                        errorWidget: (_, __, ___) =>
-                                            Container(),
+                                        errorWidget: (_, __, ___) => Container(
+                                          width: 300,
+                                          height: 300,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .tertiary,
+                                        ),
                                       ),
                                     );
                                   });
