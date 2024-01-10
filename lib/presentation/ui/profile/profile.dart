@@ -703,9 +703,11 @@ class _ProfilePageState extends State<ProfilePage> {
                                   Theme.of(context).colorScheme.secondary,
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(50),
-                                child: CachedNetworkImage(
-                                  imageUrl: games[index].gameImage!,
-                                  fit: BoxFit.cover,
+                                child: SizedBox.expand(
+                                  child: CachedNetworkImage(
+                                    imageUrl: games[index].gameImage!,
+                                    fit: BoxFit.cover,
+                                  ),
                                 ),
                               ),
                             ),
