@@ -530,7 +530,12 @@ class _VideoItemState extends State<VideoItem> {
   ClipRRect _buildGameImage(Video videoData) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(5),
-      child: CachedNetworkImage(imageUrl: videoData.game!.gameImage!),
+      child: SizedBox.expand(
+        child: CachedNetworkImage(
+          imageUrl: videoData.game!.gameImage!,
+          fit: BoxFit.cover,
+        ),
+      ),
     );
   }
 
