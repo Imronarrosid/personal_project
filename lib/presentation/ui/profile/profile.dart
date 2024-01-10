@@ -1142,59 +1142,95 @@ class VideoListView extends StatelessWidget {
         !(from == From.user)
             ? Container()
             : BlocBuilder<UploadBloc, UploadState>(
-                builder: (context, state) {
+                builder: (_, state) {
                   if (state is Uploading) {
                     return Padding(
                       padding: const EdgeInsets.all(8.0),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                        decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(8)),
-                        child: ListTile(
-                          minLeadingWidth: 50,
-                          leading: SizedBox(
-                            width: 50,
-                            child: Stack(
-                              alignment: Alignment.center,
-                              children: [
-                                Image.file(
+                      child: ListTile(
+                        title: Text(
+                          LocaleKeys.message_uploading.tr(),
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                        tileColor: Theme.of(context).colorScheme.tertiary,
+                        minLeadingWidth: 50,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        leading: SizedBox(
+                          width: 50,
+                          child: Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(5),
+                                child: Image.file(
                                   state.thumbnail,
                                   width: 60,
                                   fit: BoxFit.cover,
                                 ),
-                                StreamBuilder(
-                                  stream:
-                                      RepositoryProvider.of<VideoRepository>(
-                                              context)
-                                          .uploadProgressStream,
-                                  builder: (context, snapshot) {
-                                    if (!snapshot.hasData) {
-                                      return Container();
-                                    }
-                                    return SizedBox.expand(
-                                      child: Stack(
-                                        alignment: Alignment.center,
-                                        children: [
-                                          CircularProgressIndicator(
-                                            value: snapshot.data! / 100,
-                                            color: COLOR_white_fff5f5f5,
+                              ),
+                              StreamBuilder(
+                                stream: RepositoryProvider.of<VideoRepository>(
+                                        context)
+                                    .uploadProgressStream,
+                                builder: (context, snapshot) {
+                                  if (!snapshot.hasData) {
+                                    return Container();
+                                  }
+                                  return SizedBox.expand(
+                                    child: Stack(
+                                      alignment: Alignment.center,
+                                      children: [
+                                        Text(
+                                          '${snapshot.data!.toInt()}%',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .primary,
                                           ),
-                                          Text(
-                                            '${snapshot.data!.toInt()}%',
-                                            style: TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                color: COLOR_white_fff5f5f5),
-                                          ),
-                                        ],
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ],
-                            ),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                },
+                              ),
+                            ],
                           ),
-                          subtitle: Text(state.caption),
+                        ),
+                        subtitle: SizedBox(
+                          height: 30,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                state.caption,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  color: Theme.of(context).colorScheme.primary,
+                                ),
+                              ),
+                              StreamBuilder(
+                                stream: RepositoryProvider.of<VideoRepository>(
+                                        context)
+                                    .uploadProgressStream,
+                                builder: (context, snapshot) {
+                                  if (!snapshot.hasData) {
+                                    return Container();
+                                  }
+                                  return LinearProgressIndicator(
+                                    backgroundColor: Theme.of(context)
+                                        .colorScheme
+                                        .primary
+                                        .withOpacity(0.5),
+                                    value: snapshot.data! / 100,
+                                    color:
+                                        Theme.of(context).colorScheme.primary,
+                                  );
+                                },
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     );
