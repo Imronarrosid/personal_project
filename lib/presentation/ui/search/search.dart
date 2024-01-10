@@ -85,6 +85,7 @@ class _SearchPageState extends State<SearchPage> {
                         itemBuilder: (ctx, index) {
                           final result = state.results![index];
                           return ListTile(
+                            tileColor: Colors.transparent,
                             onTap: () {
                               debugPrint('photo${result.photo}');
                               context.push(APP_PAGE.profile.toPath,
@@ -97,14 +98,10 @@ class _SearchPageState extends State<SearchPage> {
                               debugPrint('profile');
                             },
                             leading: CircleAvatar(
-                              backgroundColor: COLOR_grey,
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(50),
-                                child: CachedNetworkImage(
-                                  imageUrl: result.photo!,
-                                  fit: BoxFit.cover,
-                                  width: double.infinity,
-                                ),
+                              backgroundColor:
+                                  Theme.of(context).colorScheme.tertiary,
+                              backgroundImage: CachedNetworkImageProvider(
+                                result.photo!,
                               ),
                             ),
                             title: Text(result.name!),
