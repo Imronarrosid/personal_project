@@ -36,14 +36,16 @@ class VideoFromGamePage extends StatelessWidget {
                   Padding(
                     padding: EdgeInsets.only(left: Dimens.DIMENS_12),
                     child: ClipRRect(
-                        borderRadius: BorderRadius.circular(10),
-                        child: CachedNetworkImage(
-                          imageUrl: data.game.gameImage!,
-                          width: Dimens.DIMENS_80,
-                        )),
+                      borderRadius: BorderRadius.circular(10),
+                      child: CachedNetworkImage(
+                        imageUrl: data.game.gameImage!,
+                        width: Dimens.DIMENS_80,
+                      ),
+                    ),
                   ),
                   Expanded(
                     child: ListTile(
+                      tileColor: Colors.transparent,
                       title: const Text('Game'),
                       subtitle: Text(
                         data.game.gameTitle!,
@@ -64,9 +66,10 @@ class VideoFromGamePage extends StatelessWidget {
                         horizontal: Dimens.DIMENS_15,
                         vertical: Dimens.DIMENS_6),
                     decoration: BoxDecoration(
-                        color: COLOR_grey,
+                        color: Theme.of(context).colorScheme.tertiary,
                         borderRadius: BorderRadius.circular(10)),
-                    child: Text('Video tentang ${data.game.gameTitle}')),
+                    child: Text(
+                        '${LocaleKeys.label_video_about.tr()} ${data.game.gameTitle}')),
               ),
               SizedBox(
                 height: Dimens.DIMENS_12,
@@ -104,14 +107,16 @@ class VideoFromGamePage extends StatelessWidget {
                                                   Text(
                                                     '${item.views.length} ',
                                                     style: TextStyle(
-                                                        color:
-                                                            COLOR_white_fff5f5f5),
+                                                        color: Theme.of(context)
+                                                            .colorScheme
+                                                            .primary),
                                                   ),
                                                   Text(
                                                     LocaleKeys.label_views.tr(),
                                                     style: TextStyle(
-                                                        color:
-                                                            COLOR_white_fff5f5f5),
+                                                        color: Theme.of(context)
+                                                            .colorScheme
+                                                            .primary),
                                                   )
                                                 ],
                                               ),
