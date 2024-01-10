@@ -106,25 +106,26 @@ class _MessagePageState extends State<MessagePage> {
           height: Dimens.DIMENS_45,
           padding: EdgeInsets.all(Dimens.DIMENS_5),
           alignment: Alignment.center,
-          child: CircleAvatar(
-            backgroundColor: hasImage ? Colors.transparent : color,
-
-            radius: 20,
-            child: hasImage
-                ? ClipRRect(
-                    borderRadius: BorderRadius.circular(50),
-                    child: CachedNetworkImage(imageUrl: room.imageUrl!))
-                : ClipRRect(
-                    borderRadius: BorderRadius.circular(50),
-                    child: CachedNetworkImage(imageUrl: profilePict)),
-            // child: !hasImage
-            //     ? Text(
-            //         name.isEmpty ? '' : name[0].toUpperCase(),
-            //         style: const TextStyle(color: Colors.white),
-            //       )
-            //     : null,
-          ),
+          child: hasImage
+              ? CircleAvatar(
+                  backgroundColor: hasImage ? Colors.transparent : color,
+                  radius: 20,
+                  child: ClipRRect(
+                      borderRadius: BorderRadius.circular(50),
+                      child: CachedNetworkImage(imageUrl: room.imageUrl!)),
+                )
+              : CircleAvatar(
+                  backgroundColor: hasImage ? Colors.transparent : color,
+                  radius: 20,
+                  backgroundImage: CachedNetworkImageProvider(profilePict),
+                ),
         ),
+        // child: !hasImage
+        //     ? Text(
+        //         name.isEmpty ? '' : name[0].toUpperCase(),
+        //         style: const TextStyle(color: Colors.white),
+        //       )
+        //     : null,
       ),
     );
   }
@@ -266,16 +267,12 @@ class _MessagePageState extends State<MessagePage> {
                                         ),
                                         CircleAvatar(
                                           radius: Dimens.DIMENS_28,
-                                          child: ClipRRect(
-                                            borderRadius:
-                                                BorderRadius.circular(50),
-                                            child: CachedNetworkImage(
-                                              imageUrl: user.photo!,
-                                              width: double.infinity,
-                                              height: double.infinity,
-                                              fit: BoxFit.cover,
-                                            ),
-                                          ),
+                                          backgroundColor: Theme.of(context)
+                                              .colorScheme
+                                              .tertiary,
+                                          backgroundImage:
+                                              CachedNetworkImageProvider(
+                                                  user.photo!),
                                         ),
                                         SizedBox(
                                           height: Dimens.DIMENS_6,
