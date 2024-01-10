@@ -52,16 +52,10 @@ class _MenuPageState extends State<MenuPage> {
                   borderRadius: BorderRadius.circular(10),
                 ),
                 leading: CircleAvatar(
-                  backgroundColor: Colors.transparent,
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(50),
-                    child: CachedNetworkImage(
-                      imageUrl: state.user!.photo!,
-                      fit: BoxFit.cover,
-                      width: double.infinity,
-                    ),
-                  ),
-                ),
+                    backgroundColor: Theme.of(context).colorScheme.secondary,
+                    backgroundImage: CachedNetworkImageProvider(
+                      state.user!.photo!,
+                    )),
                 title: _buildTitle(state.user!.name!),
                 subtitle: _buildSubtitle(state.user!.userName!),
                 trailing: const Icon(Icons.keyboard_arrow_right),
