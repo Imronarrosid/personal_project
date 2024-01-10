@@ -56,6 +56,8 @@ abstract class  LocaleKeys {
   static const label_see_profile = 'label_see_profile';
   static const label_chat = 'label_chat';
   static const label_delete_video = 'label_delete_video';
+  static const label_suggestion = 'label_suggestion';
+  static const message_no_message = 'message_no_message';
   static const message_delete_video = 'message_delete_video';
   static const message_wait = 'message_wait';
   static const message_write_something = 'message_write_something';

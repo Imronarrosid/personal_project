@@ -54,6 +54,8 @@
     "label_see_profile": "See profile",
     "label_chat": "Chat",
     "label_delete_video": "Delete video",
+    "label_suggestion": "Suggestion",
+    "message_no_message": "No message",
     "message_delete_video": "Remove Video?",
     "message_wait": "Wait a minute",
     "message_write_something": "Write something",
