@@ -906,7 +906,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   // }
                   if (widget.payload != null) {
                     return CircleAvatar(
-                      backgroundColor: COLOR_grey,
+                      backgroundColor: Theme.of(context).colorScheme.tertiary,
                       radius: 35,
                       backgroundImage: CachedNetworkImageProvider(
                         widget.payload!.photoURL,
@@ -924,6 +924,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                   child: CachedNetworkImage(
                                     width: 300,
                                     imageUrl: widget.payload!.photoURL,
+                                    errorWidget: (_, __, ___) => Container(),
                                     fit: BoxFit.contain,
                                   ),
                                 );
@@ -944,7 +945,8 @@ class _ProfilePageState extends State<ProfilePage> {
                           );
                         }
                         return CircleAvatar(
-                          backgroundColor: COLOR_grey,
+                          backgroundColor:
+                              Theme.of(context).colorScheme.tertiary,
                           radius: 35,
                           backgroundImage: CachedNetworkImageProvider(
                             avatar!,
@@ -963,6 +965,8 @@ class _ProfilePageState extends State<ProfilePage> {
                                         width: 300,
                                         imageUrl: avatar,
                                         fit: BoxFit.contain,
+                                        errorWidget: (_, __, ___) =>
+                                            Container(),
                                       ),
                                     );
                                   });
@@ -1298,7 +1302,9 @@ class VideoListView extends StatelessWidget {
                                       late Video video;
 
                                       if (!snapshot.hasData) {
-                                        return Container();
+                                        return Container(
+                                          color: Colors.black,
+                                        );
                                       }
                                       if (snapshot.data!.exists) {
                                         video = Video.fromSnap(snapshot.data!);
@@ -1306,8 +1312,12 @@ class VideoListView extends StatelessWidget {
                                         return Container(
                                             color: Colors.black,
                                             alignment: Alignment.center,
+                                            padding: EdgeInsets.all(
+                                                Dimens.DIMENS_18),
                                             child: Text(
-                                              'Video not available',
+                                              LocaleKeys
+                                                  .message_video_not_available_or_deleted
+                                                  .tr(),
                                               style: Theme.of(context)
                                                   .textTheme
                                                   .labelSmall,
