@@ -175,7 +175,7 @@ class _MessagePageState extends State<MessagePage> {
                   Padding(
                     padding: EdgeInsets.only(
                         top: Dimens.DIMENS_18, left: Dimens.DIMENS_12),
-                    child: const Text('Saran'),
+                    child: Text(LocaleKeys.label_suggestion.tr()),
                   ),
                   SizedBox(
                     width: MediaQuery.of(context).size.width,
@@ -187,7 +187,38 @@ class _MessagePageState extends State<MessagePage> {
                           List<models.User>? users = snapshot?.data;
 
                           if (!snapshot!.hasData || snapshot.hasError) {
-                            return Container();
+                            return ListView.builder(
+                              scrollDirection: Axis.horizontal,
+                              itemCount: 7,
+                              itemBuilder: (context, index) => Container(
+                                  width: Dimens.DIMENS_85,
+                                  padding: EdgeInsets.all(Dimens.DIMENS_10),
+                                  alignment: Alignment.center,
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    children: [
+                                      CircleAvatar(
+                                        radius: Dimens.DIMENS_28,
+                                        backgroundColor: Theme.of(context)
+                                            .colorScheme
+                                            .tertiary,
+                                      ),
+                                      SizedBox(
+                                        height: Dimens.DIMENS_6,
+                                      ),
+                                      Text(
+                                        '',
+                                        overflow: TextOverflow.ellipsis,
+                                        textAlign: TextAlign.center,
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodySmall,
+                                      )
+                                    ],
+                                  )),
+                            );
                           }
 
                           return ListView(
@@ -262,38 +293,43 @@ class _MessagePageState extends State<MessagePage> {
                                   ),
                                 );
                               }),
-                              InkWell(
-                                onTap: () {
-                                  context.push(APP_PAGE.searchRoom.toPath);
-                                },
-                                child: Container(
-                                  padding: EdgeInsets.all(Dimens.DIMENS_10),
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    children: [
-                                      SizedBox(
-                                        height: Dimens.DIMENS_6,
+                              users.isEmpty
+                                  ? Container()
+                                  : InkWell(
+                                      onTap: () {
+                                        context
+                                            .push(APP_PAGE.searchRoom.toPath);
+                                      },
+                                      child: Container(
+                                        padding:
+                                            EdgeInsets.all(Dimens.DIMENS_10),
+                                        child: Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.start,
+                                          children: [
+                                            SizedBox(
+                                              height: Dimens.DIMENS_6,
+                                            ),
+                                            CircleAvatar(
+                                              backgroundColor: Theme.of(context)
+                                                  .colorScheme
+                                                  .onTertiary,
+                                              radius: Dimens.DIMENS_28,
+                                              child: Icon(MdiIcons.plus),
+                                            ),
+                                            SizedBox(
+                                              height: Dimens.DIMENS_6,
+                                            ),
+                                            Text(
+                                              LocaleKeys.label_others.tr(),
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .bodySmall,
+                                            ),
+                                          ],
+                                        ),
                                       ),
-                                      CircleAvatar(
-                                        backgroundColor: Theme.of(context)
-                                            .colorScheme
-                                            .onTertiary,
-                                        radius: Dimens.DIMENS_28,
-                                        child: Icon(MdiIcons.plus),
-                                      ),
-                                      SizedBox(
-                                        height: Dimens.DIMENS_6,
-                                      ),
-                                      Text(
-                                        LocaleKeys.label_others.tr(),
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .bodySmall,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
+                                    ),
                             ],
                           );
                         }),
@@ -304,15 +340,21 @@ class _MessagePageState extends State<MessagePage> {
                   ),
                   StreamBuilder<List<types.Room>>(
                     stream: FirebaseChatCore.instance.rooms(),
-                    initialData: const [],
                     builder: (context, snapshot) {
-                      if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                      if (!snapshot.hasData) {
+                        return Container(
+                            padding: EdgeInsets.only(top: Dimens.DIMENS_150),
+                            alignment: Alignment.center,
+                            child: const CircularProgressIndicator());
+                      }
+                      if (snapshot.data!.isEmpty) {
                         return Container(
                           alignment: Alignment.center,
+                          padding: EdgeInsets.only(top: Dimens.DIMENS_150),
                           margin: const EdgeInsets.only(
                             bottom: 200,
                           ),
-                          child: const Text('No rooms'),
+                          child: Text(LocaleKeys.message_no_message.tr()),
                         );
                       }
 
