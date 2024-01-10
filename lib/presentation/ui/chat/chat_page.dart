@@ -305,32 +305,41 @@ class _ChatPageState extends State<ChatPage> {
           ],
         ),
         body: StreamBuilder<types.Room>(
-          initialData: widget.data.room,
-          stream: FirebaseChatCore.instance.room(widget.data.room.id),
-          builder: (context, snapshot) => StreamBuilder<List<types.Message>>(
-            initialData: const [],
-            stream: FirebaseChatCore.instance.messages(snapshot.data!),
-            builder: (context, snapshot) => Chat(
-              dateLocale: context.locale.languageCode,
-              theme: _chatTheme(context),
-              avatarBuilder: _buildAvatar,
-              l10n: _getL10n(context),
-              showUserNames: true,
-              nameBuilder: _buildName,
-              showUserAvatars: true,
-              isAttachmentUploading: _isAttachmentUploading,
-              messages: snapshot.data ?? [],
-              hideBackgroundOnEmojiMessages: false,
-              onAttachmentPressed: _handleAtachmentPressed,
-              onMessageTap: _handleMessageTap,
-              onPreviewDataFetched: _handlePreviewDataFetched,
-              onSendPressed: _handleSendPressed,
-              user: types.User(
-                id: FirebaseChatCore.instance.firebaseUser?.uid ?? '',
-              ),
-            ),
-          ),
-        ),
+            stream: FirebaseChatCore.instance.room(widget.data.room.id),
+            builder: (context, snapshot) {
+              if (!snapshot.hasData) {
+                return const Center(
+                  child: CircularProgressIndicator(),
+                );
+              }
+              return StreamBuilder<List<types.Message>>(
+                stream: FirebaseChatCore.instance.messages(snapshot.data!),
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  return Chat(
+                    dateLocale: context.locale.languageCode,
+                    theme: _chatTheme(context),
+                    avatarBuilder: _buildAvatar,
+                    l10n: _getL10n(context),
+                    showUserNames: true,
+                    nameBuilder: _buildName,
+                    showUserAvatars: true,
+                    isAttachmentUploading: _isAttachmentUploading,
+                    messages: snapshot.data ?? [],
+                    hideBackgroundOnEmojiMessages: false,
+                    onAttachmentPressed: _handleAtachmentPressed,
+                    onMessageTap: _handleMessageTap,
+                    onPreviewDataFetched: _handlePreviewDataFetched,
+                    onSendPressed: _handleSendPressed,
+                    user: types.User(
+                      id: FirebaseChatCore.instance.firebaseUser?.uid ?? '',
+                    ),
+                  );
+                },
+              );
+            }),
       );
 
   void _toProfile(BuildContext context) {
