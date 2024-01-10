@@ -14,7 +14,7 @@ class CachesPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return RepositoryProvider(
-      create: (_) => FileRepository(),
+      create: (_) => FileRepository()..calculateCacheSize(),
       child: BlocProvider(
         create: (_) => StorageCubit(
           RepositoryProvider.of<FileRepository>(context),
@@ -37,19 +37,28 @@ class CachesPage extends StatelessWidget {
                       size = state.size!;
                     }
                     return Padding(
-                      padding: EdgeInsets.symmetric(horizontal:Dimens.DIMENS_12),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: Dimens.DIMENS_12),
                       child: ListTile(
                         minVerticalPadding: Dimens.DIMENS_12,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10)
-                        ),
+                            borderRadius: BorderRadius.circular(10)),
                         title: Padding(
                           padding: EdgeInsets.only(bottom: Dimens.DIMENS_12),
                           child: Row(
                             children: [
-                              Text(LocaleKeys.label_caches.tr(args: [size]),
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.bold)),
+                              StreamBuilder<int>(
+                                  initialData: 0,
+                                  stream: RepositoryProvider.of<FileRepository>(
+                                          context)
+                                      .fileSizeStream,
+                                  builder: (context, snapshot) {
+                                    return Text(
+                                        LocaleKeys.label_caches.tr(
+                                            args: [fileMBSize(snapshot.data!)]),
+                                        style: const TextStyle(
+                                            fontWeight: FontWeight.bold));
+                                  }),
                               const Spacer(),
                               Material(
                                 color: COLOR_grey,
@@ -67,8 +76,8 @@ class CachesPage extends StatelessWidget {
                                         borderRadius: BorderRadius.circular(5)),
                                     child: Text(
                                       LocaleKeys.label_delete.tr(),
-                                      style:
-                                          TextStyle(color: COLOR_black_ff121212),
+                                      style: TextStyle(
+                                          color: COLOR_black_ff121212),
                                     ),
                                   ),
                                 ),
@@ -87,6 +96,10 @@ class CachesPage extends StatelessWidget {
         }),
       ),
     );
+  }
+
+  String fileMBSize(int bytes) {
+    return (bytes / (1024 * 1024)).toStringAsFixed(1);
   }
 
   bool _clearCachesDialog(BuildContext context) {

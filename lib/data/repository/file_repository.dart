@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get_thumbnail_video/video_thumbnail.dart';
@@ -6,6 +7,10 @@ import 'package:personal_project/utils/get_thumbnails.dart';
 
 class FileRepository {
   XFile? exportedVideo;
+  final StreamController<int> _fileController =
+      StreamController<int>.broadcast();
+
+  Stream<int> get fileSizeStream => _fileController.stream.asBroadcastStream();
 
   Future<List<String>> getAppCaches() async {
     List<String> paths = [];
@@ -37,6 +42,7 @@ class FileRepository {
       await for (FileSystemEntity entity in appDataDir.list(recursive: true)) {
         if (entity is File) {
           appDataSize += await entity.length();
+          _fileController.add(await entity.length());
         }
       }
 
@@ -47,11 +53,30 @@ class FileRepository {
     }
   }
 
+  Future<void> calculateCacheSize() async {
+    try {
+      final Directory appDataDir = await getTemporaryDirectory();
+      int appDataSize = 0;
+
+      await for (FileSystemEntity entity in appDataDir.list(recursive: true)) {
+        if (entity is File) {
+          appDataSize += await entity.length();
+          _fileController.add(appDataSize);
+        }
+      }
+      _fileController.close();
+    } catch (e) {
+      print('Error getting app data size: $e');
+    }
+  }
+
   Future<void> clearCacheDir() async {
     final cacheDir = await getTemporaryDirectory();
 
     if (cacheDir.existsSync()) {
       cacheDir.deleteSync(recursive: true);
+      _fileController.add(0);
     }
+    _fileController.close();
   }
 }
