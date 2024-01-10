@@ -58,6 +58,7 @@ abstract class  LocaleKeys {
   static const label_delete_video = 'label_delete_video';
   static const label_suggestion = 'label_suggestion';
   static const label_video_about = 'label_video_about';
+  static const message_video_not_available_or_deleted = 'message_video_not_available_or_deleted';
   static const message_no_message = 'message_no_message';
   static const message_delete_video = 'message_delete_video';
   static const message_wait = 'message_wait';

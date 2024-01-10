@@ -56,6 +56,7 @@
     "label_delete_video": "Delete video",
     "label_suggestion": "Suggestion",
     "label_video_about": "Video about",
+    "message_video_not_available_or_deleted": "Video not available or deleted",
     "message_no_message": "No message",
     "message_delete_video": "Remove Video?",
     "message_wait": "Wait a minute",

@@ -56,6 +56,7 @@
     "label_delete_video": "Hapus vidio",
     "label_suggestion": "Saran",
     "label_video_about": "Vidio tentang",
+    "message_video_not_available_or_deleted": "Vidio tidak tersedia atau dihapus",
     "message_no_message": "Tidak ada pesan",
     "message_delete_video": "Hapus vidio?",
     "message_wait": "Tunggu sebentar",
