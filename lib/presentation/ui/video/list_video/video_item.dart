@@ -186,6 +186,9 @@ class _VideoItemState extends State<VideoItem> {
                               width: MediaQuery.of(context).size.width,
                               child: CachedNetworkImage(
                                 imageUrl: videoData.thumnail,
+                                errorWidget: (_, __, ___) {
+                                  return Container();
+                                },
                                 fit: BoxFit.fitWidth,
                               ),
                             );
@@ -630,7 +633,7 @@ class _VideoItemState extends State<VideoItem> {
               imageUrl: data!.photo!,
               fit: BoxFit.cover,
               width: double.infinity,
-              errorWidget: (context, url, error) => const Icon(Icons.error),
+              errorWidget: (_, __, ___) => Container(),
             ),
           ),
         ),
