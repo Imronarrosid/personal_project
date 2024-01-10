@@ -536,6 +536,7 @@ class _VideoItemState extends State<VideoItem> {
       child: SizedBox.expand(
         child: CachedNetworkImage(
           imageUrl: videoData.game!.gameImage!,
+          errorWidget: (_, __, ___) => Container(),
           fit: BoxFit.cover,
         ),
       ),
