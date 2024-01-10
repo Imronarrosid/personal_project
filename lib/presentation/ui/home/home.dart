@@ -160,21 +160,9 @@ class _HomePageState extends State<HomePage> {
                             tooltip: LocaleKeys.label_search.tr(),
                           ),
                           BottomNavigationBarItem(
-                            icon: Container(
-                              decoration: BoxDecoration(
-                                border: Border.all(
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .primary
-                                      .withOpacity(0.6),
-                                  width: 1.4,
-                                ),
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: const Icon(
-                                Icons.add,
-                                size: 22.5,
-                              ),
+                            icon: const Icon(
+                              BootstrapIcons.plus_circle,
+                              size: 24,
                             ),
                             label: '',
                             tooltip: LocaleKeys.title_upload.tr(),
