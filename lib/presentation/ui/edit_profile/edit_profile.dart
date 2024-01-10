@@ -347,19 +347,12 @@ class _EditProfileState extends State<EditProfile> {
                                                 games!.length,
                                                 (index) => Chip(
                                                   avatar: CircleAvatar(
-                                                      backgroundColor:
-                                                          COLOR_grey,
-                                                      child: ClipRRect(
-                                                          borderRadius:
-                                                              BorderRadius
-                                                                  .circular(50),
-                                                          child:
-                                                              CachedNetworkImage(
-                                                            imageUrl:
-                                                                games![index]
-                                                                    .gameImage!,
-                                                            fit: BoxFit.cover,
-                                                          ))),
+                                                    backgroundColor: COLOR_grey,
+                                                    backgroundImage:
+                                                        CachedNetworkImageProvider(
+                                                            games![index]
+                                                                .gameImage!),
+                                                  ),
                                                   label: Text(
                                                       games![index].gameTitle!),
                                                 ),
