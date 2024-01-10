@@ -119,6 +119,7 @@ class _AddDetailsPageState extends State<AddDetailsPage> {
                     padding: EdgeInsets.symmetric(horizontal: Dimens.DIMENS_12),
                     child: TextField(
                       maxLines: 5,
+                      maxLength: 1500,
                       controller: textEditingController,
                       decoration: InputDecoration(
                           border: const OutlineInputBorder(
@@ -193,7 +194,7 @@ class _AddDetailsPageState extends State<AddDetailsPage> {
                   height: Dimens.DIMENS_38,
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.primary,
+                      color: Theme.of(context).colorScheme.onTertiary,
                       borderRadius: BorderRadius.circular(50)),
                   child: FutureBuilder(
                       future: thumbnail,
@@ -223,29 +224,18 @@ class _AddDetailsPageState extends State<AddDetailsPage> {
                               }
                             },
                             child: asyncSnapshot.hasData
-                                ? SizedBox(
+                                ? Container(
+                                    alignment: Alignment.center,
                                     height: Dimens.DIMENS_38,
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        SvgPicture.asset(
-                                          Images.IC_UPLOAD_2,
-                                          width: Dimens.DIMENS_18,
-                                        ),
-                                        SizedBox(
-                                          width: Dimens.DIMENS_6,
-                                        ),
-                                        Text(
-                                          LocaleKeys.title_upload.tr(),
-                                          style: TextStyle(
-                                              color: Theme.of(context)
-                                                  .colorScheme
-                                                  .secondary,
-                                              fontSize: FontSize.FONT_SIZE_12),
-                                        ),
-                                      ],
-                                    ))
+                                    child: Text(
+                                      LocaleKeys.title_upload.tr(),
+                                      style: TextStyle(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .primary,
+                                          fontSize: FontSize.FONT_SIZE_12),
+                                    ),
+                                  )
                                 : SizedBox(
                                     width: 20,
                                     height: 20,

@@ -139,16 +139,6 @@ class _VideoPreviewPageState extends State<VideoPreviewPage> {
           ),
           _buildUserNameView(),
           _buildProgerBarIndicatorView(),
-          Align(
-              alignment: Alignment.center,
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(
-                  'Video size: $_fileMbSize',
-                  style: TextStyle(
-                      color: COLOR_white_fff5f5f5, fontWeight: FontWeight.bold),
-                ),
-              ))
         ],
       ),
     );
