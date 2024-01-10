@@ -7,6 +7,7 @@ import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:personal_project/constant/color.dart';
 import 'package:personal_project/constant/dimens.dart';
 import 'package:personal_project/data/repository/video_from_game_repostitory.dart';
+import 'package:personal_project/domain/model/play_single_data.dart';
 import 'package:personal_project/domain/model/video_from_game_data_model.dart';
 import 'package:personal_project/domain/model/video_model.dart';
 import 'package:personal_project/presentation/l10n/stings.g.dart';
@@ -88,8 +89,13 @@ class VideoFromGamePage extends StatelessWidget {
                                     color: COLOR_black,
                                     child: GestureDetector(
                                       onTap: () {
-                                        context.push(APP_PAGE.videoItem.toPath,
-                                            extra: item);
+                                        context.push(
+                                          APP_PAGE.videoItem.toPath,
+                                          extra: PlaySingleData(
+                                            index: index,
+                                            videoData: item,
+                                          ),
+                                        );
                                       },
                                       child: Stack(
                                         alignment: Alignment.center,
