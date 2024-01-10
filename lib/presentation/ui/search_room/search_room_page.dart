@@ -272,14 +272,9 @@ class _InitialViewState extends State<InitialView> {
               );
             },
             leading: CircleAvatar(
-              backgroundColor: COLOR_grey,
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(50),
-                child: CachedNetworkImage(
-                  imageUrl: user.photo!,
-                  fit: BoxFit.cover,
-                  width: double.infinity,
-                ),
+              backgroundColor: Theme.of(context).colorScheme.tertiary,
+              backgroundImage: CachedNetworkImageProvider(
+                user.photo!,
               ),
             ),
             title: Text(user.name!),
