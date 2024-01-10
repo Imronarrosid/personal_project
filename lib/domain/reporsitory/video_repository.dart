@@ -202,6 +202,14 @@ class VideoRepository implements VideoUseCaseType {
     return listDocs;
   }
 
+  Future<void> deleteVideo(String postId) async {
+    try {
+      await firebaseFirestore.collection('videos').doc(postId).delete();
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   Future<User> getVideoOwnerData(String uid) async {
     DocumentSnapshot docs =
         await firebaseFirestore.collection('users').doc(uid).get();

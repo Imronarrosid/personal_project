@@ -6,9 +6,9 @@ import 'package:go_router/go_router.dart';
 import 'package:personal_project/domain/model/chat_data_models.dart';
 import 'package:personal_project/domain/model/following_n_followers_data_model.dart';
 import 'package:personal_project/domain/model/game_fav_modal.dart';
+import 'package:personal_project/domain/model/play_single_data.dart';
 import 'package:personal_project/domain/model/profile_data_model.dart';
 import 'package:personal_project/domain/model/video_from_game_data_model.dart';
-import 'package:personal_project/domain/model/video_model.dart';
 import 'package:personal_project/domain/services/app/app_service.dart';
 import 'package:personal_project/presentation/router/route_utils.dart';
 import 'package:personal_project/presentation/ui/add_details/add_details_page.dart';
@@ -268,9 +268,9 @@ class AppRouter {
         path: APP_PAGE.videoItem.toPath,
         name: APP_PAGE.videoItem.toName,
         pageBuilder: (context, state) {
-          Video videoData = state.extra as Video;
+          final PlaySingleData data = state.extra as PlaySingleData;
           return CustomTransitionPage(
-            child: PlaySingleVideoPage(videoData: videoData),
+            child: PlaySingleVideoPage(data: data),
             transitionsBuilder:
                 (context, animation, secondaryAnimation, child) =>
                     SlideTransition(
@@ -286,8 +286,8 @@ class AppRouter {
           );
         },
         builder: (context, state) {
-          Video videoData = state.extra as Video;
-          return PlaySingleVideoPage(videoData: videoData);
+          final PlaySingleData data = state.extra as PlaySingleData;
+          return PlaySingleVideoPage(data: data);
         },
       ),
       GoRoute(

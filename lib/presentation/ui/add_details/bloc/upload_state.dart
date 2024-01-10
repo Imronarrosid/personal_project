@@ -20,6 +20,18 @@ final class Uploading extends UploadState {
 
 final class VideoUploaded extends UploadState {}
 
+final class VideoDeleted extends UploadState {
+  final int pagedIndex;
+
+  const VideoDeleted({required this.pagedIndex});
+
+  @override
+  List<Object> get props => [
+        super.props,
+        pagedIndex,
+      ];
+}
+
 final class UploadError extends UploadState {
   final String error;
 

@@ -22,8 +22,11 @@ import 'package:personal_project/domain/reporsitory/video_repository.dart';
 import 'package:personal_project/domain/services/firebase/firebase_service.dart';
 import 'package:personal_project/presentation/l10n/stings.g.dart';
 import 'package:personal_project/presentation/router/route_utils.dart';
+import 'package:personal_project/presentation/shared_components/menu_modal_bottom_sheet.dart';
+import 'package:personal_project/presentation/ui/add_details/bloc/upload_bloc.dart';
 import 'package:personal_project/presentation/ui/auth/auth.dart';
 import 'package:personal_project/presentation/ui/comments/comments_page.dart';
+import 'package:personal_project/presentation/ui/profile/bloc/user_video_paging_bloc.dart';
 import 'package:personal_project/presentation/ui/profile/cubit/follow_cubit.dart';
 import 'package:personal_project/presentation/ui/video/list_video/bloc/video_player_bloc.dart';
 import 'package:personal_project/presentation/ui/video/list_video/cubit/captions_cubit.dart';
@@ -34,13 +37,21 @@ import 'package:video_player/video_player.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
 class VideoItem extends StatefulWidget {
+  final int index;
   final Video videoData;
 
   /// if value is true video will auto
   ///
   /// play and pause
   final bool auto;
-  const VideoItem({super.key, required this.videoData, this.auto = false});
+  final bool? isForLogedUserVideo;
+  const VideoItem({
+    super.key,
+    required this.index,
+    required this.videoData,
+    this.auto = false,
+    this.isForLogedUserVideo = false,
+  });
 
   @override
   State<VideoItem> createState() => _VideoItemState();
@@ -56,11 +67,14 @@ class _VideoItemState extends State<VideoItem> {
     debugPrint('Its Rebuild${widget.videoData.caption}');
     var videoData = widget.videoData;
     Size size = MediaQuery.of(context).size;
+    final AuthRepository authRepository =
+        RepositoryProvider.of<AuthRepository>(context);
+    final VideoRepository videoRepository =
+        RepositoryProvider.of<VideoRepository>(context);
     return MultiBlocProvider(
       providers: [
         BlocProvider(
-          create: (context) =>
-              LikeVideoCubit(RepositoryProvider.of<VideoRepository>(context)),
+          create: (context) => LikeVideoCubit(videoRepository),
         ),
         BlocProvider(create: ((context) => CaptionsCubit()))
       ],
@@ -99,311 +113,412 @@ class _VideoItemState extends State<VideoItem> {
                   dataBaseState: isLiked,
                   databaseLikeCount: videoData.likes.length);
             },
-            child: SizedBox(
-              width: size.width,
-              height: size.height,
-              child: Stack(children: [
-                Container(
+            child: BlocBuilder<VideoPlayerBloc, VideoPlayerState>(
+              builder: (context, state) {
+                if (state.status == VideoPlayerStatus.videoDeleted) {
+                  return const Center(
+                    child: Text('Video deleted'),
+                  );
+                }
+                return SizedBox(
                   width: size.width,
                   height: size.height,
-                  alignment: Alignment.center,
-                  child: BlocBuilder<VideoPlayerBloc, VideoPlayerState>(
-                    buildWhen: (previous, current) {
-                      if (current.status == VideoPlayerStatus.paused ||
-                          current.status == VideoPlayerStatus.playing) {
-                        return false;
-                      }
-                      return true;
-                    },
-                    builder: (context, state) {
-                      if (state.status == VideoPlayerStatus.initialized) {
-                        return FittedBox(
-                          fit: BoxFit.contain,
-                          child: SizedBox(
-                            width: state.controller!.value.size.width,
-                            height: state.controller!.value.size.height,
-                            child: Stack(
-                              children: [
-                                VisibilityDetector(
-                                  key: Key(
-                                      'visible-video-key-//${widget.videoData.createdAt}'),
-                                  onVisibilityChanged: (info) {
-                                    final CachedVideoPlayerController?
-                                        controller = state.controller;
-                                    var visiblePercentage =
-                                        info.visibleFraction * 100;
-                                    if (visiblePercentage < 30 &&
-                                        widget.auto &&
-                                        isActive) {
-                                      if (controller!.value.isInitialized) {
-                                        BlocProvider.of<VideoPlayerBloc>(
-                                                context)
-                                            .add(const VideoPlayerEvent(
-                                                actions: VideoEvent.pause));
-                                      }
-                                    } else {
-                                      // Point the controller is initialized
-                                      if (controller!.value.isInitialized &&
-                                          widget.auto &&
-                                          isActive) {
-                                        BlocProvider.of<VideoPlayerBloc>(
-                                                context)
-                                            .add(const VideoPlayerEvent(
-                                                actions: VideoEvent.play));
-                                      }
-                                    }
-                                  },
-                                  child: CachedVideoPlayer(state.controller!),
+                  child: Stack(children: [
+                    Container(
+                      width: size.width,
+                      height: size.height,
+                      alignment: Alignment.center,
+                      child: BlocBuilder<VideoPlayerBloc, VideoPlayerState>(
+                        buildWhen: (previous, current) {
+                          if (current.status == VideoPlayerStatus.paused ||
+                              current.status == VideoPlayerStatus.playing) {
+                            return false;
+                          }
+                          return true;
+                        },
+                        builder: (context, state) {
+                          if (state.status == VideoPlayerStatus.initialized) {
+                            return FittedBox(
+                              fit: BoxFit.contain,
+                              child: SizedBox(
+                                width: state.controller!.value.size.width,
+                                height: state.controller!.value.size.height,
+                                child: Stack(
+                                  children: [
+                                    VisibilityDetector(
+                                      key: Key(
+                                          'visible-video-key-//${widget.videoData.createdAt}'),
+                                      onVisibilityChanged: (info) {
+                                        final CachedVideoPlayerController?
+                                            controller = state.controller;
+                                        var visiblePercentage =
+                                            info.visibleFraction * 100;
+                                        if (visiblePercentage < 30 &&
+                                            widget.auto &&
+                                            isActive) {
+                                          if (controller!.value.isInitialized) {
+                                            BlocProvider.of<VideoPlayerBloc>(
+                                                    context)
+                                                .add(const VideoPlayerEvent(
+                                                    actions: VideoEvent.pause));
+                                          }
+                                        } else {
+                                          // Point the controller is initialized
+                                          if (controller!.value.isInitialized &&
+                                              widget.auto &&
+                                              isActive) {
+                                            BlocProvider.of<VideoPlayerBloc>(
+                                                    context)
+                                                .add(const VideoPlayerEvent(
+                                                    actions: VideoEvent.play));
+                                          }
+                                        }
+                                      },
+                                      child:
+                                          CachedVideoPlayer(state.controller!),
+                                    ),
+                                  ],
                                 ),
-                              ],
-                            ),
-                          ),
-                        );
-                      } else if (state is VideoPlayerInitial) {
-                        return SizedBox(
-                          width: MediaQuery.of(context).size.width,
-                          child: CachedNetworkImage(
-                            imageUrl: videoData.thumnail,
-                            fit: BoxFit.fitWidth,
-                          ),
-                        );
-                      }
-                      return Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            'Tidak dapat menampilkan video',
-                            style: TextStyle(
+                              ),
+                            );
+                          } else if (state is VideoPlayerInitial) {
+                            return SizedBox(
+                              width: MediaQuery.of(context).size.width,
+                              child: CachedNetworkImage(
+                                imageUrl: videoData.thumnail,
+                                fit: BoxFit.fitWidth,
+                              ),
+                            );
+                          }
+                          return Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                'Tidak dapat menampilkan video',
+                                style: TextStyle(
+                                    color: COLOR_white_fff5f5f5,
+                                    fontSize: _IC_LABEL_FONTSIZE),
+                              ),
+                              SizedBox(
+                                height: Dimens.DIMENS_12,
+                              ),
+                              FaIcon(
+                                FontAwesomeIcons.circleExclamation,
                                 color: COLOR_white_fff5f5f5,
-                                fontSize: _IC_LABEL_FONTSIZE),
-                          ),
-                          SizedBox(
-                            height: Dimens.DIMENS_12,
-                          ),
-                          FaIcon(
-                            FontAwesomeIcons.circleExclamation,
-                            color: COLOR_white_fff5f5f5,
-                          ),
-                          Text(
-                            state.status == VideoPlayerStatus.error
-                                ? state.error.toString()
-                                : '',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(color: COLOR_white_fff5f5f5),
-                          ),
-                        ],
-                      );
-                    },
-                  ),
-                ),
-                FutureBuilder(
-                    future: RepositoryProvider.of<VideoRepository>(context)
-                        .getVideoOwnerData(widget.videoData.uid),
-                    builder: (_, snapshot) {
-                      var data = snapshot.data;
-                      return snapshot.hasData
-                          ? Positioned(
-                              right: Dimens.DIMENS_12,
-                              bottom: Dimens.DIMENS_18,
-                              child: Column(
-                                children: [
-                                  _buildProfilePictures(context, data),
-                                  SizedBox(
-                                    height: Dimens.DIMENS_25,
-                                  ),
-                                  _buildLikeButton(context, videoData),
-                                  SizedBox(
-                                    height: Dimens.DIMENS_5,
-                                  ),
-                                  BlocBuilder<LikeVideoCubit, LikeVideoState>(
-                                    buildWhen: (previous, current) {
-                                      if (current is ShowDobleTapLikeWidget ||
-                                          current
-                                              is RemoveDoubleTapLikeWidget) {
-                                        return false;
-                                      }
-                                      return true;
-                                    },
-                                    builder: (context, state) {
-                                      if (state is VideoIsLiked) {
-                                        debugPrint(
-                                            'likeCount${state.likeCount}');
-                                        return Text(
-                                          state.likeCount.toString(),
-                                          style: TextStyle(
+                              ),
+                              Text(
+                                state.status == VideoPlayerStatus.error
+                                    ? state.error.toString()
+                                    : '',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(color: COLOR_white_fff5f5f5),
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+                    ),
+                    FutureBuilder(
+                        future: RepositoryProvider.of<VideoRepository>(context)
+                            .getVideoOwnerData(widget.videoData.uid),
+                        builder: (_, snapshot) {
+                          var data = snapshot.data;
+                          return snapshot.hasData
+                              ? Positioned(
+                                  right: Dimens.DIMENS_12,
+                                  bottom: Dimens.DIMENS_18,
+                                  child: Column(
+                                    children: [
+                                      _buildProfilePictures(context, data),
+                                      SizedBox(
+                                        height: Dimens.DIMENS_25,
+                                      ),
+                                      _buildLikeButton(context, videoData),
+                                      SizedBox(
+                                        height: Dimens.DIMENS_5,
+                                      ),
+                                      BlocBuilder<LikeVideoCubit,
+                                          LikeVideoState>(
+                                        buildWhen: (previous, current) {
+                                          if (current
+                                                  is ShowDobleTapLikeWidget ||
+                                              current
+                                                  is RemoveDoubleTapLikeWidget) {
+                                            return false;
+                                          }
+                                          return true;
+                                        },
+                                        builder: (context, state) {
+                                          if (state is VideoIsLiked) {
+                                            debugPrint(
+                                                'likeCount${state.likeCount}');
+                                            return Text(
+                                              state.likeCount.toString(),
+                                              style: TextStyle(
+                                                color: COLOR_white_fff5f5f5,
+                                                fontSize: _IC_LABEL_FONTSIZE,
+                                              ),
+                                            );
+                                          } else if (state is UnilkedVideo) {
+                                            return Text(
+                                              numberFormat(context.locale,
+                                                  state.likeCount),
+                                              style: TextStyle(
+                                                color: COLOR_white_fff5f5f5,
+                                                fontSize: _IC_LABEL_FONTSIZE,
+                                              ),
+                                            );
+                                          }
+                                          return Text(
+                                            numberFormat(context.locale,
+                                                videoData.likes.length),
+                                            style: TextStyle(
+                                              color: COLOR_white_fff5f5f5,
+                                              fontSize: _IC_LABEL_FONTSIZE,
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                      SizedBox(
+                                        height: Dimens.DIMENS_25,
+                                      ),
+                                      RepositoryProvider(
+                                        create: (context) =>
+                                            CommentRepository(),
+                                        child: GestureDetector(
+                                          onTap: () {
+                                            showModalBottomSheet(
+                                                context: context,
+                                                backgroundColor:
+                                                    Colors.transparent,
+                                                useSafeArea: true,
+                                                elevation: 0,
+                                                isScrollControlled: true,
+                                                builder: (context) {
+                                                  return CommentBottomSheet(
+                                                    postId:
+                                                        widget.videoData.id!,
+                                                  );
+                                                });
+                                          },
+                                          child: Icon(
+                                            BootstrapIcons.chat_dots_fill,
                                             color: COLOR_white_fff5f5f5,
-                                            fontSize: _IC_LABEL_FONTSIZE,
+                                            size: Dimens.DIMENS_28,
                                           ),
-                                        );
-                                      } else if (state is UnilkedVideo) {
-                                        return Text(
-                                          numberFormat(
-                                              context.locale, state.likeCount),
-                                          style: TextStyle(
-                                            color: COLOR_white_fff5f5f5,
-                                            fontSize: _IC_LABEL_FONTSIZE,
-                                          ),
-                                        );
-                                      }
-                                      return Text(
-                                        numberFormat(context.locale,
-                                            videoData.likes.length),
+                                        ),
+                                      ),
+                                      SizedBox(
+                                        height: Dimens.DIMENS_5,
+                                      ),
+                                      Text(
+                                        numberFormat(
+                                          context.locale,
+                                          videoData.commentCount,
+                                        ),
                                         style: TextStyle(
                                           color: COLOR_white_fff5f5f5,
                                           fontSize: _IC_LABEL_FONTSIZE,
                                         ),
-                                      );
-                                    },
-                                  ),
-                                  SizedBox(
-                                    height: Dimens.DIMENS_25,
-                                  ),
-                                  RepositoryProvider(
-                                    create: (context) => CommentRepository(),
-                                    child: GestureDetector(
-                                      onTap: () {
-                                        showModalBottomSheet(
-                                            context: context,
-                                            backgroundColor: Colors.transparent,
-                                            useSafeArea: true,
-                                            elevation: 0,
-                                            isScrollControlled: true,
-                                            builder: (context) {
-                                              return CommentBottomSheet(
-                                                postId: widget.videoData.id!,
-                                              );
-                                            });
-                                      },
-                                      child: Icon(
-                                        BootstrapIcons.chat_dots_fill,
-                                        color: COLOR_white_fff5f5f5,
-                                        size: Dimens.DIMENS_28,
                                       ),
-                                    ),
-                                  ),
-                                  SizedBox(
-                                    height: Dimens.DIMENS_5,
-                                  ),
-                                  Text(
-                                    numberFormat(
-                                      context.locale,
-                                      videoData.commentCount,
-                                    ),
-                                    style: TextStyle(
-                                      color: COLOR_white_fff5f5f5,
-                                      fontSize: _IC_LABEL_FONTSIZE,
-                                    ),
-                                  ),
-                                  SizedBox(
-                                    height: Dimens.DIMENS_20,
-                                  ),
-                                  GestureDetector(
-                                    onTap: () {
-                                      debugPrint(
-                                          'lmnop${LocaleKeys.message_share_featur_not_ready.tr()}');
-                                      Fluttertoast.showToast(
-                                        msg: LocaleKeys
-                                            .message_share_featur_not_ready
-                                            .tr(),
-                                        toastLength: Toast.LENGTH_SHORT,
-                                        gravity: ToastGravity.TOP,
-                                        timeInSecForIosWeb: 1,
-                                        backgroundColor: COLOR_black_ff121212,
-                                        textColor: Colors.white,
-                                        fontSize: 16.0,
-                                      );
-                                    },
-                                    child: Transform.flip(
-                                      flipX: true,
-                                      child: Icon(
-                                        BootstrapIcons.reply_fill,
-                                        color: COLOR_white_fff5f5f5,
-                                        size: Dimens.DIMENS_34,
+                                      SizedBox(
+                                        height: Dimens.DIMENS_20,
                                       ),
-                                    ),
-                                  ),
-                                  SizedBox(
-                                    height: Dimens.DIMENS_25,
-                                  ),
-                                  GestureDetector(
-                                    onTap: () {
-                                      if (videoData.game != null) {
-                                        context.push(
-                                            APP_PAGE.videoFromGame.toPath,
-                                            extra: VideoFromGameData(
-                                                game: videoData.game!,
-                                                captions: videoData.caption,
-                                                profileImg: data!.photo!));
-                                      } else {
-                                        Fluttertoast.showToast(
+                                      GestureDetector(
+                                        onTap: () {
+                                          debugPrint(
+                                              'lmnop${LocaleKeys.message_share_featur_not_ready.tr()}');
+                                          Fluttertoast.showToast(
+                                            msg: LocaleKeys
+                                                .message_share_featur_not_ready
+                                                .tr(),
+                                            toastLength: Toast.LENGTH_SHORT,
                                             gravity: ToastGravity.TOP,
-                                            msg: LocaleKeys.message_no_game
-                                                .tr());
-                                      }
-                                    },
-                                    child: Container(
-                                      width: Dimens.DIMENS_30,
-                                      height: Dimens.DIMENS_30,
-                                      alignment: Alignment.center,
-                                      decoration: BoxDecoration(
-                                        border: Border.all(
-                                            color: COLOR_white_fff5f5f5),
-                                        borderRadius: BorderRadius.circular(5),
-                                        color: const Color.fromARGB(
-                                            255, 27, 26, 26),
+                                            timeInSecForIosWeb: 1,
+                                            backgroundColor:
+                                                COLOR_black_ff121212,
+                                            textColor: Colors.white,
+                                            fontSize: 16.0,
+                                          );
+                                        },
+                                        child: Transform.flip(
+                                          flipX: true,
+                                          child: Icon(
+                                            BootstrapIcons.reply_fill,
+                                            color: COLOR_white_fff5f5f5,
+                                            size: Dimens.DIMENS_34,
+                                          ),
+                                        ),
                                       ),
-                                      child: videoData.game == null
-                                          ? Icon(
-                                              MdiIcons.controller,
-                                              color: COLOR_white_fff5f5f5,
-                                              size: Dimens.DIMENS_15,
-                                            )
-                                          : _buildGameImage(videoData),
-                                    ),
-                                  )
-                                ],
-                              ),
-                            )
-                          : Container();
-                    }),
-                _buildUserNameView(context, videoData),
-                _buildProgerBarIndicatorView(),
-                const Align(
-                  alignment: Alignment.center,
-                  child: LikeWidget(),
-                ),
-                BlocBuilder<VideoPlayerBloc, VideoPlayerState>(
-                  builder: (context, state) {
-                    return Align(
+                                      SizedBox(
+                                        height: Dimens.DIMENS_25,
+                                      ),
+                                      _videoMenu(
+                                        context,
+                                        videoData,
+                                        authRepository,
+                                      ),
+                                      GestureDetector(
+                                        onTap: () {
+                                          if (videoData.game != null) {
+                                            context.push(
+                                                APP_PAGE.videoFromGame.toPath,
+                                                extra: VideoFromGameData(
+                                                    game: videoData.game!,
+                                                    captions: videoData.caption,
+                                                    profileImg: data!.photo!));
+                                          } else {
+                                            Fluttertoast.showToast(
+                                                gravity: ToastGravity.TOP,
+                                                msg: LocaleKeys.message_no_game
+                                                    .tr());
+                                          }
+                                        },
+                                        child: Container(
+                                          width: Dimens.DIMENS_30,
+                                          height: Dimens.DIMENS_30,
+                                          alignment: Alignment.center,
+                                          decoration: BoxDecoration(
+                                            border: Border.all(
+                                                color: COLOR_white_fff5f5f5),
+                                            borderRadius:
+                                                BorderRadius.circular(5),
+                                            color: const Color.fromARGB(
+                                                255, 27, 26, 26),
+                                          ),
+                                          child: videoData.game == null
+                                              ? Icon(
+                                                  MdiIcons.controller,
+                                                  color: COLOR_white_fff5f5f5,
+                                                  size: Dimens.DIMENS_15,
+                                                )
+                                              : _buildGameImage(videoData),
+                                        ),
+                                      )
+                                    ],
+                                  ),
+                                )
+                              : Container();
+                        }),
+                    _buildUserNameView(context, videoData),
+                    _buildProgerBarIndicatorView(),
+                    const Align(
                       alignment: Alignment.center,
-                      child: AnimatedOpacity(
-                        opacity:
-                            state.status == VideoPlayerStatus.paused ? 1 : 0,
-                        duration: kThemeAnimationDuration,
-                        child: GestureDetector(
-                          onTap: () {
-                            BlocProvider.of<VideoPlayerBloc>(context).add(
-                                const VideoPlayerEvent(
-                                    actions: VideoEvent.play));
-                          },
-                          child: FaIcon(
-                            FontAwesomeIcons.play,
-                            size: state.status == VideoPlayerStatus.paused
-                                ? Dimens.DIMENS_38
-                                : Dimens.DIMENS_50,
-                            color: COLOR_white_fff5f5f5,
+                      child: LikeWidget(),
+                    ),
+                    BlocBuilder<VideoPlayerBloc, VideoPlayerState>(
+                      builder: (context, state) {
+                        return Align(
+                          alignment: Alignment.center,
+                          child: AnimatedOpacity(
+                            opacity: state.status == VideoPlayerStatus.paused
+                                ? 1
+                                : 0,
+                            duration: kThemeAnimationDuration,
+                            child: GestureDetector(
+                              onTap: () {
+                                BlocProvider.of<VideoPlayerBloc>(context).add(
+                                    const VideoPlayerEvent(
+                                        actions: VideoEvent.play));
+                              },
+                              child: FaIcon(
+                                FontAwesomeIcons.play,
+                                size: state.status == VideoPlayerStatus.paused
+                                    ? Dimens.DIMENS_38
+                                    : Dimens.DIMENS_50,
+                                color: COLOR_white_fff5f5f5,
+                              ),
+                            ),
                           ),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ]),
+                        );
+                      },
+                    ),
+                  ]),
+                );
+              },
             ),
           ),
         );
       }),
     );
+  }
+
+  Widget _videoMenu(
+    BuildContext context,
+    Video videoData,
+    AuthRepository authRepository,
+  ) {
+    return widget.isForLogedUserVideo!
+        ? Padding(
+            padding: EdgeInsets.only(bottom: Dimens.DIMENS_25),
+            child: GestureDetector(
+              onTap: () {
+                if (videoData.uid == authRepository.currentUser?.uid &&
+                    authRepository.currentUser?.uid != null) {
+                  showModalBottomSheetMenu(context, height: 100, menu: [
+                    Material(
+                      child: ListTile(
+                        tileColor: Colors.transparent,
+                        onTap: () {
+                          showDialog(
+                              context: context,
+                              builder: (_) => AlertDialog(
+                                    title: Text(
+                                        LocaleKeys.message_delete_video.tr()),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () => context.pop(),
+                                        child: Text(
+                                          LocaleKeys.label_cancel.tr(),
+                                          style: TextStyle(
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .primary
+                                                .withOpacity(0.5),
+                                          ),
+                                        ),
+                                      ),
+                                      TextButton(
+                                        onPressed: () {
+                                          BlocProvider.of<VideoPlayerBloc>(
+                                                  context)
+                                              .add(VideoPlayerEvent(
+                                            actions: VideoEvent.delete,
+                                            postId: videoData.id,
+                                          ));
+                                          BlocProvider.of<UploadBloc>(context)
+                                              .add(
+                                            DeleteVideo(
+                                              pagingIndex: widget.index,
+                                            ),
+                                          );
+                                          context.pop();
+                                          context.pop();
+                                          context.pop();
+                                        },
+                                        child: Text(
+                                          LocaleKeys.label_delete.tr(),
+                                        ),
+                                      )
+                                    ],
+                                  ));
+                        },
+                        leading: const Icon(
+                          BootstrapIcons.trash3,
+                          size: 20,
+                        ),
+                        title: Text(LocaleKeys.label_delete_video.tr()),
+                      ),
+                    )
+                  ]);
+                }
+              },
+              child: Icon(
+                Icons.more_horiz,
+                size: Dimens.DIMENS_34,
+              ),
+            ))
+        : Container();
   }
 
   @override
@@ -619,7 +734,7 @@ class _VideoItemState extends State<VideoItem> {
                                             currentUserUid:
                                                 firebaseAuth.currentUser!.uid,
                                             uid: data.id,
-                                            stateFromDatabase: isFollowing!,
+                                            stateFromDatabase: isFollowing,
                                           );
                                         }
                                       },
@@ -633,7 +748,7 @@ class _VideoItemState extends State<VideoItem> {
                                               color: state.status ==
                                                           BlocStatus
                                                               .following ||
-                                                      isFollowing!
+                                                      isFollowing
                                                   ? Theme.of(context)
                                                       .colorScheme
                                                       .primary
@@ -643,7 +758,7 @@ class _VideoItemState extends State<VideoItem> {
                                                 BorderRadius.circular(5),
                                             color: state.status ==
                                                         BlocStatus.following ||
-                                                    isFollowing!
+                                                    isFollowing
                                                 ? Colors.transparent
                                                 : Theme.of(context)
                                                     .colorScheme
@@ -651,7 +766,7 @@ class _VideoItemState extends State<VideoItem> {
                                         child: Text(
                                           state.status ==
                                                       BlocStatus.following ||
-                                                  isFollowing!
+                                                  isFollowing
                                               ? LocaleKeys.label_following.tr()
                                               : LocaleKeys.label_follow.tr(),
                                           style: Theme.of(context)

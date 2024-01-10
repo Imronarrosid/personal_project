@@ -22,6 +22,9 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
         _playVideo(videoPlayerRepository.controller, emit);
       } else if (event.actions == VideoEvent.pause) {
         _pauseVideo(videoPlayerRepository.controller, emit);
+      } else if (event.actions == VideoEvent.delete) {
+        await videoRepository.deleteVideo(event.postId!);
+        emit(const VideoPlayerState(status: VideoPlayerStatus.videoDeleted));
       }
     });
   }

@@ -16,6 +16,7 @@ import 'package:personal_project/data/repository/user_video_paging_repository.da
 import 'package:personal_project/domain/model/chat_data_models.dart';
 import 'package:personal_project/domain/model/following_n_followers_data_model.dart';
 import 'package:personal_project/domain/model/game_fav_modal.dart';
+import 'package:personal_project/domain/model/play_single_data.dart';
 import 'package:personal_project/domain/model/profile_data_model.dart';
 import 'package:personal_project/domain/model/user.dart';
 import 'package:personal_project/domain/model/video_model.dart';
@@ -1133,6 +1134,8 @@ class VideoListView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AuthRepository authRepository =
+        RepositoryProvider.of<AuthRepository>(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1208,7 +1211,7 @@ class VideoListView extends StatelessWidget {
                 ..add(InitUserVideoPaging(uid: uid, from: from)),
               child: BlocBuilder<UserVideoPagingBloc, UserVideoPagingState>(
                 builder: (_, state) {
-                  if (state is UserVideoPagingInitialed) {
+                  if (state.status == BlocStatus.initialized) {
                     return BlocListener<RefreshProfileCubit,
                         RefreshProfileState>(
                       listener: (context, refreshState) {
@@ -1219,95 +1222,128 @@ class VideoListView extends StatelessWidget {
                           RepositoryProvider.of<UserVideoPagingRepository>(
                                   context)
                               .clearUserVideo();
-                          state.controller.refresh();
+                          state.controller!.refresh();
                         }
                       },
-                      child: PagedGridView<int, String>(
-                        pagingController: state.controller,
-                        padding: const EdgeInsets.only(top: 2),
-                        builderDelegate: PagedChildBuilderDelegate(
-                          noItemsFoundIndicatorBuilder: (context) => Center(
-                            child: Text(
-                              from == From.user
-                                  ? LocaleKeys.message_no_post.tr()
-                                  : LocaleKeys.message_no_liked_post.tr(),
-                              style: const TextStyle(
-                                  fontSize: 16, fontWeight: FontWeight.bold),
+                      child: BlocListener<UploadBloc, UploadState>(
+                        listener: (context, uploadState) {
+                          if (uploadState is VideoDeleted ||
+                              uploadState is VideoUploaded) {
+                            if (from == From.user) {
+                              RepositoryProvider.of<UserVideoPagingRepository>(
+                                      context)
+                                  .clearUserVideo();
+                              state.controller!.refresh();
+                            }
+                          }
+                        },
+                        child: PagedGridView<int, String>(
+                          pagingController: state.controller!,
+                          padding: const EdgeInsets.only(top: 2),
+                          builderDelegate: PagedChildBuilderDelegate(
+                            noItemsFoundIndicatorBuilder: (context) => Center(
+                              child: Text(
+                                from == From.user
+                                    ? LocaleKeys.message_no_post.tr()
+                                    : LocaleKeys.message_no_liked_post.tr(),
+                                style: const TextStyle(
+                                    fontSize: 16, fontWeight: FontWeight.bold),
+                              ),
                             ),
-                          ),
-                          itemBuilder: (_, item, index) {
-                            // var doc = await firebaseFirestore.collection('videos').doc(item).get();
-                            // Video video = Video.fromSnap(doc);
-                            return AspectRatio(
-                              aspectRatio: 16 / 9,
-                              child: FutureBuilder(
-                                  future: firebaseFirestore
-                                      .collection('videos')
-                                      .doc(item)
-                                      .get(),
-                                  builder: (_,
-                                      AsyncSnapshot<DocumentSnapshot>
-                                          snapshot) {
-                                    late Video video;
-                                    if (snapshot.data != null) {
-                                      video = Video.fromSnap(snapshot.data!);
-                                    }
+                            itemBuilder: (_, item, index) {
+                              // var doc = await firebaseFirestore.collection('videos').doc(item).get();
+                              // Video video = Video.fromSnap(doc);
+                              return AspectRatio(
+                                aspectRatio: 16 / 9,
+                                child: FutureBuilder(
+                                    future: firebaseFirestore
+                                        .collection('videos')
+                                        .doc(item)
+                                        .get(),
+                                    builder: (_,
+                                        AsyncSnapshot<DocumentSnapshot>
+                                            snapshot) {
+                                      late Video video;
 
-                                    if (!snapshot.hasData) {
-                                      return Container();
-                                    }
-                                    return Container(
-                                      color: COLOR_black,
-                                      child: GestureDetector(
-                                        onTap: () {
-                                          context.push(
+                                      if (!snapshot.hasData) {
+                                        return Container();
+                                      }
+                                      if (snapshot.data!.exists) {
+                                        video = Video.fromSnap(snapshot.data!);
+                                      } else {
+                                        return Container(
+                                            color: Colors.black,
+                                            alignment: Alignment.center,
+                                            child: Text(
+                                              'Video not available',
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .labelSmall,
+                                            ));
+                                      }
+                                      return Container(
+                                        color: COLOR_black,
+                                        child: GestureDetector(
+                                          onTap: () {
+                                            context.push(
                                               APP_PAGE.videoItem.toPath,
-                                              extra: video);
-                                        },
-                                        child: Stack(
-                                          alignment: Alignment.center,
-                                          children: [
-                                            CachedNetworkImage(
-                                                fit: BoxFit.cover,
-                                                imageUrl: video.thumnail),
-                                            Align(
-                                              alignment: Alignment.bottomLeft,
-                                              child: Padding(
-                                                padding:
-                                                    const EdgeInsets.all(8.0),
-                                                child: Row(
-                                                  children: [
-                                                    Text(
-                                                      '${video.views.length} ',
-                                                      style: TextStyle(
-                                                          color:
-                                                              COLOR_white_fff5f5f5),
-                                                    ),
-                                                    Text(
-                                                      LocaleKeys.label_views
-                                                          .tr(),
-                                                      style: TextStyle(
-                                                          color:
-                                                              COLOR_white_fff5f5f5),
-                                                    )
-                                                  ],
-                                                ),
+                                              extra: PlaySingleData(
+                                                index: index,
+                                                videoData: video,
+                                                isForLogedUserVideo:
+                                                    from == From.user &&
+                                                        uid ==
+                                                            authRepository
+                                                                .currentUser
+                                                                ?.uid,
                                               ),
-                                            )
-                                          ],
+                                            );
+                                          },
+                                          child: Stack(
+                                            alignment: Alignment.center,
+                                            children: [
+                                              CachedNetworkImage(
+                                                  fit: BoxFit.cover,
+                                                  imageUrl: video.thumnail),
+                                              Align(
+                                                alignment: Alignment.bottomLeft,
+                                                child: Padding(
+                                                  padding:
+                                                      const EdgeInsets.all(8.0),
+                                                  child: Row(
+                                                    children: [
+                                                      Text(
+                                                        '${video.views.length} ',
+                                                        style: TextStyle(
+                                                            color:
+                                                                COLOR_white_fff5f5f5),
+                                                      ),
+                                                      Text(
+                                                        LocaleKeys.label_views
+                                                            .tr(),
+                                                        style: TextStyle(
+                                                            color:
+                                                                COLOR_white_fff5f5f5),
+                                                      )
+                                                    ],
+                                                  ),
+                                                ),
+                                              )
+                                            ],
+                                          ),
                                         ),
-                                      ),
-                                    );
-                                  }),
-                            );
-                          },
-                        ),
-                        gridDelegate:
-                            const SliverGridDelegateWithFixedCrossAxisCount(
-                          childAspectRatio: 9 / 16,
-                          crossAxisCount: 3,
-                          mainAxisSpacing: 1,
-                          crossAxisSpacing: 1,
+                                      );
+                                    }),
+                              );
+                            },
+                          ),
+                          gridDelegate:
+                              const SliverGridDelegateWithFixedCrossAxisCount(
+                            childAspectRatio: 9 / 16,
+                            crossAxisCount: 3,
+                            mainAxisSpacing: 1,
+                            crossAxisSpacing: 1,
+                          ),
                         ),
                       ),
                     );

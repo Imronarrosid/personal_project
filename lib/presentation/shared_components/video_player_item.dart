@@ -7,6 +7,7 @@ import 'package:personal_project/presentation/ui/video/list_video/bloc/video_pla
 import 'package:personal_project/presentation/ui/video/list_video/video_item.dart';
 
 class VideoPlayerItem extends StatelessWidget {
+  final int index;
   final String url;
   final Video item;
 
@@ -14,11 +15,14 @@ class VideoPlayerItem extends StatelessWidget {
   ///
   /// play and pause
   final bool auto;
+  final bool? isForLogedUserVideo;
   const VideoPlayerItem({
     super.key,
+    required this.index,
     required this.url,
     required this.item,
     this.auto = false,
+    this.isForLogedUserVideo = false,
   });
 
   @override
@@ -35,8 +39,10 @@ class VideoPlayerItem extends StatelessWidget {
                 actions: VideoEvent.initialize, videoUrl: item.videoUrl),
           ),
         child: VideoItem(
+          index: index,
           videoData: item,
           auto: auto,
+          isForLogedUserVideo: isForLogedUserVideo,
         ),
       ),
     );

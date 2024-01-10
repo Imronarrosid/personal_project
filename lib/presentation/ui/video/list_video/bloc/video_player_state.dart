@@ -6,6 +6,7 @@ enum VideoPlayerStatus {
   playing,
   paused,
   buffering,
+  videoDeleted,
   error,
 }
 

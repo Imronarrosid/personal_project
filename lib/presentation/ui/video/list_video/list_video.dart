@@ -55,6 +55,7 @@ class ListVideo extends StatelessWidget {
                     builderDelegate: PagedChildBuilderDelegate<Video>(
                         itemBuilder: (context, item, index) {
                           return VideoPlayerItem(
+                            index: index,
                             item: item,
                             url: item.videoUrl,
                             auto: true,

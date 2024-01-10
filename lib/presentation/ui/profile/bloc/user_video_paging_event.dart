@@ -19,3 +19,12 @@ class InitUserVideoPaging extends UserVideoPagingEvent {
   @override
   List<Object> get props => [uid, from];
 }
+
+class RemoveItem extends UserVideoPagingEvent {
+  final int index;
+
+  const RemoveItem({required this.index});
+
+  @override
+  List<Object> get props => [super.props, index];
+}

@@ -20,3 +20,12 @@ class UploadVideoEvent extends UploadEvent {
   @override
   List<Object?> get props => [videoPath, caption, thumbnail, game];
 }
+
+class DeleteVideo extends UploadEvent {
+  final int pagingIndex;
+
+  const DeleteVideo({required this.pagingIndex});
+
+  @override
+  List<Object?> get props => [super.props, pagingIndex];
+}

@@ -30,6 +30,13 @@ class UploadBloc extends Bloc<UploadEvent, UploadState> {
         emit(UploadError(e.toString()));
       }
     });
+    on<DeleteVideo>((event, emit) {
+      emit(
+        VideoDeleted(
+          pagedIndex: event.pagingIndex,
+        ),
+      );
+    });
   }
   void _removeFile(String path) {
     File(path).deleteSync(recursive: true);
