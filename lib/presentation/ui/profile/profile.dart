@@ -701,14 +701,8 @@ class _ProfilePageState extends State<ProfilePage> {
                               radius: 10,
                               backgroundColor:
                                   Theme.of(context).colorScheme.secondary,
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(50),
-                                child: SizedBox.expand(
-                                  child: CachedNetworkImage(
-                                    imageUrl: games[index].gameImage!,
-                                    fit: BoxFit.cover,
-                                  ),
-                                ),
+                              backgroundImage: CachedNetworkImageProvider(
+                                games[index].gameImage!,
                               ),
                             ),
                             label: Text(
@@ -1342,6 +1336,8 @@ class VideoListView extends StatelessWidget {
                                             children: [
                                               CachedNetworkImage(
                                                   fit: BoxFit.cover,
+                                                  errorWidget: (_, __, ___) =>
+                                                      Container(),
                                                   imageUrl: video.thumnail),
                                               Align(
                                                 alignment: Alignment.bottomLeft,
