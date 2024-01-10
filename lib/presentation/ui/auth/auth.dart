@@ -75,7 +75,7 @@ void showAuthBottomSheetFunc(BuildContext context) {
                           BlocProvider.of<AuthBloc>(context)
                               .add(LogInWithGoogle());
                         } else {
-                          showNoInternetSnackBar(context);
+                          showNoInternetSnackBar();
                         }
                       },
                       child: Container(

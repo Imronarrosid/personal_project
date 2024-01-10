@@ -62,9 +62,9 @@ class _HomePageState extends State<HomePage> {
                   BlocListener<UploadBloc, UploadState>(
                     listener: (context, state) {
                       if (state is Uploading) {
-                        showUploadingSnackBar(context);
+                        showUploadingSnackBar();
                       } else if (state is VideoUploaded) {
-                        showUploadedSnackBar(context);
+                        showUploadedSnackBar();
                       } else if (state is UploadError) {
                         Fluttertoast.showToast(
                           msg: 'Upload gagal ${state.error}',
@@ -85,10 +85,10 @@ class _HomePageState extends State<HomePage> {
                         if (state.isNotiFy!) {
                           context.pop();
                           context.pop();
-                          showLoginSuccessSnackBar(context);
+                          showLoginSuccessSnackBar();
                         }
                       } else if (state.status == AuthStatus.error) {
-                        showLoginErrorSnackBar(context);
+                        showLoginErrorSnackBar();
                       }
 
                       if (state.status == AuthStatus.loading &&
