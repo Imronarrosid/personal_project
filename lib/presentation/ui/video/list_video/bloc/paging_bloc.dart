@@ -11,7 +11,7 @@ class VideoPaginBloc extends Bloc<VideoPagingEvent, VideoPagingState> {
   VideoPaginBloc(this.repository) : super(PagingInitial()) {
     on<InitPagingController>((event, emit) async {
       if (repository.controller == null) {
-        repository.initPagingController();
+        repository.initPagingController(event.from);
         emit(PagingControllerState(controller: repository.controller));
       }
     });

@@ -138,46 +138,52 @@ class _VideoItemState extends State<VideoItem> {
                         },
                         builder: (context, state) {
                           if (state.status == VideoPlayerStatus.initialized) {
-                            return FittedBox(
-                              fit: BoxFit.contain,
-                              child: SizedBox(
-                                width: state.controller!.value.size.width,
-                                height: state.controller!.value.size.height,
-                                child: Stack(
-                                  children: [
-                                    VisibilityDetector(
-                                      key: Key(
-                                          'visible-video-key-//${widget.videoData.createdAt}'),
-                                      onVisibilityChanged: (info) {
-                                        final CachedVideoPlayerController?
-                                            controller = state.controller;
-                                        var visiblePercentage =
-                                            info.visibleFraction * 100;
-                                        if (visiblePercentage < 30 &&
-                                            widget.auto &&
-                                            isActive) {
-                                          if (controller!.value.isInitialized) {
-                                            BlocProvider.of<VideoPlayerBloc>(
-                                                    context)
-                                                .add(const VideoPlayerEvent(
-                                                    actions: VideoEvent.pause));
-                                          }
-                                        } else {
-                                          // Point the controller is initialized
-                                          if (controller!.value.isInitialized &&
+                            return SizedBox.expand(
+                              child: FittedBox(
+                                fit: BoxFit.contain,
+                                child: SizedBox(
+                                  width: state.controller!.value.size.width,
+                                  height: state.controller!.value.size.height,
+                                  child: Stack(
+                                    children: [
+                                      VisibilityDetector(
+                                        key: Key(
+                                            'visible-video-key-//${widget.videoData.createdAt}'),
+                                        onVisibilityChanged: (info) {
+                                          final CachedVideoPlayerController?
+                                              controller = state.controller;
+                                          var visiblePercentage =
+                                              info.visibleFraction * 100;
+                                          if (visiblePercentage < 30 &&
                                               widget.auto &&
                                               isActive) {
-                                            BlocProvider.of<VideoPlayerBloc>(
-                                                    context)
-                                                .add(const VideoPlayerEvent(
-                                                    actions: VideoEvent.play));
+                                            if (controller!
+                                                .value.isInitialized) {
+                                              BlocProvider.of<VideoPlayerBloc>(
+                                                      context)
+                                                  .add(const VideoPlayerEvent(
+                                                      actions:
+                                                          VideoEvent.pause));
+                                            }
+                                          } else {
+                                            // Point the controller is initialized
+                                            if (controller!
+                                                    .value.isInitialized &&
+                                                widget.auto &&
+                                                isActive) {
+                                              BlocProvider.of<VideoPlayerBloc>(
+                                                      context)
+                                                  .add(const VideoPlayerEvent(
+                                                      actions:
+                                                          VideoEvent.play));
+                                            }
                                           }
-                                        }
-                                      },
-                                      child:
-                                          CachedVideoPlayer(state.controller!),
-                                    ),
-                                  ],
+                                        },
+                                        child: CachedVideoPlayer(
+                                            state.controller!),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
                             );
@@ -713,7 +719,7 @@ class _VideoItemState extends State<VideoItem> {
                     SizedBox(
                       width: Dimens.DIMENS_10,
                     ),
-                    data.id == firebaseAuth.currentUser!.uid
+                    data.id == firebaseAuth.currentUser?.uid
                         ? Container()
                         : FutureBuilder<bool>(
                             future: userRepository.isFollowing(data.id),
@@ -733,54 +739,62 @@ class _VideoItemState extends State<VideoItem> {
                                         context)),
                                 child: BlocBuilder<FollowCubit, FollowState>(
                                   builder: (context, state) {
-                                    return InkWell(
-                                      onTap: () {
-                                        if (firebaseAuth.currentUser == null) {
-                                          showAuthBottomSheetFunc(context);
-                                        } else {
-                                          BlocProvider.of<FollowCubit>(context)
-                                              .followButtonHandle(
-                                            currentUserUid:
-                                                firebaseAuth.currentUser!.uid,
-                                            uid: data.id,
-                                            stateFromDatabase: isFollowing,
-                                          );
-                                        }
-                                      },
-                                      child: Container(
-                                        padding: EdgeInsets.symmetric(
-                                          vertical: Dimens.DIMENS_6,
-                                          horizontal: Dimens.DIMENS_13,
-                                        ),
-                                        decoration: BoxDecoration(
-                                            border: Border.all(
-                                              color: state.status ==
-                                                          BlocStatus
-                                                              .following ||
-                                                      isFollowing
-                                                  ? Theme.of(context)
-                                                      .colorScheme
-                                                      .primary
-                                                  : Colors.transparent,
-                                            ),
-                                            borderRadius:
-                                                BorderRadius.circular(5),
-                                            color: state.status ==
+                                    return Material(
+                                      borderRadius: BorderRadius.circular(5),
+                                      color: state.status ==
+                                                  BlocStatus.following ||
+                                              isFollowing
+                                          ? Colors.transparent
+                                          : Theme.of(context)
+                                              .colorScheme
+                                              .onTertiary,
+                                      child: InkWell(
+                                        borderRadius: BorderRadius.circular(5),
+                                        onTap: () {
+                                          if (firebaseAuth.currentUser ==
+                                              null) {
+                                            showAuthBottomSheetFunc(context);
+                                          } else {
+                                            BlocProvider.of<FollowCubit>(
+                                                    context)
+                                                .followButtonHandle(
+                                              currentUserUid:
+                                                  firebaseAuth.currentUser!.uid,
+                                              uid: data.id,
+                                              stateFromDatabase: isFollowing,
+                                            );
+                                          }
+                                        },
+                                        child: Container(
+                                          padding: EdgeInsets.symmetric(
+                                            vertical: Dimens.DIMENS_6,
+                                            horizontal: Dimens.DIMENS_13,
+                                          ),
+                                          decoration: BoxDecoration(
+                                              border: Border.all(
+                                                color: state.status ==
+                                                            BlocStatus
+                                                                .following ||
+                                                        isFollowing
+                                                    ? Theme.of(context)
+                                                        .colorScheme
+                                                        .primary
+                                                    : Colors.transparent,
+                                              ),
+                                              borderRadius:
+                                                  BorderRadius.circular(5),
+                                              color: Colors.transparent),
+                                          child: Text(
+                                            state.status ==
                                                         BlocStatus.following ||
                                                     isFollowing
-                                                ? Colors.transparent
-                                                : Theme.of(context)
-                                                    .colorScheme
-                                                    .onTertiary),
-                                        child: Text(
-                                          state.status ==
-                                                      BlocStatus.following ||
-                                                  isFollowing
-                                              ? LocaleKeys.label_following.tr()
-                                              : LocaleKeys.label_follow.tr(),
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .bodySmall,
+                                                ? LocaleKeys.label_following
+                                                    .tr()
+                                                : LocaleKeys.label_follow.tr(),
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .bodySmall,
+                                          ),
                                         ),
                                       ),
                                     );

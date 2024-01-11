@@ -5,15 +5,22 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:personal_project/constant/color.dart';
+import 'package:personal_project/constant/dimens.dart';
 import 'package:personal_project/data/repository/paging_repository.dart';
 import 'package:personal_project/domain/model/video_model.dart';
+import 'package:personal_project/domain/reporsitory/auth_reposotory.dart';
 import 'package:personal_project/presentation/l10n/stings.g.dart';
 import 'package:personal_project/presentation/shared_components/video_player_item.dart';
+import 'package:personal_project/presentation/ui/auth/auth.dart';
 import 'package:personal_project/presentation/ui/home/cubit/home_cubit.dart';
 import 'package:personal_project/presentation/ui/video/list_video/bloc/paging_bloc.dart';
 
 class ListVideo extends StatefulWidget {
-  const ListVideo({super.key});
+  final VideoFrom from;
+  const ListVideo({
+    super.key,
+    required this.from,
+  });
 
   @override
   State<ListVideo> createState() => _ListVideoState();
@@ -26,6 +33,8 @@ class _ListVideoState extends State<ListVideo> {
   @override
   Widget build(BuildContext context) {
     debugPrint('REbuild');
+    final AuthRepository authRepository =
+        RepositoryProvider.of<AuthRepository>(context);
 
     return BlocListener<HomeCubit, HomeState>(
       listenWhen: (previous, current) => true,
@@ -42,9 +51,21 @@ class _ListVideoState extends State<ListVideo> {
         child: RepositoryProvider(
           create: (context) => PagingRepository(),
           child: BlocProvider(
-            create: (context) =>
-                VideoPaginBloc(RepositoryProvider.of<PagingRepository>(context))
-                  ..add(InitPagingController()),
+            create: (context) {
+              if (widget.from == VideoFrom.following) {
+                return VideoPaginBloc(
+                    RepositoryProvider.of<PagingRepository>(context))
+                  ..add(
+                    const InitPagingController(from: VideoFrom.following),
+                  );
+              } else {
+                return VideoPaginBloc(
+                    RepositoryProvider.of<PagingRepository>(context))
+                  ..add(
+                    const InitPagingController(from: VideoFrom.forYou),
+                  );
+              }
+            },
             child: BlocBuilder<VideoPaginBloc, VideoPagingState>(
               builder: (context, state) {
                 // No more video still swhowing last loaded video.
@@ -85,8 +106,48 @@ class _ListVideoState extends State<ListVideo> {
                                 auto: true,
                               );
                             },
-                            noItemsFoundIndicatorBuilder: (_) => Center(
-                                child: Text(LocaleKeys.message_no_post.tr())),
+                            noItemsFoundIndicatorBuilder: (_) {
+                              if (widget.from == VideoFrom.following &&
+                                  authRepository.currentUser != null) {
+                                return Container(
+                                  width: 400,
+                                  alignment: Alignment.center,
+                                  child: Text(LocaleKeys
+                                      .label_no_video_from_following
+                                      .tr()),
+                                );
+                              } else if (widget.from == VideoFrom.following &&
+                                  authRepository.currentUser == null) {
+                                return Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    SizedBox(
+                                      width: Dimens.DIMENS_250,
+                                      child: Text(
+                                        LocaleKeys.message_log_in_and_follow.tr(),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      height: Dimens.DIMENS_16,
+                                    ),
+                                    ElevatedButton(
+                                      onPressed: () {
+                                        showAuthBottomSheetFunc(context);
+                                      },
+                                      child: Text(
+                                        LocaleKeys.label_login.tr(),
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              }
+                              return Center(
+                                child: Text(
+                                  LocaleKeys.message_no_post.tr(),
+                                ),
+                              );
+                            },
                             newPageProgressIndicatorBuilder: (_) =>
                                 const Center(
                                     child: CircularProgressIndicator()),
