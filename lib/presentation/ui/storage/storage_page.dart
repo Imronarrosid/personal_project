@@ -54,8 +54,11 @@ class CachesPage extends StatelessWidget {
                                       .fileSizeStream,
                                   builder: (context, snapshot) {
                                     return Text(
-                                        LocaleKeys.label_caches.tr(
-                                            args: [fileMBSize(snapshot.data!)]),
+                                        LocaleKeys.label_caches.tr(args: [
+                                          state.status == StorageStatus.loaded
+                                              ? size
+                                              : fileMBSize(snapshot.data!)
+                                        ]),
                                         style: const TextStyle(
                                             fontWeight: FontWeight.bold));
                                   }),

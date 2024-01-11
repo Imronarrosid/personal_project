@@ -48,7 +48,7 @@ class FileRepository {
 
       return appDataSize;
     } catch (e) {
-      print('Error getting app data size: $e');
+      debugPrint('Error getting app data size: $e');
       return 0;
     }
   }
@@ -66,7 +66,7 @@ class FileRepository {
       }
       _fileController.close();
     } catch (e) {
-      print('Error getting app data size: $e');
+      debugPrint('Error getting app data size: $e');
     }
   }
 
