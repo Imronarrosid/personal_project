@@ -20,14 +20,14 @@ class _VideoPageState extends State<VideoPage>
 
   @override
   void initState() {
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(initialIndex: 1, length: 2, vsync: this);
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    Size size = MediaQuery.of(context).size;
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         toolbarHeight: 0,
@@ -39,7 +39,7 @@ class _VideoPageState extends State<VideoPage>
             padding: EdgeInsets.symmetric(horizontal: Dimens.DIMENS_45),
             isScrollable: false,
             dividerColor: Colors.transparent,
-            tabs:  <Widget>[
+            tabs: <Widget>[
               Tab(
                 text: LocaleKeys.label_following.tr(),
               ),

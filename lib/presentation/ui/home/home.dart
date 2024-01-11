@@ -55,195 +55,190 @@ class _HomePageState extends State<HomePage> {
       builder: (context, navState) {
         return Scaffold(
           resizeToAvoidBottomInset: false,
-          body: Scaffold(
-            body: MultiBlocListener(
-              listeners: [
-                BlocListener<UploadBloc, UploadState>(
-                  listener: (context, state) {
-                    if (state is Uploading) {
-                      showUploadingSnackBar();
-                    } else if (state is VideoUploaded) {
-                      showUploadedSnackBar();
-                    } else if (state is UploadError) {
-                      Fluttertoast.showToast(
-                        msg: 'Upload gagal ${state.error}',
-                        backgroundColor: Colors.black45,
-                        gravity: ToastGravity.TOP,
-                      );
-                    }
-                  },
-                ),
-                BlocListener<AuthBloc, AuthState>(
-                  listener: (context, state) {
-                    debugPrint('asts ${state.status.name}');
-                    if (state.status == AuthStatus.authenticated) {
-                      if (state.isUserFirstLogin!) {
-                        context.go(APP_PAGE.addUserName.toPath,
-                            extra: state.user!.userName);
-                      }
-                      if (state.isNotiFy!) {
-                        context.pop();
-                        context.pop();
-                        showLoginSuccessSnackBar();
-                      }
-                    } else if (state.status == AuthStatus.error) {
-                      showLoginErrorSnackBar();
-                    }
-
-                    if (state.status == AuthStatus.loading && state.isNotiFy!) {
-                      // context.pop();
-                      debugPrint('kikiay');
-                      showDialog(
-                        context: context,
-                        builder: (context) => WillPopScope(
-                          onWillPop: () async => false,
-                          child: const Dialog(
-                            elevation: 0,
-                            backgroundColor: Colors.transparent,
-                            child: Center(child: CircularProgressIndicator()),
-                          ),
-                        ),
-                      );
-                    }
-                  },
-                ),
-              ],
-              child: BlocBuilder<HomeCubit, HomeState>(
-                builder: (context, state) {
-                  return IndexedStack(
-                    index: state.index,
-                    children: pages,
-                  );
+          body: MultiBlocListener(
+            listeners: [
+              BlocListener<UploadBloc, UploadState>(
+                listener: (context, state) {
+                  if (state is Uploading) {
+                    showUploadingSnackBar();
+                  } else if (state is VideoUploaded) {
+                    showUploadedSnackBar();
+                  } else if (state is UploadError) {
+                    Fluttertoast.showToast(
+                      msg: 'Upload gagal ${state.error}',
+                      backgroundColor: Colors.black45,
+                      gravity: ToastGravity.TOP,
+                    );
+                  }
                 },
               ),
-            ),
-            bottomNavigationBar: BlocBuilder<HomeCubit, HomeState>(
-              builder: (_, state) {
-                return Theme(
-                  data: ThemeData(useMaterial3: false),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      border: Border(
-                        top: BorderSide(
-                            color: Theme.of(context).colorScheme.primary,
-                            width: 0.2),
+              BlocListener<AuthBloc, AuthState>(
+                listener: (context, state) {
+                  debugPrint('asts ${state.status.name}');
+                  if (state.status == AuthStatus.authenticated) {
+                    if (state.isUserFirstLogin!) {
+                      context.go(APP_PAGE.addUserName.toPath,
+                          extra: state.user!.userName);
+                    }
+                    if (state.isNotiFy!) {
+                      context.pop();
+                      context.pop();
+                      showLoginSuccessSnackBar();
+                    }
+                  } else if (state.status == AuthStatus.error) {
+                    showLoginErrorSnackBar();
+                  }
+
+                  if (state.status == AuthStatus.loading && state.isNotiFy!) {
+                    // context.pop();
+                    debugPrint('kikiay');
+                    showDialog(
+                      context: context,
+                      builder: (context) => WillPopScope(
+                        onWillPop: () async => false,
+                        child: const Dialog(
+                          elevation: 0,
+                          backgroundColor: Colors.transparent,
+                          child: Center(child: CircularProgressIndicator()),
+                        ),
                       ),
-                    ),
-                    child: BottomNavigationBar(
-                      elevation: 2,
-                      unselectedItemColor:
-                          COLOR_white_fff5f5f5.withOpacity(0.6),
-                      selectedItemColor: COLOR_white_fff5f5f5,
-                      type: BottomNavigationBarType.fixed,
-                      selectedFontSize: 12,
-                      unselectedFontSize: 12,
-                      backgroundColor: COLOR_black_ff121212,
-                      items: [
-                        BottomNavigationBarItem(
-                          icon: const Icon(BootstrapIcons.house_door),
-                          activeIcon: const Icon(
-                            BootstrapIcons.house_door_fill,
-                          ),
-                          label: LocaleKeys.label_home.tr(),
-                          tooltip: LocaleKeys.label_home.tr(),
-                        ),
-                        BottomNavigationBarItem(
-                          icon: const Icon(
-                            BootstrapIcons.search,
-                          ),
-                          activeIcon: const Icon(
-                            BootstrapIcons.search,
-                          ),
-                          label: LocaleKeys.label_search.tr(),
-                          tooltip: LocaleKeys.label_search.tr(),
-                        ),
-                        BottomNavigationBarItem(
-                          icon: const Icon(
-                            BootstrapIcons.plus_circle,
-                            size: 24,
-                          ),
-                          label: '',
-                          tooltip: LocaleKeys.title_upload.tr(),
-                        ),
-                        BottomNavigationBarItem(
-                          icon: Padding(
-                            padding: EdgeInsets.only(bottom: Dimens.DIMENS_3),
-                            child: const Icon(BootstrapIcons.chat),
-                          ),
-                          activeIcon: Padding(
-                            padding: EdgeInsets.only(bottom: Dimens.DIMENS_3),
-                            child: const Icon(BootstrapIcons.chat_fill),
-                          ),
-                          label: LocaleKeys.label_chat.tr(),
-                          tooltip: LocaleKeys.label_chat.tr(),
-                        ),
-                        BottomNavigationBarItem(
-                          icon: user != null
-                              ? StreamBuilder(
-                                  stream: userRepository.getAvatar(user.uid),
-                                  builder: (_, snapshot) {
-                                    String? avatar = snapshot.data;
-                                    if (!snapshot.hasData ||
-                                        snapshot.hasError) {
-                                      return Icon(
-                                          MdiIcons.accountCircleOutline);
-                                    }
-                                    return Container(
-                                      padding: EdgeInsets.all(Dimens.DIMENS_2),
-                                      decoration: BoxDecoration(
-                                        border: Border.all(
-                                          color: state.index == 4
-                                              ? Theme.of(context)
-                                                  .colorScheme
-                                                  .primary
-                                              : Colors.transparent,
-                                        ),
-                                        borderRadius: BorderRadius.circular(50),
-                                      ),
-                                      child: CircleAvatar(
-                                        radius: Dimens.DIMENS_10,
-                                        backgroundColor: Colors.transparent,
-                                        backgroundImage:
-                                            CachedNetworkImageProvider(
-                                          avatar!,
-                                        ),
-                                      ),
-                                    );
-                                  })
-                              : Icon(MdiIcons.accountCircleOutline),
-                          label: LocaleKeys.label_profile.tr(),
-                          tooltip: LocaleKeys.label_profile.tr(),
-                        ),
-                      ],
-                      currentIndex: state.index,
-                      onTap: (value) async {
-                        if (value == 2) {
-                          // Navigator.push(context, MaterialPageRoute(builder: (context)=>UploadPage()));
-                          // BlocProvider.of<CameraBloc>(context).add(const OpenRearCameraEvent());
-                          // await availableCameras().then((value) => context
-                          //     .push(APP_PAGE.upload.toPath, extra: value));
-                          showUploadModal(context);
-                        } else {
-                          // setState(() {
-                          //   selectedindex = value;
-                          // });
-                          BlocProvider.of<HomeCubit>(context).changePage(value);
-                          if (value == 0) {
-                            if (isTriggerReset) {
-                              BlocProvider.of<HomeCubit>(context)
-                                  .triggerReset(value);
-                            }
-                            isTriggerReset = true;
-                          } else {
-                            isTriggerReset = false;
-                          }
-                        }
-                      },
-                    ),
-                  ),
+                    );
+                  }
+                },
+              ),
+            ],
+            child: BlocBuilder<HomeCubit, HomeState>(
+              builder: (context, state) {
+                return IndexedStack(
+                  index: state.index,
+                  children: pages,
                 );
               },
             ),
+          ),
+          bottomNavigationBar: BlocBuilder<HomeCubit, HomeState>(
+            builder: (_, state) {
+              return Theme(
+                data: ThemeData(useMaterial3: false),
+                child: Container(
+                  decoration: BoxDecoration(
+                    border: Border(
+                      top: BorderSide(
+                          color: Theme.of(context).colorScheme.primary,
+                          width: 0.2),
+                    ),
+                  ),
+                  child: BottomNavigationBar(
+                    elevation: 2,
+                    unselectedItemColor: COLOR_white_fff5f5f5.withOpacity(0.6),
+                    selectedItemColor: COLOR_white_fff5f5f5,
+                    type: BottomNavigationBarType.fixed,
+                    selectedFontSize: 12,
+                    unselectedFontSize: 12,
+                    backgroundColor: COLOR_black_ff121212,
+                    items: [
+                      BottomNavigationBarItem(
+                        icon: const Icon(BootstrapIcons.house_door),
+                        activeIcon: const Icon(
+                          BootstrapIcons.house_door_fill,
+                        ),
+                        label: LocaleKeys.label_home.tr(),
+                        tooltip: LocaleKeys.label_home.tr(),
+                      ),
+                      BottomNavigationBarItem(
+                        icon: const Icon(
+                          BootstrapIcons.search,
+                        ),
+                        activeIcon: const Icon(
+                          BootstrapIcons.search,
+                        ),
+                        label: LocaleKeys.label_search.tr(),
+                        tooltip: LocaleKeys.label_search.tr(),
+                      ),
+                      BottomNavigationBarItem(
+                        icon: const Icon(
+                          BootstrapIcons.plus_circle,
+                          size: 24,
+                        ),
+                        label: '',
+                        tooltip: LocaleKeys.title_upload.tr(),
+                      ),
+                      BottomNavigationBarItem(
+                        icon: Padding(
+                          padding: EdgeInsets.only(bottom: Dimens.DIMENS_3),
+                          child: const Icon(BootstrapIcons.chat),
+                        ),
+                        activeIcon: Padding(
+                          padding: EdgeInsets.only(bottom: Dimens.DIMENS_3),
+                          child: const Icon(BootstrapIcons.chat_fill),
+                        ),
+                        label: LocaleKeys.label_chat.tr(),
+                        tooltip: LocaleKeys.label_chat.tr(),
+                      ),
+                      BottomNavigationBarItem(
+                        icon: user != null
+                            ? StreamBuilder(
+                                stream: userRepository.getAvatar(user.uid),
+                                builder: (_, snapshot) {
+                                  String? avatar = snapshot.data;
+                                  if (!snapshot.hasData || snapshot.hasError) {
+                                    return Icon(MdiIcons.accountCircleOutline);
+                                  }
+                                  return Container(
+                                    padding: EdgeInsets.all(Dimens.DIMENS_2),
+                                    decoration: BoxDecoration(
+                                      border: Border.all(
+                                        color: state.index == 4
+                                            ? Theme.of(context)
+                                                .colorScheme
+                                                .primary
+                                            : Colors.transparent,
+                                      ),
+                                      borderRadius: BorderRadius.circular(50),
+                                    ),
+                                    child: CircleAvatar(
+                                      radius: Dimens.DIMENS_10,
+                                      backgroundColor: Colors.transparent,
+                                      backgroundImage:
+                                          CachedNetworkImageProvider(
+                                        avatar!,
+                                      ),
+                                    ),
+                                  );
+                                })
+                            : Icon(MdiIcons.accountCircleOutline),
+                        label: LocaleKeys.label_profile.tr(),
+                        tooltip: LocaleKeys.label_profile.tr(),
+                      ),
+                    ],
+                    currentIndex: state.index,
+                    onTap: (value) async {
+                      if (value == 2) {
+                        // Navigator.push(context, MaterialPageRoute(builder: (context)=>UploadPage()));
+                        // BlocProvider.of<CameraBloc>(context).add(const OpenRearCameraEvent());
+                        // await availableCameras().then((value) => context
+                        //     .push(APP_PAGE.upload.toPath, extra: value));
+                        showUploadModal(context);
+                      } else {
+                        // setState(() {
+                        //   selectedindex = value;
+                        // });
+                        BlocProvider.of<HomeCubit>(context).changePage(value);
+                        if (value == 0) {
+                          if (isTriggerReset) {
+                            BlocProvider.of<HomeCubit>(context)
+                                .triggerReset(value);
+                          }
+                          isTriggerReset = true;
+                        } else {
+                          isTriggerReset = false;
+                        }
+                      }
+                    },
+                  ),
+                ),
+              );
+            },
           ),
         );
       },
