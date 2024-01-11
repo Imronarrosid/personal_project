@@ -12,6 +12,7 @@ import 'package:personal_project/domain/reporsitory/auth_reposotory.dart';
 import 'package:personal_project/presentation/l10n/stings.g.dart';
 import 'package:personal_project/presentation/shared_components/video_player_item.dart';
 import 'package:personal_project/presentation/ui/auth/auth.dart';
+import 'package:personal_project/presentation/ui/auth/bloc/auth_bloc.dart';
 import 'package:personal_project/presentation/ui/home/cubit/home_cubit.dart';
 import 'package:personal_project/presentation/ui/video/list_video/bloc/paging_bloc.dart';
 
@@ -107,45 +108,53 @@ class _ListVideoState extends State<ListVideo> {
                               );
                             },
                             noItemsFoundIndicatorBuilder: (_) {
-                              if (widget.from == VideoFrom.following &&
-                                  authRepository.currentUser != null) {
-                                return Container(
-                                  width: 400,
-                                  alignment: Alignment.center,
-                                  child: Text(LocaleKeys
-                                      .label_no_video_from_following
-                                      .tr()),
-                                );
-                              } else if (widget.from == VideoFrom.following &&
-                                  authRepository.currentUser == null) {
-                                return Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    SizedBox(
-                                      width: Dimens.DIMENS_250,
-                                      child: Text(
-                                        LocaleKeys.message_log_in_and_follow.tr(),
-                                        textAlign: TextAlign.center,
-                                      ),
+                              return BlocBuilder<AuthBloc, AuthState>(
+                                builder: (context, state) {
+                                  if (widget.from == VideoFrom.following &&
+                                      authRepository.currentUser != null) {
+                                    return Container(
+                                      width: 400,
+                                      alignment: Alignment.center,
+                                      child: Text(LocaleKeys
+                                          .label_no_video_from_following
+                                          .tr()),
+                                    );
+                                  } else if (widget.from ==
+                                          VideoFrom.following &&
+                                      authRepository.currentUser == null) {
+                                    return Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        SizedBox(
+                                          width: Dimens.DIMENS_250,
+                                          child: Text(
+                                            LocaleKeys.message_log_in_and_follow
+                                                .tr(),
+                                            textAlign: TextAlign.center,
+                                          ),
+                                        ),
+                                        SizedBox(
+                                          height: Dimens.DIMENS_16,
+                                        ),
+                                        ElevatedButton(
+                                          onPressed: () {
+                                            showAuthBottomSheetFunc(context);
+                                          },
+                                          child: Text(
+                                            LocaleKeys.label_login.tr(),
+                                          ),
+                                        ),
+                                      ],
+                                    );
+                                  }
+
+                                  return Center(
+                                    child: Text(
+                                      LocaleKeys.message_no_post.tr(),
                                     ),
-                                    SizedBox(
-                                      height: Dimens.DIMENS_16,
-                                    ),
-                                    ElevatedButton(
-                                      onPressed: () {
-                                        showAuthBottomSheetFunc(context);
-                                      },
-                                      child: Text(
-                                        LocaleKeys.label_login.tr(),
-                                      ),
-                                    ),
-                                  ],
-                                );
-                              }
-                              return Center(
-                                child: Text(
-                                  LocaleKeys.message_no_post.tr(),
-                                ),
+                                  );
+                                },
                               );
                             },
                             newPageProgressIndicatorBuilder: (_) =>
