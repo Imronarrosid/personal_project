@@ -45,6 +45,7 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
   Future<void> _initVideoPlayer(CachedVideoPlayerController? controller,
       VideoPlayerEvent event, Emitter<VideoPlayerState> emit) async {
     try {
+      emit(const VideoPlayerInitial());
       controller = await videoPlayerRepository.initVideoPlayer(event.videoUrl!);
       if (controller!.value.isInitialized) {
         emit(VideoPlayerState(

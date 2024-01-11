@@ -203,25 +203,30 @@ class _VideoItemState extends State<VideoItem> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Text(
-                                'Tidak dapat menampilkan video',
+                                'Error',
                                 style: TextStyle(
                                     color: COLOR_white_fff5f5f5,
                                     fontSize: _IC_LABEL_FONTSIZE),
                               ),
-                              SizedBox(
-                                height: Dimens.DIMENS_12,
-                              ),
-                              FaIcon(
-                                FontAwesomeIcons.circleExclamation,
-                                color: COLOR_white_fff5f5f5,
-                              ),
-                              Text(
-                                state.status == VideoPlayerStatus.error
-                                    ? state.error.toString()
-                                    : '',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(color: COLOR_white_fff5f5f5),
-                              ),
+                              IconButton(
+                                  onPressed: () {
+                                    final CachedVideoPlayerController?
+                                        controller0 = RepositoryProvider.of<
+                                                VideoPlayerRepository>(context)
+                                            .controller;
+                                    if (controller0 != null) {
+                                      controller0.dispose();
+                                    }
+                                    BlocProvider.of<VideoPlayerBloc>(context)
+                                        .add(
+                                      VideoPlayerEvent(
+                                        actions: VideoEvent.initialize,
+                                        postId: videoData.id,
+                                        videoUrl: videoData.videoUrl,
+                                      ),
+                                    );
+                                  },
+                                  icon: Icon(BootstrapIcons.arrow_repeat)),
                             ],
                           );
                         },
@@ -417,6 +422,9 @@ class _VideoItemState extends State<VideoItem> {
                     ),
                     BlocBuilder<VideoPlayerBloc, VideoPlayerState>(
                       builder: (context, state) {
+                        if (state.status != VideoPlayerStatus.paused) {
+                          return Container();
+                        }
                         return Align(
                           alignment: Alignment.center,
                           child: AnimatedOpacity(

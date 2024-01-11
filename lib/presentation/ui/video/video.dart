@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:personal_project/constant/color.dart';
 import 'package:personal_project/constant/dimens.dart';
 import 'package:personal_project/presentation/l10n/stings.g.dart';
+import 'package:personal_project/presentation/shared_components/keep_alive_page.dart';
 import 'package:personal_project/presentation/ui/video/list_video/bloc/paging_bloc.dart';
 
 import 'list_video/list_video.dart';
@@ -54,8 +55,8 @@ class _VideoPageState extends State<VideoPage>
           controller: _tabController,
           physics: const NeverScrollableScrollPhysics(),
           children: const [
-            ListVideo(from: VideoFrom.following),
-            ListVideo(from: VideoFrom.forYou),
+            KeepAlivePage(child: ListVideo(from: VideoFrom.following)),
+            KeepAlivePage(child: ListVideo(from: VideoFrom.forYou)),
           ]),
     );
   }
