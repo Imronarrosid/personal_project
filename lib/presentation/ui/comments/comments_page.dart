@@ -17,6 +17,7 @@ import 'package:personal_project/presentation/l10n/locale_code.dart';
 import 'package:personal_project/presentation/l10n/stings.g.dart';
 import 'package:personal_project/presentation/router/route_utils.dart';
 import 'package:personal_project/presentation/ui/auth/auth.dart';
+import 'package:personal_project/presentation/ui/auth/bloc/auth_bloc.dart';
 import 'package:personal_project/presentation/ui/comments/bloc/comment_bloc.dart';
 import 'package:personal_project/presentation/ui/comments/bloc/comments_paging_bloc.dart';
 import 'package:personal_project/presentation/ui/comments/cubit/like_comment_cubit.dart';
@@ -153,48 +154,55 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                   decoration: BoxDecoration(
                       color: Theme.of(context).colorScheme.tertiary,
                       borderRadius: BorderRadius.circular(10)),
-                  child: TextField(
-                    controller: _textEditingController,
-                    decoration: InputDecoration(
-                        contentPadding:
-                            EdgeInsets.symmetric(horizontal: Dimens.DIMENS_12),
-                        hintText: LocaleKeys.message_add_comments.tr(),
-                        hintStyle:
-                            const TextStyle(fontWeight: FontWeight.normal),
-                        border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10))),
-                    textAlignVertical: TextAlignVertical.center,
-                    keyboardType: TextInputType.multiline,
-                    minLines: 1,
-                    maxLines: 3,
-                    onTap: () {
-                      final isAuthenticated =
-                          RepositoryProvider.of<AuthRepository>(context)
-                                  .currentUser !=
-                              null;
-                      if (isAuthenticated) {
-                        BlocProvider.of<CommentBloc>(context)
-                            .add(TapCommentForm());
-                      } else {
-                        showAuthBottomSheetFunc(context);
-                      }
-                    },
-                    onChanged: (text) {
-                      final CommentBloc commentsBloc =
-                          BlocProvider.of<CommentBloc>(context);
-                      if (text.endsWith('\n')) {
-                        // Handle the Enter key press
+                  child: BlocBuilder<AuthBloc, AuthState>(
+                    builder: (context, state) {
+                      return GestureDetector(
+                        onTap: () {
+                          final isAuthenticated =
+                              RepositoryProvider.of<AuthRepository>(context)
+                                      .currentUser !=
+                                  null;
+                          if (isAuthenticated) {
+                            BlocProvider.of<CommentBloc>(context)
+                                .add(TapCommentForm());
+                          } else {
+                            showAuthBottomSheetFunc(context);
+                          }
+                        },
+                        child: TextField(
+                          controller: _textEditingController,
+                          decoration: InputDecoration(
+                              enabled: state.status == AuthStatus.authenticated,
+                              contentPadding: EdgeInsets.symmetric(
+                                  horizontal: Dimens.DIMENS_12),
+                              hintText: LocaleKeys.message_add_comments.tr(),
+                              hintStyle: const TextStyle(
+                                  fontWeight: FontWeight.normal),
+                              border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10))),
+                          textAlignVertical: TextAlignVertical.center,
+                          keyboardType: TextInputType.multiline,
+                          minLines: 1,
+                          maxLines: 3,
+                          onChanged: (text) {
+                            final CommentBloc commentsBloc =
+                                BlocProvider.of<CommentBloc>(context);
+                            if (text.endsWith('\n')) {
+                              // Handle the Enter key press
 
-                        // You can add your custom logic here
-                      }
-                      if (text.isNotEmpty) {
-                        commentsBloc.add(InputComments());
-                      } else {
-                        commentsBloc.add(TapCommentForm());
-                      }
-                    },
-                    onSubmitted: (_) {
-                      debugPrint('Submit');
+                              // You can add your custom logic here
+                            }
+                            if (text.isNotEmpty) {
+                              commentsBloc.add(InputComments());
+                            } else {
+                              commentsBloc.add(TapCommentForm());
+                            }
+                          },
+                          onSubmitted: (_) {
+                            debugPrint('Submit');
+                          },
+                        ),
+                      );
                     },
                   ),
                 ),
