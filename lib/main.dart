@@ -23,6 +23,7 @@ import 'package:personal_project/presentation/ui/edit_profile/cubit/edit_name_cu
 import 'package:personal_project/presentation/ui/edit_profile/cubit/edit_profile_pict_cubit.dart';
 import 'package:personal_project/presentation/ui/edit_profile/cubit/edit_user_name_cubit.dart';
 import 'package:personal_project/presentation/ui/edit_profile/cubit/game_fav_cubit.dart';
+import 'package:personal_project/presentation/ui/home/cubit/home_cubit.dart';
 import 'package:personal_project/presentation/ui/language/cubit/language_cubit.dart';
 import 'package:personal_project/presentation/ui/upload/bloc/camera_bloc.dart';
 import 'package:personal_project/presentation/ui/video_preview/bloc/video_preview_bloc.dart';
@@ -110,6 +111,9 @@ class _MyAppState extends State<MyApp> {
           ],
           child: MultiBlocProvider(
             providers: [
+              BlocProvider(
+                create: (context) => HomeCubit(),
+              ),
               BlocProvider<CameraBloc>(
                 create: (context) => CameraBloc(),
               ),

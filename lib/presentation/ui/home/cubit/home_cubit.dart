@@ -6,7 +6,15 @@ part 'home_state.dart';
 class HomeCubit extends Cubit<HomeState> {
   HomeCubit() : super(const HomeInitial(0));
 
-  changePage(int index){
+  changePage(int index) {
     emit(HomeInitial(index));
+  }
+
+  void triggerReset(
+    int index,
+  ) {
+    emit(
+      HomeState(index, isTriggerReset: true),
+    );
   }
 }
