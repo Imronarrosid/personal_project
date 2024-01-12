@@ -88,6 +88,7 @@ dependencies:
   image_cropper: ^5.0.1
   bootstrap_icons: ^1.11.3
   dots_indicator: ^3.0.0
+  flutter_native_splash: ^2.3.7
 
 dev_dependencies:
   flutter_test:
