@@ -222,31 +222,35 @@ class VideoRepository implements VideoUseCaseType {
   }
 
   Future<void> likeVideo(String id) async {
-    DocumentSnapshot doc =
-        await firebaseFirestore.collection('videos').doc(id).get();
+    try {
+      DocumentSnapshot doc =
+          await firebaseFirestore.collection('videos').doc(id).get();
 
-    var uid = firebaseAuth.currentUser!.uid;
-    if ((doc.data()! as dynamic)['likes'].contains(uid)) {
-      await firebaseFirestore.collection('videos').doc(id).update({
-        'likes': FieldValue.arrayRemove([uid])
-      });
+      var uid = firebaseAuth.currentUser!.uid;
+      if ((doc.data()! as dynamic)['likes'].contains(uid)) {
+        await firebaseFirestore.collection('videos').doc(id).update({
+          'likes': FieldValue.arrayRemove([uid])
+        });
 
-      await firebaseFirestore
-          .collection('users')
-          .doc(uid)
-          .collection('likes')
-          .doc(id)
-          .delete();
-    } else {
-      await firebaseFirestore.collection('videos').doc(id).update({
-        'likes': FieldValue.arrayUnion([uid])
-      });
-      await firebaseFirestore
-          .collection('users')
-          .doc(uid)
-          .collection('likes')
-          .doc(id)
-          .set({'postId': id, 'likedAt': FieldValue.serverTimestamp()});
+        await firebaseFirestore
+            .collection('users')
+            .doc(uid)
+            .collection('likes')
+            .doc(id)
+            .delete();
+      } else {
+        await firebaseFirestore.collection('videos').doc(id).update({
+          'likes': FieldValue.arrayUnion([uid])
+        });
+        await firebaseFirestore
+            .collection('users')
+            .doc(uid)
+            .collection('likes')
+            .doc(id)
+            .set({'postId': id, 'likedAt': FieldValue.serverTimestamp()});
+      }
+    } catch (e) {
+      debugPrint(e.toString());
     }
   }
 
