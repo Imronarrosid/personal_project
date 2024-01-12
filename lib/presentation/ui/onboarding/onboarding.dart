@@ -169,6 +169,9 @@ class _OnBoardingPageState extends State<OnBoardingPage> {
                                           .withOpacity(0.7)),
                             ),
                           ),
+                          SizedBox(
+                            height: Dimens.DIMENS_34,
+                          ),
                           Image.asset(
                             Images.IC_GAMEPIUN,
                             width: Dimens.DIMENS_250,
