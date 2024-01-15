@@ -173,7 +173,7 @@ class _OnBoardingPageState extends State<OnBoardingPage> {
                             height: Dimens.DIMENS_34,
                           ),
                           Image.asset(
-                            Images.IC_GAMEPIUN,
+                            Images.IC_GAMEPIUN512X521,
                             width: Dimens.DIMENS_250,
                           )
                         ],

@@ -9,4 +9,5 @@ class Images {
   static const IC_GALLERY_2 = 'assets/images/ic_gallery_2.png';
   static const IC_PERSON_2_OUTLINE = 'assets/images/ic_person_2_outline.svg';
   static const IC_GAMEPIUN = 'assets/images/ic_gamepiun.png';
+  static const IC_GAMEPIUN512X521 = 'assets/images/ic_gamepiun512x512.png';
 }
