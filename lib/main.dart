@@ -174,7 +174,7 @@ class _MyAppState extends State<MyApp> {
               locale: context.locale,
               supportedLocales: context.supportedLocales,
               localizationsDelegates: context.localizationDelegates,
-              title: "Gametok",
+              title: "Gamepiun",
               routeInformationProvider: goRouter.routeInformationProvider,
               routeInformationParser: goRouter.routeInformationParser,
               routerDelegate: goRouter.routerDelegate,
