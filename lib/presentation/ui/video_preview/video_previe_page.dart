@@ -1,9 +1,8 @@
 import 'dart:io';
-import 'dart:typed_data';
 
+import 'package:bootstrap_icons/bootstrap_icons.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
@@ -11,7 +10,6 @@ import 'package:personal_project/constant/color.dart';
 import 'package:personal_project/constant/dimens.dart';
 import 'package:personal_project/presentation/assets/images.dart';
 import 'package:personal_project/presentation/l10n/stings.g.dart';
-import 'package:personal_project/presentation/ui/video_preview/bloc/video_preview_bloc.dart';
 import 'package:video_player/video_player.dart';
 
 class VideoPreviewPage extends StatefulWidget {
@@ -26,7 +24,6 @@ class _VideoPreviewPageState extends State<VideoPreviewPage> {
   late VideoPlayerController _videoPlayerController;
   // ignore: non_constant_identifier_names
   final double _IC_LABEL_FONTSIZE = 12;
-  String? _fileMbSize;
 
   @override
   void initState() {
@@ -39,16 +36,7 @@ class _VideoPreviewPageState extends State<VideoPreviewPage> {
         }
       });
 
-    widget.previewData.readAsBytes().then((bytes) {
-      _fileMbSize = _fileMBSize(bytes);
-      setState(() {});
-    });
-
     super.initState();
-  }
-
-  String _fileMBSize(Uint8List bytes) {
-    return '${(bytes.lengthInBytes / (1024 * 1024)).toStringAsFixed(1)} MB';
   }
 
   @override
@@ -60,6 +48,27 @@ class _VideoPreviewPageState extends State<VideoPreviewPage> {
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
+      persistentFooterButtons: [
+        Material(
+          color: Theme.of(context).colorScheme.onTertiary,
+          borderRadius: BorderRadius.circular(10),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(10),
+            onTap: () {
+              context.pop();
+            },
+            child: Container(
+              height: Dimens.DIMENS_50,
+              width: double.infinity,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Text(LocaleKeys.title_upload.tr()),
+            ),
+          ),
+        )
+      ],
       body: Stack(
         children: [
           SizedBox.expand(
@@ -201,7 +210,7 @@ class _VideoPreviewPageState extends State<VideoPreviewPage> {
               ),
             ),
             Icon(
-              MdiIcons.controller,
+              BootstrapIcons.controller,
               color: COLOR_white_fff5f5f5,
             )
           ],
@@ -228,35 +237,4 @@ Icon _buildLikeButton() {
     size: Dimens.DIMENS_34,
     color: COLOR_white_fff5f5f5,
   );
-}
-
-Future<bool> _showDialog(BuildContext context, File file) async {
-  Future<bool> isPop = Future.value(false);
-  showDialog(
-      context: context,
-      builder: (_) {
-        return AlertDialog(
-          title: const Text(LocaleKeys.message_delete_video).tr(),
-          actions: [
-            TextButton(
-                onPressed: () async {
-                  isPop = Future.value(false);
-                  context.pop();
-                },
-                child: Text(LocaleKeys.label_cancel.tr())),
-            TextButton(
-                onPressed: () {
-                  isPop = Future.value(true);
-                  context.pop();
-                  context.pop();
-                  File(file.path).delete();
-                  BlocProvider.of<VideoPreviewBloc>(context)
-                      .add(StopVideoPriviewEvent());
-                },
-                child: Text(LocaleKeys.label_delete.tr()))
-          ],
-        );
-      });
-
-  return isPop;
 }
