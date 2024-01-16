@@ -29,6 +29,7 @@ import 'package:personal_project/presentation/router/route_utils.dart';
 import 'package:personal_project/presentation/shared_components/keep_alive_page.dart';
 import 'package:personal_project/presentation/shared_components/not_authenticated_page.dart';
 import 'package:personal_project/presentation/ui/add_details/bloc/upload_bloc.dart';
+import 'package:personal_project/presentation/ui/auth/auth.dart';
 import 'package:personal_project/presentation/ui/auth/bloc/auth_bloc.dart';
 import 'package:personal_project/presentation/ui/edit_profile/cubit/edit_bio_cubit.dart';
 import 'package:personal_project/presentation/ui/edit_profile/cubit/edit_name_cubit.dart';
@@ -440,7 +441,10 @@ class _ProfilePageState extends State<ProfilePage> {
                                                       .colorScheme.onTertiary,
                                               child: InkWell(
                                                 onTap: () {
-                                                  if (isFollowing!) {
+                                                  if (isFollowing! &&
+                                                      authState.status ==
+                                                          AuthStatus
+                                                              .authenticated) {
                                                     showDialog(
                                                         context: context,
                                                         builder: (_) {
@@ -482,7 +486,10 @@ class _ProfilePageState extends State<ProfilePage> {
                                                             ],
                                                           );
                                                         });
-                                                  } else {
+                                                  } else if (!isFollowing! &&
+                                                      authState.status ==
+                                                          AuthStatus
+                                                              .authenticated) {
                                                     BlocProvider.of<
                                                                 FollowCubit>(
                                                             context)
@@ -495,6 +502,9 @@ class _ProfilePageState extends State<ProfilePage> {
                                                                 .payload!.uid,
                                                             stateFromDatabase:
                                                                 isFollowing!);
+                                                  } else {
+                                                    showAuthBottomSheetFunc(
+                                                        context);
                                                   }
                                                 },
                                                 borderRadius:
@@ -533,34 +543,39 @@ class _ProfilePageState extends State<ProfilePage> {
                                 Expanded(
                                   child: InkWell(
                                     onTap: () async {
-                                      User user =
-                                          await userRepository.getOtherUserData(
-                                              widget.payload!.uid);
-                                      types.User otherUser = types.User(
-                                          id: widget.payload!.uid,
-                                          createdAt: user.createdAt!
-                                                  .toDate()
-                                                  .millisecondsSinceEpoch ~/
-                                              1000,
-                                          firstName: user.userName);
-                                      if (!mounted) return;
+                                      if (authState.status ==
+                                          AuthStatus.authenticated) {
+                                        User user = await userRepository
+                                            .getOtherUserData(
+                                                widget.payload!.uid);
+                                        types.User otherUser = types.User(
+                                            id: widget.payload!.uid,
+                                            createdAt: user.createdAt!
+                                                    .toDate()
+                                                    .millisecondsSinceEpoch ~/
+                                                1000,
+                                            firstName: user.userName);
+                                        if (!mounted) return;
 
-                                      // final navigator = Navigator.of(context);
-                                      final room = await FirebaseChatCore
-                                          .instance
-                                          .createRoom(otherUser);
+                                        // final navigator = Navigator.of(context);
+                                        final room = await FirebaseChatCore
+                                            .instance
+                                            .createRoom(otherUser);
 
-                                      if (!mounted) return;
-                                      context.pop();
-                                      context.push(
-                                        APP_PAGE.chat.toPath,
-                                        extra: ChatData(
-                                          room: room,
-                                          userName: user.userName!,
-                                          avatar: user.photo!,
-                                          name: user.name,
-                                        ),
-                                      );
+                                        if (!mounted) return;
+                                        context.pop();
+                                        context.push(
+                                          APP_PAGE.chat.toPath,
+                                          extra: ChatData(
+                                            room: room,
+                                            userName: user.userName!,
+                                            avatar: user.photo!,
+                                            name: user.name,
+                                          ),
+                                        );
+                                      } else {
+                                        showAuthBottomSheetFunc(context);
+                                      }
                                     },
                                     child: Container(
                                       height: Dimens.DIMENS_34,
@@ -827,7 +842,8 @@ class _ProfilePageState extends State<ProfilePage> {
                           final textPainter = TextPainter(
                             text: TextSpan(
                               text: text,
-                              style: const TextStyle(fontSize: 14.0),
+                              style: const TextStyle(
+                                  fontSize: 16, fontWeight: FontWeight.w500),
                             ),
                             textDirection: TextDirection.ltr,
                           );
@@ -850,6 +866,9 @@ class _ProfilePageState extends State<ProfilePage> {
                                   overflow: TextOverflow.ellipsis,
                                   maxLines: maxLines,
                                   textAlign: TextAlign.left,
+                                  style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w500),
                                 ),
                               ),
                               if (lines > 5)
@@ -864,6 +883,9 @@ class _ProfilePageState extends State<ProfilePage> {
                                 )
                               else
                                 Container(),
+                              SizedBox(
+                                height: Dimens.DIMENS_5,
+                              )
                             ],
                           );
                         });
