@@ -60,6 +60,7 @@ abstract class  LocaleKeys {
   static const label_video_about = 'label_video_about';
   static const label_for_you = 'label_for_you';
   static const label_no_video_from_following = 'label_no_video_from_following';
+  static const message_login_for_more_experience = 'message_login_for_more_experience';
   static const message_gaming_and_win = 'message_gaming_and_win';
   static const message_share_gaming_content = 'message_share_gaming_content';
   static const message_log_in_and_follow = 'message_log_in_and_follow';
