@@ -5,6 +5,8 @@ enum VideoEvent {
   play,
   pause,
   delete,
+  showBufferingIndicator,
+  removeBufferingIndicator,
 }
 
 final class VideoPlayerEvent extends Equatable {

@@ -81,6 +81,8 @@ class _VideoItemState extends State<VideoItem> {
       child: Builder(builder: (context) {
         return BlocListener<VideoPlayerBloc, VideoPlayerState>(
           listener: (context, state) {
+            debugPrint(state.toString());
+
             if (state.status == VideoPlayerStatus.initialized) {
               debugPrint('vidnitialize');
 
@@ -131,7 +133,8 @@ class _VideoItemState extends State<VideoItem> {
                       child: BlocBuilder<VideoPlayerBloc, VideoPlayerState>(
                         buildWhen: (previous, current) {
                           if (current.status == VideoPlayerStatus.paused ||
-                              current.status == VideoPlayerStatus.playing) {
+                              current.status == VideoPlayerStatus.playing ||
+                              current.status == VideoPlayerStatus.buffering) {
                             return false;
                           }
                           return true;
@@ -191,6 +194,8 @@ class _VideoItemState extends State<VideoItem> {
                             return SizedBox(
                               width: MediaQuery.of(context).size.width,
                               child: CachedNetworkImage(
+                                placeholder: (_, __) => const Center(
+                                    child: CircularProgressIndicator()),
                                 imageUrl: videoData.thumnail,
                                 errorWidget: (_, __, ___) {
                                   return Container();
@@ -422,34 +427,48 @@ class _VideoItemState extends State<VideoItem> {
                     ),
                     BlocBuilder<VideoPlayerBloc, VideoPlayerState>(
                       builder: (context, state) {
-                        if (state.status != VideoPlayerStatus.paused) {
-                          return Container();
-                        }
-                        return Align(
-                          alignment: Alignment.center,
-                          child: AnimatedOpacity(
-                            opacity: state.status == VideoPlayerStatus.paused
-                                ? 1
-                                : 0,
-                            duration: kThemeAnimationDuration,
-                            child: GestureDetector(
-                              onTap: () {
-                                BlocProvider.of<VideoPlayerBloc>(context).add(
-                                    const VideoPlayerEvent(
-                                        actions: VideoEvent.play));
-                              },
-                              child: FaIcon(
-                                FontAwesomeIcons.play,
-                                size: state.status == VideoPlayerStatus.paused
-                                    ? Dimens.DIMENS_38
-                                    : Dimens.DIMENS_50,
-                                color: COLOR_white_fff5f5f5,
+                        if (state.status == VideoPlayerStatus.paused) {
+                          return Align(
+                            alignment: Alignment.center,
+                            child: AnimatedOpacity(
+                              opacity: state.status == VideoPlayerStatus.paused
+                                  ? 1
+                                  : 0,
+                              duration: kThemeAnimationDuration,
+                              child: GestureDetector(
+                                onTap: () {
+                                  BlocProvider.of<VideoPlayerBloc>(context).add(
+                                      const VideoPlayerEvent(
+                                          actions: VideoEvent.play));
+                                },
+                                child: FaIcon(
+                                  FontAwesomeIcons.play,
+                                  size: state.status == VideoPlayerStatus.paused
+                                      ? Dimens.DIMENS_38
+                                      : Dimens.DIMENS_50,
+                                  color: COLOR_white_fff5f5f5,
+                                ),
                               ),
                             ),
-                          ),
-                        );
+                          );
+                        }
+                        return Container();
                       },
                     ),
+                    BlocBuilder<VideoPlayerBloc, VideoPlayerState>(
+                      builder: (context, state) {
+                        if (state.status == VideoPlayerStatus.buffering) {
+                          return const Align(
+                            alignment: Alignment.center,
+                            child: CircularProgressIndicator(),
+                          );
+                        }
+                        return const SizedBox(
+                          width: 0,
+                          height: 0,
+                        );
+                      },
+                    )
                   ]),
                 );
               },
@@ -561,6 +580,7 @@ class _VideoItemState extends State<VideoItem> {
     state.controller!.addListener(() {
       int duratio = state.controller!.value.duration.inSeconds;
       double minDur = 3 / 10 * duratio;
+      final vBloc = BlocProvider.of<VideoPlayerBloc>(context);
 
       if (state.controller!.value.position.inSeconds > minDur.toInt() &&
           !isViewed) {
@@ -568,7 +588,22 @@ class _VideoItemState extends State<VideoItem> {
             .addViewsCount(videoData.id!);
         debugPrint('add views');
         isViewed = true;
-        state.controller!.removeListener(() {});
+        // state.controller!.removeListener(() {});
+      }
+      if (state.controller!.value.isBuffering) {
+        vBloc.add(
+          const VideoPlayerEvent(
+            actions: VideoEvent.showBufferingIndicator,
+          ),
+        );
+      } else {
+        if (state.controller!.value.isPlaying) {
+          vBloc.add(
+            const VideoPlayerEvent(
+              actions: VideoEvent.removeBufferingIndicator,
+            ),
+          );
+        }
       }
     });
   }
@@ -671,7 +706,8 @@ class _VideoItemState extends State<VideoItem> {
       child: BlocBuilder<VideoPlayerBloc, VideoPlayerState>(
         buildWhen: (previous, current) {
           if (current.status == VideoPlayerStatus.paused ||
-              current.status == VideoPlayerStatus.playing) {
+              current.status == VideoPlayerStatus.playing ||
+              current.status == VideoPlayerStatus.buffering) {
             return false;
           }
           return true;
