@@ -124,7 +124,7 @@ class _HomePageState extends State<HomePage> {
                   decoration: BoxDecoration(
                     border: Border(
                       top: BorderSide(
-                          color: Theme.of(context).colorScheme.primary,
+                          color: Theme.of(context).colorScheme.tertiary,
                           width: 0.2),
                     ),
                   ),
