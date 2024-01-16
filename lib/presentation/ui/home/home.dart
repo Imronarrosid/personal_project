@@ -176,37 +176,44 @@ class _HomePageState extends State<HomePage> {
                         tooltip: LocaleKeys.label_chat.tr(),
                       ),
                       BottomNavigationBarItem(
-                        icon: user != null
-                            ? StreamBuilder(
-                                stream: userRepository.getAvatar(user.uid),
-                                builder: (_, snapshot) {
-                                  String? avatar = snapshot.data;
-                                  if (!snapshot.hasData || snapshot.hasError) {
-                                    return Icon(MdiIcons.accountCircleOutline);
-                                  }
-                                  return Container(
-                                    padding: EdgeInsets.all(Dimens.DIMENS_2),
-                                    decoration: BoxDecoration(
-                                      border: Border.all(
-                                        color: state.index == 4
-                                            ? Theme.of(context)
-                                                .colorScheme
-                                                .primary
-                                            : Colors.transparent,
+                        icon: BlocBuilder<AuthBloc, AuthState>(
+                          builder: (_, authState) {
+                            if (authState.status == AuthStatus.authenticated) {
+                              return StreamBuilder(
+                                  stream: userRepository
+                                      .getAvatar(authState.user!.id),
+                                  builder: (_, snapshot) {
+                                    String? avatar = snapshot.data;
+                                    if (!snapshot.hasData ||
+                                        snapshot.hasError) {
+                                      return const Icon(BootstrapIcons.person);
+                                    }
+                                    return Container(
+                                      padding: EdgeInsets.all(Dimens.DIMENS_1),
+                                      decoration: BoxDecoration(
+                                        border: Border.all(
+                                          color: state.index == 4
+                                              ? Theme.of(context)
+                                                  .colorScheme
+                                                  .primary
+                                              : Colors.transparent,
+                                        ),
+                                        borderRadius: BorderRadius.circular(50),
                                       ),
-                                      borderRadius: BorderRadius.circular(50),
-                                    ),
-                                    child: CircleAvatar(
-                                      radius: Dimens.DIMENS_10,
-                                      backgroundColor: Colors.transparent,
-                                      backgroundImage:
-                                          CachedNetworkImageProvider(
-                                        avatar!,
+                                      child: CircleAvatar(
+                                        radius: Dimens.DIMENS_11,
+                                        backgroundColor: Colors.transparent,
+                                        backgroundImage:
+                                            CachedNetworkImageProvider(
+                                          avatar!,
+                                        ),
                                       ),
-                                    ),
-                                  );
-                                })
-                            : Icon(MdiIcons.accountCircleOutline),
+                                    );
+                                  });
+                            }
+                            return const Icon(BootstrapIcons.person);
+                          },
+                        ),
                         label: LocaleKeys.label_profile.tr(),
                         tooltip: LocaleKeys.label_profile.tr(),
                       ),
