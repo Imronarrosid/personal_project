@@ -1,3 +1,4 @@
+import 'package:bootstrap_icons/bootstrap_icons.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -69,10 +70,13 @@ class _MenuPageState extends State<MenuPage> {
                 borderRadius: BorderRadius.circular(10),
               ),
               leading: CircleAvatar(
-                backgroundColor: COLOR_grey,
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(50),
-                  child: Icon(MdiIcons.account),
+                backgroundColor: Theme.of(context).colorScheme.secondary,
+                child: Padding(
+                  padding: EdgeInsets.only(bottom:Dimens.DIMENS_3),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(50),
+                    child: const Icon(BootstrapIcons.person_fill),
+                  ),
                 ),
               ),
               title: Text(LocaleKeys.label_account.tr()),
@@ -85,7 +89,7 @@ class _MenuPageState extends State<MenuPage> {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 15, vertical: 7),
                   decoration: BoxDecoration(
-                      color: COLOR_black_ff121212,
+                      color: Theme.of(context).colorScheme.onTertiary,
                       borderRadius: BorderRadius.circular(5)),
                   child: Text(
                     LocaleKeys.label_login.tr(),
