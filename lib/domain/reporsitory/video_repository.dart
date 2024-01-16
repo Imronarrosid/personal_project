@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:personal_project/domain/model/game_fav_modal.dart';
 import 'package:personal_project/domain/model/user.dart';
 import 'package:personal_project/domain/model/video_model.dart';
@@ -152,10 +153,14 @@ class VideoRepository implements VideoUseCaseType {
         debugPrint('_LISTDOCS${Video.fromSnap(element).videoUrl}');
       }
       debugPrint('DOCUMENTSNAP ${querySnapshot.docs}');
+      if (querySnapshot.docs.isEmpty && querySnapshot.metadata.isFromCache) {
+        throw ErrorDescription('Error');
+      }
+      return listDocs;
     } catch (e) {
       debugPrint(e.toString());
+      rethrow;
     }
-    return listDocs;
   }
 
   Future<List<DocumentSnapshot>> getListVideoFromGame(

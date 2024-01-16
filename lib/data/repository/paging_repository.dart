@@ -43,6 +43,14 @@ class PagingRepository {
     _followedUid.clear();
   }
 
+  void refreshPaging() {
+    videoRepository.allDocs.clear();
+    _followedUid.clear();
+    if (controller != null) {
+      controller!.refresh();
+    }
+  }
+
   void initPagingController(VideoFrom from) {
     _gameTitle = _getGameTitleList();
     controller = PagingController(firstPageKey: 0);
@@ -147,17 +155,22 @@ class PagingRepository {
     List<DocumentSnapshot> listDocs = [];
 
     QuerySnapshot querySnapshot;
+
+    List<String> gameList = await _gameTitle;
+    if (gameList.isEmpty) {
+      return [];
+    }
     try {
       if (videoRepository.allDocs.isEmpty) {
         querySnapshot = await firebaseFirestore
             .collection('videos')
-            .where('game.title', whereIn: await _gameTitle)
+            .where('game.title', whereIn: gameList)
             .limit(limit)
             .get();
       } else {
         querySnapshot = await firebaseFirestore
             .collection('videos')
-            .where('game.title', whereIn: await _gameTitle)
+            .where('game.title', whereIn: gameList)
             .startAfterDocument(videoRepository.allDocs.last)
             .limit(limit)
             .get();
@@ -168,20 +181,15 @@ class PagingRepository {
 
       //list that send to infinity list package
       listDocs.addAll(querySnapshot.docs);
-      // setState(() {
-      //   _hasMore = false;
-      // });
-      for (var element in querySnapshot.docs) {
-        debugPrint(Video.fromSnap(element).videoUrl);
-      }
-      for (var element in videoRepository.allDocs) {
-        debugPrint('_LISTDOCS${Video.fromSnap(element).videoUrl}');
-      }
-      debugPrint('DOCUMENTSNAP ${querySnapshot.docs}');
+
       return listDocs;
     } catch (e) {
       debugPrint(e.toString());
-      return listDocs;
+      if (gameList.isNotEmpty) {
+        rethrow;
+      }
+      return [];
+      // return listDocs;
     }
   }
 
@@ -191,17 +199,22 @@ class PagingRepository {
     List<DocumentSnapshot> listDocs = [];
 
     QuerySnapshot querySnapshot;
+    List<String> gameList = await _gameTitle;
+
+    if (gameList.isEmpty) {
+      return [];
+    }
     try {
       if (videoRepository.allDocs.isEmpty) {
         querySnapshot = await firebaseFirestore
             .collection('videos')
-            .where('game.title', whereNotIn: await _gameTitle)
+            .where('game.title', whereNotIn: gameList)
             .limit(limit)
             .get();
       } else {
         querySnapshot = await firebaseFirestore
             .collection('videos')
-            .where('game.title', whereNotIn: await _gameTitle)
+            .where('game.title', whereNotIn: gameList)
             .startAfterDocument(videoRepository.allDocs.last)
             .limit(limit)
             .get();
@@ -215,16 +228,13 @@ class PagingRepository {
       // setState(() {
       //   _hasMore = false;
       // });
-      for (var element in querySnapshot.docs) {
-        debugPrint(Video.fromSnap(element).videoUrl);
-      }
-      for (var element in videoRepository.allDocs) {
-        debugPrint('_LISTDOCS${Video.fromSnap(element).videoUrl}');
-      }
-      debugPrint('DOCUMENTSNAP ${querySnapshot.docs}');
+
       return listDocs;
     } catch (e) {
       debugPrint(e.toString());
+      if (gameList.isNotEmpty) {
+        rethrow;
+      }
       return [];
     }
   }
