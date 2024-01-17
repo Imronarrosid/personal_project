@@ -136,6 +136,8 @@ class _HomePageState extends State<HomePage> {
                     selectedFontSize: 12,
                     unselectedFontSize: 12,
                     backgroundColor: COLOR_black_ff121212,
+                    showSelectedLabels: false,
+                    showUnselectedLabels: false,
                     items: [
                       BottomNavigationBarItem(
                         icon: const Icon(BootstrapIcons.house_door),
