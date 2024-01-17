@@ -10,9 +10,9 @@ import 'package:personal_project/domain/model/video_model.dart';
 import 'package:personal_project/domain/services/firebase/firebase_service.dart';
 import 'package:personal_project/domain/services/uuid_generator.dart';
 import 'package:personal_project/domain/usecase/vide_usecase_type.dart';
-import 'package:video_compress/video_compress.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:personal_project/utils/get_thumbnails.dart';
 
 class VideoRepository implements VideoUseCaseType {
   FirebaseStorage firebaseStorage = FirebaseStorage.instance;
@@ -34,17 +34,17 @@ class VideoRepository implements VideoUseCaseType {
   late User videoOwnerData;
   int currentPageIndex = 0;
 
-  _compressVideo(String videoPath) async {
-    var comressedVideo = await VideoCompress.compressVideo(videoPath,
-        quality: VideoQuality.MediumQuality, includeAudio: true);
-    return comressedVideo != null ? comressedVideo.file : File(videoPath);
-    // return response;
-  }
+  // _compressVideo(String videoPath) async {
+  //   var comressedVideo = await VideoCompress.compressVideo(videoPath,
+  //       quality: VideoQuality.MediumQuality, includeAudio: true);
+  //   return comressedVideo != null ? comressedVideo.file : File(videoPath);
+  //   // return response;
+  // }
 
-  _getThumnaile(String path) async {
-    final thumnail = await VideoCompress.getFileThumbnail(path);
-    return thumnail;
-  }
+  // _getThumnaile(String path) async {
+  //   final thumnail = await VideoCompress.getFileThumbnail(path);
+  //   return thumnail;
+  // }
 
   Future<String> _uploadToStorage(String id, File videoFile) async {
     Reference ref = firebaseStorage.ref().child('videos').child(generateUuid());
@@ -66,7 +66,7 @@ class VideoRepository implements VideoUseCaseType {
   _uploadThumnailesToStorage(String id, String videoPath) async {
     Reference ref = firebaseStorage.ref().child('thumnailes').child(id);
 
-    UploadTask uploadTask = ref.putFile(await _getThumnaile(videoPath));
+    UploadTask uploadTask = ref.putFile(await getTumbnail(videoPath));
     TaskSnapshot snapshot = await uploadTask;
     String downloaUrl = await snapshot.ref.getDownloadURL();
 
