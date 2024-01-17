@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:bootstrap_icons/bootstrap_icons.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:easy_localization/easy_localization.dart' as localization;
@@ -8,7 +9,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_firebase_chat_core/flutter_firebase_chat_core.dart';
 import 'package:go_router/go_router.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
-import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:personal_project/config/bloc_status_enum.dart';
 import 'package:personal_project/constant/color.dart';
 import 'package:personal_project/constant/dimens.dart';
@@ -148,7 +148,7 @@ class _ProfilePageState extends State<ProfilePage> {
                               }
                               isToMenu = true;
                             },
-                            icon: Icon(MdiIcons.menu))
+                            icon: const Icon(Icons.menu))
                         : Container();
                   },
                 )
@@ -375,7 +375,8 @@ class _ProfilePageState extends State<ProfilePage> {
                                           color: theme.colorScheme.tertiary,
                                           borderRadius:
                                               BorderRadius.circular(5)),
-                                      child: Icon(MdiIcons.accountPlus)),
+                                      child: const Icon(
+                                          BootstrapIcons.person_add)),
                                 ),
                                 SizedBox(
                                   width: Dimens.DIMENS_12,
@@ -601,7 +602,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           )
                         ]),
                   ),
-                  SliverAppBar(
+                  const SliverAppBar(
                     toolbarHeight: 0,
                     floating: false,
                     pinned: true,
@@ -611,10 +612,10 @@ class _ProfilePageState extends State<ProfilePage> {
                       indicatorWeight: 2,
                       tabs: [
                         Tab(
-                          icon: Icon(MdiIcons.folderPlay),
+                          icon: Icon(BootstrapIcons.camera_video),
                         ),
                         Tab(
-                          icon: Icon(MdiIcons.heart),
+                          icon: Icon(BootstrapIcons.heart),
                         ),
                       ],
                     ),

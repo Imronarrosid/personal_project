@@ -1,12 +1,12 @@
 import 'dart:async';
 
+import 'package:bootstrap_icons/bootstrap_icons.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:personal_project/constant/color.dart';
 import 'package:personal_project/domain/model/game_fav_modal.dart';
 import 'package:personal_project/domain/reporsitory/search_repository.dart';
@@ -66,7 +66,7 @@ class _SelectGamePageState extends State<SelectGamePage> {
                             onTap: () {
                               _textEditingController.clear();
                             },
-                            child: Icon(MdiIcons.close)),
+                            child: const Icon(BootstrapIcons.x)),
                         suffixIconColor: COLOR_grey,
                         border: OutlineInputBorder(
                             borderSide: BorderSide.none,

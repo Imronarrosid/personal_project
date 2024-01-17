@@ -1,7 +1,6 @@
-
+import 'package:bootstrap_icons/bootstrap_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:personal_project/constant/color.dart';
 import 'package:personal_project/constant/dimens.dart';
 
@@ -20,12 +19,12 @@ class EditName extends StatelessWidget {
             context.pop();
             controller.dispose();
           },
-          icon: Icon(MdiIcons.close),
+          icon: const Icon(BootstrapIcons.x),
         ),
         actions: [
           IconButton(
             onPressed: () {},
-            icon: Icon(MdiIcons.check),
+            icon: const Icon(BootstrapIcons.check),
           )
         ],
       ),

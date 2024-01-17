@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:bootstrap_icons/bootstrap_icons.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:file_picker/file_picker.dart';
@@ -13,7 +14,6 @@ import 'package:flutter_firebase_chat_core/flutter_firebase_chat_core.dart';
 import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
-import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:mime/mime.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';
@@ -74,7 +74,7 @@ class _ChatPageState extends State<ChatPage> {
                 ),
                 Material(
                   child: ListTile(
-                    leading: Icon(MdiIcons.image),
+                    leading: const Icon(BootstrapIcons.image),
                     shape: const RoundedRectangleBorder(
                         borderRadius: BorderRadius.only(
                       topLeft: Radius.circular(10),
@@ -89,7 +89,7 @@ class _ChatPageState extends State<ChatPage> {
                 ),
                 Material(
                   child: ListTile(
-                    leading: Icon(MdiIcons.file),
+                    leading: const Icon(BootstrapIcons.folder),
                     title: Text(LocaleKeys.label_file.tr()),
                     onTap: () {
                       context.pop();
@@ -99,7 +99,7 @@ class _ChatPageState extends State<ChatPage> {
                 ),
                 Material(
                   child: ListTile(
-                    leading: Icon(MdiIcons.close),
+                    leading: const Icon(BootstrapIcons.x),
                     title: Text(LocaleKeys.label_cancel.tr()),
                     shape: const RoundedRectangleBorder(
                         borderRadius: BorderRadius.only(

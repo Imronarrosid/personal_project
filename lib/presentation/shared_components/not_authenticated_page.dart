@@ -1,6 +1,6 @@
+import 'package:bootstrap_icons/bootstrap_icons.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:personal_project/constant/dimens.dart';
 import 'package:personal_project/presentation/l10n/stings.g.dart';
 import 'package:personal_project/presentation/ui/auth/auth.dart';
@@ -16,7 +16,7 @@ class NotAuthenticatedPage extends StatelessWidget {
       height: size.width,
       child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
         Icon(
-          MdiIcons.account,
+          BootstrapIcons.person_fill,
           size: Dimens.DIMENS_80,
         ),
         SizedBox(

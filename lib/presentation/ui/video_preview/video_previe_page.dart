@@ -5,7 +5,6 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
-import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:personal_project/constant/color.dart';
 import 'package:personal_project/constant/dimens.dart';
 import 'package:personal_project/presentation/assets/images.dart';
@@ -103,7 +102,7 @@ class _VideoPreviewPageState extends State<VideoPreviewPage> {
                     height: Dimens.DIMENS_12,
                   ),
                   Icon(
-                    MdiIcons.messageText,
+                    BootstrapIcons.chat_dots_fill,
                     color: COLOR_white_fff5f5f5,
                     size: Dimens.DIMENS_28,
                   ),
@@ -119,7 +118,7 @@ class _VideoPreviewPageState extends State<VideoPreviewPage> {
                   Transform.flip(
                     flipX: true,
                     child: Icon(
-                      MdiIcons.reply,
+                      BootstrapIcons.reply_fill,
                       color: COLOR_white_fff5f5f5,
                       size: Dimens.DIMENS_34,
                     ),
@@ -137,7 +136,7 @@ class _VideoPreviewPageState extends State<VideoPreviewPage> {
                       color: const Color.fromARGB(255, 27, 26, 26),
                     ),
                     child: Icon(
-                      MdiIcons.controller,
+                      BootstrapIcons.controller,
                       color: COLOR_white_fff5f5f5,
                       size: Dimens.DIMENS_15,
                     ),
@@ -233,7 +232,7 @@ CircleAvatar _buildProfilePictures() {
 
 Icon _buildLikeButton() {
   return Icon(
-    MdiIcons.heart,
+    BootstrapIcons.heart_fill,
     size: Dimens.DIMENS_34,
     color: COLOR_white_fff5f5f5,
   );

@@ -1,18 +1,16 @@
 import 'dart:io';
 
+import 'package:bootstrap_icons/bootstrap_icons.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
-import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:personal_project/constant/color.dart';
 import 'package:personal_project/constant/dimens.dart';
 import 'package:personal_project/constant/font_size.dart';
 import 'package:personal_project/domain/model/game_fav_modal.dart';
 import 'package:personal_project/domain/reporsitory/auth_reposotory.dart';
-import 'package:personal_project/presentation/assets/images.dart';
 import 'package:personal_project/presentation/l10n/stings.g.dart';
 import 'package:personal_project/presentation/router/route_utils.dart';
 import 'package:personal_project/presentation/ui/add_details/bloc/upload_bloc.dart';
@@ -176,7 +174,7 @@ class _AddDetailsPageState extends State<AddDetailsPage> {
                   }
                   return ListTile(
                     tileColor: Colors.transparent,
-                    leading: Icon(MdiIcons.controller),
+                    leading: const Icon(BootstrapIcons.controller),
                     title: Text(LocaleKeys.message_game_title.tr()),
                     trailing: const Icon(Icons.keyboard_arrow_right),
                     onTap: () {

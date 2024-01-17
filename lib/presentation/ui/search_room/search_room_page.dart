@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:bootstrap_icons/bootstrap_icons.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -9,7 +10,6 @@ import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
 import 'package:flutter_firebase_chat_core/flutter_firebase_chat_core.dart';
 import 'package:go_router/go_router.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
-import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:personal_project/constant/color.dart';
 import 'package:personal_project/data/repository/chat_repository.dart';
 import 'package:personal_project/domain/model/chat_data_models.dart';
@@ -71,10 +71,11 @@ class _SearchRoomPageState extends State<SearchRoomPage> {
                     hintText: LocaleKeys.label_search.tr(),
                     contentPadding: const EdgeInsets.all(5),
                     suffixIcon: GestureDetector(
-                        onTap: () {
-                          _textEditingController.clear();
-                        },
-                        child: Icon(MdiIcons.close)),
+                      onTap: () {
+                        _textEditingController.clear();
+                      },
+                      child: const Icon(BootstrapIcons.x),
+                    ),
                     suffixIconColor: COLOR_grey,
                     border: OutlineInputBorder(
                         borderSide: BorderSide.none,

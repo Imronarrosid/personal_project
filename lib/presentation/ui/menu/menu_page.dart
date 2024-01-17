@@ -4,7 +4,6 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:personal_project/constant/color.dart';
 import 'package:personal_project/constant/dimens.dart';
 import 'package:personal_project/domain/reporsitory/auth_reposotory.dart';
@@ -72,7 +71,7 @@ class _MenuPageState extends State<MenuPage> {
               leading: CircleAvatar(
                 backgroundColor: Theme.of(context).colorScheme.secondary,
                 child: Padding(
-                  padding: EdgeInsets.only(bottom:Dimens.DIMENS_3),
+                  padding: EdgeInsets.only(bottom: Dimens.DIMENS_3),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(50),
                     child: const Icon(BootstrapIcons.person_fill),
@@ -113,7 +112,7 @@ class _MenuPageState extends State<MenuPage> {
                 topRight: Radius.circular(10),
               ),
             ),
-            leading: Icon(MdiIcons.web),
+            leading: const Icon(BootstrapIcons.globe2),
             title: Text(LocaleKeys.title_language.tr()),
             onTap: () {
               context.push(APP_PAGE.languagePage.toPath);
@@ -126,7 +125,7 @@ class _MenuPageState extends State<MenuPage> {
                 bottomRight: Radius.circular(10),
               ),
             ),
-            leading: Icon(MdiIcons.database),
+            leading: const Icon(BootstrapIcons.database),
             title: Text(LocaleKeys.title_storage.tr()),
             onTap: () {
               context.push(APP_PAGE.cachesPage.toPath);
@@ -153,7 +152,7 @@ class _MenuPageState extends State<MenuPage> {
                     ),
                   ),
                   title: Text(LocaleKeys.label_login.tr()),
-                  leading: Icon(MdiIcons.login),
+                  leading: const Icon(Icons.login),
                   onTap: () {
                     showAuthBottomSheetFunc(context);
                   },
@@ -169,7 +168,7 @@ class _MenuPageState extends State<MenuPage> {
                   ),
                 ),
                 title: Text(LocaleKeys.label_logout.tr()),
-                leading: Icon(MdiIcons.logout),
+                leading: const Icon(Icons.logout),
                 onTap: () {
                   showDialog(
                       context: context,

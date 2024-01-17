@@ -1,8 +1,8 @@
+import 'package:bootstrap_icons/bootstrap_icons.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:personal_project/constant/dimens.dart';
 import 'package:personal_project/domain/services/firebase/image_picker.dart';
 import 'package:personal_project/presentation/l10n/stings.g.dart';
@@ -48,7 +48,7 @@ void showUploadModal(BuildContext context) {
                   ),
                   Material(
                     child: ListTile(
-                      leading: Icon(MdiIcons.camera),
+                      leading: const Icon(BootstrapIcons.camera),
                       title: Text(LocaleKeys.label_camera.tr()),
                       shape: const RoundedRectangleBorder(
                           borderRadius: BorderRadius.only(
@@ -76,7 +76,7 @@ void showUploadModal(BuildContext context) {
                   ),
                   Material(
                     child: ListTile(
-                      leading: Icon(MdiIcons.image),
+                      leading: const Icon(BootstrapIcons.image),
                       title: Text(LocaleKeys.label_galery.tr()),
                       shape: const RoundedRectangleBorder(
                           borderRadius: BorderRadius.only(

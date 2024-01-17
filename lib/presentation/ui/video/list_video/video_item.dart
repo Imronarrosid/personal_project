@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:go_router/go_router.dart';
-import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:personal_project/config/bloc_status_enum.dart';
 import 'package:personal_project/constant/color.dart';
 import 'package:personal_project/constant/dimens.dart';
@@ -25,7 +24,6 @@ import 'package:personal_project/presentation/shared_components/menu_modal_botto
 import 'package:personal_project/presentation/ui/add_details/bloc/upload_bloc.dart';
 import 'package:personal_project/presentation/ui/auth/auth.dart';
 import 'package:personal_project/presentation/ui/comments/comments_page.dart';
-import 'package:personal_project/presentation/ui/profile/bloc/user_video_paging_bloc.dart';
 import 'package:personal_project/presentation/ui/profile/cubit/follow_cubit.dart';
 import 'package:personal_project/presentation/ui/video/list_video/bloc/video_player_bloc.dart';
 import 'package:personal_project/presentation/ui/video/list_video/cubit/captions_cubit.dart';
@@ -406,7 +404,7 @@ class _VideoItemState extends State<VideoItem> {
                                           ),
                                           child: videoData.game == null
                                               ? Icon(
-                                                  MdiIcons.controller,
+                                                  BootstrapIcons.controller,
                                                   color: COLOR_white_fff5f5f5,
                                                   size: Dimens.DIMENS_15,
                                                 )
@@ -441,7 +439,7 @@ class _VideoItemState extends State<VideoItem> {
                                           actions: VideoEvent.play));
                                 },
                                 child: Icon(
-                                  BootstrapIcons.play,
+                                  BootstrapIcons.play_fill,
                                   size: state.status == VideoPlayerStatus.paused
                                       ? Dimens.DIMENS_38
                                       : Dimens.DIMENS_50,
@@ -637,25 +635,25 @@ class _VideoItemState extends State<VideoItem> {
           bool isLiked = videoData.likes.contains(uid);
           if (state is VideoIsLiked) {
             return Icon(
-              MdiIcons.heart,
+              BootstrapIcons.heart_fill,
               size: Dimens.DIMENS_34,
               color: Colors.red,
             );
           } else if (state is UnilkedVideo) {
             return Icon(
-              MdiIcons.heart,
+              BootstrapIcons.heart_fill,
               size: Dimens.DIMENS_34,
               color: COLOR_white_fff5f5f5,
             );
           }
           return isLiked
               ? Icon(
-                  MdiIcons.heart,
+                  BootstrapIcons.heart_fill,
                   size: Dimens.DIMENS_34,
                   color: Colors.red,
                 )
               : Icon(
-                  MdiIcons.heart,
+                  BootstrapIcons.heart_fill,
                   size: Dimens.DIMENS_34,
                   color: COLOR_white_fff5f5f5,
                 );
@@ -989,7 +987,7 @@ class LikeWidget extends StatelessWidget {
             opacity: state.isVisible ? 1.0 : 0.0,
             duration: const Duration(milliseconds: 300),
             child: Icon(
-              MdiIcons.heart,
+              BootstrapIcons.heart_fill,
               color: Colors.red,
               size: state.isVisible ? 80 : 50,
             ),

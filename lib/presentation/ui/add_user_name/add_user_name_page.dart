@@ -1,8 +1,8 @@
+import 'package:bootstrap_icons/bootstrap_icons.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:personal_project/constant/color.dart';
 import 'package:personal_project/constant/dimens.dart';
 import 'package:personal_project/domain/reporsitory/user_repository.dart';
@@ -93,7 +93,7 @@ class _AddUserNamePageState extends State<AddUserNamePage> {
                       await BlocProvider.of<EditUserNameCubit>(context)
                           .editUserName(_textEditingController.text);
                     },
-                    icon: Icon(MdiIcons.check))
+                    icon: const Icon(BootstrapIcons.check))
               ],
             ),
             body: SizedBox(

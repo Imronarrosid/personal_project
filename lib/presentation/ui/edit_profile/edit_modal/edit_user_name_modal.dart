@@ -1,9 +1,9 @@
+import 'package:bootstrap_icons/bootstrap_icons.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:personal_project/constant/color.dart';
 import 'package:personal_project/constant/dimens.dart';
 import 'package:personal_project/presentation/l10n/stings.g.dart';
@@ -94,7 +94,7 @@ void showEditUserNameModal(BuildContext context,
                           },
                           autofocus: true,
                           decoration: InputDecoration(
-                            prefixIcon: Icon(MdiIcons.at),
+                            prefixIcon: const Icon(BootstrapIcons.at),
                             border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(10)),
                             suffix: BlocBuilder<EditUserNameCubit,
