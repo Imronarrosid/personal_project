@@ -602,15 +602,20 @@ class _ProfilePageState extends State<ProfilePage> {
                           )
                         ]),
                   ),
-                  const SliverAppBar(
+                  SliverAppBar(
                     toolbarHeight: 0,
                     floating: false,
                     pinned: true,
                     elevation: 0,
                     bottom: TabBar(
+                      overlayColor: MaterialStatePropertyAll<Color>(
+                          Theme.of(context)
+                              .colorScheme
+                              .onSurface
+                              .withOpacity(0.3)),
                       indicatorSize: TabBarIndicatorSize.tab,
                       indicatorWeight: 2,
-                      tabs: [
+                      tabs: const [
                         Tab(
                           icon: Icon(BootstrapIcons.camera_video),
                         ),
