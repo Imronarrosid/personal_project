@@ -1,7 +1,6 @@
-
+import 'package:bootstrap_icons/bootstrap_icons.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:fraction/fraction.dart';
 import 'package:personal_project/constant/color.dart';
 import 'package:personal_project/constant/dimens.dart';
@@ -31,8 +30,8 @@ class CropScreen extends StatelessWidget {
                       onPressed: () {
                         Navigator.pop(context);
                       },
-                      icon: FaIcon(
-                        FontAwesomeIcons.xmark,
+                      icon: Icon(
+                        BootstrapIcons.x,
                         size: Dimens.DIMENS_34,
                       ),
                       color: COLOR_white_fff5f5f5),
@@ -54,8 +53,7 @@ class CropScreen extends StatelessWidget {
                       // controller.updateCrop(const Offset(0.2, 0.2), const Offset(0.8, 0.8));
                       Navigator.pop(context);
                     },
-                    icon:
-                        FaIcon(FontAwesomeIcons.check, size: Dimens.DIMENS_34),
+                    icon: Icon(BootstrapIcons.check, size: Dimens.DIMENS_34),
                     color: const CropGridStyle().selectedBoundariesColor,
                   ),
                 ],
@@ -118,13 +116,14 @@ class CropScreen extends StatelessWidget {
                             color: COLOR_white_fff5f5f5,
                             onPressed: () => controller
                                 .rotate90Degrees(RotateDirection.left),
-                            icon: const FaIcon(FontAwesomeIcons.rotateLeft),
+                            icon: const Icon(
+                                BootstrapIcons.arrow_counterclockwise),
                           ),
                           IconButton(
                             color: COLOR_white_fff5f5f5,
                             onPressed: () => controller
                                 .rotate90Degrees(RotateDirection.right),
-                            icon: const FaIcon(FontAwesomeIcons.rotateRight),
+                            icon: const Icon(BootstrapIcons.arrow_clockwise),
                           ),
                         ],
                       ),

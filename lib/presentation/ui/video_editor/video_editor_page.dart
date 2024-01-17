@@ -4,9 +4,9 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:bootstrap_icons/bootstrap_icons.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
 import 'package:personal_project/constant/color.dart';
 import 'package:personal_project/constant/dimens.dart';
@@ -204,8 +204,8 @@ class _VideoEditorState extends State<VideoEditor> {
                                               onPressed: () =>
                                                   _controller.rotate90Degrees(
                                                       RotateDirection.left),
-                                              icon: const FaIcon(
-                                                  FontAwesomeIcons.rotateLeft),
+                                              icon: const Icon(BootstrapIcons
+                                                  .arrow_counterclockwise),
                                               tooltip: 'Rotate unclockwise',
                                             ),
                                           ),
@@ -215,8 +215,8 @@ class _VideoEditorState extends State<VideoEditor> {
                                               onPressed: () =>
                                                   _controller.rotate90Degrees(
                                                       RotateDirection.right),
-                                              icon: const FaIcon(
-                                                  FontAwesomeIcons.rotateRight),
+                                              icon: const Icon(BootstrapIcons
+                                                  .arrow_clockwise),
                                               tooltip: 'Rotate clockwise',
                                             ),
                                           ),
@@ -232,8 +232,8 @@ class _VideoEditorState extends State<VideoEditor> {
                                                               _controller),
                                                 ),
                                               ),
-                                              icon: const FaIcon(
-                                                  FontAwesomeIcons.cropSimple),
+                                              icon: const Icon(
+                                                  BootstrapIcons.crop),
                                               tooltip: 'Open crop screen',
                                             ),
                                           ),
@@ -307,8 +307,8 @@ class _VideoEditorState extends State<VideoEditor> {
                   decoration: BoxDecoration(
                       color: Colors.transparent,
                       borderRadius: BorderRadius.circular(50)),
-                  child: FaIcon(
-                    FontAwesomeIcons.angleLeft,
+                  child: Icon(
+                    BootstrapIcons.arrow_left,
                     size: Dimens.DIMENS_20,
                   ),
                 ),

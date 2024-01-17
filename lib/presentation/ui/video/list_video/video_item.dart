@@ -4,7 +4,6 @@ import 'package:easy_localization/easy_localization.dart' as ezl;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:personal_project/config/bloc_status_enum.dart';
@@ -441,8 +440,8 @@ class _VideoItemState extends State<VideoItem> {
                                       const VideoPlayerEvent(
                                           actions: VideoEvent.play));
                                 },
-                                child: FaIcon(
-                                  FontAwesomeIcons.play,
+                                child: Icon(
+                                  BootstrapIcons.play,
                                   size: state.status == VideoPlayerStatus.paused
                                       ? Dimens.DIMENS_38
                                       : Dimens.DIMENS_50,
