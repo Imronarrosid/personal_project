@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:bootstrap_icons/bootstrap_icons.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -7,6 +8,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:personal_project/constant/color.dart';
+import 'package:personal_project/constant/dimens.dart';
 import 'package:personal_project/domain/model/profile_data_model.dart';
 import 'package:personal_project/domain/reporsitory/search_repository.dart';
 import 'package:personal_project/presentation/l10n/stings.g.dart';
@@ -118,7 +120,16 @@ class _SearchPageState extends State<SearchPage> {
                             );
                           });
                     }
-                    return Container();
+                    return Center(
+                      child: Icon(
+                        BootstrapIcons.search,
+                        size: Dimens.DIMENS_50,
+                        color: Theme.of(context)
+                            .colorScheme
+                            .onSurface
+                            .withOpacity(0.6),
+                      ),
+                    );
                   },
                 ),
               ),
