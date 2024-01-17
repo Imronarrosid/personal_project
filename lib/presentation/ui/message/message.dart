@@ -465,8 +465,8 @@ class _MessagePageState extends State<MessagePage> {
               DateTime.fromMillisecondsSinceEpoch(
                   message!.createdAt ?? DateTime.now().millisecondsSinceEpoch),
             ),
-            style:
-                Theme.of(context).textTheme.bodySmall!.apply(color: COLOR_grey),
+            style: Theme.of(context).textTheme.bodySmall!.apply(
+                color: Theme.of(context).colorScheme.primary.withOpacity(0.7)),
           );
   }
 
@@ -478,17 +478,24 @@ class _MessagePageState extends State<MessagePage> {
       return Text(
         '${LocaleKeys.label_you.tr()}: ${_getMessage(message.type, message: message)}',
         overflow: TextOverflow.ellipsis,
+        style: TextStyle(
+          color: Theme.of(context).colorScheme.primary.withOpacity(0.7),
+        ),
       );
     } else if (roomType == types.RoomType.group) {
       return Text(
         '${snapshot.data!}: ${_getMessage(message.type, message: message)}',
         overflow: TextOverflow.ellipsis,
+        style: TextStyle(
+            color: Theme.of(context).colorScheme.primary.withOpacity(0.7)),
       );
     }
     return Text(
-      '${snapshot.data!}: ${_getMessage(message.type, message: message)}',
-      overflow: TextOverflow.ellipsis,
-    );
+        '${snapshot.data!}: ${_getMessage(message.type, message: message)}',
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(
+          color: Theme.of(context).colorScheme.primary.withOpacity(0.7),
+        ));
   }
 
   bool _isSameDay(int createdAt) {
