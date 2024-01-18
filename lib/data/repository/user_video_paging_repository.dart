@@ -60,11 +60,6 @@ class UserVideoPagingRepository {
 
       debugPrint('new items video user$newItems');
 
-      //Add loaded comment to [curentLoadedComments]
-      for (var element in listVideo) {
-        // currentLoadedVideo.add(element);
-      }
-
       if (isLastPage) {
         controller!.appendLastPage(listVideo);
       } else {
