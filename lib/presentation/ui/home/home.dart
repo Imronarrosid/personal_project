@@ -203,7 +203,7 @@ class _HomePageState extends State<HomePage> {
                                       ),
                                       child: CircleAvatar(
                                         radius: Dimens.DIMENS_11,
-                                        backgroundColor: Colors.transparent,
+                                        backgroundColor: Theme.of(context).colorScheme.tertiary,
                                         backgroundImage:
                                             CachedNetworkImageProvider(
                                           avatar!,
