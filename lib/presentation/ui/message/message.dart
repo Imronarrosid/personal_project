@@ -164,7 +164,7 @@ class _MessagePageState extends State<MessagePage> {
         //   onPressed: _user == null ? null : logout,
         // ),
         systemOverlayStyle: SystemUiOverlayStyle.light,
-        title: Text(LocaleKeys.label_message.tr()),
+        title: Text(LocaleKeys.label_chat.tr()),
       ),
       body: _user == null
           ? const NotAuthenticatedPage()
@@ -290,7 +290,7 @@ class _MessagePageState extends State<MessagePage> {
                                   ),
                                 );
                               }),
-                              users.isEmpty
+                              users.isEmpty || users.length < 6
                                   ? Container()
                                   : InkWell(
                                       onTap: () {
