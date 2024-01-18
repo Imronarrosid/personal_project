@@ -40,6 +40,7 @@ import 'package:personal_project/presentation/ui/profile/cubit/follow_cubit.dart
 import 'package:personal_project/presentation/ui/profile/cubit/profile_cubit.dart';
 import 'package:personal_project/presentation/ui/profile/cubit/refresh_profile_cubit.dart';
 import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
+import 'package:personal_project/utils/number_format.dart';
 
 class ProfilePage extends StatefulWidget {
   /// [payload] need to required if
@@ -1024,12 +1025,15 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
         ),
         BlocBuilder<AuthBloc, AuthState>(
-          builder: (context, state) {
+          builder: (_, state) {
             return FutureBuilder<int>(
+                initialData: 0,
                 future: repository
                     .getFollowerCount(widget.payload?.uid ?? state.user!.id),
                 builder: (context, AsyncSnapshot<int> snapshot) {
                   int? follwers = snapshot.data;
+                  String followerCount =
+                      numberFormat(context.locale, follwers!);
                   return Expanded(
                     child: InkWell(
                       splashColor: Colors.transparent,
@@ -1047,7 +1051,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       child: Column(
                         children: [
                           Text(
-                            snapshot.hasData ? follwers.toString() : '0',
+                            followerCount,
                             style: const TextStyle(
                                 fontSize: 20, fontWeight: FontWeight.w600),
                           ),
@@ -1064,10 +1068,13 @@ class _ProfilePageState extends State<ProfilePage> {
         BlocBuilder<AuthBloc, AuthState>(
           builder: (context, state) {
             return FutureBuilder<int>(
+                initialData: 0,
                 future: repository
                     .getFollowingCount(widget.payload?.uid ?? state.user!.id),
-                builder: (context, AsyncSnapshot<int> snapshot) {
-                  int? following = snapshot.data;
+                builder: (_, AsyncSnapshot<int> snapshot) {
+                  int following = snapshot.data!;
+                  String followingCount =
+                      numberFormat(context.locale, following);
                   return Expanded(
                     child: InkWell(
                       splashColor: Colors.transparent,
@@ -1085,7 +1092,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       child: Column(
                         children: [
                           Text(
-                            snapshot.hasData ? following.toString() : '0',
+                            followingCount,
                             style: const TextStyle(
                                 fontSize: 20, fontWeight: FontWeight.w600),
                           ),
@@ -1104,16 +1111,17 @@ class _ProfilePageState extends State<ProfilePage> {
         BlocBuilder<AuthBloc, AuthState>(
           builder: (context, state) {
             return FutureBuilder<int>(
+                initialData: 0,
                 future: repository
                     .getLikesCount(widget.payload?.uid ?? state.user!.id),
                 builder: (context, AsyncSnapshot<int> snapshot) {
-                  int? likes = snapshot.data;
-
+                  int likes = snapshot.data!;
+                  String likeCount = numberFormat(context.locale, likes);
                   return Expanded(
                     child: Column(
                       children: [
                         Text(
-                          snapshot.hasData ? likes.toString() : '0',
+                          likeCount,
                           style: const TextStyle(
                               fontSize: 20, fontWeight: FontWeight.w600),
                         ),
@@ -1401,7 +1409,7 @@ class VideoListView extends StatelessWidget {
                                                   child: Row(
                                                     children: [
                                                       Text(
-                                                        '${video.views.length} ',
+                                                        '${numberFormat(context.locale, video.views.length)} ',
                                                         style: TextStyle(
                                                             color:
                                                                 COLOR_white_fff5f5f5),
