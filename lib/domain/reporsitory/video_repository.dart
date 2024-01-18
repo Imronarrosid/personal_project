@@ -207,9 +207,17 @@ class VideoRepository implements VideoUseCaseType {
     return listDocs;
   }
 
-  Future<void> deleteVideo(String postId) async {
+  Future<void> deleteVideo(
+    String postId,
+    String videoUrl,
+    String thumbnailUrl,
+  ) async {
     try {
       await firebaseFirestore.collection('videos').doc(postId).delete();
+      Reference videoRef = firebaseStorage.refFromURL(videoUrl);
+      Reference thumnailRef = firebaseStorage.refFromURL(thumbnailUrl);
+      videoRef.delete();
+      thumnailRef.delete();
     } catch (e) {
       rethrow;
     }

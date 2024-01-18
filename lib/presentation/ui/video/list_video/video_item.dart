@@ -501,10 +501,15 @@ class _VideoItemState extends State<VideoItem> {
                                         onPressed: () {
                                           BlocProvider.of<VideoPlayerBloc>(
                                                   context)
-                                              .add(VideoPlayerEvent(
-                                            actions: VideoEvent.delete,
-                                            postId: videoData.id,
-                                          ));
+                                              .add(
+                                            VideoPlayerEvent(
+                                              actions: VideoEvent.delete,
+                                              postId: videoData.id,
+                                              videoUrl: videoData.videoUrl,
+                                            ),
+                                          );
+
+                                          //for refresh video list
                                           BlocProvider.of<UploadBloc>(context)
                                               .add(
                                             DeleteVideo(

@@ -13,10 +13,12 @@ final class VideoPlayerEvent extends Equatable {
   final VideoEvent actions;
   final String? videoUrl;
   final String? postId;
+  final String? thumnailUrl;
   const VideoPlayerEvent({
     required this.actions,
     this.videoUrl,
     this.postId,
+    this.thumnailUrl,
   });
 
   @override
@@ -24,5 +26,6 @@ final class VideoPlayerEvent extends Equatable {
         actions,
         videoUrl,
         postId,
+        thumnailUrl,
       ];
 }
