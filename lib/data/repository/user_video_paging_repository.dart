@@ -28,7 +28,6 @@ class UserVideoPagingRepository {
     controller!.addPageRequestListener((pageKey) {
       try {
         _fetchPage(uid: uid, pageKey: pageKey, from: from);
-        debugPrint('Fetch data video user:');
       } catch (e) {
         debugPrint('Fetch data video user:$e');
       }
@@ -45,8 +44,6 @@ class UserVideoPagingRepository {
             await videoRepository.getUserVideo(limit: _pageSize, uid: uid);
 
         for (var element in newItems) {
-          debugPrint('Fetch data video user:${element.id}');
-          // listVideo.add(Video.fromSnap(element));
           listVideo.add(element.id);
         }
       } else if ((from == From.likes)) {
@@ -56,9 +53,8 @@ class UserVideoPagingRepository {
           listVideo.add(element.id);
         }
       }
-      final isLastPage = newItems.length < _pageSize;
 
-      debugPrint('new items video user$newItems');
+      final isLastPage = newItems.length < _pageSize;
 
       if (isLastPage) {
         controller!.appendLastPage(listVideo);
@@ -69,13 +65,5 @@ class UserVideoPagingRepository {
     } catch (error) {
       controller!.error = error;
     }
-  }
-
-  void moveItemToFirstIndex(List<dynamic> list, dynamic item) {
-    // Remove the item from its current position in the list
-    list.remove(item);
-
-    // Insert the item at the first index
-    list.insert(0, item);
   }
 }
