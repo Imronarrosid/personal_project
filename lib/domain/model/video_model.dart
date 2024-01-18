@@ -17,7 +17,7 @@ class Video {
   final GameFav? game;
   final dynamic createdAt;
   final List likes, views;
-  final int commentCount, shareCount;
+  final int commentCount, shareCount, viewsCount;
   Video(
       {this.id,
       this.username,
@@ -31,6 +31,7 @@ class Video {
       required this.likes,
       required this.views,
       required this.commentCount,
+      required this.viewsCount,
       required this.shareCount,
       required this.createdAt});
 
@@ -42,6 +43,7 @@ class Video {
         "likes": likes,
         "commentCount": commentCount,
         "shareCount": shareCount,
+        "viewsCount": viewsCount,
         "songName": songName,
         "caption": caption,
         "videoUrl": videoUrl,
@@ -62,12 +64,13 @@ class Video {
       id: snapshot.id,
       likes: snap["likes"],
       commentCount: snap["commentCount"],
+      viewsCount: snap["viewsCount"] ?? (snap["views"] as List).length,
       shareCount: snap["shareCount"],
       songName: snap["songName"],
       caption: snap["caption"],
       videoUrl: snap["videoUrl"],
       thumnail: snap["thumnail"],
-      createdAt: snap["creaatedAt"],
+      createdAt: snap["createdAt"],
       views: snap["views"],
       game: snap['game'] != null
           ? GameFav(

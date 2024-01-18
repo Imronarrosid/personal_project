@@ -1409,7 +1409,7 @@ class VideoListView extends StatelessWidget {
                                                   child: Row(
                                                     children: [
                                                       Text(
-                                                        '${numberFormat(context.locale, video.views.length)} ',
+                                                        '${numberFormat(context.locale, video.viewsCount)} ',
                                                         style: TextStyle(
                                                             color:
                                                                 COLOR_white_fff5f5f5),
