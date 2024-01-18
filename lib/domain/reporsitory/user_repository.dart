@@ -6,7 +6,6 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:personal_project/domain/model/game_fav_modal.dart';
 import 'package:personal_project/domain/model/user.dart';
-import 'package:personal_project/domain/model/user_data_model.dart';
 import 'package:personal_project/domain/services/firebase/firebase_service.dart';
 import 'package:personal_project/domain/usecase/user_usecase_type.dart';
 
@@ -19,112 +18,74 @@ class UserRepository implements UserUseCaseType {
     });
   }
 
-  String _name = '';
-  String _userName = '';
-  String _photoURL = '';
-  Timestamp _nameUpdated = Timestamp.now();
-  Timestamp _userNameUpdated = Timestamp.now();
-
-  set name(String name) => _name = name;
-  set username(String userName) => _userName = userName;
-  set photoUrl(String photoURL) => _photoURL = photoURL;
-  set nameUpdated(Timestamp updated) => _nameUpdated = updated;
-  set ueserNameUpdated(Timestamp updated) => _userNameUpdated = updated;
-
-  String get getName => _name;
-  String get getUserName => _userName;
-  String get getPhotoURL => _photoURL;
-  Timestamp get getNameUpdated => _nameUpdated;
-  Timestamp get getUserNameupdatedAt => _userNameUpdated;
-
-  Future<User> getUserData1(String uid) async {
-    final String? uid = firebaseAuth.currentUser?.uid;
-
-    final user = await firebaseFirestore.collection('users').doc(uid).get();
-
-    _name = user['name'];
-    _photoURL = user['photoUrl'];
-    _userName = user['userName'];
-    _nameUpdated = user['updatedAt'];
-    _userNameUpdated = user['userNameUpdatedAt'];
-
-    return User.fromSnap(user);
-  }
-
   Future<User> getOtherUserData(String uid) async {
     final user = await firebaseFirestore.collection('users').doc(uid).get();
 
-    _name = user['name'];
-    _photoURL = user['photoUrl'];
-    _userName = user['userName'];
-    _nameUpdated = user['updatedAt'];
-    _userNameUpdated = user['userNameUpdatedAt'];
-
     return User.fromSnap(user);
   }
 
-  @override
-  Future<UserData> getUserData(String uid) async {
-    var myVideos = await firebaseFirestore
-        .collection('videos')
-        .where('uid', isEqualTo: uid)
-        .get();
-    DocumentSnapshot userDoc =
-        await firebaseFirestore.collection('users').doc(uid).get();
-    final userData = userDoc.data()! as dynamic;
-    String name = userData['name'];
-    String photo = userDoc['photoUrl'];
-    int likes = 0;
-    int followers = 0;
-    int following = 0;
-    bool isFollowing = false;
+  // @override
+  // Future<UserData> getUserData(String uid) async {
+  //   var myVideos = await firebaseFirestore
+  //       .collection('videos')
+  //       .where('uid', isEqualTo: uid)
+  //       .get();
+  //   DocumentSnapshot userDoc =
+  //       await firebaseFirestore.collection('users').doc(uid).get();
+  //   final userData = userDoc.data()! as dynamic;
+  //   String name = userData['name'];
+  //   String photo = userDoc['photoUrl'];
+  //   int likes = 0;
+  //   int followers = 0;
+  //   int following = 0;
+  //   bool isFollowing = false;
 
-    for (var item in myVideos.docs) {
-      likes += (item.data()['likes'] as List).length;
-    }
-    var followerDoc = await firebaseFirestore
-        .collection('users')
-        .doc(uid)
-        .collection('followers')
-        .get();
-    var followingDoc = await firebaseFirestore
-        .collection('users')
-        .doc(uid)
-        .collection('following')
-        .get();
+  //   for (var item in myVideos.docs) {
+  //     likes += (item.data()['likes'] as List).length;
+  //   }
+  //   var followerDoc = await firebaseFirestore
+  //       .collection('users')
+  //       .doc(uid)
+  //       .collection('followers')
+  //       .get();
+  //   var followingDoc = await firebaseFirestore
+  //       .collection('users')
+  //       .doc(uid)
+  //       .collection('following')
+  //       .get();
 
-    followers = followerDoc.docs.length;
-    following = followingDoc.docs.length;
+  //   followers = followerDoc.docs.length;
+  //   following = followingDoc.docs.length;
 
-    await firebaseFirestore
-        .collection('users')
-        .doc(uid)
-        .collection('followers')
-        .doc(firebaseAuth.currentUser!.uid)
-        .get()
-        .then((value) {
-      if (value.exists) {
-        isFollowing = true;
-      } else {
-        isFollowing = false;
-      }
-    });
+  //   await firebaseFirestore
+  //       .collection('users')
+  //       .doc(uid)
+  //       .collection('followers')
+  //       .doc(firebaseAuth.currentUser!.uid)
+  //       .get()
+  //       .then((value) {
+  //     if (value.exists) {
+  //       isFollowing = true;
+  //     } else {
+  //       isFollowing = false;
+  //     }
+  //   });
 
-    var user = {
-      'uid': userDoc['uid'],
-      'name': userDoc['name'],
-      'followers': followers.toString(),
-      'following': following.toString(),
-      'isFollowing': isFollowing,
-      'likes': likes.toString(),
-      'photoUrl': photo,
-      'userName': userDoc['userName'],
-      'updatedAt': userDoc['updatedAt'],
-      'userNameUpdatedAt': userDoc['userNameUpdatedAt']
-    };
+  //   var user = {
+  //     'uid': userDoc['uid'],
+  //     'name': userDoc['name'],
+  //     'followers': followers.toString(),
+  //     'following': following.toString(),
+  //     'isFollowing': isFollowing,
+  //     'likes': likes.toString(),
+  //     'photoUrl': photo,
+  //     'userName': userDoc['userName'],
+  //     'updatedAt': userDoc['updatedAt'],
+  //     'userNameUpdatedAt': userDoc['userNameUpdatedAt']
+  //   };
 
-    return UserData.fromMap(user);
-  }
+  //   return UserData.fromMap(user);
+  // }
 
   Future<bool> isFollowing(String uid) async {
     bool isFollowing = false;
@@ -401,23 +362,23 @@ class UserRepository implements UserUseCaseType {
     }
   }
 
-  Future<List<DocumentSnapshot>> _getAllGameDocuments(
-      List<DocumentReference> documentReferences) async {
-    List<DocumentSnapshot> documents = [];
-    debugPrint('getDocs');
-    try {
-      for (DocumentReference reference in documentReferences) {
-        DocumentSnapshot snapshot = await reference.get();
-        if (snapshot.exists) {
-          documents.add(snapshot);
-        }
-      }
-    } catch (e) {
-      print('Error getting documents: $e');
-    }
+  // Future<List<DocumentSnapshot>> _getAllGameDocuments(
+  //     List<DocumentReference> documentReferences) async {
+  //   List<DocumentSnapshot> documents = [];
+  //   debugPrint('getDocs');
+  //   try {
+  //     for (DocumentReference reference in documentReferences) {
+  //       DocumentSnapshot snapshot = await reference.get();
+  //       if (snapshot.exists) {
+  //         documents.add(snapshot);
+  //       }
+  //     }
+  //   } catch (e) {
+  //     print('Error getting documents: $e');
+  //   }
 
-    return documents;
-  }
+  //   return documents;
+  // }
 
   Future<List<GameFav>> getSelectedGames(String uid) async {
     List<GameFav> gameFav = [];
