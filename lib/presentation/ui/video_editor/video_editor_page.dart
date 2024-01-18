@@ -72,24 +72,37 @@ class _VideoEditorState extends State<VideoEditor> {
           duration: const Duration(seconds: 1),
         ),
       );
+  int _fileMBSize(Uint8List bytes) {
+    return bytes.lengthInBytes ~/ (1024 * 1024);
+  }
 
   Future<void> _exportVideo() async {
     _exportingProgress.value = 0;
     _isExporting.value = true;
     _controller.video.pause();
-
     try {
-      final video = await exportVideo(
-        customInstruction:
-            " -crf 28 -c:v libx264 -c:a aac -b:v 1250k -b:a 192k ",
-        onStatistics: (stats) => _exportingProgress.value =
-            stats.getProgress(_controller.trimmedDuration.inMilliseconds),
-      );
-
-      _isExporting.value = false;
-      if (mounted) {
-        context.push(APP_PAGE.addDetails.toPath, extra: File(video.path));
+      int fileSize = _fileMBSize(await _controller.file.readAsBytes());
+      bool isMoreThan12MB = 12 < fileSize;
+      bool under30secButMoreThan5MB =
+          (_controller.video.value.duration.inSeconds < 30 && fileSize > 5);
+      debugPrint('video size $fileSize');
+      if (_controller.isTrimmed || isMoreThan12MB || under30secButMoreThan5MB) {
+        final video = await exportVideo(
+          customInstruction:
+              " -crf 28 -c:v libx264 -c:a aac -b:v 1250k -b:a 192k ",
+          onStatistics: (stats) => _exportingProgress.value =
+              stats.getProgress(_controller.trimmedDuration.inMilliseconds),
+        );
+        debugPrint('video size ${_fileMBSize(await video.readAsBytes())}');
+        if (mounted) {
+          context.push(APP_PAGE.addDetails.toPath, extra: File(video.path));
+        }
+      } else {
+        if (!mounted) return;
+        context.push(APP_PAGE.addDetails.toPath,
+            extra: File(_controller.file.path));
       }
+      _isExporting.value = false;
     } catch (e) {
       debugPrint('error ${e.toString()}');
       _showErrorSnackBar("Error on export video :(");
@@ -269,9 +282,17 @@ class _VideoEditorState extends State<VideoEditor> {
                         child: AlertDialog(
                           title: ValueListenableBuilder(
                             valueListenable: _exportingProgress,
-                            builder: (_, double value, __) => Text(
-                              "${LocaleKeys.message_wait.tr()} ${(value * 100).ceil()}%",
-                              style: const TextStyle(fontSize: 12),
+                            builder: (_, double value, __) => Row(
+                              children: [
+                                CircularProgressIndicator(value: value),
+                                SizedBox(
+                                  width: Dimens.DIMENS_12,
+                                ),
+                                Text(
+                                  "${LocaleKeys.message_wait.tr()} ${(value * 100).ceil()}%",
+                                  style: const TextStyle(fontSize: 12),
+                                ),
+                              ],
                             ),
                           ),
                         ),
