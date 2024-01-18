@@ -21,6 +21,7 @@ class Dimens {
   static double get DIMENS_25 => 25.0;
   static double get DIMENS_28 => 28.0;
   static double get DIMENS_30 => 30.0;
+  static double get DIMENS_32 => 32.0;
   static double get DIMENS_34 => 34.0;
   static double get DIMENS_36 => 36.0;
   static double get DIMENS_38 => 38.0;

@@ -343,17 +343,17 @@ class _ProfilePageState extends State<ProfilePage> {
                                     color:
                                         Theme.of(context).colorScheme.tertiary,
                                     shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(5)),
+                                        borderRadius: BorderRadius.circular(8)),
                                     child: InkWell(
-                                      borderRadius: BorderRadius.circular(5),
+                                      borderRadius: BorderRadius.circular(8),
                                       onTap: () => toEditProfile(context),
                                       child: Container(
-                                        height: Dimens.DIMENS_34,
+                                        height: Dimens.DIMENS_32,
                                         alignment: Alignment.center,
                                         decoration: BoxDecoration(
                                           color: Colors.transparent,
                                           borderRadius:
-                                              BorderRadius.circular(5),
+                                              BorderRadius.circular(8),
                                         ),
                                         child: Text(
                                           LocaleKeys.label_edit_profile.tr(),
@@ -371,13 +371,15 @@ class _ProfilePageState extends State<ProfilePage> {
                                 ),
                                 Expanded(
                                   child: Container(
-                                      height: Dimens.DIMENS_34,
+                                      height: Dimens.DIMENS_32,
                                       decoration: BoxDecoration(
                                           color: theme.colorScheme.tertiary,
                                           borderRadius:
-                                              BorderRadius.circular(5)),
-                                      child: const Icon(
-                                          BootstrapIcons.person_add)),
+                                              BorderRadius.circular(8)),
+                                      child: Icon(
+                                        BootstrapIcons.person_add,
+                                        size: Dimens.DIMENS_20,
+                                      )),
                                 ),
                                 SizedBox(
                                   width: Dimens.DIMENS_12,
@@ -399,13 +401,12 @@ class _ProfilePageState extends State<ProfilePage> {
                                       if (!snapshot.hasData) {
                                         return Expanded(
                                           child: Container(
-                                            height: Dimens.DIMENS_34,
+                                            height: Dimens.DIMENS_32,
                                             alignment: Alignment.center,
                                             decoration: BoxDecoration(
-                                              color: COLOR_black_ff121212
-                                                  .withOpacity(0.5),
+                                              color: theme.colorScheme.tertiary,
                                               borderRadius:
-                                                  BorderRadius.circular(5),
+                                                  BorderRadius.circular(8),
                                             ),
                                             child: SizedBox(
                                                 width: Dimens.DIMENS_18,
@@ -436,7 +437,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                             child: Material(
                                               shape: RoundedRectangleBorder(
                                                   borderRadius:
-                                                      BorderRadius.circular(5)),
+                                                      BorderRadius.circular(8)),
                                               color: isFollowing!
                                                   ? theme.colorScheme.tertiary
                                                   : theme
@@ -510,9 +511,9 @@ class _ProfilePageState extends State<ProfilePage> {
                                                   }
                                                 },
                                                 borderRadius:
-                                                    BorderRadius.circular(5),
+                                                    BorderRadius.circular(8),
                                                 child: Container(
-                                                  height: Dimens.DIMENS_34,
+                                                  height: Dimens.DIMENS_32,
                                                   alignment: Alignment.center,
                                                   decoration: BoxDecoration(
                                                       color: Colors.transparent,
@@ -543,52 +544,56 @@ class _ProfilePageState extends State<ProfilePage> {
                                   width: Dimens.DIMENS_6,
                                 ),
                                 Expanded(
-                                  child: InkWell(
-                                    onTap: () async {
-                                      if (authState.status ==
-                                          AuthStatus.authenticated) {
-                                        User user = await userRepository
-                                            .getOtherUserData(
-                                                widget.payload!.uid);
-                                        types.User otherUser = types.User(
-                                            id: widget.payload!.uid,
-                                            createdAt: user.createdAt!
-                                                    .toDate()
-                                                    .millisecondsSinceEpoch ~/
-                                                1000,
-                                            firstName: user.userName);
-                                        if (!mounted) return;
+                                  child: Material(
+                                    color: theme.colorScheme.tertiary,
+                                    borderRadius: BorderRadius.circular(8),
+                                    child: InkWell(
+                                      borderRadius: BorderRadius.circular(8),
+                                      onTap: () async {
+                                        if (authState.status ==
+                                            AuthStatus.authenticated) {
+                                          User user = await userRepository
+                                              .getOtherUserData(
+                                                  widget.payload!.uid);
+                                          types.User otherUser = types.User(
+                                              id: widget.payload!.uid,
+                                              createdAt: user.createdAt!
+                                                      .toDate()
+                                                      .millisecondsSinceEpoch ~/
+                                                  1000,
+                                              firstName: user.userName);
+                                          if (!mounted) return;
 
-                                        // final navigator = Navigator.of(context);
-                                        final room = await FirebaseChatCore
-                                            .instance
-                                            .createRoom(otherUser);
+                                          // final navigator = Navigator.of(context);
+                                          final room = await FirebaseChatCore
+                                              .instance
+                                              .createRoom(otherUser);
 
-                                        if (!mounted) return;
-                                        context.pop();
-                                        context.push(
-                                          APP_PAGE.chat.toPath,
-                                          extra: ChatData(
-                                            room: room,
-                                            userName: user.userName!,
-                                            avatar: user.photo!,
-                                            name: user.name,
-                                          ),
-                                        );
-                                      } else {
-                                        showAuthBottomSheetFunc(context);
-                                      }
-                                    },
-                                    child: Container(
-                                      height: Dimens.DIMENS_34,
-                                      alignment: Alignment.center,
-                                      decoration: BoxDecoration(
-                                          color: theme.colorScheme.tertiary,
+                                          if (!mounted) return;
+                                          context.push(
+                                            APP_PAGE.chat.toPath,
+                                            extra: ChatData(
+                                              room: room,
+                                              userName: user.userName!,
+                                              avatar: user.photo!,
+                                              name: user.name,
+                                            ),
+                                          );
+                                        } else {
+                                          showAuthBottomSheetFunc(context);
+                                        }
+                                      },
+                                      child: Container(
+                                        height: Dimens.DIMENS_32,
+                                        alignment: Alignment.center,
+                                        decoration: BoxDecoration(
                                           borderRadius:
-                                              BorderRadius.circular(5)),
-                                      child: Text(
-                                        LocaleKeys.label_message.tr(),
-                                        textAlign: TextAlign.center,
+                                              BorderRadius.circular(8),
+                                        ),
+                                        child: Text(
+                                          LocaleKeys.label_message.tr(),
+                                          textAlign: TextAlign.center,
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -724,8 +729,9 @@ class _ProfilePageState extends State<ProfilePage> {
                           (index) => Chip(
                             materialTapTargetSize:
                                 MaterialTapTargetSize.shrinkWrap,
+                            visualDensity: VisualDensity.compact,
                             avatar: CircleAvatar(
-                              radius: 10,
+                              radius: 8,
                               backgroundColor:
                                   Theme.of(context).colorScheme.secondary,
                               backgroundImage: CachedNetworkImageProvider(
@@ -754,6 +760,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                     child: Chip(
                                         materialTapTargetSize:
                                             MaterialTapTargetSize.shrinkWrap,
+                                        visualDensity: VisualDensity.compact,
                                         label: Text(
                                           LocaleKeys.label_see_less
                                               .tr()
@@ -783,6 +790,8 @@ class _ProfilePageState extends State<ProfilePage> {
                                             materialTapTargetSize:
                                                 MaterialTapTargetSize
                                                     .shrinkWrap,
+                                            visualDensity:
+                                                VisualDensity.compact,
                                             label: Icon(
                                               Icons.more_horiz,
                                               size: Dimens.DIMENS_20,
@@ -850,7 +859,7 @@ class _ProfilePageState extends State<ProfilePage> {
                             text: TextSpan(
                               text: text,
                               style: const TextStyle(
-                                  fontSize: 16, fontWeight: FontWeight.w500),
+                                  fontSize: 12, fontWeight: FontWeight.w400),
                             ),
                             textDirection: TextDirection.ltr,
                           );
@@ -873,9 +882,12 @@ class _ProfilePageState extends State<ProfilePage> {
                                   overflow: TextOverflow.ellipsis,
                                   maxLines: maxLines,
                                   textAlign: TextAlign.left,
-                                  style: const TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w500),
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w400,
+                                    color:
+                                        Theme.of(context).colorScheme.onSurface,
+                                  ),
                                 ),
                               ),
                               if (lines > 5)
