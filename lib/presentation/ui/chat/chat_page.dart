@@ -360,6 +360,21 @@ class _ChatPageState extends State<ChatPage> {
 
   DefaultChatTheme _chatTheme(BuildContext context) {
     return DefaultChatTheme(
+      attachmentButtonIcon: Container(
+        width: Dimens.DIMENS_34,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(50),
+        ),
+        child: const Icon(
+          BootstrapIcons.paperclip,
+        ),
+      ),
+      receivedMessageBodyTextStyle: TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.w500,
+          color: Theme.of(context).colorScheme.onSurface),
+      userAvatarNameColors: [Theme.of(context).colorScheme.onSurface],
+      secondaryColor: Theme.of(context).colorScheme.tertiary,
       primaryColor: Theme.of(context).colorScheme.onTertiary,
       inputBackgroundColor: Theme.of(context).colorScheme.tertiary,
       inputMargin: EdgeInsets.symmetric(
@@ -383,7 +398,8 @@ class _ChatPageState extends State<ChatPage> {
     if (widget.data.room.type == types.RoomType.direct) {
       return Text(
         widget.data.userName,
-        style: TextStyle(color: Theme.of(context).colorScheme.tertiary),
+        style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.88)),
       );
     }
     return Container();
