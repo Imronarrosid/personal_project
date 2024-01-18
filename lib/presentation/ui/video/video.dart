@@ -37,6 +37,7 @@ class _VideoPageState extends State<VideoPage>
             //   border: Border.all(color: Colors.transparent)
             // ),
             controller: _tabController,
+            splashFactory: NoSplash.splashFactory,
             padding: EdgeInsets.symmetric(horizontal: Dimens.DIMENS_45),
             isScrollable: false,
             dividerColor: Colors.transparent,
