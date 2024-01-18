@@ -206,7 +206,9 @@ class _VideoEditorState extends State<VideoEditor> {
                                                       RotateDirection.left),
                                               icon: const Icon(BootstrapIcons
                                                   .arrow_counterclockwise),
-                                              tooltip: 'Rotate unclockwise',
+                                              tooltip: LocaleKeys
+                                                  .label_rotate_counterclockwise
+                                                  .tr(),
                                             ),
                                           ),
                                           Expanded(
@@ -217,7 +219,9 @@ class _VideoEditorState extends State<VideoEditor> {
                                                       RotateDirection.right),
                                               icon: const Icon(BootstrapIcons
                                                   .arrow_clockwise),
-                                              tooltip: 'Rotate clockwise',
+                                              tooltip: LocaleKeys
+                                                  .label_rotate_clockwise
+                                                  .tr(),
                                             ),
                                           ),
                                           Expanded(
@@ -417,32 +421,32 @@ class _VideoEditorState extends State<VideoEditor> {
     File(widget.file.path).deleteSync(recursive: true);
   }
 
-  Widget _coverSelection() {
-    return SingleChildScrollView(
-      child: Center(
-        child: Container(
-          margin: const EdgeInsets.all(15),
-          child: CoverSelection(
-            controller: _controller,
-            size: height + 10,
-            quantity: 8,
-            selectedCoverBuilder: (cover, size) {
-              return Stack(
-                alignment: Alignment.center,
-                children: [
-                  cover,
-                  Icon(
-                    Icons.check_circle,
-                    color: const CoverSelectionStyle().selectedBorderColor,
-                  )
-                ],
-              );
-            },
-          ),
-        ),
-      ),
-    );
-  }
+  // Widget _coverSelection() {
+  //   return SingleChildScrollView(
+  //     child: Center(
+  //       child: Container(
+  //         margin: const EdgeInsets.all(15),
+  //         child: CoverSelection(
+  //           controller: _controller,
+  //           size: height + 10,
+  //           quantity: 8,
+  //           selectedCoverBuilder: (cover, size) {
+  //             return Stack(
+  //               alignment: Alignment.center,
+  //               children: [
+  //                 cover,
+  //                 Icon(
+  //                   Icons.check_circle,
+  //                   color: const CoverSelectionStyle().selectedBorderColor,
+  //                 )
+  //               ],
+  //             );
+  //           },
+  //         ),
+  //       ),
+  //     ),
+  //   );
+  // }
 
   Future<String> ioOutputPath(String filePath, FileFormat format) async {
     final tempPath = (await getTemporaryDirectory()).path;
