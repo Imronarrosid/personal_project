@@ -59,15 +59,16 @@ class _VideoItemState extends State<VideoItem> {
   final double _IC_LABEL_FONTSIZE = 12;
   bool isViewed = false;
   bool isActive = true;
+  bool isBufferingIndicatorVisible = false;
   @override
   Widget build(BuildContext context) {
-    debugPrint('Its Rebuild${widget.videoData.caption}');
     var videoData = widget.videoData;
     Size size = MediaQuery.of(context).size;
     final AuthRepository authRepository =
         RepositoryProvider.of<AuthRepository>(context);
     final VideoRepository videoRepository =
         RepositoryProvider.of<VideoRepository>(context);
+
     return MultiBlocProvider(
       providers: [
         BlocProvider(
@@ -81,10 +82,8 @@ class _VideoItemState extends State<VideoItem> {
             debugPrint(state.toString());
 
             if (state.status == VideoPlayerStatus.initialized) {
-              debugPrint('vidnitialize');
-
               if (isViewed == false) {
-                addViews(state: state, videoData: videoData);
+                addListener(state: state, videoData: videoData);
               }
             }
           },
@@ -113,6 +112,13 @@ class _VideoItemState extends State<VideoItem> {
                   databaseLikeCount: videoData.likes.length);
             },
             child: BlocBuilder<VideoPlayerBloc, VideoPlayerState>(
+              buildWhen: (previous, current) {
+                if (current.status != VideoPlayerStatus.videoDeleted) {
+                  return false;
+                } else {
+                  return true;
+                }
+              },
               builder: (context, state) {
                 if (state.status == VideoPlayerStatus.videoDeleted) {
                   return const Center(
@@ -122,350 +128,17 @@ class _VideoItemState extends State<VideoItem> {
                 return SizedBox(
                   width: size.width,
                   height: size.height,
-                  child: Stack(children: [
-                    Container(
-                      width: size.width,
-                      height: size.height,
-                      alignment: Alignment.center,
-                      child: BlocBuilder<VideoPlayerBloc, VideoPlayerState>(
-                        buildWhen: (previous, current) {
-                          if (current.status == VideoPlayerStatus.paused ||
-                              current.status == VideoPlayerStatus.playing ||
-                              current.status == VideoPlayerStatus.buffering) {
-                            return false;
-                          }
-                          return true;
-                        },
-                        builder: (context, state) {
-                          if (state.status == VideoPlayerStatus.initialized) {
-                            return SizedBox.expand(
-                              child: FittedBox(
-                                fit: BoxFit.contain,
-                                child: SizedBox(
-                                  width: state.controller!.value.size.width,
-                                  height: state.controller!.value.size.height,
-                                  child: Stack(
-                                    children: [
-                                      VisibilityDetector(
-                                        key: Key(
-                                            'visible-video-key-//${widget.videoData.createdAt}'),
-                                        onVisibilityChanged: (info) {
-                                          final CachedVideoPlayerController?
-                                              controller = state.controller;
-                                          var visiblePercentage =
-                                              info.visibleFraction * 100;
-                                          if (visiblePercentage < 30 &&
-                                              widget.auto &&
-                                              isActive) {
-                                            if (controller!
-                                                .value.isInitialized) {
-                                              BlocProvider.of<VideoPlayerBloc>(
-                                                      context)
-                                                  .add(const VideoPlayerEvent(
-                                                      actions:
-                                                          VideoEvent.pause));
-                                            }
-                                          } else {
-                                            // Point the controller is initialized
-                                            if (controller!
-                                                    .value.isInitialized &&
-                                                widget.auto &&
-                                                isActive) {
-                                              BlocProvider.of<VideoPlayerBloc>(
-                                                      context)
-                                                  .add(const VideoPlayerEvent(
-                                                      actions:
-                                                          VideoEvent.play));
-                                            }
-                                          }
-                                        },
-                                        child: CachedVideoPlayer(
-                                            state.controller!),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            );
-                          } else if (state is VideoPlayerInitial) {
-                            return SizedBox(
-                              width: MediaQuery.of(context).size.width,
-                              child: CachedNetworkImage(
-                                placeholder: (_, __) => const Center(
-                                    child: CircularProgressIndicator()),
-                                imageUrl: videoData.thumnail,
-                                errorWidget: (_, __, ___) {
-                                  return Container();
-                                },
-                                fit: BoxFit.fitWidth,
-                              ),
-                            );
-                          }
-                          return Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                'Error',
-                                style: TextStyle(
-                                    color: COLOR_white_fff5f5f5,
-                                    fontSize: _IC_LABEL_FONTSIZE),
-                              ),
-                              IconButton(
-                                  onPressed: () {
-                                    final CachedVideoPlayerController?
-                                        controller0 = RepositoryProvider.of<
-                                                VideoPlayerRepository>(context)
-                                            .controller;
-                                    if (controller0 != null) {
-                                      controller0.dispose();
-                                    }
-                                    BlocProvider.of<VideoPlayerBloc>(context)
-                                        .add(
-                                      VideoPlayerEvent(
-                                        actions: VideoEvent.initialize,
-                                        postId: videoData.id,
-                                        videoUrl: videoData.videoUrl,
-                                      ),
-                                    );
-                                  },
-                                  icon: Icon(BootstrapIcons.arrow_repeat)),
-                            ],
-                          );
-                        },
-                      ),
-                    ),
-                    FutureBuilder(
-                        future: RepositoryProvider.of<VideoRepository>(context)
-                            .getVideoOwnerData(widget.videoData.uid),
-                        builder: (_, snapshot) {
-                          var data = snapshot.data;
-                          return snapshot.hasData
-                              ? Positioned(
-                                  right: Dimens.DIMENS_12,
-                                  bottom: Dimens.DIMENS_18,
-                                  child: Column(
-                                    children: [
-                                      _buildProfilePictures(context, data),
-                                      SizedBox(
-                                        height: Dimens.DIMENS_25,
-                                      ),
-                                      _buildLikeButton(context, videoData),
-                                      SizedBox(
-                                        height: Dimens.DIMENS_5,
-                                      ),
-                                      BlocBuilder<LikeVideoCubit,
-                                          LikeVideoState>(
-                                        buildWhen: (previous, current) {
-                                          if (current
-                                                  is ShowDobleTapLikeWidget ||
-                                              current
-                                                  is RemoveDoubleTapLikeWidget) {
-                                            return false;
-                                          }
-                                          return true;
-                                        },
-                                        builder: (context, state) {
-                                          if (state is VideoIsLiked) {
-                                            debugPrint(
-                                                'likeCount${state.likeCount}');
-                                            return Text(
-                                              state.likeCount.toString(),
-                                              style: TextStyle(
-                                                color: COLOR_white_fff5f5f5,
-                                                fontSize: _IC_LABEL_FONTSIZE,
-                                              ),
-                                            );
-                                          } else if (state is UnilkedVideo) {
-                                            return Text(
-                                              numberFormat(context.locale,
-                                                  state.likeCount),
-                                              style: TextStyle(
-                                                color: COLOR_white_fff5f5f5,
-                                                fontSize: _IC_LABEL_FONTSIZE,
-                                              ),
-                                            );
-                                          }
-                                          return Text(
-                                            numberFormat(context.locale,
-                                                videoData.likes.length),
-                                            style: TextStyle(
-                                              color: COLOR_white_fff5f5f5,
-                                              fontSize: _IC_LABEL_FONTSIZE,
-                                            ),
-                                          );
-                                        },
-                                      ),
-                                      SizedBox(
-                                        height: Dimens.DIMENS_25,
-                                      ),
-                                      RepositoryProvider(
-                                        create: (context) =>
-                                            CommentRepository(),
-                                        child: GestureDetector(
-                                          onTap: () {
-                                            showModalBottomSheet(
-                                                context: context,
-                                                backgroundColor:
-                                                    Colors.transparent,
-                                                useSafeArea: true,
-                                                elevation: 0,
-                                                isScrollControlled: true,
-                                                builder: (context) {
-                                                  return CommentBottomSheet(
-                                                    postId:
-                                                        widget.videoData.id!,
-                                                  );
-                                                });
-                                          },
-                                          child: Icon(
-                                            BootstrapIcons.chat_dots_fill,
-                                            color: COLOR_white_fff5f5f5,
-                                            size: Dimens.DIMENS_28,
-                                          ),
-                                        ),
-                                      ),
-                                      SizedBox(
-                                        height: Dimens.DIMENS_5,
-                                      ),
-                                      Text(
-                                        numberFormat(
-                                          context.locale,
-                                          videoData.commentCount,
-                                        ),
-                                        style: TextStyle(
-                                          color: COLOR_white_fff5f5f5,
-                                          fontSize: _IC_LABEL_FONTSIZE,
-                                        ),
-                                      ),
-                                      SizedBox(
-                                        height: Dimens.DIMENS_20,
-                                      ),
-                                      GestureDetector(
-                                        onTap: () {
-                                          debugPrint(
-                                              'lmnop${LocaleKeys.message_share_featur_not_ready.tr()}');
-                                          Fluttertoast.showToast(
-                                            msg: LocaleKeys
-                                                .message_share_featur_not_ready
-                                                .tr(),
-                                            toastLength: Toast.LENGTH_SHORT,
-                                            gravity: ToastGravity.TOP,
-                                            timeInSecForIosWeb: 1,
-                                            backgroundColor:
-                                                COLOR_black_ff121212,
-                                            textColor: Colors.white,
-                                            fontSize: 16.0,
-                                          );
-                                        },
-                                        child: Transform.flip(
-                                          flipX: true,
-                                          child: Icon(
-                                            BootstrapIcons.reply_fill,
-                                            color: COLOR_white_fff5f5f5,
-                                            size: Dimens.DIMENS_34,
-                                          ),
-                                        ),
-                                      ),
-                                      SizedBox(
-                                        height: Dimens.DIMENS_25,
-                                      ),
-                                      _videoMenu(
-                                        context,
-                                        videoData,
-                                        authRepository,
-                                      ),
-                                      GestureDetector(
-                                        onTap: () {
-                                          if (videoData.game != null) {
-                                            context.push(
-                                                APP_PAGE.videoFromGame.toPath,
-                                                extra: VideoFromGameData(
-                                                    game: videoData.game!,
-                                                    captions: videoData.caption,
-                                                    profileImg: data!.photo!));
-                                          } else {
-                                            Fluttertoast.showToast(
-                                                gravity: ToastGravity.TOP,
-                                                msg: LocaleKeys.message_no_game
-                                                    .tr());
-                                          }
-                                        },
-                                        child: Container(
-                                          width: Dimens.DIMENS_30,
-                                          height: Dimens.DIMENS_30,
-                                          alignment: Alignment.center,
-                                          decoration: BoxDecoration(
-                                            border: Border.all(
-                                                color: COLOR_white_fff5f5f5),
-                                            borderRadius:
-                                                BorderRadius.circular(5),
-                                            color: const Color.fromARGB(
-                                                255, 27, 26, 26),
-                                          ),
-                                          child: videoData.game == null
-                                              ? Icon(
-                                                  BootstrapIcons.controller,
-                                                  color: COLOR_white_fff5f5f5,
-                                                  size: Dimens.DIMENS_15,
-                                                )
-                                              : _buildGameImage(videoData),
-                                        ),
-                                      )
-                                    ],
-                                  ),
-                                )
-                              : Container();
-                        }),
-                    _buildUserNameView(context, videoData),
+                  child: Stack(children: <Widget>[
+                    _videoView(size, videoData),
+                    _rightOveray(context, videoData, authRepository),
+                    _bottomOverLay(context, videoData),
                     _buildProgerBarIndicatorView(),
                     const Align(
                       alignment: Alignment.center,
                       child: LikeWidget(),
                     ),
-                    BlocBuilder<VideoPlayerBloc, VideoPlayerState>(
-                      builder: (context, state) {
-                        if (state.status == VideoPlayerStatus.paused) {
-                          return Align(
-                            alignment: Alignment.center,
-                            child: AnimatedOpacity(
-                              opacity: state.status == VideoPlayerStatus.paused
-                                  ? 1
-                                  : 0,
-                              duration: kThemeAnimationDuration,
-                              child: GestureDetector(
-                                onTap: () {
-                                  BlocProvider.of<VideoPlayerBloc>(context).add(
-                                      const VideoPlayerEvent(
-                                          actions: VideoEvent.play));
-                                },
-                                child: Icon(
-                                  BootstrapIcons.play_fill,
-                                  size: state.status == VideoPlayerStatus.paused
-                                      ? Dimens.DIMENS_38
-                                      : Dimens.DIMENS_50,
-                                  color: COLOR_white_fff5f5f5,
-                                ),
-                              ),
-                            ),
-                          );
-                        }
-                        return Container();
-                      },
-                    ),
-                    BlocBuilder<VideoPlayerBloc, VideoPlayerState>(
-                      builder: (context, state) {
-                        if (state.status == VideoPlayerStatus.buffering) {
-                          return const Align(
-                            alignment: Alignment.center,
-                            child: CircularProgressIndicator(),
-                          );
-                        }
-                        return const SizedBox(
-                          width: 0,
-                          height: 0,
-                        );
-                      },
-                    )
+                    _playButton(),
+                    _bufferingIndicator(),
                   ]),
                 );
               },
@@ -474,6 +147,319 @@ class _VideoItemState extends State<VideoItem> {
         );
       }),
     );
+  }
+
+  BlocBuilder<VideoPlayerBloc, VideoPlayerState> _bufferingIndicator() {
+    return BlocBuilder<VideoPlayerBloc, VideoPlayerState>(
+      builder: (context, state) {
+        if (state.status == VideoPlayerStatus.buffering) {
+          return const Align(
+            alignment: Alignment.center,
+            child: CircularProgressIndicator(),
+          );
+        }
+        return const SizedBox(
+          width: 0,
+          height: 0,
+        );
+      },
+    );
+  }
+
+  BlocBuilder<VideoPlayerBloc, VideoPlayerState> _playButton() {
+    return BlocBuilder<VideoPlayerBloc, VideoPlayerState>(
+      builder: (context, state) {
+        if (state.status == VideoPlayerStatus.paused) {
+          return Align(
+            alignment: Alignment.center,
+            child: AnimatedOpacity(
+              opacity: state.status == VideoPlayerStatus.paused ? 1 : 0,
+              duration: kThemeAnimationDuration,
+              child: GestureDetector(
+                onTap: () {
+                  BlocProvider.of<VideoPlayerBloc>(context)
+                      .add(const VideoPlayerEvent(actions: VideoEvent.play));
+                },
+                child: Icon(
+                  BootstrapIcons.play_fill,
+                  size: state.status == VideoPlayerStatus.paused
+                      ? Dimens.DIMENS_38
+                      : Dimens.DIMENS_50,
+                  color: COLOR_white_fff5f5f5,
+                ),
+              ),
+            ),
+          );
+        }
+        return Container();
+      },
+    );
+  }
+
+  Container _videoView(Size size, Video videoData) {
+    return Container(
+      width: size.width,
+      height: size.height,
+      alignment: Alignment.center,
+      child: BlocBuilder<VideoPlayerBloc, VideoPlayerState>(
+        buildWhen: (previous, current) {
+          if (current.status == VideoPlayerStatus.paused ||
+              current.status == VideoPlayerStatus.playing ||
+              current.status == VideoPlayerStatus.buffering) {
+            return false;
+          }
+          return true;
+        },
+        builder: (context, state) {
+          if (state.status == VideoPlayerStatus.initialized) {
+            return SizedBox.expand(
+              child: FittedBox(
+                fit: BoxFit.contain,
+                child: SizedBox(
+                  width: state.controller!.value.size.width,
+                  height: state.controller!.value.size.height,
+                  child: VisibilityDetector(
+                    key: Key(
+                        'visible-video-key-//${widget.videoData.createdAt}'),
+                    onVisibilityChanged: (info) {
+                      final CachedVideoPlayerController? controller =
+                          state.controller;
+                      var visiblePercentage = info.visibleFraction * 100;
+                      if (visiblePercentage < 30 && widget.auto && isActive) {
+                        if (controller!.value.isInitialized) {
+                          BlocProvider.of<VideoPlayerBloc>(context).add(
+                              const VideoPlayerEvent(
+                                  actions: VideoEvent.pause));
+                        }
+                      } else {
+                        // Point the controller is initialized
+                        if (controller!.value.isInitialized &&
+                            widget.auto &&
+                            isActive) {
+                          BlocProvider.of<VideoPlayerBloc>(context).add(
+                              const VideoPlayerEvent(actions: VideoEvent.play));
+                        }
+                      }
+                    },
+                    child: CachedVideoPlayer(state.controller!),
+                  ),
+                ),
+              ),
+            );
+          } else if (state is VideoPlayerInitial) {
+            return SizedBox(
+              width: MediaQuery.of(context).size.width,
+              child: CachedNetworkImage(
+                placeholder: (_, __) =>
+                    const Center(child: CircularProgressIndicator()),
+                imageUrl: videoData.thumnail,
+                errorWidget: (_, __, ___) {
+                  return Container();
+                },
+                fit: BoxFit.fitWidth,
+              ),
+            );
+          }
+          return Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                'Error',
+                style: TextStyle(
+                    color: COLOR_white_fff5f5f5, fontSize: _IC_LABEL_FONTSIZE),
+              ),
+              IconButton(
+                  onPressed: () {
+                    final CachedVideoPlayerController? controller0 =
+                        RepositoryProvider.of<VideoPlayerRepository>(context)
+                            .controller;
+                    if (controller0 != null) {
+                      controller0.dispose();
+                    }
+                    BlocProvider.of<VideoPlayerBloc>(context).add(
+                      VideoPlayerEvent(
+                        actions: VideoEvent.initialize,
+                        postId: videoData.id,
+                        videoUrl: videoData.videoUrl,
+                      ),
+                    );
+                  },
+                  icon: const Icon(BootstrapIcons.arrow_repeat)),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  FutureBuilder<User> _rightOveray(
+      BuildContext context, Video videoData, AuthRepository authRepository) {
+    return FutureBuilder(
+        future: RepositoryProvider.of<VideoRepository>(context)
+            .getVideoOwnerData(widget.videoData.uid),
+        builder: (_, snapshot) {
+          var data = snapshot.data;
+          return snapshot.hasData
+              ? Positioned(
+                  right: Dimens.DIMENS_12,
+                  bottom: Dimens.DIMENS_18,
+                  child: Column(
+                    children: [
+                      _buildProfilePictures(context, data),
+                      SizedBox(
+                        height: Dimens.DIMENS_25,
+                      ),
+                      _buildLikeButton(context, videoData),
+                      SizedBox(
+                        height: Dimens.DIMENS_5,
+                      ),
+                      BlocBuilder<LikeVideoCubit, LikeVideoState>(
+                        buildWhen: (previous, current) {
+                          if (current is ShowDobleTapLikeWidget ||
+                              current is RemoveDoubleTapLikeWidget) {
+                            return false;
+                          }
+                          return true;
+                        },
+                        builder: (context, state) {
+                          if (state is VideoIsLiked) {
+                            debugPrint('likeCount${state.likeCount}');
+                            return Text(
+                              state.likeCount.toString(),
+                              style: TextStyle(
+                                color: COLOR_white_fff5f5f5,
+                                fontSize: _IC_LABEL_FONTSIZE,
+                              ),
+                            );
+                          } else if (state is UnilkedVideo) {
+                            return Text(
+                              numberFormat(context.locale, state.likeCount),
+                              style: TextStyle(
+                                color: COLOR_white_fff5f5f5,
+                                fontSize: _IC_LABEL_FONTSIZE,
+                              ),
+                            );
+                          }
+                          return Text(
+                            numberFormat(
+                                context.locale, videoData.likes.length),
+                            style: TextStyle(
+                              color: COLOR_white_fff5f5f5,
+                              fontSize: _IC_LABEL_FONTSIZE,
+                            ),
+                          );
+                        },
+                      ),
+                      SizedBox(
+                        height: Dimens.DIMENS_25,
+                      ),
+                      RepositoryProvider(
+                        create: (context) => CommentRepository(),
+                        child: GestureDetector(
+                          onTap: () {
+                            showModalBottomSheet(
+                                context: context,
+                                backgroundColor: Colors.transparent,
+                                useSafeArea: true,
+                                elevation: 0,
+                                isScrollControlled: true,
+                                builder: (context) {
+                                  return CommentBottomSheet(
+                                    postId: widget.videoData.id!,
+                                  );
+                                });
+                          },
+                          child: Icon(
+                            BootstrapIcons.chat_dots_fill,
+                            color: COLOR_white_fff5f5f5,
+                            size: Dimens.DIMENS_28,
+                          ),
+                        ),
+                      ),
+                      SizedBox(
+                        height: Dimens.DIMENS_5,
+                      ),
+                      Text(
+                        numberFormat(
+                          context.locale,
+                          videoData.commentCount,
+                        ),
+                        style: TextStyle(
+                          color: COLOR_white_fff5f5f5,
+                          fontSize: _IC_LABEL_FONTSIZE,
+                        ),
+                      ),
+                      SizedBox(
+                        height: Dimens.DIMENS_20,
+                      ),
+                      GestureDetector(
+                        onTap: () {
+                          debugPrint(
+                              'lmnop${LocaleKeys.message_share_featur_not_ready.tr()}');
+                          Fluttertoast.showToast(
+                            msg: LocaleKeys.message_share_featur_not_ready.tr(),
+                            toastLength: Toast.LENGTH_SHORT,
+                            gravity: ToastGravity.TOP,
+                            timeInSecForIosWeb: 1,
+                            backgroundColor: COLOR_black_ff121212,
+                            textColor: Colors.white,
+                            fontSize: 16.0,
+                          );
+                        },
+                        child: Transform.flip(
+                          flipX: true,
+                          child: Icon(
+                            BootstrapIcons.reply_fill,
+                            color: COLOR_white_fff5f5f5,
+                            size: Dimens.DIMENS_34,
+                          ),
+                        ),
+                      ),
+                      SizedBox(
+                        height: Dimens.DIMENS_25,
+                      ),
+                      _videoMenu(
+                        context,
+                        videoData,
+                        authRepository,
+                      ),
+                      GestureDetector(
+                        onTap: () {
+                          if (videoData.game != null) {
+                            context.push(APP_PAGE.videoFromGame.toPath,
+                                extra: VideoFromGameData(
+                                    game: videoData.game!,
+                                    captions: videoData.caption,
+                                    profileImg: data!.photo!));
+                          } else {
+                            Fluttertoast.showToast(
+                                gravity: ToastGravity.TOP,
+                                msg: LocaleKeys.message_no_game.tr());
+                          }
+                        },
+                        child: Container(
+                          width: Dimens.DIMENS_30,
+                          height: Dimens.DIMENS_30,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            border: Border.all(color: COLOR_white_fff5f5f5),
+                            borderRadius: BorderRadius.circular(5),
+                            color: const Color.fromARGB(255, 27, 26, 26),
+                          ),
+                          child: videoData.game == null
+                              ? Icon(
+                                  BootstrapIcons.controller,
+                                  color: COLOR_white_fff5f5f5,
+                                  size: Dimens.DIMENS_15,
+                                )
+                              : _buildGameImage(videoData),
+                        ),
+                      )
+                    ],
+                  ),
+                )
+              : Container();
+        });
   }
 
   Widget _videoMenu(
@@ -573,7 +559,8 @@ class _VideoItemState extends State<VideoItem> {
     );
   }
 
-  void addViews({required VideoPlayerState state, required Video videoData}) {
+  void addListener(
+      {required VideoPlayerState state, required Video videoData}) {
     state.controller!.addListener(() {
       int duratio = state.controller!.value.duration.inSeconds;
       double minDur = 3 / 10 * duratio;
@@ -588,18 +575,20 @@ class _VideoItemState extends State<VideoItem> {
         // state.controller!.removeListener(() {});
       }
       if (state.controller!.value.isBuffering) {
+        isBufferingIndicatorVisible = true;
         vBloc.add(
           const VideoPlayerEvent(
             actions: VideoEvent.showBufferingIndicator,
           ),
         );
       } else {
-        if (state.controller!.value.isPlaying) {
+        if (state.controller!.value.isPlaying && isBufferingIndicatorVisible) {
           vBloc.add(
             const VideoPlayerEvent(
               actions: VideoEvent.removeBufferingIndicator,
             ),
           );
+          isBufferingIndicatorVisible = false;
         }
       }
     });
@@ -729,8 +718,7 @@ class _VideoItemState extends State<VideoItem> {
     );
   }
 
-  FutureBuilder<User> _buildUserNameView(
-      BuildContext context, Video videoData) {
+  FutureBuilder<User> _bottomOverLay(BuildContext context, Video videoData) {
     final UserRepository userRepository =
         RepositoryProvider.of<UserRepository>(context);
     return FutureBuilder(
@@ -771,8 +759,6 @@ class _VideoItemState extends State<VideoItem> {
                                   isFollowing!) {
                                 return Container();
                               }
-                              debugPrint('oioi $isFollowing}');
-                              debugPrint('oioi ${data.id}');
 
                               return BlocProvider(
                                 create: (context) => FollowCubit(
