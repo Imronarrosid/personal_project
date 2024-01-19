@@ -25,6 +25,7 @@ import 'package:personal_project/domain/reporsitory/user_repository.dart';
 import 'package:personal_project/presentation/l10n/locale_code.dart';
 import 'package:personal_project/presentation/l10n/stings.g.dart';
 import 'package:personal_project/presentation/router/route_utils.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ChatPage extends StatefulWidget {
   const ChatPage({
@@ -326,6 +327,12 @@ class _ChatPageState extends State<ChatPage> {
                     showUserNames: true,
                     nameBuilder: _buildName,
                     showUserAvatars: true,
+                    textMessageOptions: TextMessageOptions(
+                      onLinkPressed: (p0) {
+                        Uri url = Uri.parse(p0);
+                        launchUrl(url);
+                      },
+                    ),
                     isAttachmentUploading: _isAttachmentUploading,
                     messages: snapshot.data ?? [],
                     hideBackgroundOnEmojiMessages: false,
@@ -360,6 +367,12 @@ class _ChatPageState extends State<ChatPage> {
 
   DefaultChatTheme _chatTheme(BuildContext context) {
     return DefaultChatTheme(
+      receivedMessageLinkDescriptionTextStyle: TextStyle(
+        color: Theme.of(context).colorScheme.onSurface,
+      ),
+      receivedMessageLinkTitleTextStyle: TextStyle(
+        color: Theme.of(context).colorScheme.onSurface,
+      ),
       attachmentButtonIcon: Container(
         width: Dimens.DIMENS_34,
         decoration: BoxDecoration(
