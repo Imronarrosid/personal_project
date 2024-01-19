@@ -118,7 +118,7 @@ class _EditProfileState extends State<EditProfile> {
                                     onPressed: () {
                                       showEditPPModal(context);
                                     },
-                                    icon: const Icon(BootstrapIcons.camera2),
+                                    icon: const Icon(BootstrapIcons.camera),
                                   ),
                                 ),
                               ),
