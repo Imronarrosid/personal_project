@@ -98,6 +98,7 @@ class VideoRepository implements VideoUseCaseType {
           commentCount: 0,
           shareCount: 0,
           viewsCount: 0,
+          likesCount: 0,
           createdAt: FieldValue.serverTimestamp(),
           game: game,
           views: []);
@@ -149,10 +150,7 @@ class VideoRepository implements VideoUseCaseType {
       for (var element in querySnapshot.docs) {
         debugPrint(Video.fromSnap(element).videoUrl);
       }
-      for (var element in allDocs) {
-        debugPrint('_LISTDOCS${Video.fromSnap(element).videoUrl}');
-      }
-      debugPrint('DOCUMENTSNAP ${querySnapshot.docs}');
+
       if (querySnapshot.docs.isEmpty && querySnapshot.metadata.isFromCache) {
         throw ErrorDescription('Error');
       }
@@ -262,6 +260,31 @@ class VideoRepository implements VideoUseCaseType {
             .doc(id)
             .set({'postId': id, 'likedAt': FieldValue.serverTimestamp()});
       }
+      DocumentReference documentReference =
+          firebaseFirestore.collection('videos').doc(id);
+      firebaseFirestore.runTransaction((transaction) {
+        return transaction.get(documentReference).then((value) {
+          if ((value.data() as Map<String, dynamic>)
+              .containsKey('likesCount')) {
+            int currentCount =
+                (value.data() as Map<String, dynamic>)['likesCount'];
+            transaction
+                .update(documentReference, {'likesCount': currentCount + 1});
+          } else {
+            final List<dynamic> views =
+                (value.data() as Map<String, dynamic>)['likes'];
+            int currentCount = views.length;
+            Video video = Video.fromSnap(value);
+            if ((doc.data()! as dynamic)['likes'].contains(uid)) {
+              transaction.set(documentReference,
+                  {...video.toJson(), 'likesCount': currentCount - 1});
+            } else {
+              transaction.set(documentReference,
+                  {...video.toJson(), 'likesCount': currentCount + 1});
+            }
+          }
+        });
+      });
     } catch (e) {
       debugPrint(e.toString());
     }
@@ -362,14 +385,6 @@ class VideoRepository implements VideoUseCaseType {
 
       //list that send to infinity list package
       listDocs.addAll(querySnapshot.docs);
-
-      for (var element in querySnapshot.docs) {
-        debugPrint(Video.fromSnap(element).videoUrl);
-      }
-      for (var element in allDocs) {
-        debugPrint('_LISTDOCS liked video${Video.fromSnap(element).videoUrl}');
-      }
-      debugPrint('DOCUMENTSNAP liked video ${querySnapshot.docs}');
     } catch (e) {
       debugPrint('get video User error$e');
     }
@@ -406,14 +421,6 @@ class VideoRepository implements VideoUseCaseType {
 
       //list that send to infinity list package
       listDocs.addAll(querySnapshot.docs);
-
-      for (var element in querySnapshot.docs) {
-        debugPrint(Video.fromSnap(element).videoUrl);
-      }
-      for (var element in allDocs) {
-        debugPrint('_LISTDOCS liked video${Video.fromSnap(element).videoUrl}');
-      }
-      debugPrint('DOCUMENTSNAP liked video ${querySnapshot.docs}');
     } catch (e) {
       debugPrint('get video User error$e');
     }

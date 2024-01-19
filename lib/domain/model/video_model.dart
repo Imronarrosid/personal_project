@@ -17,23 +17,25 @@ class Video {
   final GameFav? game;
   final dynamic createdAt;
   final List likes, views;
-  final int commentCount, shareCount, viewsCount;
-  Video(
-      {this.id,
-      this.username,
-      required this.uid,
-      required this.songName,
-      required this.caption,
-      required this.thumnail,
-      required this.videoUrl,
-      this.profileImg,
-      this.game,
-      required this.likes,
-      required this.views,
-      required this.commentCount,
-      required this.viewsCount,
-      required this.shareCount,
-      required this.createdAt});
+  final int commentCount, shareCount, viewsCount, likesCount;
+  Video({
+    this.id,
+    this.username,
+    required this.uid,
+    required this.songName,
+    required this.caption,
+    required this.thumnail,
+    required this.videoUrl,
+    this.profileImg,
+    this.game,
+    required this.likes,
+    required this.views,
+    required this.commentCount,
+    required this.viewsCount,
+    required this.shareCount,
+    required this.createdAt,
+    required this.likesCount,
+  });
 
   Map<String, dynamic> toJson() => {
         "username": username,
@@ -44,6 +46,7 @@ class Video {
         "commentCount": commentCount,
         "shareCount": shareCount,
         "viewsCount": viewsCount,
+        "likesCount": likesCount,
         "songName": songName,
         "caption": caption,
         "videoUrl": videoUrl,
@@ -66,6 +69,7 @@ class Video {
       commentCount: snap["commentCount"],
       viewsCount: snap["viewsCount"] ?? (snap["views"] as List).length,
       shareCount: snap["shareCount"],
+      likesCount: snap["likesCount"] ?? (snap["likes"] as List).length,
       songName: snap["songName"],
       caption: snap["caption"],
       videoUrl: snap["videoUrl"],

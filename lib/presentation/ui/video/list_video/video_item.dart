@@ -107,9 +107,10 @@ class _VideoItemState extends State<VideoItem> {
 
               bool isLiked = videoData.likes.contains(uid);
               BlocProvider.of<LikeVideoCubit>(context).doubleTapToLike(
-                  postId: videoData.id!,
-                  dataBaseState: isLiked,
-                  databaseLikeCount: videoData.likes.length);
+                postId: videoData.id!,
+                dataBaseState: isLiked,
+                databaseLikeCount: videoData.likesCount,
+              );
             },
             child: BlocBuilder<VideoPlayerBloc, VideoPlayerState>(
               buildWhen: (previous, current) {
@@ -325,7 +326,7 @@ class _VideoItemState extends State<VideoItem> {
                           if (state is VideoIsLiked) {
                             debugPrint('likeCount${state.likeCount}');
                             return Text(
-                              state.likeCount.toString(),
+                              numberFormat(context.locale, state.likeCount),
                               style: TextStyle(
                                 color: COLOR_white_fff5f5f5,
                                 fontSize: _IC_LABEL_FONTSIZE,
@@ -341,8 +342,7 @@ class _VideoItemState extends State<VideoItem> {
                             );
                           }
                           return Text(
-                            numberFormat(
-                                context.locale, videoData.likes.length),
+                            numberFormat(context.locale, videoData.likesCount),
                             style: TextStyle(
                               color: COLOR_white_fff5f5f5,
                               fontSize: _IC_LABEL_FONTSIZE,
@@ -595,7 +595,7 @@ class _VideoItemState extends State<VideoItem> {
   GestureDetector _buildLikeButton(BuildContext context, Video videoData) {
     return GestureDetector(
       onTap: () {
-        int likeCount = int.parse(widget.videoData.likes.length.toString());
+        int likeCount = videoData.likesCount;
         String? uid =
             RepositoryProvider.of<AuthRepository>(context).currentUser?.uid;
         if (uid == null) {

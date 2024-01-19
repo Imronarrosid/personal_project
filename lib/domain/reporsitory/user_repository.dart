@@ -156,7 +156,11 @@ class UserRepository implements UserUseCaseType {
         .get();
 
     for (var item in myVideos.docs) {
-      likes += (item.data()['likes'] as List).length;
+      if (item.data().containsKey('likesCount')) {
+        likes += item.data()['likesCount'] as int;
+      } else {
+        likes += (item.data()['likes'] as List).length;
+      }
     }
     return likes;
   }
