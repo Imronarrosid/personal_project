@@ -357,17 +357,10 @@ class _VideoItemState extends State<VideoItem> {
                         create: (context) => CommentRepository(),
                         child: GestureDetector(
                           onTap: () {
-                            showModalBottomSheet(
-                                context: context,
-                                backgroundColor: Colors.transparent,
-                                useSafeArea: true,
-                                elevation: 0,
-                                isScrollControlled: true,
-                                builder: (context) {
-                                  return CommentBottomSheet(
-                                    postId: widget.videoData.id!,
-                                  );
-                                });
+                            showCommentsBottomSheet(
+                              context,
+                              postId: widget.videoData.id!,
+                            );
                           },
                           child: Icon(
                             BootstrapIcons.chat_dots_fill,

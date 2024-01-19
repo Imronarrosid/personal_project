@@ -23,6 +23,23 @@ import 'package:personal_project/presentation/ui/comments/bloc/comments_paging_b
 import 'package:personal_project/presentation/ui/comments/cubit/like_comment_cubit.dart';
 import 'package:timeago/timeago.dart' as tago;
 
+Future<dynamic> showCommentsBottomSheet(
+  BuildContext context, {
+  required String postId,
+}) {
+  return showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      useSafeArea: true,
+      elevation: 0,
+      isScrollControlled: true,
+      builder: (context) {
+        return CommentBottomSheet(
+          postId: postId,
+        );
+      });
+}
+
 class CommentBottomSheet extends StatefulWidget {
   final String postId;
 
