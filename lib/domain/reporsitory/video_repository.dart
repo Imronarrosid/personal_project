@@ -3,7 +3,6 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:personal_project/domain/model/game_fav_modal.dart';
 import 'package:personal_project/domain/model/user.dart';
 import 'package:personal_project/domain/model/video_model.dart';
@@ -12,7 +11,6 @@ import 'package:personal_project/domain/services/uuid_generator.dart';
 import 'package:personal_project/domain/usecase/vide_usecase_type.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:personal_project/utils/get_thumbnails.dart';
 
 class VideoRepository implements VideoUseCaseType {
   FirebaseStorage firebaseStorage = FirebaseStorage.instance;
@@ -47,7 +45,7 @@ class VideoRepository implements VideoUseCaseType {
   // }
 
   Future<String> _uploadToStorage(String id, File videoFile) async {
-    Reference ref = firebaseStorage.ref().child('videos').child(generateUuid());
+    Reference ref = firebaseStorage.ref().child('videos').child(id);
 
     UploadTask uploadTask = ref.putFile(videoFile);
 
@@ -63,10 +61,10 @@ class VideoRepository implements VideoUseCaseType {
     return downloaUrl;
   }
 
-  _uploadThumnailesToStorage(String id, String videoPath) async {
+  _uploadThumnailesToStorage(String id, String thumbnail) async {
     Reference ref = firebaseStorage.ref().child('thumnailes').child(id);
 
-    UploadTask uploadTask = ref.putFile(await getTumbnail(videoPath));
+    UploadTask uploadTask = ref.putFile(File(thumbnail));
     TaskSnapshot snapshot = await uploadTask;
     String downloaUrl = await snapshot.ref.getDownloadURL();
 
@@ -79,15 +77,16 @@ class VideoRepository implements VideoUseCaseType {
       {required String songName,
       required String caption,
       required String videoPath,
+      required String thumbnailPath,
       GameFav? game}) async {
     try {
       String uid = firebaseAuth.currentUser!.uid;
       //Get id
-      var allDocs = await firebaseFirestore.collection('videos').get();
-      int len = allDocs.docs.length;
-      String videoUrl = await _uploadToStorage("video $len", File(videoPath));
+
+      final String uuid = generateUuid();
+      String videoUrl = await _uploadToStorage("video $uuid", File(videoPath));
       String thumnail =
-          await _uploadThumnailesToStorage("video $len", videoPath);
+          await _uploadThumnailesToStorage("video $uuid", thumbnailPath);
 
       Video video = Video(
           uid: uid,

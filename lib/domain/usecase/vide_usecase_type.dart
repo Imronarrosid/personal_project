@@ -5,6 +5,7 @@ abstract class VideoUseCaseType {
     required String songName,
     required String caption,
     required String videoPath,
+    required String thumbnailPath,
     required GameFav game,
   });
 }
