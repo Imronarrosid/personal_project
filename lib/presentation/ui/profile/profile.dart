@@ -366,21 +366,21 @@ class _ProfilePageState extends State<ProfilePage> {
                                     ),
                                   ),
                                 ),
-                                SizedBox(
-                                  width: Dimens.DIMENS_6,
-                                ),
-                                Expanded(
-                                  child: Container(
-                                      height: Dimens.DIMENS_32,
-                                      decoration: BoxDecoration(
-                                          color: theme.colorScheme.tertiary,
-                                          borderRadius:
-                                              BorderRadius.circular(8)),
-                                      child: Icon(
-                                        BootstrapIcons.person_add,
-                                        size: Dimens.DIMENS_20,
-                                      )),
-                                ),
+                                // SizedBox(
+                                //   width: Dimens.DIMENS_6,
+                                // ),
+                                // Expanded(
+                                //   child: Container(
+                                //       height: Dimens.DIMENS_32,
+                                //       decoration: BoxDecoration(
+                                //           color: theme.colorScheme.tertiary,
+                                //           borderRadius:
+                                //               BorderRadius.circular(8)),
+                                //       child: Icon(
+                                //         BootstrapIcons.person_add,
+                                //         size: Dimens.DIMENS_20,
+                                //       )),
+                                // ),
                                 SizedBox(
                                   width: Dimens.DIMENS_12,
                                 ),
@@ -694,7 +694,7 @@ class _ProfilePageState extends State<ProfilePage> {
         useMaterial3: false,
       ),
       child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: Dimens.DIMENS_8),
+        padding: EdgeInsets.symmetric(horizontal: Dimens.DIMENS_12),
         child: BlocConsumer<GameFavCubit, GameFavState>(
           listener: (context, state) {
             if (state.sattus == GameFavSattus.succes) {
