@@ -268,12 +268,17 @@ class VideoRepository implements VideoUseCaseType {
               .containsKey('likesCount')) {
             int currentCount =
                 (value.data() as Map<String, dynamic>)['likesCount'];
-            transaction
-                .update(documentReference, {'likesCount': currentCount + 1});
+            if ((doc.data()! as dynamic)['likes'].contains(uid)) {
+              transaction
+                  .update(documentReference, {'likesCount': currentCount - 1});
+            } else {
+              transaction
+                  .update(documentReference, {'likesCount': currentCount + 1});
+            }
           } else {
-            final List<dynamic> views =
+            final List<dynamic> likes =
                 (value.data() as Map<String, dynamic>)['likes'];
-            int currentCount = views.length;
+            int currentCount = likes.length;
             Video video = Video.fromSnap(value);
             if ((doc.data()! as dynamic)['likes'].contains(uid)) {
               transaction.set(documentReference,
