@@ -132,14 +132,7 @@ class _VideoItemState extends State<VideoItem> {
                     height: size.height,
                     child: Stack(children: <Widget>[
                       _videoView(size, videoData),
-                      StreamBuilder<Video>(
-                          initialData: videoData,
-                          stream: videoRepository.videoStream(videoData.id!),
-                          builder: (_, AsyncSnapshot<Video> snapshot) {
-                            Video streamData = snapshot.data ?? videoData;
-                            return _rightOveray(
-                                context, streamData, authRepository);
-                          }),
+                      _rightOveray(context, videoData, authRepository),
                       _bottomOverLay(context, videoData),
                       _buildProgerBarIndicatorView(),
                       const Align(
@@ -344,8 +337,6 @@ class _VideoItemState extends State<VideoItem> {
                           return true;
                         },
                         builder: (context, state) {
-                          final VideoRepository videoRepository =
-                              RepositoryProvider.of<VideoRepository>(context);
                           if (state is VideoIsLiked) {
                             debugPrint('likeCount${state.likeCount}');
                             return Text(
