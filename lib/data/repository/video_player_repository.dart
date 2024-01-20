@@ -16,4 +16,8 @@ class VideoPlayerRepository {
   }
 
   CachedVideoPlayerController? get controller => _controller;
+
+  set setController(CachedVideoPlayerController? cachedVideoPlayerController) {
+    _controller = cachedVideoPlayerController;
+  }
 }

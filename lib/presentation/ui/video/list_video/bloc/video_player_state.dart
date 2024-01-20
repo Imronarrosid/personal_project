@@ -4,6 +4,7 @@ enum VideoPlayerStatus {
   initial,
   initialized,
   playing,
+  disposed,
   paused,
   buffering,
   videoDeleted,

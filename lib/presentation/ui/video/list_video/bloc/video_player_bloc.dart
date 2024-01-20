@@ -23,7 +23,8 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
       } else if (event.actions == VideoEvent.pause) {
         _pauseVideo(videoPlayerRepository.controller, emit);
       } else if (event.actions == VideoEvent.delete) {
-        await videoRepository.deleteVideo(event.postId!, event.videoUrl!,event.thumnailUrl!);
+        await videoRepository.deleteVideo(
+            event.postId!, event.videoUrl!, event.thumnailUrl!);
         emit(const VideoPlayerState(status: VideoPlayerStatus.videoDeleted));
       } else if (event.actions == VideoEvent.showBufferingIndicator) {
         emit(
@@ -37,6 +38,12 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
             status: VideoPlayerStatus.playing,
           ),
         );
+      } else if (event.actions == VideoEvent.dispose) {
+        if (videoPlayerRepository.controller != null) {
+          videoPlayerRepository.controller!.dispose();
+        }
+        videoPlayerRepository.setController = null;
+        emit(const VideoPlayerState(status: VideoPlayerStatus.disposed));
       }
     });
   }

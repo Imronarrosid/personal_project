@@ -11,6 +11,7 @@ import 'package:personal_project/domain/services/uuid_generator.dart';
 import 'package:personal_project/domain/usecase/vide_usecase_type.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:rxdart/rxdart.dart';
 
 class VideoRepository implements VideoUseCaseType {
   FirebaseStorage firebaseStorage = FirebaseStorage.instance;
@@ -227,6 +228,25 @@ class VideoRepository implements VideoUseCaseType {
     }
   }
 
+  Stream<Video>? videoStream(String postId) {
+    try {
+      const Duration debounceTime = Duration(seconds: 5);
+      Stream<Video> debouncedStream = firebaseFirestore
+          .collection('videos')
+          .doc(postId)
+          .snapshots()
+          .map(
+            (event) => Video.fromSnap(event),
+          )
+          .debounceTime(debounceTime)
+          .asBroadcastStream();
+      return debouncedStream;
+    } catch (e) {
+      debugPrint(e.toString());
+      return null;
+    }
+  }
+
   Future<User> getVideoOwnerData(String uid) async {
     DocumentSnapshot docs =
         await firebaseFirestore.collection('users').doc(uid).get();
@@ -266,6 +286,7 @@ class VideoRepository implements VideoUseCaseType {
             .doc(id)
             .set({'postId': id, 'likedAt': FieldValue.serverTimestamp()});
       }
+
       DocumentReference documentReference =
           firebaseFirestore.collection('videos').doc(id);
       firebaseFirestore.runTransaction((transaction) {
@@ -439,33 +460,38 @@ class VideoRepository implements VideoUseCaseType {
   }
 
   Future<void> addViewsCount(String postId) async {
-    DocumentReference documentReference =
-        firebaseFirestore.collection('videos').doc(postId);
-    firebaseFirestore.runTransaction((transaction) {
-      return transaction.get(documentReference).then((value) {
-        if ((value.data() as Map<String, dynamic>).containsKey('viewsCount')) {
-          int currentCount =
-              (value.data() as Map<String, dynamic>)['viewsCount'];
-          transaction
-              .update(documentReference, {'viewsCount': currentCount + 1});
-        } else {
-          final List<dynamic> views =
-              (value.data() as Map<String, dynamic>)['views'];
-          int currentCount = views.length;
-          Video video = Video.fromSnap(value);
-          transaction.set(documentReference,
-              {...video.toJson(), 'viewsCount': currentCount + 1});
-        }
+    try {
+      DocumentReference documentReference =
+          firebaseFirestore.collection('videos').doc(postId);
+      firebaseFirestore.runTransaction((transaction) {
+        return transaction.get(documentReference).then((value) {
+          if ((value.data() as Map<String, dynamic>)
+              .containsKey('viewsCount')) {
+            int currentCount =
+                (value.data() as Map<String, dynamic>)['viewsCount'];
+            transaction
+                .update(documentReference, {'viewsCount': currentCount + 1});
+          } else {
+            final List<dynamic> views =
+                (value.data() as Map<String, dynamic>)['views'];
+            int currentCount = views.length;
+            Video video = Video.fromSnap(value);
+            transaction.set(documentReference,
+                {...video.toJson(), 'viewsCount': currentCount + 1});
+          }
+        });
       });
-    });
 
-    Map<String, dynamic> views = {
-      'uid': firebaseAuth.currentUser?.uid ?? 'notAuthenticated',
-      'viewsAt': Timestamp.now()
-    };
-    debugPrint('postId $postId');
-    await firebaseFirestore.collection('videos').doc(postId).update({
-      'views': FieldValue.arrayUnion([views])
-    });
+      Map<String, dynamic> views = {
+        'uid': firebaseAuth.currentUser?.uid ?? 'notAuthenticated',
+        'viewsAt': Timestamp.now()
+      };
+      debugPrint('postId $postId');
+      await firebaseFirestore.collection('videos').doc(postId).update({
+        'views': FieldValue.arrayUnion([views])
+      });
+    } catch (e) {
+      debugPrint(e.toString());
+    }
   }
 }

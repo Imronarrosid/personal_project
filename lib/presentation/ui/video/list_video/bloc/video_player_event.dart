@@ -5,6 +5,7 @@ enum VideoEvent {
   play,
   pause,
   delete,
+  dispose,
   showBufferingIndicator,
   removeBufferingIndicator,
 }

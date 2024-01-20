@@ -11,6 +11,7 @@ import 'package:personal_project/data/repository/paging_repository.dart';
 import 'package:personal_project/domain/model/video_model.dart';
 import 'package:personal_project/domain/reporsitory/auth_reposotory.dart';
 import 'package:personal_project/presentation/l10n/stings.g.dart';
+import 'package:personal_project/presentation/shared_components/keep_alive_page.dart';
 import 'package:personal_project/presentation/shared_components/video_player_item.dart';
 import 'package:personal_project/presentation/ui/auth/auth.dart';
 import 'package:personal_project/presentation/ui/auth/bloc/auth_bloc.dart';
@@ -101,11 +102,13 @@ class _ListVideoState extends State<ListVideo> {
                         physics: const BouncingScrollPhysics(),
                         builderDelegate: PagedChildBuilderDelegate<Video>(
                             itemBuilder: (context, item, index) {
-                              return VideoPlayerItem(
-                                index: index,
-                                item: item,
-                                url: item.videoUrl,
-                                auto: true,
+                              return KeepAlivePage(
+                                child: VideoPlayerItem(
+                                  index: index,
+                                  item: item,
+                                  url: item.videoUrl,
+                                  auto: true,
+                                ),
                               );
                             },
                             noItemsFoundIndicatorBuilder: (_) {

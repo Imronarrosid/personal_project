@@ -43,17 +43,15 @@ class PagingRepository {
   void clearAllVideo() {
     videoRepository.allDocs.clear();
     _followedUid.clear();
+    _videoFromGame.clear();
+    _videoNotFromGame.clear();
+    _videoFromFollowing.clear();
   }
 
   void refreshPaging() {
     videoRepository.allDocs.clear();
-    _videoFromGame.clear();
-    _videoNotFromGame.clear();
-    _videoFromFollowing.clear();
     _followedUid.clear();
-    if (controller != null) {
-      controller!.refresh();
-    }
+   
   }
 
   void initPagingController(VideoFrom from) {
@@ -166,7 +164,7 @@ class PagingRepository {
       return [];
     }
     try {
-      if (_videoNotFromGame.isEmpty) {
+      if (_videoFromGame.isEmpty) {
         querySnapshot = await firebaseFirestore
             .collection('videos')
             .where('game.title', whereIn: gameList)
