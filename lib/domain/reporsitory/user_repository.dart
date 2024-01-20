@@ -310,7 +310,7 @@ class UserRepository implements UserUseCaseType {
     try {
       Reference ref = firebaseStorage
           .ref()
-          .child('pofilePicts')
+          .child('pofilePicts/${firebaseAuth.currentUser!.uid}')
           .child('profilePicts ${firebaseAuth.currentUser!.uid}');
       UploadTask uploadTask = ref.putFile(imageFile);
 

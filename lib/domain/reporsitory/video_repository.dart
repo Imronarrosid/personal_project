@@ -45,7 +45,10 @@ class VideoRepository implements VideoUseCaseType {
   // }
 
   Future<String> _uploadToStorage(String id, File videoFile) async {
-    Reference ref = firebaseStorage.ref().child('videos').child(id);
+    Reference ref = firebaseStorage
+        .ref()
+        .child('videos/${firebaseAuth.currentUser!.uid}')
+        .child(id);
 
     UploadTask uploadTask = ref.putFile(videoFile);
 
@@ -62,7 +65,10 @@ class VideoRepository implements VideoUseCaseType {
   }
 
   _uploadThumnailesToStorage(String id, String thumbnail) async {
-    Reference ref = firebaseStorage.ref().child('thumnailes').child(id);
+    Reference ref = firebaseStorage
+        .ref()
+        .child('thumnailes/${firebaseAuth.currentUser!.uid}')
+        .child(id);
 
     UploadTask uploadTask = ref.putFile(File(thumbnail));
     TaskSnapshot snapshot = await uploadTask;

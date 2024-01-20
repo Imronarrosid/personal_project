@@ -18,6 +18,7 @@ import 'package:mime/mime.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:personal_project/constant/dimens.dart';
+import 'package:personal_project/data/repository/chat_repository.dart';
 import 'package:personal_project/domain/model/chat_data_models.dart';
 import 'package:personal_project/domain/model/profile_data_model.dart';
 import 'package:personal_project/domain/reporsitory/auth_reposotory.dart';
@@ -121,6 +122,7 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   void _handleFileSelection() async {
+    final ChatRepository repo = RepositoryProvider.of<ChatRepository>(context);
     final result = await FilePicker.platform.pickFiles(
       type: FileType.any,
     );
@@ -132,9 +134,7 @@ class _ChatPageState extends State<ChatPage> {
       final file = File(filePath);
 
       try {
-        final reference = FirebaseStorage.instance.ref(name);
-        await reference.putFile(file);
-        final uri = await reference.getDownloadURL();
+        final uri = await repo.uploadFile(file);
 
         final message = types.PartialFile(
           mimeType: lookupMimeType(filePath),
@@ -152,6 +152,8 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   void _handleImageSelection() async {
+    final ChatRepository repo = RepositoryProvider.of<ChatRepository>(context);
+
     final result = await ImagePicker().pickImage(
       imageQuality: 70,
       maxWidth: 1440,
@@ -167,9 +169,7 @@ class _ChatPageState extends State<ChatPage> {
       final name = result.name;
 
       try {
-        final reference = FirebaseStorage.instance.ref(name);
-        await reference.putFile(file);
-        final uri = await reference.getDownloadURL();
+        final uri = await repo.uploadImage(file);
 
         final message = types.PartialImage(
           height: image.height.toDouble(),

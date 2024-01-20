@@ -1,8 +1,11 @@
+import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
 import 'package:personal_project/domain/model/user.dart';
 import 'package:personal_project/domain/services/firebase/firebase_service.dart';
+import 'package:personal_project/domain/services/uuid_generator.dart';
 
 class ChatRepository {
   List<String> _followingUidList = [];
@@ -116,6 +119,36 @@ class ChatRepository {
     } catch (e) {
       debugPrint(e.toString());
       return [];
+    }
+  }
+
+  Future<String> uploadFile(File file) async {
+    try {
+      String uuid = generateUuid();
+      final Reference reference = firebaseStorage
+          .ref('files/${firebaseAuth.currentUser!.uid}')
+          .child(uuid);
+      await reference.putFile(file);
+      final uri = await reference.getDownloadURL();
+      return uri;
+    } catch (e) {
+      debugPrint(e.toString());
+      return '';
+    }
+  }
+
+  Future<String> uploadImage(File file) async {
+    try {
+      String uuid = generateUuid();
+      final Reference reference = firebaseStorage
+          .ref('chat_images/${firebaseAuth.currentUser!.uid}')
+          .child(uuid);
+      await reference.putFile(file);
+      final uri = await reference.getDownloadURL();
+      return uri;
+    } catch (e) {
+      debugPrint(e.toString());
+      return '';
     }
   }
 }
