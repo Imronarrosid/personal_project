@@ -526,7 +526,7 @@ class CommentItem extends StatelessWidget {
                                   comment.datePublished.toDate().toString()),
                               locale: context.locale.languageCode)
                           .toString(),
-                      style: const TextStyle(fontSize: 8, color: Colors.grey),
+                      style: const TextStyle(fontSize: 11, color: Colors.grey),
                     ),
                   ],
                 ),
@@ -544,6 +544,7 @@ class CommentItem extends StatelessWidget {
                   ],
                 ),
                 trailing: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     InkWell(
                       onTap: () {
@@ -567,7 +568,13 @@ class CommentItem extends StatelessWidget {
                               color: Colors.red,
                             );
                           } else if (state is UnilkedComment) {
-                            return const Icon(Icons.favorite_border_outlined);
+                            return Icon(
+                              Icons.favorite_border_outlined,
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurface
+                                  .withOpacity(0.5),
+                            );
                           }
                           return comment.likes.contains(userUid)
                               ? const Icon(
@@ -589,7 +596,7 @@ class CommentItem extends StatelessWidget {
                         }
 
                         return likes == 0
-                            ? const SizedBox(width: 0, height: 0)
+                            ? const Text('')
                             : Text(
                                 likes.toString(),
                                 style: const TextStyle(
