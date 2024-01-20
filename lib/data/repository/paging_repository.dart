@@ -14,6 +14,8 @@ class PagingRepository {
   final int _pageSize = 15;
 
   final List<DocumentSnapshot> _videoFromFollowing = [];
+  final List<DocumentSnapshot> _videoFromGame = [];
+  final List<DocumentSnapshot> _videoNotFromGame = [];
 
   List<String> _followedUid = [];
   late Future<List<String>> _gameTitle;
@@ -45,6 +47,9 @@ class PagingRepository {
 
   void refreshPaging() {
     videoRepository.allDocs.clear();
+    _videoFromGame.clear();
+    _videoNotFromGame.clear();
+    _videoFromFollowing.clear();
     _followedUid.clear();
     if (controller != null) {
       controller!.refresh();
@@ -161,7 +166,7 @@ class PagingRepository {
       return [];
     }
     try {
-      if (videoRepository.allDocs.isEmpty) {
+      if (_videoNotFromGame.isEmpty) {
         querySnapshot = await firebaseFirestore
             .collection('videos')
             .where('game.title', whereIn: gameList)
@@ -171,13 +176,13 @@ class PagingRepository {
         querySnapshot = await firebaseFirestore
             .collection('videos')
             .where('game.title', whereIn: gameList)
-            .startAfterDocument(videoRepository.allDocs.last)
+            .startAfterDocument(_videoFromGame.last)
             .limit(limit)
             .get();
       }
 
       ///List to get last documet
-      videoRepository.allDocs.addAll(querySnapshot.docs);
+      _videoFromGame.addAll(querySnapshot.docs);
 
       //list that send to infinity list package
       listDocs.addAll(querySnapshot.docs);
@@ -205,7 +210,7 @@ class PagingRepository {
       return [];
     }
     try {
-      if (videoRepository.allDocs.isEmpty) {
+      if (_videoNotFromGame.isEmpty) {
         querySnapshot = await firebaseFirestore
             .collection('videos')
             .where('game.title', whereNotIn: gameList)
@@ -215,13 +220,13 @@ class PagingRepository {
         querySnapshot = await firebaseFirestore
             .collection('videos')
             .where('game.title', whereNotIn: gameList)
-            .startAfterDocument(videoRepository.allDocs.last)
+            .startAfterDocument(_videoNotFromGame.last)
             .limit(limit)
             .get();
       }
 
       ///List to get last documet
-      videoRepository.allDocs.addAll(querySnapshot.docs);
+      _videoNotFromGame.addAll(querySnapshot.docs);
 
       //list that send to infinity list package
       listDocs.addAll(querySnapshot.docs);
