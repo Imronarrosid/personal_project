@@ -776,7 +776,9 @@ class _VideoItemState extends State<VideoItem> {
                               if (!snapshot.hasData ||
                                   snapshot.hasError ||
                                   isFollowing!) {
-                                return Container();
+                                return Container(
+                                  height: Dimens.DIMENS_28,
+                                );
                               }
 
                               return BlocProvider(
@@ -812,10 +814,11 @@ class _VideoItemState extends State<VideoItem> {
                                           }
                                         },
                                         child: Container(
+                                          height: Dimens.DIMENS_28,
                                           padding: EdgeInsets.symmetric(
-                                            vertical: Dimens.DIMENS_6,
-                                            horizontal: Dimens.DIMENS_13,
+                                            horizontal: Dimens.DIMENS_16,
                                           ),
+                                          alignment: Alignment.center,
                                           decoration: BoxDecoration(
                                               border: Border.all(
                                                 color: state.status ==
@@ -828,7 +831,7 @@ class _VideoItemState extends State<VideoItem> {
                                                     : Colors.transparent,
                                               ),
                                               borderRadius:
-                                                  BorderRadius.circular(5),
+                                                  BorderRadius.circular(8),
                                               color: Colors.transparent),
                                           child: Text(
                                             state.status ==
