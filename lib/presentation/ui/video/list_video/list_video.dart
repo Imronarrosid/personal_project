@@ -165,7 +165,7 @@ class _ListVideoState extends State<ListVideo> {
                                 const Center(
                                     child: CircularProgressIndicator()),
                             newPageErrorIndicatorBuilder: (_) =>
-                                const Text('eror'),
+                                 Text('eror ${state.controller?.error.toString()}'),
                             firstPageErrorIndicatorBuilder: (_) {
                               return Column(
                                 mainAxisAlignment: MainAxisAlignment.center,

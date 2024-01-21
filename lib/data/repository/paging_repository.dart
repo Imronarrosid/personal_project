@@ -11,14 +11,16 @@ import 'package:personal_project/presentation/ui/video/list_video/bloc/paging_bl
 class PagingRepository {
   PagingController<int, Video>? controller;
   VideoRepository videoRepository = VideoRepository();
-  final int _pageSize = 15;
+  final int _pageSize = 10;
 
   final List<DocumentSnapshot> _videoFromFollowing = [];
   final List<DocumentSnapshot> _videoFromGame = [];
   final List<DocumentSnapshot> _videoNotFromGame = [];
+  final List<DocumentSnapshot> _videoGameIsNull = [];
 
   List<String> _followedUid = [];
   late Future<List<String>> _gameTitle;
+  late Future<List<String>> _followingUid;
 
   Future<List<String>> getFollowedUid() async {
     try {
@@ -42,20 +44,20 @@ class PagingRepository {
 
   void clearAllVideo() {
     videoRepository.allDocs.clear();
-    _followedUid.clear();
     _videoFromGame.clear();
     _videoNotFromGame.clear();
+    _videoGameIsNull.clear();
     _videoFromFollowing.clear();
   }
 
   void refreshPaging() {
     videoRepository.allDocs.clear();
     _followedUid.clear();
-   
   }
 
   void initPagingController(VideoFrom from) {
     _gameTitle = _getGameTitleList();
+    _followingUid = getFollowedUid();
     controller = PagingController(firstPageKey: 0);
     controller!.addPageRequestListener((pageKey) {
       debugPrint(videoRepository.currentPageIndex.toString());
@@ -78,19 +80,31 @@ class PagingRepository {
         newItems = await getListVideoFromFollowing(limit: _pageSize);
       } else {
         newItems = await getListVideoByGame(limit: _pageSize);
-        if (newItems.isEmpty) {
-          newItems.addAll(
-            await getListVideoNotByGame(limit: _pageSize),
-          );
-          newItems.addAll(
-            await videoRepository.getListVideo(limit: _pageSize),
-          );
+        if (newItems.length < _pageSize) {
+          List<DocumentSnapshot> secondList =
+              await getFromUnselectedGame(limit: _pageSize - newItems.length);
+          newItems.addAll(secondList);
+          if (secondList.length < _pageSize - newItems.length) {
+            List<DocumentSnapshot> thirdList =
+                 await getListVideoGameIsNull(limit: _pageSize - newItems.length);
+            newItems.addAll(thirdList);
+            // if (thirdList.length <
+            //     _pageSize - secondList.length - thirdList.length) {
+            //   newItems.addAll(
+            //     await getListVideoGameIsNull(
+            //         limit: _pageSize - newItems.length),
+            //   );
+            // }
+          }
         }
       }
 
       final isLastPage = newItems.length < _pageSize;
 
-      debugPrint('new items$newItems');
+      debugPrint('new items${newItems.length}');
+      debugPrint('new items${_videoFromGame.length}');
+      debugPrint('new items${_videoNotFromGame.length}');
+      debugPrint('new items${_videoGameIsNull.length}');
 
       for (var element in newItems) {
         listVideo.add(Video.fromSnap(element));
@@ -103,13 +117,13 @@ class PagingRepository {
         controller!.appendPage(listVideo, nextPageKey);
       }
     } catch (error) {
+      debugPrint("oppp" + error.toString());
       controller!.error = error;
     }
   }
 
   Future<List<DocumentSnapshot>> getListVideoFromFollowing(
       {required int limit}) async {
-    debugPrint(_followedUid.toString());
     List<DocumentSnapshot> listDocs = [];
 
     QuerySnapshot querySnapshot;
@@ -117,14 +131,14 @@ class PagingRepository {
       if (_videoFromFollowing.isEmpty) {
         querySnapshot = await firebaseFirestore
             .collection('videos')
-            .where('uid', whereIn: await getFollowedUid())
+            .where('uid', whereIn: await _followingUid)
             .orderBy('createdAt', descending: true)
             .limit(limit)
             .get();
       } else {
         querySnapshot = await firebaseFirestore
             .collection('videos')
-            .where('uid', whereIn: _followedUid)
+            .where('uid', whereIn: await _followingUid)
             .orderBy('createdAt', descending: true)
             .startAfterDocument(_videoFromFollowing.last)
             .limit(limit)
@@ -139,22 +153,15 @@ class PagingRepository {
       // setState(() {
       //   _hasMore = false;
       // });
-      for (var element in querySnapshot.docs) {
-        debugPrint(Video.fromSnap(element).videoUrl);
-      }
-      for (var element in _videoFromFollowing) {
-        debugPrint('_LISTDOCS${Video.fromSnap(element).videoUrl}');
-      }
-      debugPrint('DOCUMENTSNAP ${querySnapshot.docs}');
     } catch (e) {
-      debugPrint(e.toString());
+      debugPrint("oppp$e");
     }
     return listDocs;
   }
 
+ 
   Future<List<DocumentSnapshot>> getListVideoByGame(
       {required int limit}) async {
-    debugPrint(_followedUid.toString());
     List<DocumentSnapshot> listDocs = [];
 
     QuerySnapshot querySnapshot;
@@ -196,9 +203,8 @@ class PagingRepository {
     }
   }
 
-  Future<List<DocumentSnapshot>> getListVideoNotByGame(
+  Future<List<DocumentSnapshot>> getFromUnselectedGame(
       {required int limit}) async {
-    debugPrint(_followedUid.toString());
     List<DocumentSnapshot> listDocs = [];
 
     QuerySnapshot querySnapshot;
@@ -225,6 +231,49 @@ class PagingRepository {
 
       ///List to get last documet
       _videoNotFromGame.addAll(querySnapshot.docs);
+
+      //list that send to infinity list package
+      listDocs.addAll(querySnapshot.docs);
+      // setState(() {
+      //   _hasMore = false;
+      // });
+
+      return listDocs;
+    } catch (e) {
+      debugPrint(e.toString());
+
+      return [];
+    }
+  }
+
+  Future<List<DocumentSnapshot>> getListVideoGameIsNull(
+      {required int limit}) async {
+    List<DocumentSnapshot> listDocs = [];
+
+    QuerySnapshot querySnapshot;
+    List<String> gameList = await _gameTitle;
+
+    if (gameList.isEmpty) {
+      return [];
+    }
+    try {
+      if (_videoGameIsNull.isEmpty) {
+        querySnapshot = await firebaseFirestore
+            .collection('videos')
+            .where('game', isNull: true)
+            .limit(limit)
+            .get();
+      } else {
+        querySnapshot = await firebaseFirestore
+            .collection('videos')
+            .where('game', isNull: true)
+            .startAfterDocument(_videoGameIsNull.last)
+            .limit(limit)
+            .get();
+      }
+
+      ///List to get last documet
+      _videoGameIsNull.addAll(querySnapshot.docs);
 
       //list that send to infinity list package
       listDocs.addAll(querySnapshot.docs);
