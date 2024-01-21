@@ -183,7 +183,7 @@ class CommentItem extends StatelessWidget {
                     ),
                     BlocBuilder<LikeCommentCubit, LikeCommentState>(
                       builder: (context, state) {
-                        int likes = comment.likes.length;
+                        int likes = comment.likesCount;
 
                         if (state is CommentLiked) {
                           likes = state.likeCount;

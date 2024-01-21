@@ -581,13 +581,19 @@ class CommentItem extends StatelessWidget {
                                   Icons.favorite,
                                   color: Colors.red,
                                 )
-                              : const Icon(Icons.favorite_border_outlined);
+                              : Icon(
+                                  Icons.favorite_border_outlined,
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurface
+                                      .withOpacity(0.5),
+                                );
                         },
                       ),
                     ),
                     BlocBuilder<LikeCommentCubit, LikeCommentState>(
                       builder: (context, state) {
-                        int likes = comment.likes.length;
+                        int likes = comment.likesCount;
 
                         if (state is CommentLiked) {
                           likes = state.likeCount;
