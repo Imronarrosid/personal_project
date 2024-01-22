@@ -146,7 +146,7 @@ class _OnBoardingPageState extends State<OnBoardingPage> {
                           SizedBox(
                             width: MediaQuery.of(context).size.width,
                             child: Text(
-                              LocaleKeys.message_gaming_and_win.tr(),
+                              LocaleKeys.message_welcome_to_gamepiun.tr(),
                               textAlign: TextAlign.left,
                               style: Theme.of(context)
                                   .textTheme
