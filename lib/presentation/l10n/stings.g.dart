@@ -62,6 +62,7 @@ abstract class  LocaleKeys {
   static const label_no_video_from_following = 'label_no_video_from_following';
   static const label_rotate_clockwise = 'label_rotate_clockwise';
   static const label_rotate_counterclockwise = 'label_rotate_counterclockwise';
+  static const message_welcome_to_gamepiun = 'message_welcome_to_gamepiun';
   static const message_login_for_more_experience = 'message_login_for_more_experience';
   static const message_gaming_and_win = 'message_gaming_and_win';
   static const message_share_gaming_content = 'message_share_gaming_content';
