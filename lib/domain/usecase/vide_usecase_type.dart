@@ -6,6 +6,7 @@ abstract class VideoUseCaseType {
     required String caption,
     required String videoPath,
     required String thumbnailPath,
+    String? category,
     required GameFav game,
   });
 }

@@ -6,6 +6,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:personal_project/config/bloc_status_enum.dart';
 import 'package:personal_project/constant/color.dart';
 import 'package:personal_project/constant/dimens.dart';
 import 'package:personal_project/constant/font_size.dart';
@@ -14,6 +15,7 @@ import 'package:personal_project/domain/reporsitory/auth_reposotory.dart';
 import 'package:personal_project/presentation/l10n/stings.g.dart';
 import 'package:personal_project/presentation/router/route_utils.dart';
 import 'package:personal_project/presentation/ui/add_details/bloc/upload_bloc.dart';
+import 'package:personal_project/presentation/ui/add_details/cubit/check_box_cubit.dart';
 import 'package:personal_project/presentation/ui/add_details/select_game/cubit/select_game_cubit.dart';
 import 'package:personal_project/presentation/ui/auth/auth.dart';
 import 'package:personal_project/utils/get_thumbnails.dart';
@@ -30,6 +32,7 @@ class _AddDetailsPageState extends State<AddDetailsPage> {
   final TextEditingController textEditingController = TextEditingController();
 
   GameFav? selectedGame;
+  String? category;
 
   @override
   void initState() {
@@ -42,214 +45,259 @@ class _AddDetailsPageState extends State<AddDetailsPage> {
     Size size = MediaQuery.of(context).size;
 
     Future<File> thumbnail = getTumbnail(widget.videoFile.path);
-    return GestureDetector(
-      onTap: () {
-        // Dismiss the keyboard when tapping outside of text fields
-        debugPrint('unfocus');
-        FocusScope.of(context).unfocus();
-      },
-      child: MultiBlocListener(
-        listeners: [
-          BlocListener<UploadBloc, UploadState>(
-            listener: (context, state) {
-              if (state is Uploading) {
-                context.go(APP_PAGE.home.toPath);
-              }
-            },
-          ),
-          BlocListener<SelectGameCubit, SelectGameState>(
-            listener: (context, state) {
-              if (state.status == SelectGameStatus.selected) {
-                selectedGame = state.selectedGame!;
-              }
-            },
-          ),
-        ],
-        child: Scaffold(
-          appBar: AppBar(
-            title: Text(LocaleKeys.title_upload.tr()),
-            elevation: 0,
-            centerTitle: true,
-          ),
-          body: SizedBox(
-            width: size.width,
-            height: size.height,
-            child: Column(children: [
-              Container(
+    return BlocProvider(
+      create: (_) => CheckBoxCubit(),
+      child: GestureDetector(
+        onTap: () {
+          // Dismiss the keyboard when tapping outside of text fields
+          debugPrint('unfocus');
+          FocusScope.of(context).unfocus();
+        },
+        child: MultiBlocListener(
+          listeners: [
+            BlocListener<UploadBloc, UploadState>(
+              listener: (context, state) {
+                if (state is Uploading) {
+                  context.go(APP_PAGE.home.toPath);
+                }
+              },
+            ),
+            BlocListener<SelectGameCubit, SelectGameState>(
+              listener: (context, state) {
+                if (state.status == SelectGameStatus.selected) {
+                  selectedGame = state.selectedGame!;
+                }
+              },
+            ),
+          ],
+          child: Builder(builder: (context) {
+            return Scaffold(
+              appBar: AppBar(
+                title: Text(LocaleKeys.title_upload.tr()),
+                elevation: 0,
+                centerTitle: true,
+              ),
+              body: SizedBox(
                 width: size.width,
-                height: Dimens.DIMENS_120,
-                padding: EdgeInsets.symmetric(horizontal: Dimens.DIMENS_12),
-                child: Row(children: [
-                  SizedBox(
-                    width: Dimens.DIMENS_85,
+                height: size.height,
+                child: Column(children: [
+                  Container(
+                    width: size.width,
                     height: Dimens.DIMENS_120,
-                    child: GestureDetector(
-                      onTap: () {
-                        context.push(
-                          APP_PAGE.videoPreview.toPath,
-                          extra: widget.videoFile,
-                        );
-                      },
-                      child: FutureBuilder(
-                        future: getTumbnail(widget.videoFile.path),
-                        builder: (context, snapshot) {
-                          var thumbnailFile = snapshot.data;
-
-                          return snapshot.hasData
-                              ? SizedBox(
-                                  width: Dimens.DIMENS_85,
-                                  height: Dimens.DIMENS_120,
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(10),
-                                    child: Image.file(thumbnailFile!,
-                                        fit: BoxFit.cover),
-                                  ),
-                                )
-                              : const Center(
-                                  child: CircularProgressIndicator(),
-                                );
-                        },
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                      child: Padding(
                     padding: EdgeInsets.symmetric(horizontal: Dimens.DIMENS_12),
-                    child: TextField(
-                      maxLines: 5,
-                      maxLength: 1500,
-                      controller: textEditingController,
-                      decoration: InputDecoration(
-                          border: const OutlineInputBorder(
-                              borderSide: BorderSide.none),
-                          hintText: LocaleKeys.message_write_something.tr()),
-                    ),
-                  ))
-                ]),
-              ),
-              SizedBox(
-                height: Dimens.DIMENS_12,
-              ),
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: Dimens.DIMENS_12),
-                child: const Divider(),
-              ),
-              BlocBuilder<SelectGameCubit, SelectGameState>(
-                builder: (context, state) {
-                  if (state.status == SelectGameStatus.selected) {
-                    return ListTile(
-                      tileColor: Colors.transparent,
-                      leading: CircleAvatar(
-                        backgroundColor: COLOR_grey,
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(50),
-                          child: CachedNetworkImage(
-                            imageUrl: state.selectedGame!.gameImage!,
-                            fit: BoxFit.cover,
-                            width: double.infinity,
+                    child: Row(children: [
+                      SizedBox(
+                        width: Dimens.DIMENS_85,
+                        height: Dimens.DIMENS_120,
+                        child: GestureDetector(
+                          onTap: () {
+                            context.push(
+                              APP_PAGE.videoPreview.toPath,
+                              extra: widget.videoFile,
+                            );
+                          },
+                          child: FutureBuilder(
+                            future: getTumbnail(widget.videoFile.path),
+                            builder: (context, snapshot) {
+                              var thumbnailFile = snapshot.data;
+
+                              return snapshot.hasData
+                                  ? SizedBox(
+                                      width: Dimens.DIMENS_85,
+                                      height: Dimens.DIMENS_120,
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(10),
+                                        child: Image.file(thumbnailFile!,
+                                            fit: BoxFit.cover),
+                                      ),
+                                    )
+                                  : const Center(
+                                      child: CircularProgressIndicator(),
+                                    );
+                            },
                           ),
                         ),
                       ),
-                      trailing: IconButton(
-                          iconSize: Dimens.DIMENS_18,
-                          onPressed: () {
+                      Expanded(
+                          child: Padding(
+                        padding:
+                            EdgeInsets.symmetric(horizontal: Dimens.DIMENS_12),
+                        child: TextField(
+                          maxLines: 5,
+                          maxLength: 1500,
+                          controller: textEditingController,
+                          decoration: InputDecoration(
+                              border: const OutlineInputBorder(
+                                  borderSide: BorderSide.none),
+                              hintText:
+                                  LocaleKeys.message_write_something.tr()),
+                        ),
+                      ))
+                    ]),
+                  ),
+                  SizedBox(
+                    height: Dimens.DIMENS_12,
+                  ),
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: Dimens.DIMENS_12),
+                    child: const Divider(),
+                  ),
+                  BlocBuilder<CheckBoxCubit, CheckBoxState>(
+                    builder: (_, state) {
+                      return CheckboxListTile(
+                        tileColor: Colors.transparent,
+                        title: Text(LocaleKeys.label_entertainment.tr()),
+                        checkColor: Theme.of(context).colorScheme.tertiary,
+                        value: state.status == BlocStatus.active,
+                        onChanged: (isActive) {
+                          BlocProvider.of<CheckBoxCubit>(context)
+                              .checkBoxHandle();
+                          if (isActive!) {
                             BlocProvider.of<SelectGameCubit>(context)
                                 .initSelectGame();
-                          },
-                          style: IconButton.styleFrom(
-                            padding: EdgeInsets.zero,
-                            minimumSize:
-                                Size(Dimens.DIMENS_30, Dimens.DIMENS_30),
-                            maximumSize:
-                                Size(Dimens.DIMENS_30, Dimens.DIMENS_30),
-                            backgroundColor:
-                                Theme.of(context).colorScheme.tertiary,
-                          ),
-                          icon: const Icon(Icons.close)),
-                      title: Text(state.selectedGame!.gameTitle!),
-                      onTap: () {
-                        context.push(APP_PAGE.selectGame.toPath);
-                      },
-                    );
-                  }
-                  return ListTile(
-                    tileColor: Colors.transparent,
-                    leading: const Icon(BootstrapIcons.controller),
-                    title: Text(LocaleKeys.message_game_title.tr()),
-                    trailing: const Icon(Icons.keyboard_arrow_right),
-                    onTap: () {
-                      context.push(APP_PAGE.selectGame.toPath);
+                            category = 'Entertainment';
+                          }
+                        },
+                      );
                     },
-                  );
-                },
-              ),
-              SizedBox(
-                height: Dimens.DIMENS_28,
-              ),
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: Dimens.DIMENS_12),
-                child: Container(
-                  height: Dimens.DIMENS_38,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.onTertiary,
-                      borderRadius: BorderRadius.circular(50)),
-                  child: FutureBuilder(
-                      future: thumbnail,
-                      builder: (context, asyncSnapshot) {
-                        var data = asyncSnapshot.data;
-                        return Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            splashColor: COLOR_white_fff5f5f5.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(50),
-                            onTap: () {
-                              var isUserEmpty =
-                                  RepositoryProvider.of<AuthRepository>(context)
-                                      .currentUser;
-                              if (isUserEmpty == null) {
-                                showAuthBottomSheetFunc(context);
-                              } else if (asyncSnapshot.hasData) {
-                                //will upload videos
-                                BlocProvider.of<UploadBloc>(context).add(
-                                  UploadVideoEvent(
-                                      thumbnail: data!.path,
-                                      videoPath: widget.videoFile.path,
-                                      caption: textEditingController.text,
-                                      game: selectedGame),
-                                );
-                                debugPrint('Uploading');
-                              }
-                            },
-                            child: asyncSnapshot.hasData
-                                ? Container(
-                                    alignment: Alignment.center,
-                                    height: Dimens.DIMENS_38,
-                                    child: Text(
-                                      LocaleKeys.title_upload.tr(),
-                                      style: TextStyle(
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .primary,
-                                          fontSize: FontSize.FONT_SIZE_12),
-                                    ),
-                                  )
-                                : SizedBox(
-                                    width: 20,
-                                    height: 20,
-                                    child: CircularProgressIndicator(
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .secondary,
-                                    ),
-                                  ),
+                  ),
+                  BlocBuilder<CheckBoxCubit, CheckBoxState>(
+                    builder: (context, state) {
+                      if (state.status == BlocStatus.active) {
+                        return Opacity(
+                          opacity: 0.4,
+                          child: ListTile(
+                            tileColor: Colors.transparent,
+                            leading: const Icon(BootstrapIcons.controller),
+                            title: Text(LocaleKeys.message_game_title.tr()),
+                            trailing: const Icon(Icons.keyboard_arrow_right),
                           ),
                         );
-                      }),
-                ),
+                      }
+                      return BlocBuilder<SelectGameCubit, SelectGameState>(
+                        builder: (context, state) {
+                          if (state.status == SelectGameStatus.selected) {
+                            return ListTile(
+                              tileColor: Colors.transparent,
+                              leading: CircleAvatar(
+                                backgroundColor: COLOR_grey,
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(50),
+                                  child: CachedNetworkImage(
+                                    imageUrl: state.selectedGame!.gameImage!,
+                                    fit: BoxFit.cover,
+                                    width: double.infinity,
+                                  ),
+                                ),
+                              ),
+                              trailing: IconButton(
+                                  iconSize: Dimens.DIMENS_18,
+                                  onPressed: () {
+                                    BlocProvider.of<SelectGameCubit>(context)
+                                        .initSelectGame();
+                                  },
+                                  style: IconButton.styleFrom(
+                                    padding: EdgeInsets.zero,
+                                    minimumSize: Size(
+                                        Dimens.DIMENS_30, Dimens.DIMENS_30),
+                                    maximumSize: Size(
+                                        Dimens.DIMENS_30, Dimens.DIMENS_30),
+                                    backgroundColor:
+                                        Theme.of(context).colorScheme.tertiary,
+                                  ),
+                                  icon: const Icon(Icons.close)),
+                              title: Text(state.selectedGame!.gameTitle!),
+                              onTap: () {
+                                context.push(APP_PAGE.selectGame.toPath);
+                              },
+                            );
+                          }
+                          return ListTile(
+                            tileColor: Colors.transparent,
+                            leading: const Icon(BootstrapIcons.controller),
+                            title: Text(LocaleKeys.message_game_title.tr()),
+                            trailing: const Icon(Icons.keyboard_arrow_right),
+                            onTap: () {
+                              context.push(APP_PAGE.selectGame.toPath);
+                            },
+                          );
+                        },
+                      );
+                    },
+                  ),
+                  SizedBox(
+                    height: Dimens.DIMENS_28,
+                  ),
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: Dimens.DIMENS_12),
+                    child: Container(
+                      height: Dimens.DIMENS_38,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.onTertiary,
+                          borderRadius: BorderRadius.circular(50)),
+                      child: FutureBuilder(
+                          future: thumbnail,
+                          builder: (context, asyncSnapshot) {
+                            var data = asyncSnapshot.data;
+                            return Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                splashColor:
+                                    COLOR_white_fff5f5f5.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(50),
+                                onTap: () {
+                                  var isUserEmpty =
+                                      RepositoryProvider.of<AuthRepository>(
+                                              context)
+                                          .currentUser;
+                                  if (isUserEmpty == null) {
+                                    showAuthBottomSheetFunc(context);
+                                  } else if (asyncSnapshot.hasData) {
+                                    //will upload videos
+                                    BlocProvider.of<UploadBloc>(context).add(
+                                      UploadVideoEvent(
+                                        thumbnail: data!.path,
+                                        videoPath: widget.videoFile.path,
+                                        caption: textEditingController.text,
+                                        game: selectedGame,
+                                        category: category,
+                                      ),
+                                    );
+                                    debugPrint('Uploading');
+                                  }
+                                },
+                                child: asyncSnapshot.hasData
+                                    ? Container(
+                                        alignment: Alignment.center,
+                                        height: Dimens.DIMENS_38,
+                                        child: Text(
+                                          LocaleKeys.title_upload.tr(),
+                                          style: TextStyle(
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .primary,
+                                              fontSize: FontSize.FONT_SIZE_12),
+                                        ),
+                                      )
+                                    : SizedBox(
+                                        width: 20,
+                                        height: 20,
+                                        child: CircularProgressIndicator(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .onSurface,
+                                        ),
+                                      ),
+                              ),
+                            );
+                          }),
+                    ),
+                  ),
+                ]),
               ),
-            ]),
-          ),
+            );
+          }),
         ),
       ),
     );

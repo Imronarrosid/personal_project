@@ -15,6 +15,7 @@ class Video {
   final String uid, songName, caption, thumnail, videoUrl;
   final String? profileImg;
   final GameFav? game;
+  final String category;
   final dynamic createdAt;
   final List likes, views;
   final int commentCount, shareCount, viewsCount, likesCount;
@@ -35,6 +36,7 @@ class Video {
     required this.shareCount,
     required this.createdAt,
     required this.likesCount,
+    required this.category,
   });
 
   Map<String, dynamic> toJson() => {
@@ -53,6 +55,7 @@ class Video {
         "thumnail": thumnail,
         "createdAt": createdAt,
         "views": views,
+        "category": category,
         "game": game == null
             ? null
             : {"title": game?.gameTitle, "icon": game?.gameImage}
@@ -80,6 +83,7 @@ class Video {
           ? GameFav(
               gameTitle: snap['game']['title'], gameImage: snap['game']['icon'])
           : null,
+      category: snap["category"],
     );
   }
 }

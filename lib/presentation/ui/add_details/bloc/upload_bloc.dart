@@ -24,6 +24,7 @@ class UploadBloc extends Bloc<UploadEvent, UploadState> {
           videoPath: event.videoPath,
           thumbnailPath: event.thumbnail,
           game: event.game,
+          category: event.category,
         );
         emit(VideoUploaded());
         _removeFile(event.videoPath);

@@ -80,12 +80,14 @@ class VideoRepository implements VideoUseCaseType {
 
   //Upload video
   @override
-  uploapVideo(
-      {required String songName,
-      required String caption,
-      required String videoPath,
-      required String thumbnailPath,
-      GameFav? game}) async {
+  uploapVideo({
+    required String songName,
+    required String caption,
+    required String videoPath,
+    required String thumbnailPath,
+    String? category,
+    GameFav? game,
+  }) async {
     try {
       String uid = firebaseAuth.currentUser!.uid;
       //Get id
@@ -108,7 +110,8 @@ class VideoRepository implements VideoUseCaseType {
           likesCount: 0,
           createdAt: FieldValue.serverTimestamp(),
           game: game,
-          views: []);
+          views: [],
+          category: category ?? '');
 
       await firebaseFirestore
           .collection('videos')

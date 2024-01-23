@@ -6,4 +6,5 @@ enum BlocStatus {
   succes,
   following,
   notFollowing,
+  active,
 }
