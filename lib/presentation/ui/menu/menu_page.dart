@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:personal_project/constant/color.dart';
 import 'package:personal_project/constant/dimens.dart';
 import 'package:personal_project/domain/reporsitory/auth_reposotory.dart';
+import 'package:personal_project/domain/reporsitory/user_repository.dart';
 import 'package:personal_project/presentation/l10n/stings.g.dart';
 import 'package:personal_project/presentation/router/route_utils.dart';
 import 'package:personal_project/presentation/ui/auth/auth.dart';
@@ -51,11 +52,18 @@ class _MenuPageState extends State<MenuPage> {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),
-                leading: CircleAvatar(
-                    backgroundColor: Theme.of(context).colorScheme.secondary,
-                    backgroundImage: CachedNetworkImageProvider(
-                      state.user!.photo!,
-                    )),
+                leading: StreamBuilder<String>(
+                    initialData: state.user!.photo,
+                    stream: UserRepository().getAvatar(state.user!.id),
+                    builder: (_, AsyncSnapshot<String> snapshot) {
+                      return CircleAvatar(
+                        backgroundColor:
+                            Theme.of(context).colorScheme.secondary,
+                        backgroundImage: CachedNetworkImageProvider(
+                          snapshot.data!,
+                        ),
+                      );
+                    }),
                 title: _buildTitle(state.user!.name!),
                 subtitle: _buildSubtitle(state.user!.userName!),
                 trailing: const Icon(Icons.keyboard_arrow_right),

@@ -83,7 +83,7 @@ class Video {
           ? GameFav(
               gameTitle: snap['game']['title'], gameImage: snap['game']['icon'])
           : null,
-      category: snap["category"],
+      category: snap["category"]??'',
     );
   }
 }

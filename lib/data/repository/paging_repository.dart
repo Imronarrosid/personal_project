@@ -253,9 +253,9 @@ class PagingRepository {
     QuerySnapshot querySnapshot;
     List<String> gameList = await _gameTitle;
 
-    if (gameList.isEmpty) {
-      return [];
-    }
+    // if (gameList.isEmpty) {
+    //   return [];
+    // }
     try {
       if (_videoGameIsNull.isEmpty) {
         querySnapshot = await firebaseFirestore

@@ -1,4 +1,4 @@
-// ignore_for_file: camel_case_types
+// ignore_for_file: camel_case_types, constant_identifier_names
 
 enum APP_PAGE {
   splash,
@@ -25,7 +25,8 @@ enum APP_PAGE {
   selectGame,
   videoFromGame,
   followingNFonllowers,
-  searchRoom
+  searchRoom,
+  VBC,
 }
 
 extension AppPageExtension on APP_PAGE {
@@ -81,6 +82,8 @@ extension AppPageExtension on APP_PAGE {
         return "/chat";
       case APP_PAGE.searchRoom:
         return "/search-room";
+      case APP_PAGE.VBC:
+        return "/VBC";
       default:
         return "/";
     }
@@ -138,6 +141,8 @@ extension AppPageExtension on APP_PAGE {
         return "CHAT";
       case APP_PAGE.searchRoom:
         return "SEARCH-ROOM";
+      case APP_PAGE.VBC:
+        return "VBC";
       default:
         return "HOME";
     }

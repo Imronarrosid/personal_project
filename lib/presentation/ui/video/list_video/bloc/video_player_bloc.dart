@@ -23,8 +23,7 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
       } else if (event.actions == VideoEvent.pause) {
         _pauseVideo(videoPlayerRepository.controller, emit);
       } else if (event.actions == VideoEvent.delete) {
-        await videoRepository.deleteVideo(
-            event.postId!, event.videoUrl!, event.thumnailUrl!);
+        await videoRepository.deleteVideo(event.postId!, event.videoUrl!, event.thumnailUrl!);
         emit(const VideoPlayerState(status: VideoPlayerStatus.videoDeleted));
       } else if (event.actions == VideoEvent.showBufferingIndicator) {
         emit(
@@ -48,33 +47,29 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
     });
   }
 
-  void _playVideo(
-      CachedVideoPlayerController? controller, Emitter<VideoPlayerState> emit) {
+  void _playVideo(CachedVideoPlayerController? controller, Emitter<VideoPlayerState> emit) {
     controller!.play();
     emit(const VideoPlayerState(status: VideoPlayerStatus.playing));
   }
 
-  void _pauseVideo(
-      CachedVideoPlayerController? controller, Emitter<VideoPlayerState> emit) {
+  void _pauseVideo(CachedVideoPlayerController? controller, Emitter<VideoPlayerState> emit) {
     controller!.pause();
     // emit(VideoPaused(opacity: 1, size: Dimens.DIMENS_50));
     emit(const VideoPlayerState(status: VideoPlayerStatus.paused));
   }
 
-  Future<void> _initVideoPlayer(CachedVideoPlayerController? controller,
-      VideoPlayerEvent event, Emitter<VideoPlayerState> emit) async {
+  Future<void> _initVideoPlayer(CachedVideoPlayerController? controller, VideoPlayerEvent event,
+      Emitter<VideoPlayerState> emit) async {
     try {
       emit(const VideoPlayerInitial());
       controller = await videoPlayerRepository.initVideoPlayer(event.videoUrl!);
-      if (controller!.value.isInitialized) {
-        emit(VideoPlayerState(
-            controller: controller, status: VideoPlayerStatus.initialized));
-        controller.setLooping(true);
-        controller.play();
-      }
+      emit(VideoPlayerState(controller: controller, status: VideoPlayerStatus.initialized));
+      videoPlayerRepository.controller!.setLooping(true);
+      videoPlayerRepository.controller!.play();
+
+      // }
     } catch (e) {
-      emit(VideoPlayerState(
-          status: VideoPlayerStatus.error, error: e.toString()));
+      emit(VideoPlayerState(status: VideoPlayerStatus.error, error: e.toString()));
       debugPrint(e.toString());
     }
   }
