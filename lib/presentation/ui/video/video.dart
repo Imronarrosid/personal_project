@@ -1,6 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:personal_project/constant/color.dart';
 import 'package:personal_project/constant/dimens.dart';
 import 'package:personal_project/presentation/l10n/stings.g.dart';
 import 'package:personal_project/presentation/shared_components/keep_alive_page.dart';
@@ -15,8 +14,7 @@ class VideoPage extends StatefulWidget {
   State<VideoPage> createState() => _VideoPageState();
 }
 
-class _VideoPageState extends State<VideoPage>
-    with SingleTickerProviderStateMixin {
+class _VideoPageState extends State<VideoPage> with SingleTickerProviderStateMixin {
   late final TabController _tabController;
 
   @override
@@ -36,6 +34,7 @@ class _VideoPageState extends State<VideoPage>
             // indicator: BoxDecoration(
             //   border: Border.all(color: Colors.transparent)
             // ),
+            overlayColor: const MaterialStatePropertyAll<Color>(Colors.transparent),
             controller: _tabController,
             splashFactory: NoSplash.splashFactory,
             padding: EdgeInsets.symmetric(horizontal: Dimens.DIMENS_45),

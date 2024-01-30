@@ -13,7 +13,6 @@ import 'package:personal_project/data/repository/video_player_repository.dart';
 import 'package:personal_project/domain/model/category_model.dart';
 import 'package:personal_project/domain/model/profile_data_model.dart';
 import 'package:personal_project/domain/model/user.dart';
-import 'package:personal_project/domain/model/video_from_game_data_model.dart';
 import 'package:personal_project/domain/model/video_model.dart';
 import 'package:personal_project/domain/reporsitory/auth_reposotory.dart';
 import 'package:personal_project/domain/reporsitory/user_repository.dart';
@@ -416,6 +415,13 @@ class _VideoItemState extends State<VideoItem> {
                         color: COLOR_white_fff5f5f5,
                         size: Dimens.DIMENS_34,
                       ),
+                    ),
+                  ),
+                  Text(
+                    LocaleKeys.label_share.tr(),
+                    style: TextStyle(
+                      color: COLOR_white_fff5f5f5,
+                      fontSize: _IC_LABEL_FONTSIZE,
                     ),
                   ),
                   SizedBox(
