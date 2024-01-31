@@ -66,8 +66,7 @@ class _MessagePageState extends State<MessagePage> {
     await FirebaseAuth.instance.signOut();
   }
 
-  Widget _buildAvatar(types.Room room,
-      {required String profilePict, uid, name, userName}) {
+  Widget _buildAvatar(types.Room room, {required String profilePict, uid, name, userName}) {
     var color = Colors.transparent;
 
     if (room.type == types.RoomType.direct) {
@@ -139,8 +138,7 @@ class _MessagePageState extends State<MessagePage> {
     if (!_initialized) {
       return Container();
     }
-    final UserRepository userRepository =
-        RepositoryProvider.of<UserRepository>(context);
+    final UserRepository userRepository = RepositoryProvider.of<UserRepository>(context);
     return Scaffold(
       appBar: AppBar(
         actions: [
@@ -174,8 +172,7 @@ class _MessagePageState extends State<MessagePage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Padding(
-                    padding: EdgeInsets.only(
-                        top: Dimens.DIMENS_18, left: Dimens.DIMENS_12),
+                    padding: EdgeInsets.only(top: Dimens.DIMENS_18, left: Dimens.DIMENS_12),
                     child: Text(LocaleKeys.label_suggestion.tr()),
                   ),
                   SizedBox(
@@ -183,8 +180,7 @@ class _MessagePageState extends State<MessagePage> {
                     height: Dimens.DIMENS_105,
                     child: FutureBuilder<List<models.User>>(
                         future: userRepository.getUserListWithLimit(7),
-                        builder: (context,
-                            AsyncSnapshot<List<models.User>>? snapshot) {
+                        builder: (context, AsyncSnapshot<List<models.User>>? snapshot) {
                           List<models.User>? users = snapshot?.data;
 
                           if (!snapshot!.hasData || snapshot.hasError) {
@@ -197,14 +193,11 @@ class _MessagePageState extends State<MessagePage> {
                                   alignment: Alignment.center,
                                   child: Column(
                                     mainAxisAlignment: MainAxisAlignment.start,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
+                                    crossAxisAlignment: CrossAxisAlignment.center,
                                     children: [
                                       CircleAvatar(
                                         radius: Dimens.DIMENS_28,
-                                        backgroundColor: Theme.of(context)
-                                            .colorScheme
-                                            .tertiary,
+                                        backgroundColor: Theme.of(context).colorScheme.tertiary,
                                       ),
                                       SizedBox(
                                         height: Dimens.DIMENS_6,
@@ -213,9 +206,7 @@ class _MessagePageState extends State<MessagePage> {
                                         '',
                                         overflow: TextOverflow.ellipsis,
                                         textAlign: TextAlign.center,
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .bodySmall,
+                                        style: Theme.of(context).textTheme.bodySmall,
                                       )
                                     ],
                                   )),
@@ -232,15 +223,13 @@ class _MessagePageState extends State<MessagePage> {
                                   onTap: () async {
                                     types.User otherUser = types.User(
                                         id: user.id,
-                                        createdAt: user.createdAt!
-                                                .toDate()
-                                                .millisecondsSinceEpoch ~/
-                                            1000,
+                                        createdAt:
+                                            user.createdAt!.toDate().millisecondsSinceEpoch ~/ 1000,
                                         firstName: user.userName);
                                     if (!mounted) return;
 
-                                    final room = await FirebaseChatCore.instance
-                                        .createRoom(otherUser);
+                                    final room =
+                                        await FirebaseChatCore.instance.createRoom(otherUser);
 
                                     if (!mounted) return;
                                     context.push(
@@ -257,22 +246,16 @@ class _MessagePageState extends State<MessagePage> {
                                     padding: EdgeInsets.all(Dimens.DIMENS_10),
                                     alignment: Alignment.center,
                                     child: Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.start,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.center,
+                                      mainAxisAlignment: MainAxisAlignment.start,
+                                      crossAxisAlignment: CrossAxisAlignment.center,
                                       children: [
                                         SizedBox(
                                           height: Dimens.DIMENS_6,
                                         ),
                                         CircleAvatar(
                                           radius: Dimens.DIMENS_28,
-                                          backgroundColor: Theme.of(context)
-                                              .colorScheme
-                                              .tertiary,
-                                          backgroundImage:
-                                              CachedNetworkImageProvider(
-                                                  user.photo!),
+                                          backgroundColor: Theme.of(context).colorScheme.tertiary,
+                                          backgroundImage: CachedNetworkImageProvider(user.photo!),
                                         ),
                                         SizedBox(
                                           height: Dimens.DIMENS_6,
@@ -281,9 +264,7 @@ class _MessagePageState extends State<MessagePage> {
                                           user.userName!,
                                           overflow: TextOverflow.ellipsis,
                                           textAlign: TextAlign.center,
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .bodySmall,
+                                          style: Theme.of(context).textTheme.bodySmall,
                                         )
                                       ],
                                     ),
@@ -291,38 +272,38 @@ class _MessagePageState extends State<MessagePage> {
                                 );
                               }),
                               users.isEmpty || users.length < 6
-                                  ? Container()
+                                  ? Container(
+                                    width: MediaQuery.of(context).size.width,
+                                    alignment: Alignment.center,
+                                      child: Text(
+                                        LocaleKeys.message_no_suggestion.tr(),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    )
                                   : InkWell(
                                       onTap: () {
-                                        context
-                                            .push(APP_PAGE.searchRoom.toPath);
+                                        context.push(APP_PAGE.searchRoom.toPath);
                                       },
                                       child: Container(
-                                        padding:
-                                            EdgeInsets.all(Dimens.DIMENS_10),
+                                        padding: EdgeInsets.all(Dimens.DIMENS_10),
                                         child: Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.start,
+                                          mainAxisAlignment: MainAxisAlignment.start,
                                           children: [
                                             SizedBox(
                                               height: Dimens.DIMENS_6,
                                             ),
                                             CircleAvatar(
-                                              backgroundColor: Theme.of(context)
-                                                  .colorScheme
-                                                  .onTertiary,
+                                              backgroundColor:
+                                                  Theme.of(context).colorScheme.onTertiary,
                                               radius: Dimens.DIMENS_28,
-                                              child: const Icon(
-                                                  BootstrapIcons.plus),
+                                              child: const Icon(BootstrapIcons.plus),
                                             ),
                                             SizedBox(
                                               height: Dimens.DIMENS_6,
                                             ),
                                             Text(
                                               LocaleKeys.label_others.tr(),
-                                              style: Theme.of(context)
-                                                  .textTheme
-                                                  .bodySmall,
+                                              style: Theme.of(context).textTheme.bodySmall,
                                             ),
                                           ],
                                         ),
@@ -428,9 +409,7 @@ class _MessagePageState extends State<MessagePage> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(room.name!.isNotEmpty
-                            ? room.name ?? ''
-                            : data.userName!),
+                        Text(room.name!.isNotEmpty ? room.name ?? '' : data.userName!),
                         _messageCreated(message, context)
                       ],
                     ),
@@ -453,28 +432,27 @@ class _MessagePageState extends State<MessagePage> {
   }
 
   Text _messageCreated(types.Message? message, BuildContext context) {
-    return _isSameDay(
-            message?.createdAt ?? DateTime.now().millisecondsSinceEpoch)
+    return _isSameDay(message?.createdAt ?? DateTime.now().millisecondsSinceEpoch)
         ? Text(
             DateFormat('HH:mm').format(DateTime.fromMillisecondsSinceEpoch(
                 message?.createdAt ?? DateTime.now().millisecondsSinceEpoch)),
-            style:
-                Theme.of(context).textTheme.bodySmall!.apply(color: COLOR_grey),
+            style: Theme.of(context).textTheme.bodySmall!.apply(color: COLOR_grey),
           )
         : Text(
             DateFormat('D/MM/yy').format(
               DateTime.fromMillisecondsSinceEpoch(
                   message!.createdAt ?? DateTime.now().millisecondsSinceEpoch),
             ),
-            style: Theme.of(context).textTheme.bodySmall!.apply(
-                color: Theme.of(context).colorScheme.primary.withOpacity(0.7)),
+            style: Theme.of(context)
+                .textTheme
+                .bodySmall!
+                .apply(color: Theme.of(context).colorScheme.primary.withOpacity(0.7)),
           );
   }
 
-  Text _buildMessage(AsyncSnapshot<String> snapshot, types.Message message,
-      types.RoomType roomType) {
-    String currentUser =
-        RepositoryProvider.of<AuthRepository>(context).currentUser!.uid;
+  Text _buildMessage(
+      AsyncSnapshot<String> snapshot, types.Message message, types.RoomType roomType) {
+    String currentUser = RepositoryProvider.of<AuthRepository>(context).currentUser!.uid;
     if (message.author.id == currentUser) {
       return Text(
         '${LocaleKeys.label_you.tr()}: ${_getMessage(message.type, message: message)}',
@@ -487,12 +465,10 @@ class _MessagePageState extends State<MessagePage> {
       return Text(
         '${snapshot.data!}: ${_getMessage(message.type, message: message)}',
         overflow: TextOverflow.ellipsis,
-        style: TextStyle(
-            color: Theme.of(context).colorScheme.primary.withOpacity(0.7)),
+        style: TextStyle(color: Theme.of(context).colorScheme.primary.withOpacity(0.7)),
       );
     }
-    return Text(
-        '${snapshot.data!}: ${_getMessage(message.type, message: message)}',
+    return Text('${snapshot.data!}: ${_getMessage(message.type, message: message)}',
         overflow: TextOverflow.ellipsis,
         style: TextStyle(
           color: Theme.of(context).colorScheme.primary.withOpacity(0.7),
@@ -500,8 +476,7 @@ class _MessagePageState extends State<MessagePage> {
   }
 
   bool _isSameDay(int createdAt) {
-    return DateTime.fromMillisecondsSinceEpoch(createdAt).day ==
-        DateTime.now().day;
+    return DateTime.fromMillisecondsSinceEpoch(createdAt).day == DateTime.now().day;
   }
 
   String _getMessage(types.MessageType type, {required types.Message message}) {
@@ -527,8 +502,7 @@ class _MessagePageState extends State<MessagePage> {
 
   Future<models.User> _getOtherUsersData(types.Room room) async {
     try {
-      String currentUser =
-          RepositoryProvider.of<AuthRepository>(context).currentUser!.uid;
+      String currentUser = RepositoryProvider.of<AuthRepository>(context).currentUser!.uid;
 
       String? uid;
 
@@ -538,8 +512,7 @@ class _MessagePageState extends State<MessagePage> {
         }
       }
 
-      DocumentSnapshot snap =
-          await firebaseFirestore.collection('users').doc(uid).get();
+      DocumentSnapshot snap = await firebaseFirestore.collection('users').doc(uid).get();
 
       models.User otherUser = models.User.fromSnap(snap);
 
