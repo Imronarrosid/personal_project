@@ -35,8 +35,7 @@ class _AddUserNamePageState extends State<AddUserNamePage> {
 
   @override
   Widget build(BuildContext context) {
-    final UserRepository userRepository =
-        RepositoryProvider.of<UserRepository>(context);
+    final UserRepository userRepository = RepositoryProvider.of<UserRepository>(context);
     return BlocConsumer<EditUserNameCubit, EditUserNameState>(
       listener: (context, state) {
         if (state.status == EditUserNameStatus.userNameNotAvailable) {
@@ -83,9 +82,7 @@ class _AddUserNamePageState extends State<AddUserNamePage> {
             FocusScope.of(context).unfocus();
           },
           child: Scaffold(
-            backgroundColor: COLOR_white_fff5f5f5,
             appBar: AppBar(
-              backgroundColor: COLOR_white_fff5f5f5,
               title: Text(LocaleKeys.label_user_name.tr()),
               actions: [
                 IconButton(
@@ -105,41 +102,34 @@ class _AddUserNamePageState extends State<AddUserNamePage> {
                   children: [
                     Form(
                       key: _globalKey,
-                      child: Theme(
-                        data: ThemeData().copyWith(
-                            colorScheme: ThemeData()
-                                .colorScheme
-                                .copyWith(primary: COLOR_black_ff121212)),
-                        child: TextFormField(
-                          validator: _validator,
-                          controller: _textEditingController,
-                          cursorColor: COLOR_black_ff121212,
-                          onChanged: (value) async {
-                            debugPrint('qwerty $value');
-                            await BlocProvider.of<EditUserNameCubit>(context)
-                                .checkUserNameAvailability(value);
-                            _globalKey.currentState!.validate();
+                      child: TextFormField(
+                        validator: _validator,
+                        controller: _textEditingController,
+                        cursorColor: COLOR_black_ff121212,
+                        onChanged: (value) async {
+                          debugPrint('qwerty $value');
+                          await BlocProvider.of<EditUserNameCubit>(context)
+                              .checkUserNameAvailability(value);
+                          _globalKey.currentState!.validate();
+                        },
+                        decoration: InputDecoration(
+                            suffix: BlocBuilder<EditUserNameCubit, EditUserNameState>(
+                          builder: (context, state) {
+                            if (state.status == EditUserNameStatus.loading) {
+                              return SizedBox(
+                                  width: Dimens.DIMENS_12,
+                                  height: Dimens.DIMENS_12,
+                                  child: const CircularProgressIndicator());
+                            }
+                            return const SizedBox(
+                              width: 0,
+                              height: 0,
+                            );
                           },
-                          decoration: InputDecoration(suffix:
-                              BlocBuilder<EditUserNameCubit, EditUserNameState>(
-                            builder: (context, state) {
-                              if (state.status == EditUserNameStatus.loading) {
-                                return SizedBox(
-                                    width: Dimens.DIMENS_12,
-                                    height: Dimens.DIMENS_12,
-                                    child: const CircularProgressIndicator());
-                              }
-                              return const SizedBox(
-                                width: 0,
-                                height: 0,
-                              );
-                            },
-                          )),
-                        ),
+                        )),
                       ),
                     ),
-                    const Text(
-                        'Buat name pengguna, Atau biarkan dan gunakan nama pengguna default'),
+                    Text(LocaleKeys.message_create_user_name.tr()),
                   ],
                 ),
               ),
@@ -172,13 +162,13 @@ class _AddUserNamePageState extends State<AddUserNamePage> {
 
   String? _validator(String? value) {
     if (value!.contains(RegExp(r'\s'))) {
-      return 'Nama pengguna tidak boleh menggunakan spasi.';
+      return LocaleKeys.message_user_name_cant_contain_whitespace.tr();
     } else if (value.isEmpty) {
-      return 'Nama Pengguna tidak boleh kosong.';
+      return LocaleKeys.message_name_cant_empty.tr();
     } else if (value.trim().isEmpty) {
-      return 'Nama pengguna tidak boleh diawali spasi.';
+      return LocaleKeys.message_dont_start_username_with_whitespace.tr();
     } else if (isAvailable == false) {
-      return 'User name not available.';
+      return LocaleKeys.message_user_name_not_available.tr();
     }
     debugPrint('qwerty isacjaklv $isAvailable');
     return null; // Return null if the input is valid
