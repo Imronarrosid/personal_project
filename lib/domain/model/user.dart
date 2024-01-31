@@ -21,7 +21,7 @@ class User extends Equatable {
       this.userName,
       this.photo,
       this.role,
-      this.updatedAt,
+      this.nameUpdatedAt,
       this.metadata,
       this.searchKey,
       this.lastSeen});
@@ -46,7 +46,7 @@ class User extends Equatable {
   final Timestamp? lastSeen;
 
   /// Updated user timestamp, in ms.
-  final Timestamp? updatedAt;
+  final Timestamp? nameUpdatedAt;
 
   final String? searchKey;
 
@@ -74,7 +74,7 @@ class User extends Equatable {
         "uid": id,
         "createdAt": createdAt,
         "lastSeen": lastSeen,
-        "updatedAt": updatedAt,
+        "updatedAt": nameUpdatedAt,
         "searchKey": searchKey
       };
   static User fromSnap(DocumentSnapshot snapshot) {
@@ -86,7 +86,7 @@ class User extends Equatable {
         email: snap['email'],
         id: snap['uid'],
         createdAt: snap['createdAt'],
-        updatedAt: snap['nameUpdatedAt'],
+        nameUpdatedAt: snap['nameUpdatedAt'],
         searchKey: snap['searchKey'],
         lastSeen: snap['lastSeen'],
         userNameUpdatedAt: snap['userNameUpdatedAt']);
@@ -99,7 +99,7 @@ class User extends Equatable {
         name,
         userName,
         photo,
-        updatedAt,
+        nameUpdatedAt,
         createdAt,
         lastSeen,
         searchKey,

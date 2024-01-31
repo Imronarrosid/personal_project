@@ -77,7 +77,7 @@ class _EditProfileState extends State<EditProfile> {
             builder: (context, snapshot) {
               User? user = snapshot.data;
               if (snapshot.hasData) {
-                lastUpdate = snapshot.data!.updatedAt;
+                lastUpdate = snapshot.data!.nameUpdatedAt;
                 userNameUpdatedAt = snapshot.data?.userNameUpdatedAt;
               }
               if (!snapshot.hasData || snapshot.hasError) {
