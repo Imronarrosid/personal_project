@@ -81,8 +81,7 @@ class _ProfilePageState extends State<ProfilePage> {
     debugPrint('refresh');
     Size size = MediaQuery.of(context).size;
     final authRepository = RepositoryProvider.of<AuthRepository>(context);
-    final UserRepository userRepository =
-        RepositoryProvider.of<UserRepository>(context);
+    final UserRepository userRepository = RepositoryProvider.of<UserRepository>(context);
     return MultiBlocProvider(
       providers: [
         BlocProvider(
@@ -121,13 +120,11 @@ class _ProfilePageState extends State<ProfilePage> {
               elevation: 0,
               title: BlocBuilder<AuthBloc, AuthState>(
                 builder: (context, state) {
-                  if ((state.status == AuthStatus.authenticated &&
-                      !widget.isForOtherUser!)) {
+                  if ((state.status == AuthStatus.authenticated && !widget.isForOtherUser!)) {
                     title = state.user!.name;
                   } else if ((state.status == AuthStatus.notAuthenticated &&
                           !widget.isForOtherUser!) ||
-                      (state.status == AuthStatus.loading &&
-                          !widget.isForOtherUser!)) {
+                      (state.status == AuthStatus.loading && !widget.isForOtherUser!)) {
                     title = LocaleKeys.title_profile.tr();
                   } else if (widget.isForOtherUser!) {
                     title = widget.payload!.name;
@@ -163,8 +160,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 builder: (context, authState) {
                   debugPrint(authState.toString());
 
-                  if (_isAuthenticatedButStillLoadingData(
-                      authRepository, authState)) {
+                  if (_isAuthenticatedButStillLoadingData(authRepository, authState)) {
                     return const Center(
                       child: CircularProgressIndicator(),
                     );
@@ -268,18 +264,14 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  bool _isAuthenticatedButStillLoadingData(
-      AuthRepository authRepository, AuthState authState) {
-    return authRepository.currentUser != null &&
-        widget.payload == null &&
-        authState.user == null;
+  bool _isAuthenticatedButStillLoadingData(AuthRepository authRepository, AuthState authState) {
+    return authRepository.currentUser != null && widget.payload == null && authState.user == null;
   }
 
   BlocBuilder<EditNameCubit, EditNameState> _buildTitle(String? title) {
     return BlocBuilder<EditNameCubit, EditNameState>(
       builder: (context, state) {
-        if (state.status == EditNameStatus.nameEditSuccess &&
-            widget.payload == null) {
+        if (state.status == EditNameStatus.nameEditSuccess && widget.payload == null) {
           title = state.name;
         }
         return Text(
@@ -290,8 +282,8 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  SizedBox _profileBody(Size size, BuildContext context, AuthState authState,
-      AuthRepository authRepository) {
+  SizedBox _profileBody(
+      Size size, BuildContext context, AuthState authState, AuthRepository authRepository) {
     final ThemeData theme = Theme.of(context);
     final userRepository = RepositoryProvider.of<UserRepository>(context);
     return SizedBox(
@@ -314,89 +306,81 @@ class _ProfilePageState extends State<ProfilePage> {
               headerSliverBuilder: (context, innerBoxIsScrolled) {
                 return [
                   SliverToBoxAdapter(
-                    child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          topSectionView(authState),
-                          _buildUserName(),
-                          SizedBox(
-                            height: Dimens.DIMENS_8,
-                          ),
-                          bioSectionView(
-                              uid: widget.payload?.uid ?? authState.user!.id),
-                          gameFavView(
-                              widget.payload?.uid ?? authState.user!.id),
-                          SizedBox(
-                            height: Dimens.DIMENS_8,
-                          ),
-                          if ((widget.payload?.uid ?? authState.user!.id) ==
-                              authRepository.currentUser?.uid)
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                SizedBox(
-                                  width: Dimens.DIMENS_12,
-                                ),
-                                Expanded(
-                                  flex: 2,
-                                  child: Material(
-                                    color:
-                                        Theme.of(context).colorScheme.tertiary,
-                                    shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(8)),
-                                    child: InkWell(
+                    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                      topSectionView(authState),
+                      _buildUserName(),
+                      SizedBox(
+                        height: Dimens.DIMENS_8,
+                      ),
+                      bioSectionView(uid: widget.payload?.uid ?? authState.user!.id),
+                      gameFavView(widget.payload?.uid ?? authState.user!.id),
+                      SizedBox(
+                        height: Dimens.DIMENS_8,
+                      ),
+                      if ((widget.payload?.uid ?? authState.user!.id) ==
+                          authRepository.currentUser?.uid)
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            SizedBox(
+                              width: Dimens.DIMENS_12,
+                            ),
+                            Expanded(
+                              flex: 2,
+                              child: Material(
+                                color: Theme.of(context).colorScheme.tertiary,
+                                shape:
+                                    RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                child: InkWell(
+                                  borderRadius: BorderRadius.circular(8),
+                                  onTap: () => toEditProfile(context),
+                                  child: Container(
+                                    height: Dimens.DIMENS_32,
+                                    alignment: Alignment.center,
+                                    decoration: BoxDecoration(
+                                      color: Colors.transparent,
                                       borderRadius: BorderRadius.circular(8),
-                                      onTap: () => toEditProfile(context),
-                                      child: Container(
-                                        height: Dimens.DIMENS_32,
-                                        alignment: Alignment.center,
-                                        decoration: BoxDecoration(
-                                          color: Colors.transparent,
-                                          borderRadius:
-                                              BorderRadius.circular(8),
-                                        ),
-                                        child: Text(
-                                          LocaleKeys.label_edit_profile.tr(),
-                                          textAlign: TextAlign.center,
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .titleSmall,
-                                        ),
-                                      ),
+                                    ),
+                                    child: Text(
+                                      LocaleKeys.label_edit_profile.tr(),
+                                      textAlign: TextAlign.center,
+                                      style: Theme.of(context).textTheme.titleSmall,
                                     ),
                                   ),
                                 ),
-                                // SizedBox(
-                                //   width: Dimens.DIMENS_6,
-                                // ),
-                                // Expanded(
-                                //   child: Container(
-                                //       height: Dimens.DIMENS_32,
-                                //       decoration: BoxDecoration(
-                                //           color: theme.colorScheme.tertiary,
-                                //           borderRadius:
-                                //               BorderRadius.circular(8)),
-                                //       child: Icon(
-                                //         BootstrapIcons.person_add,
-                                //         size: Dimens.DIMENS_20,
-                                //       )),
-                                // ),
-                                SizedBox(
-                                  width: Dimens.DIMENS_12,
-                                ),
-                              ],
-                            )
-                          else
-                            Row(
-                              children: [
-                                SizedBox(
-                                  width: Dimens.DIMENS_12,
-                                ),
-                                FutureBuilder<bool>(
-                                    future: userRepository
-                                        .isFollowing(widget.payload!.uid),
-                                    builder: (context,
-                                        AsyncSnapshot<bool> snapshot) {
+                              ),
+                            ),
+                            // SizedBox(
+                            //   width: Dimens.DIMENS_6,
+                            // ),
+                            // Expanded(
+                            //   child: Container(
+                            //       height: Dimens.DIMENS_32,
+                            //       decoration: BoxDecoration(
+                            //           color: theme.colorScheme.tertiary,
+                            //           borderRadius:
+                            //               BorderRadius.circular(8)),
+                            //       child: Icon(
+                            //         BootstrapIcons.person_add,
+                            //         size: Dimens.DIMENS_20,
+                            //       )),
+                            // ),
+                            SizedBox(
+                              width: Dimens.DIMENS_12,
+                            ),
+                          ],
+                        )
+                      else
+                        Row(
+                          children: [
+                            SizedBox(
+                              width: Dimens.DIMENS_12,
+                            ),
+                            widget.payload == null
+                                ? Container()
+                                : FutureBuilder<bool>(
+                                    future: userRepository.isFollowing(widget.payload!.uid),
+                                    builder: (context, AsyncSnapshot<bool> snapshot) {
                                       bool? isFollowing = snapshot.data;
                                       if (!snapshot.hasData) {
                                         return Expanded(
@@ -405,29 +389,24 @@ class _ProfilePageState extends State<ProfilePage> {
                                             alignment: Alignment.center,
                                             decoration: BoxDecoration(
                                               color: theme.colorScheme.tertiary,
-                                              borderRadius:
-                                                  BorderRadius.circular(8),
+                                              borderRadius: BorderRadius.circular(8),
                                             ),
                                             child: SizedBox(
                                                 width: Dimens.DIMENS_18,
                                                 height: Dimens.DIMENS_18,
-                                                child:
-                                                    CircularProgressIndicator(
+                                                child: CircularProgressIndicator(
                                                   color: COLOR_white_fff5f5f5,
                                                 )),
                                           ),
                                         );
                                       }
 
-                                      return BlocBuilder<FollowCubit,
-                                          FollowState>(
+                                      return BlocBuilder<FollowCubit, FollowState>(
                                         builder: (context, state) {
                                           debugPrint('follow state $state');
-                                          if (state.status ==
-                                              BlocStatus.following) {
+                                          if (state.status == BlocStatus.following) {
                                             isFollowing = true;
-                                          } else if (state.status ==
-                                              BlocStatus.notFollowing) {
+                                          } else if (state.status == BlocStatus.notFollowing) {
                                             isFollowing = false;
                                           } else {
                                             isFollowing = isFollowing;
@@ -436,102 +415,77 @@ class _ProfilePageState extends State<ProfilePage> {
                                           return Expanded(
                                             child: Material(
                                               shape: RoundedRectangleBorder(
-                                                  borderRadius:
-                                                      BorderRadius.circular(8)),
+                                                  borderRadius: BorderRadius.circular(8)),
                                               color: isFollowing!
                                                   ? theme.colorScheme.tertiary
-                                                  : theme
-                                                      .colorScheme.onTertiary,
+                                                  : theme.colorScheme.onTertiary,
                                               child: InkWell(
                                                 onTap: () {
                                                   if (isFollowing! &&
                                                       authState.status ==
-                                                          AuthStatus
-                                                              .authenticated) {
+                                                          AuthStatus.authenticated) {
                                                     showDialog(
                                                         context: context,
                                                         builder: (_) {
                                                           return AlertDialog(
-                                                            title: Text(LocaleKeys
-                                                                .message_unfollow
-                                                                .tr()),
+                                                            title: Text(
+                                                                LocaleKeys.message_unfollow.tr()),
                                                             actions: [
                                                               TextButton(
                                                                 onPressed: () {
                                                                   context.pop();
                                                                 },
                                                                 child: Text(
-                                                                    LocaleKeys
-                                                                        .label_cancel
-                                                                        .tr()),
+                                                                    LocaleKeys.label_cancel.tr()),
                                                               ),
                                                               TextButton(
                                                                 onPressed: () {
-                                                                  BlocProvider.of<FollowCubit>(context).followButtonHandle(
-                                                                      currentUserUid: authRepository
-                                                                          .currentUser!
-                                                                          .uid,
-                                                                      uid: widget
-                                                                              .payload
-                                                                              ?.uid ??
-                                                                          authState
-                                                                              .user!
-                                                                              .id,
-                                                                      stateFromDatabase:
-                                                                          isFollowing!);
+                                                                  BlocProvider.of<FollowCubit>(
+                                                                          context)
+                                                                      .followButtonHandle(
+                                                                          currentUserUid:
+                                                                              authRepository
+                                                                                  .currentUser!.uid,
+                                                                          uid: widget
+                                                                                  .payload?.uid ??
+                                                                              authState.user!.id,
+                                                                          stateFromDatabase:
+                                                                              isFollowing!);
                                                                   context.pop();
                                                                 },
-                                                                child: Text(
-                                                                    LocaleKeys
-                                                                        .label_oke
-                                                                        .tr()),
+                                                                child:
+                                                                    Text(LocaleKeys.label_oke.tr()),
                                                               )
                                                             ],
                                                           );
                                                         });
                                                   } else if (!isFollowing! &&
                                                       authState.status ==
-                                                          AuthStatus
-                                                              .authenticated) {
-                                                    BlocProvider.of<
-                                                                FollowCubit>(
-                                                            context)
+                                                          AuthStatus.authenticated) {
+                                                    BlocProvider.of<FollowCubit>(context)
                                                         .followButtonHandle(
                                                             currentUserUid:
-                                                                authRepository
-                                                                    .currentUser!
-                                                                    .uid,
-                                                            uid: widget
-                                                                .payload!.uid,
-                                                            stateFromDatabase:
-                                                                isFollowing!);
+                                                                authRepository.currentUser!.uid,
+                                                            uid: widget.payload!.uid,
+                                                            stateFromDatabase: isFollowing!);
                                                   } else {
-                                                    showAuthBottomSheetFunc(
-                                                        context);
+                                                    showAuthBottomSheetFunc(context);
                                                   }
                                                 },
-                                                borderRadius:
-                                                    BorderRadius.circular(8),
+                                                borderRadius: BorderRadius.circular(8),
                                                 child: Container(
                                                   height: Dimens.DIMENS_32,
                                                   alignment: Alignment.center,
                                                   decoration: BoxDecoration(
                                                       color: Colors.transparent,
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              5)),
+                                                      borderRadius: BorderRadius.circular(5)),
                                                   child: Text(
                                                     isFollowing!
-                                                        ? LocaleKeys
-                                                            .label_following
-                                                            .tr()
-                                                        : LocaleKeys
-                                                            .label_follow
-                                                            .tr(),
+                                                        ? LocaleKeys.label_following.tr()
+                                                        : LocaleKeys.label_follow.tr(),
                                                     textAlign: TextAlign.center,
-                                                    style: TextStyle(
-                                                        color: theme.colorScheme
-                                                            .primary),
+                                                    style:
+                                                        TextStyle(color: theme.colorScheme.primary),
                                                   ),
                                                 ),
                                               ),
@@ -540,73 +494,68 @@ class _ProfilePageState extends State<ProfilePage> {
                                         },
                                       );
                                     }),
-                                SizedBox(
-                                  width: Dimens.DIMENS_6,
-                                ),
-                                Expanded(
-                                  child: Material(
-                                    color: theme.colorScheme.tertiary,
-                                    borderRadius: BorderRadius.circular(8),
-                                    child: InkWell(
-                                      borderRadius: BorderRadius.circular(8),
-                                      onTap: () async {
-                                        if (authState.status ==
-                                            AuthStatus.authenticated) {
-                                          User user = await userRepository
-                                              .getOtherUserData(
-                                                  widget.payload!.uid);
-                                          types.User otherUser = types.User(
-                                              id: widget.payload!.uid,
-                                              createdAt: user.createdAt!
-                                                      .toDate()
-                                                      .millisecondsSinceEpoch ~/
+                            SizedBox(
+                              width: Dimens.DIMENS_6,
+                            ),
+                            Expanded(
+                              child: Material(
+                                color: theme.colorScheme.tertiary,
+                                borderRadius: BorderRadius.circular(8),
+                                child: InkWell(
+                                  borderRadius: BorderRadius.circular(8),
+                                  onTap: () async {
+                                    if (authState.status == AuthStatus.authenticated) {
+                                      User user = await userRepository
+                                          .getOtherUserData(widget.payload!.uid);
+                                      types.User otherUser = types.User(
+                                          id: widget.payload!.uid,
+                                          createdAt:
+                                              user.createdAt!.toDate().millisecondsSinceEpoch ~/
                                                   1000,
-                                              firstName: user.userName);
-                                          if (!mounted) return;
+                                          firstName: user.userName);
+                                      if (!mounted) return;
 
-                                          // final navigator = Navigator.of(context);
-                                          final room = await FirebaseChatCore
-                                              .instance
-                                              .createRoom(otherUser);
+                                      // final navigator = Navigator.of(context);
+                                      final room =
+                                          await FirebaseChatCore.instance.createRoom(otherUser);
 
-                                          if (!mounted) return;
-                                          context.push(
-                                            APP_PAGE.chat.toPath,
-                                            extra: ChatData(
-                                              room: room,
-                                              userName: user.userName!,
-                                              avatar: user.photo!,
-                                              name: user.name,
-                                            ),
-                                          );
-                                        } else {
-                                          showAuthBottomSheetFunc(context);
-                                        }
-                                      },
-                                      child: Container(
-                                        height: Dimens.DIMENS_32,
-                                        alignment: Alignment.center,
-                                        decoration: BoxDecoration(
-                                          borderRadius:
-                                              BorderRadius.circular(8),
+                                      if (!mounted) return;
+                                      context.push(
+                                        APP_PAGE.chat.toPath,
+                                        extra: ChatData(
+                                          room: room,
+                                          userName: user.userName!,
+                                          avatar: user.photo!,
+                                          name: user.name,
                                         ),
-                                        child: Text(
-                                          LocaleKeys.label_message.tr(),
-                                          textAlign: TextAlign.center,
-                                        ),
-                                      ),
+                                      );
+                                    } else {
+                                      showAuthBottomSheetFunc(context);
+                                    }
+                                  },
+                                  child: Container(
+                                    height: Dimens.DIMENS_32,
+                                    alignment: Alignment.center,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Text(
+                                      LocaleKeys.label_message.tr(),
+                                      textAlign: TextAlign.center,
                                     ),
                                   ),
                                 ),
-                                SizedBox(
-                                  width: Dimens.DIMENS_12,
-                                ),
-                              ],
+                              ),
                             ),
-                          SizedBox(
-                            height: Dimens.DIMENS_8,
-                          )
-                        ]),
+                            SizedBox(
+                              width: Dimens.DIMENS_12,
+                            ),
+                          ],
+                        ),
+                      SizedBox(
+                        height: Dimens.DIMENS_8,
+                      )
+                    ]),
                   ),
                   SliverAppBar(
                     toolbarHeight: 0,
@@ -615,10 +564,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     elevation: 0,
                     bottom: TabBar(
                       overlayColor: MaterialStatePropertyAll<Color>(
-                          Theme.of(context)
-                              .colorScheme
-                              .onSurface
-                              .withOpacity(0.3)),
+                          Theme.of(context).colorScheme.onSurface.withOpacity(0.3)),
                       indicatorSize: TabBarIndicatorSize.tab,
                       indicatorWeight: 2,
                       tabs: const [
@@ -638,16 +584,14 @@ class _ProfilePageState extends State<ProfilePage> {
                   // Content for Tab 1
                   KeepAlivePage(
                     child: VideoListView(
-                      uid: widget.payload?.uid ??
-                          authRepository.currentUser!.uid,
+                      uid: widget.payload?.uid ?? authRepository.currentUser!.uid,
                       from: From.user,
                     ),
                   ),
                   // Content for Tab 2
                   KeepAlivePage(
                     child: VideoListView(
-                      uid: widget.payload?.uid ??
-                          authRepository.currentUser!.uid,
+                      uid: widget.payload?.uid ?? authRepository.currentUser!.uid,
                       from: From.likes,
                     ),
                   ),
@@ -659,11 +603,9 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   bool _isShowMenuBtn(AuthRepository authRepository, AuthState authState) =>
-      authRepository.currentUser?.uid == widget.payload?.uid ||
-      widget.payload == null;
+      authRepository.currentUser?.uid == widget.payload?.uid || widget.payload == null;
 
-  bool _isAuthenticated(AuthState authState) =>
-      authState.status == AuthStatus.authenticated;
+  bool _isAuthenticated(AuthState authState) => authState.status == AuthStatus.authenticated;
 
   Future<void> toEditProfile(BuildContext context) async {
     // User user = await futureUserData1!;
@@ -727,13 +669,11 @@ class _ProfilePageState extends State<ProfilePage> {
                         ...List<Widget>.generate(
                           games!.length,
                           (index) => Chip(
-                            materialTapTargetSize:
-                                MaterialTapTargetSize.shrinkWrap,
+                            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                             visualDensity: VisualDensity.compact,
                             avatar: CircleAvatar(
                               radius: 8,
-                              backgroundColor:
-                                  Theme.of(context).colorScheme.secondary,
+                              backgroundColor: Theme.of(context).colorScheme.secondary,
                               backgroundImage: CachedNetworkImageProvider(
                                 games[index].gameImage!,
                               ),
@@ -754,17 +694,13 @@ class _ProfilePageState extends State<ProfilePage> {
                             items.length > 3
                                 ? GestureDetector(
                                     onTap: () {
-                                      BlocProvider.of<ProfileCubit>(context)
-                                          .seeMoreGameFavHandle();
+                                      BlocProvider.of<ProfileCubit>(context).seeMoreGameFavHandle();
                                     },
                                     child: Chip(
-                                        materialTapTargetSize:
-                                            MaterialTapTargetSize.shrinkWrap,
+                                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                                         visualDensity: VisualDensity.compact,
                                         label: Text(
-                                          LocaleKeys.label_see_less
-                                              .tr()
-                                              .replaceAll('.', ''),
+                                          LocaleKeys.label_see_less.tr().replaceAll('.', ''),
                                           style: const TextStyle(fontSize: 11),
                                         )),
                                   )
@@ -777,29 +713,28 @@ class _ProfilePageState extends State<ProfilePage> {
                           runSpacing: Dimens.DIMENS_3,
                           children: items.isEmpty
                               ? []
-                              : [
-                                  ...items.getRange(0, 3).toList(),
-                                  items.length > 3
-                                      ? GestureDetector(
-                                          onTap: () {
-                                            BlocProvider.of<ProfileCubit>(
-                                                    context)
-                                                .seeMoreGameFavHandle();
-                                          },
-                                          child: Chip(
-                                            materialTapTargetSize:
-                                                MaterialTapTargetSize
-                                                    .shrinkWrap,
-                                            visualDensity:
-                                                VisualDensity.compact,
-                                            label: Icon(
-                                              Icons.more_horiz,
-                                              size: Dimens.DIMENS_20,
-                                            ),
-                                          ),
-                                        )
-                                      : Container()
-                                ]);
+                              : items.length < 3
+                                  ? items
+                                  : [
+                                      ...items.getRange(0, 3).toList(),
+                                      items.length > 3
+                                          ? GestureDetector(
+                                              onTap: () {
+                                                BlocProvider.of<ProfileCubit>(context)
+                                                    .seeMoreGameFavHandle();
+                                              },
+                                              child: Chip(
+                                                materialTapTargetSize:
+                                                    MaterialTapTargetSize.shrinkWrap,
+                                                visualDensity: VisualDensity.compact,
+                                                label: Icon(
+                                                  Icons.more_horiz,
+                                                  size: Dimens.DIMENS_20,
+                                                ),
+                                              ),
+                                            )
+                                          : Container()
+                                    ]);
                     },
                   );
                 });
@@ -858,15 +793,13 @@ class _ProfilePageState extends State<ProfilePage> {
                           final textPainter = TextPainter(
                             text: TextSpan(
                               text: text,
-                              style: const TextStyle(
-                                  fontSize: 12, fontWeight: FontWeight.w400),
+                              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w400),
                             ),
                             textDirection: TextDirection.ltr,
                           );
                           textPainter.layout(maxWidth: double.infinity);
-                          final lines = (textPainter.size.height /
-                                  textPainter.preferredLineHeight)
-                              .ceil();
+                          final lines =
+                              (textPainter.size.height / textPainter.preferredLineHeight).ceil();
 
                           debugPrint('text is overflow  ${lines > 5}');
 
@@ -885,18 +818,15 @@ class _ProfilePageState extends State<ProfilePage> {
                                   style: TextStyle(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w400,
-                                    color:
-                                        Theme.of(context).colorScheme.onSurface,
+                                    color: Theme.of(context).colorScheme.onSurface,
                                   ),
                                 ),
                               ),
                               if (lines > 5)
                                 InkWell(
                                   onTap: () =>
-                                      BlocProvider.of<ProfileCubit>(context)
-                                          .seeMoreBioHandle(),
-                                  child: Text(state is ShowLessBio ||
-                                          state is ProfileInitial
+                                      BlocProvider.of<ProfileCubit>(context).seeMoreBioHandle(),
+                                  child: Text(state is ShowLessBio || state is ProfileInitial
                                       ? LocaleKeys.label_see_more.tr()
                                       : LocaleKeys.label_see_less.tr()),
                                 )
@@ -921,8 +851,7 @@ class _ProfilePageState extends State<ProfilePage> {
   /// username,photo ,follwers,folowing,likes
   Row topSectionView(AuthState authState) {
     final repository = RepositoryProvider.of<UserRepository>(context);
-    String? uid =
-        RepositoryProvider.of<AuthRepository>(context).currentUser?.uid;
+    String? uid = RepositoryProvider.of<AuthRepository>(context).currentUser?.uid;
     return Row(
       children: [
         SizedBox(
@@ -973,9 +902,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                     errorWidget: (_, __, ___) => Container(
                                       width: 300,
                                       height: 300,
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .tertiary,
+                                      color: Theme.of(context).colorScheme.tertiary,
                                     ),
                                     fit: BoxFit.contain,
                                   ),
@@ -997,8 +924,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           );
                         }
                         return CircleAvatar(
-                          backgroundColor:
-                              Theme.of(context).colorScheme.tertiary,
+                          backgroundColor: Theme.of(context).colorScheme.tertiary,
                           radius: 35,
                           backgroundImage: CachedNetworkImageProvider(
                             avatar!,
@@ -1020,9 +946,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                         errorWidget: (_, __, ___) => Container(
                                           width: 300,
                                           height: 300,
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .tertiary,
+                                          color: Theme.of(context).colorScheme.tertiary,
                                         ),
                                       ),
                                     );
@@ -1040,12 +964,10 @@ class _ProfilePageState extends State<ProfilePage> {
           builder: (_, state) {
             return FutureBuilder<int>(
                 initialData: 0,
-                future: repository
-                    .getFollowerCount(widget.payload?.uid ?? state.user!.id),
+                future: repository.getFollowerCount(widget.payload?.uid ?? state.user!.id),
                 builder: (context, AsyncSnapshot<int> snapshot) {
                   int? follwers = snapshot.data;
-                  String followerCount =
-                      numberFormat(context.locale, follwers!);
+                  String followerCount = numberFormat(context.locale, follwers!);
                   return Expanded(
                     child: InkWell(
                       splashColor: Colors.transparent,
@@ -1056,20 +978,17 @@ class _ProfilePageState extends State<ProfilePage> {
                         context.push(APP_PAGE.followingNFonllowers.toPath,
                             extra: FollowingNFollowersData(
                                 initialIndex: 0,
-                                userName: widget.payload?.userName ??
-                                    state.user!.userName!,
+                                userName: widget.payload?.userName ?? state.user!.userName!,
                                 uid: widget.payload?.uid ?? state.user!.id));
                       },
                       child: Column(
                         children: [
                           Text(
                             followerCount,
-                            style: const TextStyle(
-                                fontSize: 20, fontWeight: FontWeight.w600),
+                            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
                           ),
                           Text(LocaleKeys.label_followers.tr(),
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(fontSize: 12)),
+                              textAlign: TextAlign.center, style: const TextStyle(fontSize: 12)),
                         ],
                       ),
                     ),
@@ -1081,12 +1000,10 @@ class _ProfilePageState extends State<ProfilePage> {
           builder: (context, state) {
             return FutureBuilder<int>(
                 initialData: 0,
-                future: repository
-                    .getFollowingCount(widget.payload?.uid ?? state.user!.id),
+                future: repository.getFollowingCount(widget.payload?.uid ?? state.user!.id),
                 builder: (_, AsyncSnapshot<int> snapshot) {
                   int following = snapshot.data!;
-                  String followingCount =
-                      numberFormat(context.locale, following);
+                  String followingCount = numberFormat(context.locale, following);
                   return Expanded(
                     child: InkWell(
                       splashColor: Colors.transparent,
@@ -1097,16 +1014,14 @@ class _ProfilePageState extends State<ProfilePage> {
                         context.push(APP_PAGE.followingNFonllowers.toPath,
                             extra: FollowingNFollowersData(
                                 initialIndex: 1,
-                                userName: widget.payload?.userName ??
-                                    state.user!.userName!,
+                                userName: widget.payload?.userName ?? state.user!.userName!,
                                 uid: widget.payload?.uid ?? state.user!.id));
                       },
                       child: Column(
                         children: [
                           Text(
                             followingCount,
-                            style: const TextStyle(
-                                fontSize: 20, fontWeight: FontWeight.w600),
+                            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
                           ),
                           Text(
                             LocaleKeys.label_following.tr(),
@@ -1124,8 +1039,7 @@ class _ProfilePageState extends State<ProfilePage> {
           builder: (context, state) {
             return FutureBuilder<int>(
                 initialData: 0,
-                future: repository
-                    .getLikesCount(widget.payload?.uid ?? state.user!.id),
+                future: repository.getLikesCount(widget.payload?.uid ?? state.user!.id),
                 builder: (context, AsyncSnapshot<int> snapshot) {
                   int likes = snapshot.data!;
                   String likeCount = numberFormat(context.locale, likes);
@@ -1134,8 +1048,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       children: [
                         Text(
                           likeCount,
-                          style: const TextStyle(
-                              fontSize: 20, fontWeight: FontWeight.w600),
+                          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
                         ),
                         Text(
                           LocaleKeys.label_likes.tr(),
@@ -1160,28 +1073,23 @@ class _ProfilePageState extends State<ProfilePage> {
       padding: EdgeInsets.symmetric(horizontal: Dimens.DIMENS_12),
       child: BlocBuilder<AuthBloc, AuthState>(
         builder: (context, state) {
-          if (state.status == AuthStatus.authenticated &&
-              !widget.isForOtherUser!) {
+          if (state.status == AuthStatus.authenticated && !widget.isForOtherUser!) {
             userName = '@${state.user!.userName}';
-          } else if (state.status == AuthStatus.notAuthenticated &&
-              !widget.isForOtherUser!) {
+          } else if (state.status == AuthStatus.notAuthenticated && !widget.isForOtherUser!) {
             userName = '@${LocaleKeys.label_user_name.tr()}';
           }
 
           return BlocBuilder<EditUserNameCubit, EditUserNameState>(
             builder: (context, state) {
-              if (state.status == EditUserNameStatus.success &&
-                  widget.payload == null) {
+              if (state.status == EditUserNameStatus.success && widget.payload == null) {
                 return Text(
                   '@${state.newUserName!}',
-                  style: const TextStyle(
-                      fontWeight: FontWeight.bold, fontSize: 14),
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                 );
               }
               return Text(
                 userName!,
-                style:
-                    const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
               );
             },
           );
@@ -1198,8 +1106,7 @@ class VideoListView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final AuthRepository authRepository =
-        RepositoryProvider.of<AuthRepository>(context);
+    final AuthRepository authRepository = RepositoryProvider.of<AuthRepository>(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1234,8 +1141,7 @@ class VideoListView extends StatelessWidget {
                                 ),
                               ),
                               StreamBuilder(
-                                stream: RepositoryProvider.of<VideoRepository>(
-                                        context)
+                                stream: RepositoryProvider.of<VideoRepository>(context)
                                     .uploadProgressStream,
                                 builder: (context, snapshot) {
                                   if (!snapshot.hasData) {
@@ -1249,9 +1155,7 @@ class VideoListView extends StatelessWidget {
                                           '${snapshot.data!.toInt()}%',
                                           style: TextStyle(
                                             fontWeight: FontWeight.bold,
-                                            color: Theme.of(context)
-                                                .colorScheme
-                                                .primary,
+                                            color: Theme.of(context).colorScheme.primary,
                                           ),
                                         ),
                                       ],
@@ -1275,21 +1179,17 @@ class VideoListView extends StatelessWidget {
                                 ),
                               ),
                               StreamBuilder(
-                                stream: RepositoryProvider.of<VideoRepository>(
-                                        context)
+                                stream: RepositoryProvider.of<VideoRepository>(context)
                                     .uploadProgressStream,
                                 builder: (context, snapshot) {
                                   if (!snapshot.hasData) {
                                     return Container();
                                   }
                                   return LinearProgressIndicator(
-                                    backgroundColor: Theme.of(context)
-                                        .colorScheme
-                                        .primary
-                                        .withOpacity(0.5),
+                                    backgroundColor:
+                                        Theme.of(context).colorScheme.primary.withOpacity(0.5),
                                     value: snapshot.data! / 100,
-                                    color:
-                                        Theme.of(context).colorScheme.primary,
+                                    color: Theme.of(context).colorScheme.primary,
                                   );
                                 },
                               ),
@@ -1306,32 +1206,27 @@ class VideoListView extends StatelessWidget {
           child: RepositoryProvider(
             create: (context) => UserVideoPagingRepository(),
             child: BlocProvider(
-              create: (context) => UserVideoPagingBloc(
-                  RepositoryProvider.of<UserVideoPagingRepository>(context))
-                ..add(InitUserVideoPaging(uid: uid, from: from)),
+              create: (context) =>
+                  UserVideoPagingBloc(RepositoryProvider.of<UserVideoPagingRepository>(context))
+                    ..add(InitUserVideoPaging(uid: uid, from: from)),
               child: BlocBuilder<UserVideoPagingBloc, UserVideoPagingState>(
                 builder: (_, state) {
                   if (state.status == BlocStatus.initialized) {
-                    return BlocListener<RefreshProfileCubit,
-                        RefreshProfileState>(
+                    return BlocListener<RefreshProfileCubit, RefreshProfileState>(
                       listener: (context, refreshState) {
                         if (refreshState.status == RefreshStatus.refresh) {
-                          RepositoryProvider.of<UserVideoPagingRepository>(
-                                  context)
+                          RepositoryProvider.of<UserVideoPagingRepository>(context)
                               .clearLikeVideo();
-                          RepositoryProvider.of<UserVideoPagingRepository>(
-                                  context)
+                          RepositoryProvider.of<UserVideoPagingRepository>(context)
                               .clearUserVideo();
                           state.controller!.refresh();
                         }
                       },
                       child: BlocListener<UploadBloc, UploadState>(
                         listener: (context, uploadState) {
-                          if (uploadState is VideoDeleted ||
-                              uploadState is VideoUploaded) {
+                          if (uploadState is VideoDeleted || uploadState is VideoUploaded) {
                             if (from == From.user) {
-                              RepositoryProvider.of<UserVideoPagingRepository>(
-                                      context)
+                              RepositoryProvider.of<UserVideoPagingRepository>(context)
                                   .clearUserVideo();
                               state.controller!.refresh();
                             }
@@ -1346,8 +1241,7 @@ class VideoListView extends StatelessWidget {
                                 from == From.user
                                     ? LocaleKeys.message_no_post.tr()
                                     : LocaleKeys.message_no_liked_post.tr(),
-                                style: const TextStyle(
-                                    fontSize: 16, fontWeight: FontWeight.bold),
+                                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                               ),
                             ),
                             itemBuilder: (_, item, index) {
@@ -1356,13 +1250,8 @@ class VideoListView extends StatelessWidget {
                               return AspectRatio(
                                 aspectRatio: 16 / 9,
                                 child: FutureBuilder(
-                                    future: firebaseFirestore
-                                        .collection('videos')
-                                        .doc(item)
-                                        .get(),
-                                    builder: (_,
-                                        AsyncSnapshot<DocumentSnapshot>
-                                            snapshot) {
+                                    future: firebaseFirestore.collection('videos').doc(item).get(),
+                                    builder: (_, AsyncSnapshot<DocumentSnapshot> snapshot) {
                                       late Video video;
 
                                       if (!snapshot.hasData) {
@@ -1376,15 +1265,11 @@ class VideoListView extends StatelessWidget {
                                         return Container(
                                             color: Colors.black,
                                             alignment: Alignment.center,
-                                            padding: EdgeInsets.all(
-                                                Dimens.DIMENS_18),
+                                            padding: EdgeInsets.all(Dimens.DIMENS_18),
                                             child: Text(
-                                              LocaleKeys
-                                                  .message_video_not_available_or_deleted
+                                              LocaleKeys.message_video_not_available_or_deleted
                                                   .tr(),
-                                              style: Theme.of(context)
-                                                  .textTheme
-                                                  .labelSmall,
+                                              style: Theme.of(context).textTheme.labelSmall,
                                             ));
                                       }
                                       return Container(
@@ -1396,12 +1281,8 @@ class VideoListView extends StatelessWidget {
                                               extra: PlaySingleData(
                                                 index: index,
                                                 videoData: video,
-                                                isForLogedUserVideo:
-                                                    from == From.user &&
-                                                        uid ==
-                                                            authRepository
-                                                                .currentUser
-                                                                ?.uid,
+                                                isForLogedUserVideo: from == From.user &&
+                                                    uid == authRepository.currentUser?.uid,
                                               ),
                                             );
                                           },
@@ -1410,28 +1291,23 @@ class VideoListView extends StatelessWidget {
                                             children: [
                                               CachedNetworkImage(
                                                   fit: BoxFit.cover,
-                                                  errorWidget: (_, __, ___) =>
-                                                      Container(),
+                                                  errorWidget: (_, __, ___) => Container(),
                                                   imageUrl: video.thumnail),
                                               Align(
                                                 alignment: Alignment.bottomLeft,
                                                 child: Padding(
-                                                  padding:
-                                                      const EdgeInsets.all(8.0),
+                                                  padding: const EdgeInsets.all(8.0),
                                                   child: Row(
                                                     children: [
                                                       Text(
                                                         '${numberFormat(context.locale, video.viewsCount)} ',
-                                                        style: TextStyle(
-                                                            color:
-                                                                COLOR_white_fff5f5f5),
+                                                        style:
+                                                            TextStyle(color: COLOR_white_fff5f5f5),
                                                       ),
                                                       Text(
-                                                        LocaleKeys.label_views
-                                                            .tr(),
-                                                        style: TextStyle(
-                                                            color:
-                                                                COLOR_white_fff5f5f5),
+                                                        LocaleKeys.label_views.tr(),
+                                                        style:
+                                                            TextStyle(color: COLOR_white_fff5f5f5),
                                                       )
                                                     ],
                                                   ),
@@ -1445,8 +1321,7 @@ class VideoListView extends StatelessWidget {
                               );
                             },
                           ),
-                          gridDelegate:
-                              const SliverGridDelegateWithFixedCrossAxisCount(
+                          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                             childAspectRatio: 9 / 16,
                             crossAxisCount: 3,
                             mainAxisSpacing: 1,

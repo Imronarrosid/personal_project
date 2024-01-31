@@ -139,21 +139,31 @@ class UserRepository implements UserUseCaseType {
   }
 
   Future<int> getFollowingCount(uid) async {
-    int following = 0;
-    var followingDoc =
-        await firebaseFirestore.collection('users').doc(uid).collection('following').get();
+    try {
+      int following = 0;
+      var followingDoc =
+          await firebaseFirestore.collection('users').doc(uid).collection('following').get();
 
-    following = followingDoc.docs.length;
+      following = followingDoc.docs.length;
 
-    return following;
+      return following;
+    } catch (e) {
+      debugPrint(e.toString());
+      return 0;
+    }
   }
 
   Future<int> getFollowerCount(String uid) async {
-    int followers = 0;
-    var followerDoc =
-        await firebaseFirestore.collection('users').doc(uid).collection('followers').get();
-    followers = followerDoc.docs.length;
-    return followers;
+    try {
+      int followers = 0;
+      var followerDoc =
+          await firebaseFirestore.collection('users').doc(uid).collection('followers').get();
+      followers = followerDoc.docs.length;
+      return followers;
+    } catch (e) {
+      debugPrint(e.toString());
+      return 0;
+    }
   }
 
   Future<int> getLikesCount(String uid) async {
@@ -257,8 +267,8 @@ class UserRepository implements UserUseCaseType {
       if (doc.exists) {
         bio = doc['bio'] ?? '';
       }
-    } on Exception {
-      rethrow;
+    } catch (e) {
+      debugPrint(e.toString());
     }
     return bio;
   }

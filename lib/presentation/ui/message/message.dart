@@ -271,15 +271,18 @@ class _MessagePageState extends State<MessagePage> {
                                   ),
                                 );
                               }),
-                              users.isEmpty || users.length < 6
+                              users.isEmpty
                                   ? Container(
-                                    width: MediaQuery.of(context).size.width,
-                                    alignment: Alignment.center,
+                                      width: MediaQuery.of(context).size.width,
+                                      alignment: Alignment.center,
                                       child: Text(
                                         LocaleKeys.message_no_suggestion.tr(),
                                         textAlign: TextAlign.center,
                                       ),
                                     )
+                                  : Container(),
+                              users.length < 6
+                                  ? Container()
                                   : InkWell(
                                       onTap: () {
                                         context.push(APP_PAGE.searchRoom.toPath);

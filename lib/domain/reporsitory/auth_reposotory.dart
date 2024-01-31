@@ -257,8 +257,16 @@ class AuthRepository implements AuthUseCaseType {
   }
 
   Future<User> getUserData(String uid) async {
-    DocumentSnapshot docs = await firebaseFirestore.collection('users').doc(uid).get();
-    return User.fromSnap(docs);
+    try {
+      DocumentSnapshot docs = await firebaseFirestore.collection('users').doc(uid).get();
+      if (docs.exists) {
+        return User.fromSnap(docs);
+      }
+      return User.empty;
+    } on Exception catch (e) {
+      debugPrint(e.toString());
+      return User.empty;
+    }
   }
 
   Future<bool> isAdmin(String uid) async {
