@@ -86,7 +86,7 @@ class User extends Equatable {
         email: snap['email'],
         id: snap['uid'],
         createdAt: snap['createdAt'],
-        updatedAt: snap['updatedAt'],
+        updatedAt: snap['nameUpdatedAt'],
         searchKey: snap['searchKey'],
         lastSeen: snap['lastSeen'],
         userNameUpdatedAt: snap['userNameUpdatedAt']);
@@ -102,6 +102,6 @@ class User extends Equatable {
         updatedAt,
         createdAt,
         lastSeen,
-        searchKey
+        searchKey,
       ];
 }
