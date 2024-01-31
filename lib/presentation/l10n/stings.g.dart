@@ -64,6 +64,8 @@ abstract class  LocaleKeys {
   static const label_rotate_counterclockwise = 'label_rotate_counterclockwise';
   static const label_entertainment = 'label_entertainment';
   static const label_share = 'label_share';
+  static const label_game = 'label_game';
+  static const message_create_user_name = 'message_create_user_name';
   static const message_welcome_to_gamepiun = 'message_welcome_to_gamepiun';
   static const message_login_for_more_experience = 'message_login_for_more_experience';
   static const message_gaming_and_win = 'message_gaming_and_win';
