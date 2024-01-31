@@ -270,23 +270,17 @@ class VideoRepository implements VideoUseCaseType {
       DocumentSnapshot doc = await firebaseFirestore.collection('videos').doc(id).get();
 
       var uid = firebaseAuth.currentUser!.uid;
-      if ((doc.data()! as dynamic)['likes'].contains(uid)) {
-        await firebaseFirestore.collection('videos').doc(id).update({
-          'likes': FieldValue.arrayRemove([uid])
-        });
+      // if ((doc.data()! as dynamic)['likes'].contains(uid)) {
+      //   await firebaseFirestore.collection('videos').doc(id).update({
+      //     'likes': FieldValue.arrayRemove([uid])
+      //   });
 
-        await firebaseFirestore.collection('users').doc(uid).collection('likes').doc(id).delete();
-      } else {
-        await firebaseFirestore.collection('videos').doc(id).update({
-          'likes': FieldValue.arrayUnion([uid])
-        });
-        await firebaseFirestore
-            .collection('users')
-            .doc(uid)
-            .collection('likes')
-            .doc(id)
-            .set({'postId': id, 'likedAt': FieldValue.serverTimestamp()});
-      }
+      //   await firebaseFirestore.collection('users').doc(uid).collection('likes').doc(id).delete();
+      // } else {
+      //   await firebaseFirestore.collection('videos').doc(id).update({
+      //     'likes': FieldValue.arrayUnion([uid])
+      //   });
+      // }
 
       DocumentReference documentReference = firebaseFirestore.collection('videos').doc(id);
       firebaseFirestore.runTransaction((transaction) {
@@ -295,8 +289,21 @@ class VideoRepository implements VideoUseCaseType {
             int currentCount = (value.data() as Map<String, dynamic>)['likesCount'];
             if ((doc.data()! as dynamic)['likes'].contains(uid)) {
               transaction.update(documentReference, {'likesCount': currentCount - 1});
+              transaction.update(documentReference, {
+                'likes': FieldValue.arrayRemove([uid])
+              });
+              firebaseFirestore.collection('users').doc(uid).collection('likes').doc(id).delete();
             } else {
+              transaction.update(documentReference, {
+                'likes': FieldValue.arrayUnion([uid])
+              });
               transaction.update(documentReference, {'likesCount': currentCount + 1});
+              firebaseFirestore
+                  .collection('users')
+                  .doc(uid)
+                  .collection('likes')
+                  .doc(id)
+                  .set({'postId': id, 'likedAt': FieldValue.serverTimestamp()});
             }
           } else {
             final List<dynamic> likes = (value.data() as Map<String, dynamic>)['likes'];
