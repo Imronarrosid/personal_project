@@ -7,15 +7,12 @@ import 'dart:io';
 import 'package:bootstrap_icons/bootstrap_icons.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:personal_project/constant/color.dart';
 import 'package:personal_project/constant/dimens.dart';
 import 'package:personal_project/constant/font_size.dart';
-import 'package:personal_project/domain/model/add_details_model.dart';
 import 'package:personal_project/presentation/l10n/stings.g.dart';
-import 'package:personal_project/presentation/router/route_utils.dart';
-import 'package:personal_project/presentation/shared_components/crop_page.dart';
-// import 'package:video_editor/video_editor.dart';
 import 'package:ffmpeg_kit_flutter_min_gpl/ffmpeg_kit.dart';
 import 'package:ffmpeg_kit_flutter_min_gpl/ffmpeg_kit_config.dart';
 import 'package:ffmpeg_kit_flutter_min_gpl/return_code.dart';
@@ -25,21 +22,21 @@ import 'package:flutter/foundation.dart';
 import 'package:get_thumbnail_video/index.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
-import 'package:personal_project/utils/get_thumbnails.dart';
+import 'package:personal_project/presentation/ui/select_cover/cubit/select_cover_cubit.dart';
 import 'package:video_editor_2/domain/entities/file_format.dart';
 import 'package:video_editor_2/video_editor.dart';
 import 'package:get_thumbnail_video/video_thumbnail.dart';
 
-class VideoEditor extends StatefulWidget {
-  const VideoEditor({super.key, required this.file});
+class SelectCover extends StatefulWidget {
+  const SelectCover({super.key, required this.file});
 
   final XFile file;
 
   @override
-  State<VideoEditor> createState() => _VideoEditorState();
+  State<SelectCover> createState() => _SelectCoverState();
 }
 
-class _VideoEditorState extends State<VideoEditor> {
+class _SelectCoverState extends State<SelectCover> {
   final _exportingProgress = ValueNotifier<double>(0.0);
   final _isExporting = ValueNotifier<bool>(false);
   final double height = 60;
@@ -73,72 +70,6 @@ class _VideoEditorState extends State<VideoEditor> {
           duration: const Duration(seconds: 1),
         ),
       );
-  int _fileMBSize(Uint8List bytes) {
-    return bytes.lengthInBytes ~/ (1024 * 1024);
-  }
-
-  Future<void> _exportVideo() async {
-    _exportingProgress.value = 0;
-    _isExporting.value = true;
-    _controller.video.pause();
-    try {
-      int fileSize = _fileMBSize(await _controller.file.readAsBytes());
-      bool isMoreThan12MB = 12 < fileSize;
-      bool under30secButMoreThan5MB =
-          (_controller.video.value.duration.inSeconds < 30 && fileSize > 5);
-      debugPrint('video size $fileSize');
-      File file = await getTumbnail(_controller.file.path);
-      if (_controller.isTrimmed ||
-          isMoreThan12MB ||
-          under30secButMoreThan5MB ||
-          _controller.maxCrop != _controller.minCrop) {
-        final video = await exportVideo(
-          customInstruction: " -crf 28 -c:v libx264 -c:a aac -b:v 1250k -b:a 192k ",
-          onStatistics: (stats) => _exportingProgress.value =
-              stats.getProgress(_controller.trimmedDuration.inMilliseconds),
-        );
-        debugPrint('video size ${_fileMBSize(await video.readAsBytes())}');
-        if (mounted) {
-          context.push(
-            APP_PAGE.addDetails.toPath,
-            extra: AddDetails(videoFile: File(_controller.file.path), thumbnail: file),
-          );
-        }
-      } else {
-        if (!mounted) return;
-        context.push(
-          APP_PAGE.addDetails.toPath,
-          extra: AddDetails(videoFile: File(_controller.file.path), thumbnail: file),
-        );
-      }
-      _isExporting.value = false;
-    } catch (e) {
-      debugPrint('error ${e.toString()}');
-      _showErrorSnackBar("Error on export video :(");
-    }
-  }
-
-  // void _exportCover() async {
-  //   final config = CoverFFmpegVideoEditorConfig(_controller);
-  //   final execute = await config.getExecuteConfig();
-  //   if (execute == null) {
-  //     _showErrorSnackBar("Error on cover exportation initialization.");
-  //     return;
-  //   }
-
-  //   await ExportService.runFFmpegCommand(
-  //     execute,
-  //     onError: (e, s) => _showErrorSnackBar("Error on cover exportation :("),
-  //     onCompleted: (cover) {
-  //       if (!mounted) return;
-
-  //       showDialog(
-  //         context: context,
-  //         builder: (_) => CoverResultPopup(cover: cover),
-  //       );
-  //     },
-  //   );
-  // }
 
   @override
   Widget build(BuildContext context) {
@@ -205,50 +136,14 @@ class _VideoEditorState extends State<VideoEditor> {
                                         child: TabBarView(
                                           physics: const NeverScrollableScrollPhysics(),
                                           children: [
-                                            Column(
-                                              mainAxisAlignment: MainAxisAlignment.center,
-                                              children: _trimSlider(),
-                                            ),
+                                            // Column(
+                                            //   mainAxisAlignment:
+                                            //       MainAxisAlignment.center,
+                                            //   children: _trimSlider(),
+                                            // ),
+                                            _coverSelection(),
                                           ],
                                         ),
-                                      ),
-                                      Row(
-                                        children: [
-                                          Expanded(
-                                            child: IconButton(
-                                              color: COLOR_white_fff5f5f5,
-                                              onPressed: () =>
-                                                  _controller.rotate90Degrees(RotateDirection.left),
-                                              icon:
-                                                  const Icon(BootstrapIcons.arrow_counterclockwise),
-                                              tooltip:
-                                                  LocaleKeys.label_rotate_counterclockwise.tr(),
-                                            ),
-                                          ),
-                                          Expanded(
-                                            child: IconButton(
-                                              color: COLOR_white_fff5f5f5,
-                                              onPressed: () => _controller
-                                                  .rotate90Degrees(RotateDirection.right),
-                                              icon: const Icon(BootstrapIcons.arrow_clockwise),
-                                              tooltip: LocaleKeys.label_rotate_clockwise.tr(),
-                                            ),
-                                          ),
-                                          Expanded(
-                                            child: IconButton(
-                                              color: COLOR_white_fff5f5f5,
-                                              onPressed: () => Navigator.push(
-                                                context,
-                                                MaterialPageRoute<void>(
-                                                  builder: (context) =>
-                                                      CropScreen(controller: _controller),
-                                                ),
-                                              ),
-                                              icon: const Icon(BootstrapIcons.crop),
-                                              tooltip: 'Open crop screen',
-                                            ),
-                                          ),
-                                        ],
                                       ),
                                       SizedBox(
                                         height: Dimens.DIMENS_24,
@@ -335,7 +230,7 @@ class _VideoEditorState extends State<VideoEditor> {
             Material(
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
               child: InkWell(
-                onTap: _exportVideo,
+                onTap: _exportCover,
                 splashColor: COLOR_black_ff121212.withOpacity(0.4),
                 borderRadius: BorderRadius.circular(50),
                 child: Container(
@@ -346,7 +241,7 @@ class _VideoEditorState extends State<VideoEditor> {
                         color: Theme.of(context).colorScheme.primary,
                         borderRadius: BorderRadius.circular(50)),
                     child: Text(
-                      LocaleKeys.label_next.tr(),
+                      LocaleKeys.label_save.tr(),
                       style: TextStyle(
                           color: Theme.of(context).colorScheme.secondary,
                           fontSize: FontSize.FONT_SIZE_12,
@@ -368,96 +263,36 @@ class _VideoEditorState extends State<VideoEditor> {
         duration.inSeconds.remainder(60).toString().padLeft(2, '0')
       ].join(":");
 
-  List<Widget> _trimSlider() {
-    return [
-      AnimatedBuilder(
-        animation: Listenable.merge([
-          _controller,
-          _controller.video,
-        ]),
-        builder: (_, __) {
-          final int duration = _controller.videoDuration.inSeconds;
-          final double pos = _controller.trimPosition * duration;
-
-          return Padding(
-            padding: EdgeInsets.symmetric(horizontal: height / 4),
-            child: Row(children: [
-              Text(
-                formatter(
-                  Duration(
-                    seconds: pos.toInt(),
-                  ),
-                ),
-                style: TextStyle(color: COLOR_white_fff5f5f5),
-              ),
-              const Expanded(child: SizedBox()),
-              AnimatedOpacity(
-                opacity: _controller.isTrimming ? 1 : 0,
-                duration: kThemeAnimationDuration,
-                child: Row(mainAxisSize: MainAxisSize.min, children: [
-                  Text(
-                    formatter(_controller.startTrim),
-                    style: TextStyle(color: COLOR_white_fff5f5f5),
-                  ),
-                  const SizedBox(width: 10),
-                  Text(
-                    formatter(_controller.endTrim),
-                    style: TextStyle(color: COLOR_white_fff5f5f5),
-                  ),
-                ]),
-              ),
-            ]),
-          );
-        },
-      ),
-      Container(
-        width: MediaQuery.of(context).size.width,
-        margin: EdgeInsets.symmetric(vertical: height / 4),
-        child: TrimSlider(
-          controller: _controller,
-          height: height,
-          horizontalMargin: height / 4,
-          child: TrimTimeline(
-            controller: _controller,
-            localSeconds: LocaleKeys.label_sconds.tr(),
-            textStyle: TextStyle(fontSize: FontSize.FONT_SIZE_8, color: COLOR_white_fff5f5f5),
-            padding: const EdgeInsets.only(top: 10),
-          ),
-        ),
-      )
-    ];
-  }
-
   void _removeFile() {
     File(widget.file.path).deleteSync(recursive: true);
   }
 
-  // Widget _coverSelection() {
-  //   return SingleChildScrollView(
-  //     child: Center(
-  //       child: Container(
-  //         margin: const EdgeInsets.all(15),
-  //         child: CoverSelection(
-  //           controller: _controller,
-  //           size: height + 10,
-  //           quantity: 8,
-  //           selectedCoverBuilder: (cover, size) {
-  //             return Stack(
-  //               alignment: Alignment.center,
-  //               children: [
-  //                 cover,
-  //                 Icon(
-  //                   Icons.check_circle,
-  //                   color: const CoverSelectionStyle().selectedBorderColor,
-  //                 )
-  //               ],
-  //             );
-  //           },
-  //         ),
-  //       ),
-  //     ),
-  //   );
-  // }
+  Widget _coverSelection() {
+    return SingleChildScrollView(
+      child: Center(
+        child: Container(
+          margin: const EdgeInsets.all(15),
+          child: CoverSelection(
+            controller: _controller,
+            size: height + 10,
+            quantity: 8,
+            selectedCoverBuilder: (cover, size) {
+              return Stack(
+                alignment: Alignment.center,
+                children: [
+                  cover,
+                  Icon(
+                    Icons.check_circle,
+                    color: const CoverSelectionStyle().selectedBorderColor,
+                  )
+                ],
+              );
+            },
+          ),
+        ),
+      ),
+    );
+  }
 
   Future<String> ioOutputPath(String filePath, FileFormat format) async {
     final tempPath = (await getTemporaryDirectory()).path;
@@ -475,52 +310,21 @@ class _VideoEditorState extends State<VideoEditor> {
 
   String webOutputPath(FileFormat format) => _webPath('output', format);
 
-  Future<XFile> exportVideo({
-    void Function(FFmpegStatistics)? onStatistics,
-    VideoExportFormat outputFormat = VideoExportFormat.mp4,
-    double scale = 1.0,
-    String customInstruction = '',
-    VideoExportPreset preset = VideoExportPreset.none,
-    bool isFiltersEnabled = true,
-  }) async {
-    final inputPath = kIsWeb
-        ? webInputPath(FileFormat.fromMimeType(_controller.file.mimeType))
-        : _controller.file.path;
-    final outputPath =
-        kIsWeb ? webOutputPath(outputFormat) : await ioOutputPath(inputPath, outputFormat);
+  Future<void> _exportCover() async {
+    try {
+      final cover = await extractCover();
 
-    String quotedInputPath = '"$inputPath"';
-    String quotedOutputPath = '"$outputPath"';
-
-    final config = _controller.createVideoFFmpegConfig();
-    final execute = config.createExportCommand(
-      inputPath: quotedInputPath,
-      outputPath: quotedOutputPath,
-      outputFormat: outputFormat,
-      scale: scale,
-      customInstruction: customInstruction,
-      preset: preset,
-      isFiltersEnabled: isFiltersEnabled,
-    );
-
-    debugPrint('run export video command : [$execute]');
-
-    if (kIsWeb) {
-      return const FFmpegExport().executeFFmpegWeb(
-        execute: execute,
-        inputData: await _controller.file.readAsBytes(),
-        inputPath: inputPath,
-        outputPath: outputPath,
-        outputMimeType: outputFormat.mimeType,
-        onStatistics: onStatistics,
-      );
-    } else {
-      return const FFmpegExport().executeFFmpegIO(
-        execute: execute,
-        outputPath: outputPath,
-        outputMimeType: outputFormat.mimeType,
-        onStatistics: onStatistics,
-      );
+      if (mounted) {
+        // showDialog(
+        //   context: context,
+        //   builder: (_) => CoverResultPopup(cover: cover),
+        // );
+        BlocProvider.of<SelectCoverCubit>(context).selectCover(cover.path);
+        context.pop();
+        debugPrint("cover ${cover.path}");
+      }
+    } catch (e) {
+      _showErrorSnackBar("Error on cover exportation :(");
     }
   }
 
@@ -547,8 +351,8 @@ class _VideoEditorState extends State<VideoEditor> {
 
     var config = _controller.createCoverFFmpegConfig();
     final execute = config.createExportCommand(
-      inputPath: inputPath,
-      outputPath: outputPath,
+      inputPath: '"$inputPath"',
+      outputPath: '"$outputPath"',
       scale: scale,
       quality: quality,
       isFiltersEnabled: isFiltersEnabled,

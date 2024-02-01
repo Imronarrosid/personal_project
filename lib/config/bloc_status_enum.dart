@@ -7,4 +7,5 @@ enum BlocStatus {
   following,
   notFollowing,
   active,
+  selected,
 }

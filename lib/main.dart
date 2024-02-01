@@ -25,6 +25,7 @@ import 'package:personal_project/presentation/ui/edit_profile/cubit/edit_user_na
 import 'package:personal_project/presentation/ui/edit_profile/cubit/game_fav_cubit.dart';
 import 'package:personal_project/presentation/ui/home/cubit/home_cubit.dart';
 import 'package:personal_project/presentation/ui/language/cubit/language_cubit.dart';
+import 'package:personal_project/presentation/ui/select_cover/cubit/select_cover_cubit.dart';
 import 'package:personal_project/presentation/ui/upload/bloc/camera_bloc.dart';
 import 'package:personal_project/presentation/ui/video_preview/bloc/video_preview_bloc.dart';
 import 'package:provider/provider.dart';
@@ -36,8 +37,7 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  final SharedPreferences sharedPreferences =
-      await SharedPreferences.getInstance();
+  final SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
 
   runApp(EasyLocalization(
       supportedLocales: L10n.all,
@@ -88,8 +88,7 @@ class _MyAppState extends State<MyApp> {
         Provider<AuthService>(create: (_) => authService),
       ],
       child: Builder(builder: (context) {
-        final GoRouter goRouter =
-            Provider.of<AppRouter>(context, listen: false).router;
+        final GoRouter goRouter = Provider.of<AppRouter>(context, listen: false).router;
 
         return MultiRepositoryProvider(
           providers: [
@@ -122,8 +121,7 @@ class _MyAppState extends State<MyApp> {
               ),
               BlocProvider(
                 create: (context) {
-                  final AuthRepository repo =
-                      RepositoryProvider.of<AuthRepository>(context);
+                  final AuthRepository repo = RepositoryProvider.of<AuthRepository>(context);
 
                   return AuthBloc(repo)..add(InitAuth());
                 },
@@ -141,8 +139,7 @@ class _MyAppState extends State<MyApp> {
                 },
               ),
               BlocProvider(create: (context) {
-                final UserRepository repository =
-                    RepositoryProvider.of<UserRepository>(context);
+                final UserRepository repository = RepositoryProvider.of<UserRepository>(context);
                 return EditBioCubit(repository);
               }),
               BlocProvider(create: (context) {
@@ -166,7 +163,10 @@ class _MyAppState extends State<MyApp> {
               BlocProvider(create: (_) => LanguageCubit()),
               BlocProvider(
                 create: (context) => SelectGameCubit(),
-              )
+              ),
+              BlocProvider(
+                create: (_) => SelectCoverCubit(),
+              ),
             ],
             child: MaterialApp.router(
               debugShowCheckedModeBanner: false,

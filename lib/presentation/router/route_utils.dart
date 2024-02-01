@@ -27,6 +27,7 @@ enum APP_PAGE {
   followingNFonllowers,
   searchRoom,
   VBC,
+  selectCover,
 }
 
 extension AppPageExtension on APP_PAGE {
@@ -84,6 +85,8 @@ extension AppPageExtension on APP_PAGE {
         return "/search-room";
       case APP_PAGE.VBC:
         return "/VBC";
+      case APP_PAGE.selectCover:
+        return "/selec-cover";
       default:
         return "/";
     }
@@ -143,6 +146,8 @@ extension AppPageExtension on APP_PAGE {
         return "SEARCH-ROOM";
       case APP_PAGE.VBC:
         return "VBC";
+      case APP_PAGE.selectCover:
+        return "SC";
       default:
         return "HOME";
     }

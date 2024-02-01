@@ -4,6 +4,7 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:personal_project/data/repository/vide_from_categories.dart';
+import 'package:personal_project/domain/model/add_details_model.dart';
 import 'package:personal_project/domain/model/category_model.dart';
 import 'package:personal_project/domain/model/chat_data_models.dart';
 import 'package:personal_project/domain/model/following_n_followers_data_model.dart';
@@ -28,6 +29,7 @@ import 'package:personal_project/presentation/ui/onboarding/onboarding.dart';
 import 'package:personal_project/presentation/ui/profile/profile.dart';
 import 'package:personal_project/presentation/ui/menu/menu_page.dart';
 import 'package:personal_project/presentation/ui/search_room/search_room_page.dart';
+import 'package:personal_project/presentation/ui/select_cover/select_cover_page.dart';
 import 'package:personal_project/presentation/ui/storage/storage_page.dart';
 import 'package:personal_project/presentation/ui/ugf/ugf_page.dart';
 import 'package:personal_project/presentation/ui/upload/upload.dart';
@@ -109,10 +111,10 @@ class AppRouter {
           path: APP_PAGE.addDetails.toPath,
           name: APP_PAGE.addDetails.toName,
           pageBuilder: (context, state) {
-            File videoFile = state.extra as File;
+            AddDetails data = state.extra as AddDetails;
             return MaterialPage(
               child: AddDetailsPage(
-                videoFile: videoFile,
+                data: data,
               ),
             );
           }),
@@ -383,16 +385,16 @@ class AppRouter {
           return const LanguagePage();
         },
       ),
-      // GoRoute(
-      //   path: APP_PAGE.editName.toPath,
-      //   name: APP_PAGE.editName.toName,
-      //   builder: (context, state) {
-      //     EditNameData data = state.extra as EditNameData;
-      //     return EditName(
-      //       data: data,
-      //     );
-      //   },
-      // ),
+      GoRoute(
+        path: APP_PAGE.selectCover.toPath,
+        name: APP_PAGE.selectCover.toName,
+        builder: (context, state) {
+          XFile data = state.extra as XFile;
+          return SelectCover(
+            file: data,
+          );
+        },
+      ),
 
       // GoRoute(
       //   path: APP_PAGE.error.toPath,
