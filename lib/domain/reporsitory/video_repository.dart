@@ -86,7 +86,7 @@ class VideoRepository implements VideoUseCaseType {
       //Get id
 
       final String uuid = generateUuid();
-      String videoUrl = await _uploadToStorage("video $uuid", File(videoPath));
+      String videoUrl = await _uploadToStorage("video_$uuid.mp4", File(videoPath));
       String thumnail = await _uploadThumnailesToStorage("video $uuid", thumbnailPath);
 
       Video video = Video(
