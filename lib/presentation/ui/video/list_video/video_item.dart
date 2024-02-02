@@ -781,9 +781,9 @@ class _VideoItemState extends State<VideoItem> {
                     ),
                     data.id == firebaseAuth.currentUser?.uid
                         ? Container()
-                        : FutureBuilder<bool>(
-                            future: userRepository.isFollowing(data.id),
-                            builder: (context, AsyncSnapshot<bool> snapshot) {
+                        : StreamBuilder<bool>(
+                            stream: userRepository.isFollowingStream(data.id),
+                            builder: (_, AsyncSnapshot<bool> snapshot) {
                               bool? isFollowing = snapshot.data;
                               if (!snapshot.hasData || snapshot.hasError || isFollowing!) {
                                 return Container(

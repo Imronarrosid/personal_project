@@ -8,6 +8,7 @@ import 'package:personal_project/domain/model/game_fav_modal.dart';
 import 'package:personal_project/domain/model/user.dart';
 import 'package:personal_project/domain/services/firebase/firebase_service.dart';
 import 'package:personal_project/domain/usecase/user_usecase_type.dart';
+import 'package:rxdart/rxdart.dart';
 
 class UserRepository implements UserUseCaseType {
   Stream<String> get uid {
@@ -111,13 +112,17 @@ class UserRepository implements UserUseCaseType {
 
   Stream<bool>? isFollowingStream(String uid) {
     try {
+      const Duration debounceTime = Duration(milliseconds: 300);
+
       return firebaseFirestore
           .collection('users')
           .doc(uid)
           .collection('followers')
           .doc(firebaseAuth.currentUser!.uid)
           .snapshots()
-          .map((event) => event.exists);
+          .map((event) => event.exists)
+          .debounceTime(debounceTime)
+          .asBroadcastStream();
     } catch (e) {
       return null;
     }
