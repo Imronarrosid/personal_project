@@ -267,7 +267,7 @@ class _AddDetailsPageState extends State<AddDetailsPage> {
       child: GestureDetector(onTap: () {
         context.push(
           APP_PAGE.videoPreview.toPath,
-          extra: widget.data,
+          extra: widget.data.videoFile,
         );
       }, child: BlocBuilder<SelectCoverCubit, SelectCoverState>(
         builder: (_, state) {

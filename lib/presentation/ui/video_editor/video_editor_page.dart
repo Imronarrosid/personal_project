@@ -91,7 +91,9 @@ class _VideoEditorState extends State<VideoEditor> {
       if (_controller.isTrimmed ||
           isMoreThan12MB ||
           under30secButMoreThan5MB ||
-          _controller.maxCrop != _controller.minCrop) {
+          _controller.isRotated ||
+          _controller.video.value.size.width != _controller.croppedArea.width ||
+          _controller.video.value.size.height != _controller.croppedArea.height) {
         final video = await exportVideo(
           customInstruction: " -crf 28 -c:v libx264 -c:a aac -b:v 1250k -b:a 192k ",
           onStatistics: (stats) => _exportingProgress.value =
@@ -101,7 +103,7 @@ class _VideoEditorState extends State<VideoEditor> {
         if (mounted) {
           context.push(
             APP_PAGE.addDetails.toPath,
-            extra: AddDetails(videoFile: File(_controller.file.path), thumbnail: file),
+            extra: AddDetails(videoFile: File(video.path), thumbnail: file),
           );
         }
       } else {
