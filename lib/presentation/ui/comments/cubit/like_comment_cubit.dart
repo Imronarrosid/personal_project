@@ -10,6 +10,7 @@ class LikeCommentCubit extends Cubit<LikeCommentState> {
   ) : super(LikeCommentInitial());
 
   bool? _clientState;
+  bool? _clientStateReply;
   likeComment(
       {required String postId,
       required String commentId,
@@ -33,6 +34,32 @@ class LikeCommentCubit extends Cubit<LikeCommentState> {
     } else if (_clientState == false && stateFromDatabase == false) {
       emit(CommentLiked(likeCount: databaseLikeCount + 1));
       _clientState = true;
+    }
+  }
+  void likeReply(
+      {required String postId,
+      required String commentId,
+      required bool stateFromDatabase,
+      required int databaseLikeCount,
+      required String replyid}) async {
+    _clientStateReply ??= stateFromDatabase;
+    repository.likeReply(id: commentId, postId: postId,replyId: replyid);
+
+    // _clientStateReply! ? emit(UnilkedComment()) : emit(CommentLiked());
+    // _clientStateReply = !_clientStateReply!;
+
+    if (_clientStateReply == true && stateFromDatabase == true) {
+      emit(UnilkedReply(likeCount: databaseLikeCount - 1));
+      _clientStateReply = false;
+    } else if (_clientStateReply == false && stateFromDatabase == true) {
+      emit(ReplyLiked(likeCount: databaseLikeCount));
+      _clientStateReply = true;
+    } else if (_clientStateReply == true && stateFromDatabase == false) {
+      emit(UnilkedReply(likeCount: databaseLikeCount));
+      _clientStateReply = false;
+    } else if (_clientStateReply == false && stateFromDatabase == false) {
+      emit(ReplyLiked(likeCount: databaseLikeCount + 1));
+      _clientStateReply = true;
     }
   }
 

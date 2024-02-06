@@ -154,7 +154,7 @@ class CommentItem extends StatelessWidget {
                           BlocProvider.of<LikeCommentCubit>(context)
                               .likeComment(
                                   postId: postId,
-                                  commentId: comment.id,
+                                  commentId: comment.id!,
                                   databaseLikeCount: comment.likes.length,
                                   stateFromDatabase:
                                       comment.likes.contains(userUid));

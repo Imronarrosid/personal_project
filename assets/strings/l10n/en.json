@@ -64,6 +64,8 @@
     "label_share": "Share",
     "label_game": "Game",
     "label_cover": "Cover",
+    "label_replies":"Replies",
+    "label_reply":"Reply",
     "message_no_following": "No following",
     "message_noFollower": "No followers",
     "message_no_suggestion": "No suggestion",

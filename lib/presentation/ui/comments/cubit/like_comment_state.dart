@@ -18,10 +18,28 @@ final class CommentLiked extends LikeCommentState {
   List<Object> get props => [likeCount];
 }
 
+final class ReplyLiked extends LikeCommentState {
+  final int likeCount;
+
+  const ReplyLiked({required this.likeCount});
+
+  @override
+  List<Object> get props => [likeCount];
+}
+
 final class UnilkedComment extends LikeCommentState {
   final int likeCount;
 
   const UnilkedComment({required this.likeCount});
+
+  @override
+  List<Object> get props => [likeCount];
+}
+
+final class UnilkedReply extends LikeCommentState {
+  final int likeCount;
+
+  const UnilkedReply({required this.likeCount});
 
   @override
   List<Object> get props => [likeCount];

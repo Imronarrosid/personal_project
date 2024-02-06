@@ -6,7 +6,7 @@ class Comment {
   final List likes;
   final int likesCount;
   final String uid;
-  final String id;
+  final String? id;
 
   Comment({
     required this.comment,
@@ -14,7 +14,7 @@ class Comment {
     required this.likes,
     required this.likesCount,
     required this.uid,
-    required this.id,
+    this.id,
   });
 
   Map<String, dynamic> toJson() => {
@@ -33,7 +33,7 @@ class Comment {
       datePublished: snapshot['datePublished'],
       likes: snapshot['likes'],
       uid: snapshot['uid'],
-      id: snapshot['id'],
+      id: snap.id,
       likesCount: snapshot['likesCount'] ?? (snapshot['likes'] as List).length,
     );
   }
