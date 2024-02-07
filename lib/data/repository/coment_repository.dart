@@ -87,12 +87,14 @@ class CommentRepository {
           len = generateUuid();
         }
         comment = Comment(
-            id: len,
-            comment: commentText.trim(),
-            likes: [],
-            likesCount: 0,
-            uid: uid,
-            datePublished: Timestamp.fromDate(DateTime.now()));
+          id: len,
+          comment: commentText.trim(),
+          likes: [],
+          likesCount: 0,
+          uid: uid,
+          datePublished: Timestamp.fromDate(DateTime.now()),
+          repliesCount: 0,
+        );
 
         await firebaseFirestore
             .collection('videos')
@@ -141,12 +143,14 @@ class CommentRepository {
         len = generateUuid();
       }
       var reply = Comment(
-          id: len,
-          comment: comment.trim(),
-          likes: [],
-          likesCount: 0,
-          uid: firebaseAuth.currentUser!.uid,
-          datePublished: Timestamp.fromDate(DateTime.now()));
+        id: len,
+        comment: comment.trim(),
+        likes: [],
+        likesCount: 0,
+        uid: firebaseAuth.currentUser!.uid,
+        datePublished: Timestamp.fromDate(DateTime.now()),
+        repliesCount: 0,
+      );
 
       await firebaseFirestore
           .collection('videos')
@@ -161,6 +165,15 @@ class CommentRepository {
         return transaction.get(documentReference).then((value) {
           int currentCount = (value.data() as Map<String, dynamic>)['commentCount'];
           transaction.update(documentReference, {'commentCount': currentCount + 1});
+        });
+      });
+      DocumentReference replyReference =
+          firebaseFirestore.collection('videos').doc(postId).collection('comments').doc(commentId);
+      firebaseFirestore.runTransaction((transaction) {
+        return transaction.get(replyReference).then((value) {
+          debugPrint(Comment.fromSnap(value).toString());
+          int currentRepliesCount = (value.data() as Map<String, dynamic>)['repliesCount'];
+          transaction.update(replyReference, {'repliesCount': currentRepliesCount + 1});
         });
       });
       return reply;

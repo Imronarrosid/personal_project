@@ -2,6 +2,7 @@ import 'package:bootstrap_icons/bootstrap_icons.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_localization/easy_localization.dart' as ezl;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:go_router/go_router.dart';
@@ -28,6 +29,7 @@ import 'package:personal_project/presentation/ui/profile/cubit/follow_cubit.dart
 import 'package:personal_project/presentation/ui/video/list_video/bloc/video_player_bloc.dart';
 import 'package:personal_project/presentation/ui/video/list_video/cubit/captions_cubit.dart';
 import 'package:personal_project/presentation/ui/video/list_video/cubit/like_video_cubit.dart';
+import 'package:personal_project/presentation/ui/video/list_video/cubit/video_size_cubit.dart';
 import 'package:personal_project/utils/number_format.dart';
 import 'package:video_cached_player/video_cached_player.dart';
 import 'package:video_player/video_player.dart';
@@ -72,7 +74,7 @@ class _VideoItemState extends State<VideoItem> {
         BlocProvider(
           create: (context) => LikeVideoCubit(videoRepository),
         ),
-        BlocProvider(create: ((context) => CaptionsCubit()))
+        BlocProvider(create: ((context) => CaptionsCubit())),
       ],
       child: Builder(builder: (context) {
         return BlocListener<VideoPlayerBloc, VideoPlayerState>(
@@ -192,108 +194,125 @@ class _VideoItemState extends State<VideoItem> {
     );
   }
 
-  Container _videoView(Size size, Video videoData) {
+  Widget _videoView(Size size, Video videoData) {
     final VideoPlayerRepository repo = RepositoryProvider.of<VideoPlayerRepository>(context);
-    return Container(
-      width: size.width,
-      height: size.height,
-      alignment: Alignment.center,
-      child: VisibilityDetector(
-        key: Key('visible-video-key-//${widget.videoData.createdAt}'),
-        onVisibilityChanged: (info) {
-          // CachedVideoPlayerController controller =
-          //     state.controller!;
-
-          var visiblePercentage = info.visibleFraction * 100;
-          if (visiblePercentage == 0.0 && isActive) {
-            BlocProvider.of<VideoPlayerBloc>(context)
-                .add(const VideoPlayerEvent(actions: VideoEvent.dispose));
+    return BlocBuilder<VideoSizeCubit, VideoSizeState>(
+      builder: (context, state) {
+        double bottomPadding = 0;
+        if (state is VideoSizeChanged) {
+          double sizeCommentView = ((size.height * state.size) - 85);
+          bottomPadding = sizeCommentView.isNegative ? 0 : sizeCommentView;
+          if (state.size == 0.1) {
+            bottomPadding = 0;
           }
-          if (visiblePercentage > 30 && isActive) {
-            debugPrint('ctrlll isnull ${repo.controller == null}');
-            if (repo.controller == null) {
-              debugPrint('ctrlll ');
-              BlocProvider.of<VideoPlayerBloc>(context).add(
-                  VideoPlayerEvent(actions: VideoEvent.initialize, videoUrl: videoData.videoUrl));
-            }
+        }
+        return Container(
+          width: size.width,
+          height: size.height,
+          padding: EdgeInsets.only(
+            top: bottomPadding == 0.0 ? 0 : Dimens.DIMENS_32,
+            bottom: bottomPadding,
+          ),
+          alignment: Alignment.center,
+          child: VisibilityDetector(
+            key: Key('visible-video-key-//${widget.videoData.createdAt}'),
+            onVisibilityChanged: (info) {
+              // CachedVideoPlayerController controller =
+              //     state.controller!;
 
-            // Point the controller is initialized
-            // if (repo.controller!.value.isInitialized &&
-            //     widget.auto &&
-            //     isActive) {
-            if (repo.controller != null) {
-              BlocProvider.of<VideoPlayerBloc>(context)
-                  .add(const VideoPlayerEvent(actions: VideoEvent.play));
-              debugPrint('isready ${repo.controller!.value.isInitialized}');
-            }
-            // }
-          }
-        },
-        child: BlocBuilder<VideoPlayerBloc, VideoPlayerState>(
-          buildWhen: (previous, current) {
-            if (current.status == VideoPlayerStatus.paused ||
-                current.status == VideoPlayerStatus.playing ||
-                current.status == VideoPlayerStatus.buffering) {
-              return false;
-            }
-            return true;
-          },
-          builder: (_, state) {
-            if (state.status == VideoPlayerStatus.initialized) {
-              return SizedBox.expand(
-                child: FittedBox(
-                  fit: BoxFit.contain,
-                  child: SizedBox(
-                    width: state.controller!.value.size.width,
-                    height: state.controller!.value.size.height,
-                    child: SizedBox(
-                        width: size.width,
-                        height: size.height,
-                        child: CachedVideoPlayer(repo.controller!)),
-                  ),
-                ),
-              );
-            } else if (state is VideoPlayerInitial || state.status == VideoPlayerStatus.disposed) {
-              return SizedBox(
-                width: MediaQuery.of(context).size.width,
-                child: CachedNetworkImage(
-                  placeholder: (_, __) => const Center(child: CircularProgressIndicator()),
-                  imageUrl: videoData.thumnail,
-                  errorWidget: (_, __, ___) {
-                    return Container();
-                  },
-                  fit: BoxFit.fitWidth,
-                ),
-              );
-            }
-            return Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  'Error',
-                  style: TextStyle(color: COLOR_white_fff5f5f5, fontSize: _IC_LABEL_FONTSIZE),
-                ),
-                IconButton(
-                    onPressed: () {
-                      final CachedVideoPlayerController? controller0 =
-                          RepositoryProvider.of<VideoPlayerRepository>(context).controller;
-                      if (controller0 != null) {
-                        controller0.dispose();
-                      }
-                      BlocProvider.of<VideoPlayerBloc>(context).add(
-                        VideoPlayerEvent(
-                          actions: VideoEvent.initialize,
-                          postId: videoData.id,
-                          videoUrl: videoData.videoUrl,
-                        ),
-                      );
-                    },
-                    icon: const Icon(BootstrapIcons.arrow_repeat)),
-              ],
-            );
-          },
-        ),
-      ),
+              var visiblePercentage = info.visibleFraction * 100;
+              if (visiblePercentage == 0.0 && isActive) {
+                BlocProvider.of<VideoPlayerBloc>(context)
+                    .add(const VideoPlayerEvent(actions: VideoEvent.dispose));
+              }
+              if (visiblePercentage > 30 && isActive) {
+                debugPrint('ctrlll isnull ${repo.controller == null}');
+                if (repo.controller == null) {
+                  debugPrint('ctrlll ');
+                  BlocProvider.of<VideoPlayerBloc>(context).add(VideoPlayerEvent(
+                      actions: VideoEvent.initialize, videoUrl: videoData.videoUrl));
+                }
+
+                // Point the controller is initialized
+                // if (repo.controller!.value.isInitialized &&
+                //     widget.auto &&
+                //     isActive) {
+                if (repo.controller != null) {
+                  BlocProvider.of<VideoPlayerBloc>(context)
+                      .add(const VideoPlayerEvent(actions: VideoEvent.play));
+                  debugPrint('isready ${repo.controller!.value.isInitialized}');
+                }
+                // }
+              }
+            },
+            child: BlocBuilder<VideoPlayerBloc, VideoPlayerState>(
+              buildWhen: (previous, current) {
+                if (current.status == VideoPlayerStatus.paused ||
+                    current.status == VideoPlayerStatus.playing ||
+                    current.status == VideoPlayerStatus.buffering) {
+                  return false;
+                }
+                return true;
+              },
+              builder: (_, state) {
+                if (state.status == VideoPlayerStatus.initialized) {
+                  return SizedBox.expand(
+                    child: FittedBox(
+                      fit: BoxFit.contain,
+                      child: SizedBox(
+                        width: state.controller!.value.size.width,
+                        height: state.controller!.value.size.height,
+                        child: SizedBox(
+                            width: size.width,
+                            height: size.height,
+                            child: CachedVideoPlayer(repo.controller!)),
+                      ),
+                    ),
+                  );
+                } else if (state is VideoPlayerInitial ||
+                    state.status == VideoPlayerStatus.disposed) {
+                  return SizedBox(
+                    width: MediaQuery.of(context).size.width,
+                    child: CachedNetworkImage(
+                      placeholder: (_, __) => const Center(child: CircularProgressIndicator()),
+                      imageUrl: videoData.thumnail,
+                      errorWidget: (_, __, ___) {
+                        return Container();
+                      },
+                      fit: BoxFit.fitWidth,
+                    ),
+                  );
+                }
+                return Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Error',
+                      style: TextStyle(color: COLOR_white_fff5f5f5, fontSize: _IC_LABEL_FONTSIZE),
+                    ),
+                    IconButton(
+                        onPressed: () {
+                          final CachedVideoPlayerController? controller0 =
+                              RepositoryProvider.of<VideoPlayerRepository>(context).controller;
+                          if (controller0 != null) {
+                            controller0.dispose();
+                          }
+                          BlocProvider.of<VideoPlayerBloc>(context).add(
+                            VideoPlayerEvent(
+                              actions: VideoEvent.initialize,
+                              postId: videoData.id,
+                              videoUrl: videoData.videoUrl,
+                            ),
+                          );
+                        },
+                        icon: const Icon(BootstrapIcons.arrow_repeat)),
+                  ],
+                );
+              },
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -364,6 +383,7 @@ class _VideoItemState extends State<VideoItem> {
                     create: (context) => CommentRepository(),
                     child: GestureDetector(
                       onTap: () {
+                        BlocProvider.of<VideoSizeCubit>(context).changeVideoSize(0.7);
                         showCommentsBottomSheet(
                           context,
                           postId: widget.videoData.id!,

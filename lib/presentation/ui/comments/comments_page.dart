@@ -22,6 +22,7 @@ import 'package:personal_project/presentation/ui/comments/bloc/comment_bloc.dart
 import 'package:personal_project/presentation/ui/comments/bloc/comments_paging_bloc.dart';
 import 'package:personal_project/presentation/ui/comments/cubit/like_comment_cubit.dart';
 import 'package:personal_project/presentation/ui/comments/replies.dart';
+import 'package:personal_project/presentation/ui/video/list_video/cubit/video_size_cubit.dart';
 import 'package:timeago/timeago.dart' as tago;
 
 Future<dynamic> showCommentsBottomSheet(
@@ -31,10 +32,12 @@ Future<dynamic> showCommentsBottomSheet(
   return showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
+      barrierColor: Colors.transparent,
       useSafeArea: true,
       elevation: 0,
+      enableDrag: false,
       isScrollControlled: true,
-      builder: (context) {
+      builder: (_) {
         return CommentBottomSheet(
           postId: postId,
         );
@@ -63,6 +66,11 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
   void initState() {
     _draggableController.addListener(() {
       debugPrint('height ${_draggableController.size.toString()}');
+
+      BlocProvider.of<VideoSizeCubit>(context).changeVideoSize(_draggableController.size);
+      if (_draggableController.size < 0.12) {
+        context.pop();
+      }
     });
     super.initState();
   }
@@ -102,10 +110,11 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
             },
             child: DraggableScrollableSheet(
               initialChildSize: 0.7, // Initial height as a fraction of the screen height
-              maxChildSize: 1.0, // Maximum height when fully expanded
-              minChildSize: 0.5, // Minimum height when collapsed,
+              maxChildSize: 0.7, // Maximum height when fully expanded
+              minChildSize: 0.1, // Minimum height when collapsed,
               snap: true,
-              snapSizes: const <double>[0.7, 1.0],
+
+              snapSizes: const <double>[0.7],
               controller: _draggableController,
               builder: (BuildContext context, ScrollController scrollController) {
                 //To prevent comments list overlaped by header.
@@ -318,6 +327,7 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
     final authRepository = RepositoryProvider.of<AuthRepository>(context);
     final userUid = authRepository.currentUser?.uid;
     Size size = MediaQuery.of(context).size;
+    int likes = 0;
     return BlocProvider(
       create: (context) => LikeCommentCubit(RepositoryProvider.of<CommentRepository>(context)),
       child: Builder(builder: (context) {
@@ -423,15 +433,19 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                         ),
                       ),
                     ),
-                    TextButton(
-                      onPressed: () {
+                    SizedBox(
+                      height: Dimens.DIMENS_8,
+                    ),
+                    InkWell(
+                      onTap: () {
                         commentId = comment.id;
                         BlocProvider.of<CommentBloc>(context).add(
                           InitReply(commentId: comment.id!, comment: comment),
                         );
                         _globalKey.currentState!.openEndDrawer();
                       },
-                      child: Text('Balas'),
+                      child: Text(
+                          '${LocaleKeys.label_reply.tr()}  ${comment.repliesCount != 0 ? '(${comment.repliesCount.toString()})' : ''} '),
                     )
                   ],
                 ),
@@ -439,45 +453,51 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
                     InkWell(
+                      borderRadius: BorderRadius.circular(50),
+                      radius: 24,
                       onTap: () {
                         if (authRepository.currentUser != null) {
                           BlocProvider.of<LikeCommentCubit>(context).likeComment(
                               postId: postId,
                               commentId: comment.id!,
-                              databaseLikeCount: comment.likes.length,
+                              databaseLikeCount: comment.likesCount,
                               stateFromDatabase: comment.likes.contains(userUid));
                         } else {
                           showAuthBottomSheetFunc(context);
                         }
                       },
-                      child: BlocBuilder<LikeCommentCubit, LikeCommentState>(
-                        builder: (context, state) {
-                          if (state is CommentLiked) {
-                            return const Icon(
-                              Icons.favorite,
-                              color: Colors.red,
-                            );
-                          } else if (state is UnilkedComment) {
-                            return Icon(
-                              Icons.favorite_border_outlined,
-                              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
-                            );
-                          }
-                          return comment.likes.contains(userUid)
-                              ? const Icon(
-                                  Icons.favorite,
-                                  color: Colors.red,
-                                )
-                              : Icon(
-                                  Icons.favorite_border_outlined,
-                                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
-                                );
-                        },
+                      child: SizedBox(
+                        width: Dimens.DIMENS_30,
+                        height: Dimens.DIMENS_30,
+                        child: BlocBuilder<LikeCommentCubit, LikeCommentState>(
+                          builder: (context, state) {
+                            if (state is CommentLiked) {
+                              return const Icon(
+                                Icons.favorite,
+                                color: Colors.red,
+                              );
+                            } else if (state is UnilkedComment) {
+                              return Icon(
+                                Icons.favorite_border_outlined,
+                                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                              );
+                            }
+                            return comment.likes.contains(userUid)
+                                ? const Icon(
+                                    Icons.favorite,
+                                    color: Colors.red,
+                                  )
+                                : Icon(
+                                    Icons.favorite_border_outlined,
+                                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                                  );
+                          },
+                        ),
                       ),
                     ),
                     BlocBuilder<LikeCommentCubit, LikeCommentState>(
                       builder: (context, state) {
-                        int likes = comment.likesCount;
+                        likes = comment.likesCount;
 
                         if (state is CommentLiked) {
                           likes = state.likeCount;
@@ -580,6 +600,7 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
       actions: [
         IconButton(
             onPressed: () {
+              BlocProvider.of<VideoSizeCubit>(context).changeVideoSize(0);
               context.pop();
             },
             icon: const Icon(Icons.close_rounded)),
@@ -642,6 +663,7 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
   @override
   void dispose() {
     _textEditingController.dispose();
+    _draggableController.dispose();
     super.dispose();
   }
 }

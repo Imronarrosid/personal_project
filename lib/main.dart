@@ -27,6 +27,7 @@ import 'package:personal_project/presentation/ui/home/cubit/home_cubit.dart';
 import 'package:personal_project/presentation/ui/language/cubit/language_cubit.dart';
 import 'package:personal_project/presentation/ui/select_cover/cubit/select_cover_cubit.dart';
 import 'package:personal_project/presentation/ui/upload/bloc/camera_bloc.dart';
+import 'package:personal_project/presentation/ui/video/list_video/cubit/video_size_cubit.dart';
 import 'package:personal_project/presentation/ui/video_preview/bloc/video_preview_bloc.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -167,6 +168,9 @@ class _MyAppState extends State<MyApp> {
               BlocProvider(
                 create: (_) => SelectCoverCubit(),
               ),
+              BlocProvider(
+                create: (_) => VideoSizeCubit(),
+              )
             ],
             child: MaterialApp.router(
               debugShowCheckedModeBanner: false,

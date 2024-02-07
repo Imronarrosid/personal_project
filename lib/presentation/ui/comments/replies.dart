@@ -21,6 +21,7 @@ import 'package:personal_project/presentation/ui/auth/auth.dart';
 import 'package:personal_project/presentation/ui/auth/bloc/auth_bloc.dart';
 import 'package:personal_project/presentation/ui/comments/bloc/comment_bloc.dart';
 import 'package:personal_project/presentation/ui/comments/cubit/like_comment_cubit.dart';
+import 'package:personal_project/presentation/ui/video/list_video/cubit/video_size_cubit.dart';
 import 'package:timeago/timeago.dart' as tago;
 
 class Replies extends StatefulWidget {
@@ -144,6 +145,15 @@ class _RepliesState extends State<Replies> {
       child: Scaffold(
         appBar: AppBar(
           title: Text(LocaleKeys.label_replies.tr()),
+          actions: [
+            IconButton(
+                onPressed: () {
+                  context.pop();
+                  context.pop();
+                  BlocProvider.of<VideoSizeCubit>(context).changeVideoSize(0.0);
+                },
+                icon: const Icon(Icons.close))
+          ],
         ),
         bottomNavigationBar: _repliesInput(context),
         body: RefreshIndicator(
@@ -232,6 +242,7 @@ class _RepliesState extends State<Replies> {
     } else if (context.locale.languageCode == LOCALE.en.code) {
       tago.setLocaleMessages('en', tago.EnMessages());
     }
+    int likes = 0;
     final CommentRepository repository = RepositoryProvider.of<CommentRepository>(context);
     final authRepository = RepositoryProvider.of<AuthRepository>(context);
     final userUid = authRepository.currentUser?.uid;
@@ -347,46 +358,52 @@ class _RepliesState extends State<Replies> {
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
                     InkWell(
+                      borderRadius: BorderRadius.circular(50),
+                      radius: 24,
                       onTap: () {
                         if (authRepository.currentUser != null) {
                           BlocProvider.of<LikeCommentCubit>(context).likeReply(
                               postId: postId,
                               replyid: reply.id!,
                               commentId: widget.commentId,
-                              databaseLikeCount: reply.likes.length,
+                              databaseLikeCount: reply.likesCount,
                               stateFromDatabase: reply.likes.contains(userUid));
                         } else {
                           showAuthBottomSheetFunc(context);
                         }
                       },
-                      child: BlocBuilder<LikeCommentCubit, LikeCommentState>(
-                        builder: (context, state) {
-                          if (state is ReplyLiked) {
-                            return const Icon(
-                              Icons.favorite,
-                              color: Colors.red,
-                            );
-                          } else if (state is UnilkedReply) {
-                            return Icon(
-                              Icons.favorite_border_outlined,
-                              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
-                            );
-                          }
-                          return reply.likes.contains(userUid)
-                              ? const Icon(
-                                  Icons.favorite,
-                                  color: Colors.red,
-                                )
-                              : Icon(
-                                  Icons.favorite_border_outlined,
-                                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
-                                );
-                        },
+                      child: SizedBox(
+                        width: Dimens.DIMENS_30,
+                        height: Dimens.DIMENS_30,
+                        child: BlocBuilder<LikeCommentCubit, LikeCommentState>(
+                          builder: (context, state) {
+                            if (state is ReplyLiked) {
+                              return const Icon(
+                                Icons.favorite,
+                                color: Colors.red,
+                              );
+                            } else if (state is UnilkedReply) {
+                              return Icon(
+                                Icons.favorite_border_outlined,
+                                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                              );
+                            }
+                            return reply.likes.contains(userUid)
+                                ? const Icon(
+                                    Icons.favorite,
+                                    color: Colors.red,
+                                  )
+                                : Icon(
+                                    Icons.favorite_border_outlined,
+                                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                                  );
+                          },
+                        ),
                       ),
                     ),
                     BlocBuilder<LikeCommentCubit, LikeCommentState>(
                       builder: (context, state) {
-                        int likes = reply.likesCount;
+                        likes = reply.likesCount;
 
                         if (state is ReplyLiked) {
                           likes = state.likeCount;
@@ -420,6 +437,7 @@ class _RepliesState extends State<Replies> {
     } else if (context.locale.languageCode == LOCALE.en.code) {
       tago.setLocaleMessages('en', tago.EnMessages());
     }
+    int likes = 0;
     final CommentRepository repository = RepositoryProvider.of<CommentRepository>(context);
     final authRepository = RepositoryProvider.of<AuthRepository>(context);
     final userUid = authRepository.currentUser?.uid;
@@ -546,50 +564,55 @@ class _RepliesState extends State<Replies> {
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
                     InkWell(
+                      borderRadius: BorderRadius.circular(50),
+                      radius: 24,
                       onTap: () {
                         if (authRepository.currentUser != null) {
-                          BlocProvider.of<LikeCommentCubit>(context).likeReply(
+                          BlocProvider.of<LikeCommentCubit>(context).likeComment(
                               postId: postId,
-                              replyid: comment.id!,
                               commentId: widget.commentId,
-                              databaseLikeCount: comment.likes.length,
+                              databaseLikeCount: comment.likesCount,
                               stateFromDatabase: comment.likes.contains(userUid));
                         } else {
                           showAuthBottomSheetFunc(context);
                         }
                       },
-                      child: BlocBuilder<LikeCommentCubit, LikeCommentState>(
-                        builder: (context, state) {
-                          if (state is ReplyLiked) {
-                            return const Icon(
-                              Icons.favorite,
-                              color: Colors.red,
-                            );
-                          } else if (state is UnilkedReply) {
-                            return Icon(
-                              Icons.favorite_border_outlined,
-                              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
-                            );
-                          }
-                          return comment.likes.contains(userUid)
-                              ? const Icon(
-                                  Icons.favorite,
-                                  color: Colors.red,
-                                )
-                              : Icon(
-                                  Icons.favorite_border_outlined,
-                                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
-                                );
-                        },
+                      child: SizedBox(
+                        height: 30,
+                        width: 30,
+                        child: BlocBuilder<LikeCommentCubit, LikeCommentState>(
+                          builder: (context, state) {
+                            if (state is CommentLiked) {
+                              return const Icon(
+                                Icons.favorite,
+                                color: Colors.red,
+                              );
+                            } else if (state is UnilkedComment) {
+                              return Icon(
+                                Icons.favorite_border_outlined,
+                                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                              );
+                            }
+                            return comment.likes.contains(userUid)
+                                ? const Icon(
+                                    Icons.favorite,
+                                    color: Colors.red,
+                                  )
+                                : Icon(
+                                    Icons.favorite_border_outlined,
+                                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                                  );
+                          },
+                        ),
                       ),
                     ),
                     BlocBuilder<LikeCommentCubit, LikeCommentState>(
                       builder: (context, state) {
-                        int likes = comment.likesCount;
+                        likes = comment.likesCount;
 
-                        if (state is ReplyLiked) {
+                        if (state is CommentLiked) {
                           likes = state.likeCount;
-                        } else if (state is UnilkedReply) {
+                        } else if (state is UnilkedComment) {
                           likes = state.likeCount;
                         }
 
