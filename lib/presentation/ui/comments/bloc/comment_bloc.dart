@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 import 'package:personal_project/data/repository/coment_repository.dart';
 import 'package:personal_project/domain/model/comment_model.dart';
+import 'package:personal_project/domain/model/reply_models.dart';
 import 'package:personal_project/domain/services/firebase/firebase_service.dart';
 
 part 'comment_event.dart';
@@ -16,6 +17,22 @@ class CommentBloc extends Bloc<CommentEvent, CommentState> {
     on<InputComments>((_, emit) {
       emit(
         const CommentState(status: CommentStatus.typing),
+      );
+    });
+    on<StartReply>((event, emit) {
+      emit(
+        CommentState(
+          status: CommentStatus.startReply,
+          repliedUsername: event.usernameReplied,
+          repliedUid: event.uid,
+        ),
+      );
+    });
+    on<UnfocusForm>((event, emit) {
+      emit(
+        const CommentState(
+          status: CommentStatus.initial,
+        ),
       );
     });
     on<TapReplyForm>((event, emit) {
@@ -42,27 +59,30 @@ class CommentBloc extends Bloc<CommentEvent, CommentState> {
         const CommentState(status: CommentStatus.refresh),
       );
     });
-    on<InitReply>((event, emit) {
-      emit(
-        CommentState(
-          status: CommentStatus.initReply,
-          commentId: event.commentId,
-          comment: event.comment,
-        ),
-      );
-    });
+
     on<PostReplyEvent>((event, emit) async {
       emit(
         const CommentState(status: CommentStatus.uploading),
       );
-      Comment? comment = await repository.addReply(
+      Reply? reply = await repository.addReply(
+        repliedUid: event.repliedUid,
         postId: event.postId,
         commentId: event.commentId,
         comment: event.reply,
       );
 
       emit(
-        CommentState(status: CommentStatus.replyAdded, comment: comment),
+        CommentState(
+          status: CommentStatus.replyAdded,
+          reply: reply,
+        ),
+      );
+    });
+    on<RemoveLocaleCommentEvent>((event, emit) {
+      emit(
+        const CommentState(
+          status: CommentStatus.removeLocaleComment,
+        ),
       );
     });
   }

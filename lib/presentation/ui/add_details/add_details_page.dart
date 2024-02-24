@@ -138,6 +138,8 @@ class _AddDetailsPageState extends State<AddDetailsPage> {
                           if (isActive!) {
                             BlocProvider.of<SelectGameCubit>(context).initSelectGame();
                             category = 'Entertainment';
+                          } else {
+                            category = 'Gaming';
                           }
                         },
                       );

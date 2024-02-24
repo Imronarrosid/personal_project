@@ -9,7 +9,12 @@ class ComentsPagingRepository {
   PagingController<int, Comment>? controller;
   CommentRepository commentRepository = CommentRepository();
   final int _pageSize = 20;
-  final List<Comment> currentLoadedComments = [];
+  final List<Comment> _currentLoadedComments = [];
+  List<Comment> get currentLoadedComments => _currentLoadedComments;
+
+  final List<Comment> _commentLocal = [];
+  List<Comment> get commentLocal => _commentLocal;
+  set addCommentLocal(Comment comment) => _commentLocal.add(comment);
 
   void clearAllcoment() {
     commentRepository.allDocs.clear();
@@ -26,12 +31,22 @@ class ComentsPagingRepository {
     });
   }
 
-  Future<void> _fetchPage(
-      {required String postId, required int pageKey}) async {
+  bool isNotifyRemoveLocalComments({required List<Comment> commentsLocal}) {
+    for (var element1 in currentLoadedComments) {
+      for (var element2 in commentsLocal) {
+        if (element1.id == element2.id) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  Future<void> _fetchPage({required String postId, required int pageKey}) async {
     try {
       List<Comment> listComments = [];
-      final newItems = await commentRepository.getListCommentsDocs(
-          limit: _pageSize, postId: postId);
+      final newItems =
+          await commentRepository.getListCommentsDocs(limit: _pageSize, postId: postId);
       final isLastPage = newItems.length < _pageSize;
 
       debugPrint('new items$newItems');

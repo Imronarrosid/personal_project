@@ -17,6 +17,10 @@ class TypingReply extends CommentEvent {}
 
 class RefreshComentEvent extends CommentEvent {}
 
+class UnfocusForm extends CommentEvent {}
+
+class RemoveLocaleCommentEvent extends CommentEvent {}
+
 class PostCommentEvent extends CommentEvent {
   final String postId;
   final String comment;
@@ -31,9 +35,11 @@ class PostReplyEvent extends CommentEvent {
   final String postId;
   final String reply;
   final String commentId;
+  final String repliedUid;
 
   const PostReplyEvent({
     required this.postId,
+    required this.repliedUid,
     required this.reply,
     required this.commentId,
   });
@@ -43,22 +49,23 @@ class PostReplyEvent extends CommentEvent {
         postId,
         reply,
         commentId,
+        repliedUid,
       ];
 }
 
-final class InitReply extends CommentEvent {
-  final String commentId;
-  final Comment comment;
+class StartReply extends CommentEvent {
+  final String usernameReplied;
+  final String uid;
 
-  const InitReply({
-    required this.commentId,
-    required this.comment,
+  const StartReply({
+    required this.usernameReplied,
+    required this.uid,
   });
 
   @override
   List<Object> get props => [
         super.props,
-        commentId,
-        comment,
+        usernameReplied,
+        uid,
       ];
 }

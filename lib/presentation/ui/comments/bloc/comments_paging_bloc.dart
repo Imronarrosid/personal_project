@@ -7,8 +7,7 @@ import 'package:personal_project/domain/model/comment_model.dart';
 part 'comments_paging_event.dart';
 part 'comments_paging_state.dart';
 
-class CommentsPagingBloc
-    extends Bloc<CommentsPagingEvent, CommentsPagingState> {
+class CommentsPagingBloc extends Bloc<CommentsPagingEvent, CommentsPagingState> {
   CommentsPagingBloc(this.repository) : super(CommentsPagingInitial()) {
     on<InitCommentsPagingEvent>((event, emit) {
       if (repository.controller == null) {

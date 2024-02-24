@@ -9,8 +9,10 @@ sealed class CommentsPagingState extends Equatable {
 
 final class CommentsPagingInitial extends CommentsPagingState {}
 
+final class RemoveLocaleComment extends CommentsPagingState {}
+
 final class CommentsPagingInitialized extends CommentsPagingState {
-  final PagingController<int,Comment>? controller;
+  final PagingController<int, Comment>? controller;
 
   const CommentsPagingInitialized({required this.controller});
 
