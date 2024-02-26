@@ -24,7 +24,6 @@ import 'package:personal_project/presentation/ui/auth/bloc/auth_bloc.dart';
 import 'package:personal_project/presentation/ui/comments/bloc/comment_bloc.dart';
 import 'package:personal_project/presentation/ui/comments/bloc/comments_paging_bloc.dart';
 import 'package:personal_project/presentation/ui/comments/cubit/like_comment_cubit.dart';
-import 'package:personal_project/presentation/ui/comments/replies.dart';
 import 'package:personal_project/presentation/ui/video/list_video/cubit/video_size_cubit.dart';
 import 'package:personal_project/utils/number_format.dart';
 import 'package:timeago/timeago.dart' as tago;
@@ -70,6 +69,7 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
   final FocusNode _focusNode = FocusNode();
 
   bool _isForReply = false;
+  bool _isCanPop = true;
 
   String? _selectedCommentId;
   String? _repliedUid;
@@ -128,8 +128,13 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
             BlocListener<VideoSizeCubit, VideoSizeState>(
               listener: (_, state) {
                 if (state is VideoSizeChanged) {
-                  if (state.size < 0.13 && context.canPop()) {
-                    context.pop();
+                  if (state.size < 0.13 && _isCanPop) {
+                    // context.pop();
+                    // ignore: prefer_const_constructors
+                    _draggableController.animateTo(0.0,
+                        duration: const Duration(milliseconds: 200), curve: Curves.bounceOut);
+                    _isCanPop = false;
+                    debugPrint('pop');
                   }
                 }
               },
@@ -662,7 +667,7 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                     );
                   },
                 ),
-                _streamReplies(postId, comment),
+                // _streamReplies(postId, comment),
                 _repliesFromLocal(comment.id!),
               ],
             ),
