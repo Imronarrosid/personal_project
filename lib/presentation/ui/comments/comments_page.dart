@@ -667,7 +667,7 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                     );
                   },
                 ),
-                // _streamReplies(postId, comment),
+                _streamReplies(postId, comment),
                 _repliesFromLocal(comment.id!),
               ],
             ),
