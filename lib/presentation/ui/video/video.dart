@@ -53,7 +53,6 @@ class _VideoPageState extends State<VideoPage> with SingleTickerProviderStateMix
       extendBodyBehindAppBar: true,
       body: TabBarView(
           controller: _tabController,
-          physics: const NeverScrollableScrollPhysics(),
           children: const [
             KeepAlivePage(child: ListVideo(from: VideoFrom.following)),
             KeepAlivePage(child: ListVideo(from: VideoFrom.forYou)),
