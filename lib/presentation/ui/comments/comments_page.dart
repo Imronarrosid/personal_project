@@ -140,59 +140,76 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
               },
             ),
           ],
-          child: GestureDetector(
-            onTap: () {
-              FocusScope.of(context).unfocus();
-            },
-            child: DraggableScrollableSheet(
-              initialChildSize: 0.7, // Initial height as a fraction of the screen height
-              maxChildSize: 0.7, // Maximum height when fully expanded
-              minChildSize: 0.1, // Minimum height when collapsed,
-              snap: true,
+          child: Stack(
+            children: [
+              InkWell(
+                splashFactory: NoSplash.splashFactory,
+                splashColor: Colors.transparent,
+                overlayColor: const MaterialStatePropertyAll<Color>(Colors.transparent),
+                onTap: () {
+                  _draggableController.animateTo(0.0,
+                      duration: const Duration(milliseconds: 200), curve: Curves.easeInOut);
+                },
+                child: SizedBox(
+                  width: MediaQuery.of(context).size.width,
+                  height: MediaQuery.of(context).size.height,
+                ),
+              ),
+              GestureDetector(
+                onTap: () {
+                  FocusScope.of(context).unfocus();
+                },
+                child: DraggableScrollableSheet(
+                  initialChildSize: 0.7, // Initial height as a fraction of the screen height
+                  maxChildSize: 0.7, // Maximum height when fully expanded
+                  minChildSize: 0.1, // Minimum height when collapsed,
+                  snap: true,
 
-              snapSizes: const <double>[0.7],
-              controller: _draggableController,
-              builder: (BuildContext context, ScrollController scrollController) {
-                //To prevent comments list overlaped by header.
-                scrollController.addListener(() {
-                  debugPrint('offset: //${scrollController.offset}');
-                  if (scrollController.offset > 0) {
-                    scrollController.jumpTo(0.0);
-                  }
-                });
+                  snapSizes: const <double>[0.7],
+                  controller: _draggableController,
+                  builder: (BuildContext context, ScrollController scrollController) {
+                    //To prevent comments list overlaped by header.
+                    scrollController.addListener(() {
+                      debugPrint('offset: //${scrollController.offset}');
+                      if (scrollController.offset > 0) {
+                        scrollController.jumpTo(0.0);
+                      }
+                    });
 
-                return Scaffold(
-                  backgroundColor: Colors.transparent,
-                  key: _globalKey,
-                  body: Container(
-                    height: MediaQuery.of(context).size.height,
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.secondary,
-                      borderRadius: const BorderRadius.only(
-                        topLeft: Radius.circular(10),
-                        topRight: Radius.circular(10),
-                      ),
-                    ),
-                    child: Column(
-                      children: [
-                        Expanded(
-                          child: CustomScrollView(
-                            controller: scrollController,
-                            slivers: <Widget>[
-                              _commentsHeaders(context),
-                              _buildCommentsList(context, onRefresh: () {
-                                return _refreshComments(context);
-                              }),
-                            ],
+                    return Scaffold(
+                      backgroundColor: Colors.transparent,
+                      key: _globalKey,
+                      body: Container(
+                        height: MediaQuery.of(context).size.height,
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.secondary,
+                          borderRadius: const BorderRadius.only(
+                            topLeft: Radius.circular(10),
+                            topRight: Radius.circular(10),
                           ),
                         ),
-                        _buildCommnetsInput(context)
-                      ],
-                    ),
-                  ),
-                );
-              },
-            ),
+                        child: Column(
+                          children: [
+                            Expanded(
+                              child: CustomScrollView(
+                                controller: scrollController,
+                                slivers: <Widget>[
+                                  _commentsHeaders(context),
+                                  _buildCommentsList(context, onRefresh: () {
+                                    return _refreshComments(context);
+                                  }),
+                                ],
+                              ),
+                            ),
+                            _buildCommnetsInput(context)
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -925,6 +942,7 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                                       usernameReplied: data.userName!,
                                     ),
                                   );
+                                  _repliedUid = reply.uid;
                                   _selectedCommentId = commentId;
                                   _selectedRepliescubit = context.read<RepliesCubit>();
                                   _focusNode.requestFocus();
