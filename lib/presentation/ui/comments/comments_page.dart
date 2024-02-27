@@ -132,7 +132,7 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                     // context.pop();
                     // ignore: prefer_const_constructors
                     _draggableController.animateTo(0.0,
-                        duration: const Duration(milliseconds: 200), curve: Curves.bounceOut);
+                        duration: const Duration(milliseconds: 200), curve: Curves.easeInOut);
                     _isCanPop = false;
                     debugPrint('pop');
                   }
