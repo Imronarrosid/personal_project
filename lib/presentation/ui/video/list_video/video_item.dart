@@ -198,7 +198,7 @@ class _VideoItemState extends State<VideoItem> {
     final VideoPlayerRepository repo = RepositoryProvider.of<VideoPlayerRepository>(context);
     return BlocBuilder<VideoSizeCubit, VideoSizeState>(
       builder: (context, state) {
-        double bottomPadding = 0;
+        double bottomPadding = 0.0;
         if (state is VideoSizeChanged) {
           double sizeCommentView = ((size.height * state.size) - 85);
           bottomPadding = sizeCommentView.isNegative ? 0 : sizeCommentView;
@@ -237,7 +237,7 @@ class _VideoItemState extends State<VideoItem> {
                 // if (repo.controller!.value.isInitialized &&
                 //     widget.auto &&
                 //     isActive) {
-                if (repo.controller != null) {
+                if (repo.controller != null && bottomPadding == 0.0) {
                   BlocProvider.of<VideoPlayerBloc>(context)
                       .add(const VideoPlayerEvent(actions: VideoEvent.play));
                   debugPrint('isready ${repo.controller!.value.isInitialized}');
