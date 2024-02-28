@@ -73,6 +73,7 @@ abstract class  LocaleKeys {
   static const label_view_more_reply = 'label_view_more_reply';
   static const label_hide_reply = 'label_hide_reply';
   static const label_loading = 'label_loading';
+  static const message_no_new_video = 'message_no_new_video';
   static const message_no_following = 'message_no_following';
   static const message_noFollower = 'message_noFollower';
   static const message_no_suggestion = 'message_no_suggestion';

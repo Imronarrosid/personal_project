@@ -36,8 +36,7 @@ class _ListVideoState extends State<ListVideo> {
   @override
   Widget build(BuildContext context) {
     debugPrint('REbuild');
-    final AuthRepository authRepository =
-        RepositoryProvider.of<AuthRepository>(context);
+    final AuthRepository authRepository = RepositoryProvider.of<AuthRepository>(context);
 
     return BlocListener<HomeCubit, HomeState>(
       listenWhen: (previous, current) => true,
@@ -45,8 +44,7 @@ class _ListVideoState extends State<ListVideo> {
         if (state.isTriggerReset && (_controller.page ?? 0.0) > 0.0) {
           debugPrint('1234');
           _controller.animateToPage(0,
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.bounceIn);
+              duration: const Duration(milliseconds: 300), curve: Curves.bounceIn);
         }
       },
       child: SizedBox(
@@ -56,14 +54,12 @@ class _ListVideoState extends State<ListVideo> {
           child: BlocProvider(
             create: (context) {
               if (widget.from == VideoFrom.following) {
-                return VideoPaginBloc(
-                    RepositoryProvider.of<PagingRepository>(context))
+                return VideoPaginBloc(RepositoryProvider.of<PagingRepository>(context))
                   ..add(
                     const InitPagingController(from: VideoFrom.following),
                   );
               } else {
-                return VideoPaginBloc(
-                    RepositoryProvider.of<PagingRepository>(context))
+                return VideoPaginBloc(RepositoryProvider.of<PagingRepository>(context))
                   ..add(
                     const InitPagingController(from: VideoFrom.forYou),
                   );
@@ -82,17 +78,14 @@ class _ListVideoState extends State<ListVideo> {
 
                       return Future.sync(
                         () {
-                          RepositoryProvider.of<PagingRepository>(context)
-                              .controller!
-                              .refresh();
+                          RepositoryProvider.of<PagingRepository>(context).controller!.refresh();
                         },
                       );
                     },
                     child: WillPopScope(
                       onWillPop: () async {
                         _controller.animateToPage(0,
-                            duration: const Duration(milliseconds: 300),
-                            curve: Curves.bounceIn);
+                            duration: const Duration(milliseconds: 300), curve: Curves.bounceIn);
                         return false;
                       },
                       child: PagedPageView<int, Video>(
@@ -119,22 +112,17 @@ class _ListVideoState extends State<ListVideo> {
                                     return Container(
                                       width: 400,
                                       alignment: Alignment.center,
-                                      child: Text(LocaleKeys
-                                          .label_no_video_from_following
-                                          .tr()),
+                                      child: Text(LocaleKeys.label_no_video_from_following.tr()),
                                     );
-                                  } else if (widget.from ==
-                                          VideoFrom.following &&
+                                  } else if (widget.from == VideoFrom.following &&
                                       authRepository.currentUser == null) {
                                     return Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
+                                      mainAxisAlignment: MainAxisAlignment.center,
                                       children: [
                                         SizedBox(
                                           width: Dimens.DIMENS_250,
                                           child: Text(
-                                            LocaleKeys.message_log_in_and_follow
-                                                .tr(),
+                                            LocaleKeys.message_log_in_and_follow.tr(),
                                             textAlign: TextAlign.center,
                                           ),
                                         ),
@@ -162,10 +150,9 @@ class _ListVideoState extends State<ListVideo> {
                               );
                             },
                             newPageProgressIndicatorBuilder: (_) =>
-                                const Center(
-                                    child: CircularProgressIndicator()),
+                                const Center(child: CircularProgressIndicator()),
                             newPageErrorIndicatorBuilder: (_) =>
-                                 Text('eror ${state.controller?.error.toString()}'),
+                                Text('eror ${state.controller?.error.toString()}'),
                             firstPageErrorIndicatorBuilder: (_) {
                               return Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
@@ -173,21 +160,18 @@ class _ListVideoState extends State<ListVideo> {
                                   Text(state.controller!.error.toString()),
                                   IconButton(
                                       onPressed: () {
-                                        final PagingRepository
-                                            pagingRepository =
-                                            RepositoryProvider.of<
-                                                PagingRepository>(context);
+                                        final PagingRepository pagingRepository =
+                                            RepositoryProvider.of<PagingRepository>(context);
 
                                         pagingRepository.refreshPaging();
                                       },
-                                      icon: const Icon(
-                                          BootstrapIcons.arrow_clockwise))
+                                      icon: const Icon(BootstrapIcons.arrow_clockwise))
                                 ],
                               );
                             },
                             noMoreItemsIndicatorBuilder: (_) => Center(
                                     child: Text(
-                                  'Tidak Ada video baru lagi',
+                                  LocaleKeys.message_no_new_video.tr(),
                                   style: TextStyle(color: COLOR_white_fff5f5f5),
                                 ))),
                       ),
