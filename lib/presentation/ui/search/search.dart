@@ -117,7 +117,7 @@ class _SearchPageState extends State<SearchPage> {
                             );
                           });
                     }
-                    return InitWidget();
+                    return const InitWidget();
                   },
                 ),
               ),
@@ -145,7 +145,10 @@ class InitWidget extends StatelessWidget {
           children: [
             Padding(
               padding: EdgeInsets.all(Dimens.DIMENS_12),
-              child: Text(LocaleKeys.label_suggestion.tr()),
+              child: Text(
+                LocaleKeys.label_suggestion.tr(),
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
             ),
             FutureBuilder(
               future: UserRepository().getUserSuggestion(6),
@@ -186,7 +189,10 @@ class InitWidget extends StatelessWidget {
             ),
             Padding(
               padding: EdgeInsets.all(Dimens.DIMENS_12),
-              child: const Text('Video'),
+              child: Text(
+                LocaleKeys.title_video.tr(),
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
             ),
             FutureBuilder<List<Video>>(
                 future: VideoRepository().getVideoSuggestion(12),
@@ -256,16 +262,16 @@ class InitWidget extends StatelessWidget {
                   }
                   return GridView.builder(
                     shrinkWrap: true,
-                    physics: NeverScrollableScrollPhysics(),
+                    physics: const NeverScrollableScrollPhysics(),
                     itemCount: 12,
                     itemBuilder: (context, index) {
                       return Container(
                         decoration: BoxDecoration(
-                          color: Colors.blue,
+                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                         ),
                       );
                     },
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 3,
                       childAspectRatio: 6 / 9,
                       crossAxisSpacing: 2,
