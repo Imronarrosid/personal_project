@@ -2,6 +2,7 @@ import 'package:camera/camera.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:personal_project/config/theme.dart';
@@ -39,7 +40,10 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
   final SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
   runApp(EasyLocalization(
       supportedLocales: L10n.all,
       path: 'assets/strings/l10n',
