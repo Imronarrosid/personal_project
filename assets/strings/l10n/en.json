@@ -1,5 +1,6 @@
 {
     "title_video": "Vidieo",
+    "title_videos": "Vidieos",
     "title_upload": "Upload",
     "title_profile": "Profile",
     "title_crop": "Crop",
@@ -55,6 +56,7 @@
     "label_chat": "Chat",
     "label_delete_video": "Delete video",
     "label_suggestion": "Suggestion",
+    "label_suggestions": "Suggestions",
     "label_video_about": "Video about",
     "label_for_you": "For you",
     "label_no_video_from_following": "No video from you'r following",

@@ -2,6 +2,7 @@
 
 abstract class  LocaleKeys {
   static const title_video = 'title_video';
+  static const title_videos = 'title_videos';
   static const title_upload = 'title_upload';
   static const title_profile = 'title_profile';
   static const title_crop = 'title_crop';
@@ -57,6 +58,7 @@ abstract class  LocaleKeys {
   static const label_chat = 'label_chat';
   static const label_delete_video = 'label_delete_video';
   static const label_suggestion = 'label_suggestion';
+  static const label_suggestions = 'label_suggestions';
   static const label_video_about = 'label_video_about';
   static const label_for_you = 'label_for_you';
   static const label_no_video_from_following = 'label_no_video_from_following';

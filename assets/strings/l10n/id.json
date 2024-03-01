@@ -1,5 +1,6 @@
 {
     "title_video": "Vidio",
+    "title_videos": "Vidio",
     "title_upload": "Unggah",
     "title_profile": "Profil",
     "title_crop": "Potong",
@@ -55,6 +56,7 @@
     "label_chat": "Chat",
     "label_delete_video": "Hapus vidio",
     "label_suggestion": "Saran",
+    "label_suggestions": "Saran",
     "label_video_about": "Vidio tentang",
     "label_for_you": "Untuk Kamu",
     "label_no_video_from_following": "Tidak ada vidio dari yang kamu ikuti",
