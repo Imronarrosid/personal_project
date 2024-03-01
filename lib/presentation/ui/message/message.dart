@@ -173,7 +173,7 @@ class _MessagePageState extends State<MessagePage> {
                 children: [
                   Padding(
                     padding: EdgeInsets.only(top: Dimens.DIMENS_18, left: Dimens.DIMENS_12),
-                    child: Text(LocaleKeys.label_suggestion.tr()),
+                    child: Text(LocaleKeys.label_suggestions.tr()),
                   ),
                   SizedBox(
                     width: MediaQuery.of(context).size.width,
