@@ -42,6 +42,7 @@ class _SearchPageState extends State<SearchPage> {
             child: FocusScope(
               node: FocusScopeNode(),
               child: Scaffold(
+                resizeToAvoidBottomInset: false,
                 appBar: AppBar(
                     elevation: 0,
                     toolbarHeight: 80,
@@ -64,11 +65,22 @@ class _SearchPageState extends State<SearchPage> {
                           prefixIcon: const Icon(Icons.search),
                           hintText: LocaleKeys.label_search.tr(),
                           contentPadding: const EdgeInsets.all(5),
-                          suffixIcon: GestureDetector(
-                              onTap: () {
-                                _textEditingController.clear();
-                              },
-                              child: const Icon(Icons.close)),
+                          suffixIcon: BlocBuilder<SearchBloc, SearchState>(
+                            builder: (context, state) {
+                              if (state.status == SearchStatus.initial) {
+                                return const SizedBox(
+                                  width: 0,
+                                  height: 0,
+                                );
+                              }
+                              return GestureDetector(
+                                  onTap: () {
+                                    _textEditingController.clear();
+                                    context.read<SearchBloc>().add(const ResetSearchEvent());
+                                  },
+                                  child: const Icon(Icons.close));
+                            },
+                          ),
                           suffixIconColor: COLOR_grey,
                           border: OutlineInputBorder(
                               borderSide: BorderSide.none, borderRadius: BorderRadius.circular(10)),
@@ -146,7 +158,7 @@ class InitWidget extends StatelessWidget {
             Padding(
               padding: EdgeInsets.all(Dimens.DIMENS_12),
               child: Text(
-                LocaleKeys.label_suggestion.tr(),
+                LocaleKeys.label_suggestions.tr(),
                 style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
             ),
@@ -190,7 +202,7 @@ class InitWidget extends StatelessWidget {
             Padding(
               padding: EdgeInsets.all(Dimens.DIMENS_12),
               child: Text(
-                LocaleKeys.title_video.tr(),
+                LocaleKeys.title_videos.tr(),
                 style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
             ),

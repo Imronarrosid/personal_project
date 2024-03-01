@@ -8,3 +8,10 @@ class SearchEvent extends Equatable {
   @override
   List<Object?> get props => [query];
 }
+
+class ResetSearchEvent extends SearchEvent {
+  const ResetSearchEvent() : super('');
+
+  @override
+  List<Object?> get props => [];
+}

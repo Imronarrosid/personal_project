@@ -33,7 +33,15 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
         searchSubscription?.cancel();
       }
     });
+    on<ResetSearchEvent>((event, emit) {
+      emit(
+        const SearchState(
+          status: SearchStatus.initial,
+        ),
+      );
+    });
   }
+
   final SearchRepository repository;
 
   @override
