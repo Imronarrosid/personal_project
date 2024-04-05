@@ -508,6 +508,8 @@ class _VideoEditorState extends State<VideoEditor> {
     debugPrint('run export video command : [$execute]');
 
     if (kIsWeb) {
+      debugPrint('f fweb');
+
       return const FFmpegExport().executeFFmpegWeb(
         execute: execute,
         inputData: await _controller.file.readAsBytes(),
@@ -517,6 +519,8 @@ class _VideoEditorState extends State<VideoEditor> {
         onStatistics: onStatistics,
       );
     } else {
+          debugPrint('f fio'); 
+
       return const FFmpegExport().executeFFmpegIO(
         execute: execute,
         outputPath: outputPath,
@@ -559,6 +563,7 @@ class _VideoEditorState extends State<VideoEditor> {
     debugPrint('VideoEditor - run export cover command : [$execute]');
 
     if (kIsWeb) {
+      debugPrint('f fweb');
       return const FFmpegExport().executeFFmpegWeb(
         execute: execute,
         inputData: await coverFile.readAsBytes(),
@@ -567,6 +572,8 @@ class _VideoEditorState extends State<VideoEditor> {
         outputMimeType: outputFormat.mimeType,
       );
     } else {
+      debugPrint('ffwio');
+
       return const FFmpegExport().executeFFmpegIO(
         execute: execute,
         outputPath: outputPath,
@@ -621,6 +628,7 @@ class FFmpegExport {
     String? outputMimeType,
     void Function(FFmpegStatistics)? onStatistics,
   }) async {
+    debugPrint('ffweb');
     FFmpeg? ffmpeg;
     final logs = <String>[];
     try {
