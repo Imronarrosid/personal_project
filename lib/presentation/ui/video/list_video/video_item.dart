@@ -1,6 +1,8 @@
 import 'package:bootstrap_icons/bootstrap_icons.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cached_video_player_plus/cached_video_player_plus.dart';
 import 'package:easy_localization/easy_localization.dart' as ezl;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -31,8 +33,6 @@ import 'package:personal_project/presentation/ui/video/list_video/cubit/captions
 import 'package:personal_project/presentation/ui/video/list_video/cubit/like_video_cubit.dart';
 import 'package:personal_project/presentation/ui/video/list_video/cubit/video_size_cubit.dart';
 import 'package:personal_project/utils/number_format.dart';
-import 'package:video_cached_player/video_cached_player.dart';
-import 'package:video_player/video_player.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
 class VideoItem extends StatefulWidget {
@@ -66,8 +66,10 @@ class _VideoItemState extends State<VideoItem> {
   Widget build(BuildContext context) {
     var videoData = widget.videoData;
     Size size = MediaQuery.of(context).size;
-    final AuthRepository authRepository = RepositoryProvider.of<AuthRepository>(context);
-    final VideoRepository videoRepository = RepositoryProvider.of<VideoRepository>(context);
+    final AuthRepository authRepository =
+        RepositoryProvider.of<AuthRepository>(context);
+    final VideoRepository videoRepository =
+        RepositoryProvider.of<VideoRepository>(context);
 
     return MultiBlocProvider(
       providers: [
@@ -91,7 +93,8 @@ class _VideoItemState extends State<VideoItem> {
               onTap: () {
                 final VideoPlayerRepository repo =
                     RepositoryProvider.of<VideoPlayerRepository>(context);
-                VideoPlayerBloc bloc = BlocProvider.of<VideoPlayerBloc>(context);
+                VideoPlayerBloc bloc =
+                    BlocProvider.of<VideoPlayerBloc>(context);
                 if (repo.controller != null) {
                   if (repo.controller!.value.isPlaying) {
                     bloc.add(const VideoPlayerEvent(actions: VideoEvent.pause));
@@ -101,8 +104,9 @@ class _VideoItemState extends State<VideoItem> {
                 }
               },
               onDoubleTap: () {
-                String? uid = RepositoryProvider.of<AuthRepository>(context).currentUser?.uid;
-
+                String? uid = RepositoryProvider.of<AuthRepository>(context)
+                    .currentUser
+                    ?.uid;
                 bool isLiked = videoData.likes.contains(uid);
                 BlocProvider.of<LikeVideoCubit>(context).doubleTapToLike(
                   postId: videoData.id!,
@@ -195,7 +199,8 @@ class _VideoItemState extends State<VideoItem> {
   }
 
   Widget _videoView(Size size, Video videoData) {
-    final VideoPlayerRepository repo = RepositoryProvider.of<VideoPlayerRepository>(context);
+    final VideoPlayerRepository repo =
+        RepositoryProvider.of<VideoPlayerRepository>(context);
     return BlocBuilder<VideoSizeCubit, VideoSizeState>(
       builder: (context, state) {
         double bottomPadding = 0.0;
@@ -229,8 +234,10 @@ class _VideoItemState extends State<VideoItem> {
                 debugPrint('ctrlll isnull ${repo.controller == null}');
                 if (repo.controller == null) {
                   debugPrint('ctrlll ');
-                  BlocProvider.of<VideoPlayerBloc>(context).add(VideoPlayerEvent(
-                      actions: VideoEvent.initialize, videoUrl: videoData.videoUrl));
+                  BlocProvider.of<VideoPlayerBloc>(context).add(
+                      VideoPlayerEvent(
+                          actions: VideoEvent.initialize,
+                          videoUrl: videoData.videoUrl));
                 }
 
                 // Point the controller is initialized
@@ -262,10 +269,14 @@ class _VideoItemState extends State<VideoItem> {
                       child: SizedBox(
                         width: state.controller!.value.size.width,
                         height: state.controller!.value.size.height,
-                        child: SizedBox(
-                            width: size.width,
-                            height: size.height,
-                            child: CachedVideoPlayer(repo.controller!)),
+                        child: Stack(
+                          children: [
+                            CachedVideoPlayerPlus(repo.controller!),
+
+                            //Inkwell to fix play and pause video on web
+                            _fixsPlayVideoWeb()
+                          ],
+                        ),
                       ),
                     ),
                   );
@@ -274,7 +285,8 @@ class _VideoItemState extends State<VideoItem> {
                   return SizedBox(
                     width: MediaQuery.of(context).size.width,
                     child: CachedNetworkImage(
-                      placeholder: (_, __) => const Center(child: CircularProgressIndicator()),
+                      placeholder: (_, __) =>
+                          const Center(child: CircularProgressIndicator()),
                       imageUrl: videoData.thumnail,
                       errorWidget: (_, __, ___) {
                         return Container();
@@ -288,12 +300,16 @@ class _VideoItemState extends State<VideoItem> {
                   children: [
                     Text(
                       'Error',
-                      style: TextStyle(color: COLOR_white_fff5f5f5, fontSize: _IC_LABEL_FONTSIZE),
+                      style: TextStyle(
+                          color: COLOR_white_fff5f5f5,
+                          fontSize: _IC_LABEL_FONTSIZE),
                     ),
                     IconButton(
                         onPressed: () {
-                          final CachedVideoPlayerController? controller0 =
-                              RepositoryProvider.of<VideoPlayerRepository>(context).controller;
+                          final CachedVideoPlayerPlusController? controller0 =
+                              RepositoryProvider.of<VideoPlayerRepository>(
+                                      context)
+                                  .controller;
                           if (controller0 != null) {
                             controller0.dispose();
                           }
@@ -319,8 +335,8 @@ class _VideoItemState extends State<VideoItem> {
   FutureBuilder<User> _rightOveray(
       BuildContext context, Video videoData, AuthRepository authRepository) {
     return FutureBuilder(
-        future:
-            RepositoryProvider.of<VideoRepository>(context).getVideoOwnerData(widget.videoData.uid),
+        future: RepositoryProvider.of<VideoRepository>(context)
+            .getVideoOwnerData(widget.videoData.uid),
         builder: (_, snapshot) {
           var data = snapshot.data;
           if (snapshot.hasData) {
@@ -383,7 +399,8 @@ class _VideoItemState extends State<VideoItem> {
                     create: (context) => CommentRepository(),
                     child: GestureDetector(
                       onTap: () {
-                        BlocProvider.of<VideoSizeCubit>(context).changeVideoSize(0.7);
+                        BlocProvider.of<VideoSizeCubit>(context)
+                            .changeVideoSize(0.7);
                         showCommentsBottomSheet(
                           context,
                           postId: widget.videoData.id!,
@@ -417,7 +434,8 @@ class _VideoItemState extends State<VideoItem> {
                   ),
                   GestureDetector(
                     onTap: () {
-                      debugPrint('lmnop${LocaleKeys.message_share_featur_not_ready.tr()}');
+                      debugPrint(
+                          'lmnop${LocaleKeys.message_share_featur_not_ready.tr()}');
                       Fluttertoast.showToast(
                         msg: LocaleKeys.message_share_featur_not_ready.tr(),
                         toastLength: Toast.LENGTH_SHORT,
@@ -493,7 +511,8 @@ class _VideoItemState extends State<VideoItem> {
                           );
                         } else {
                           Fluttertoast.showToast(
-                              gravity: ToastGravity.TOP, msg: LocaleKeys.message_no_game.tr());
+                              gravity: ToastGravity.TOP,
+                              msg: LocaleKeys.message_no_game.tr());
                         }
                       },
                       child: Container(
@@ -523,6 +542,33 @@ class _VideoItemState extends State<VideoItem> {
         });
   }
 
+  /// fix play video onweb
+  Widget _fixsPlayVideoWeb() {
+    if (!kIsWeb) {
+      return const SizedBox(
+        width: 0,
+        height: 0,
+      );
+    } else {
+      return InkWell(
+          overlayColor:
+              const MaterialStatePropertyAll<Color>(Colors.transparent),
+          onTap: () {
+            final VideoPlayerRepository repo =
+                RepositoryProvider.of<VideoPlayerRepository>(context);
+            VideoPlayerBloc bloc = BlocProvider.of<VideoPlayerBloc>(context);
+            if (repo.controller != null) {
+              if (repo.controller!.value.isPlaying) {
+                bloc.add(const VideoPlayerEvent(actions: VideoEvent.pause));
+              } else {
+                bloc.add(const VideoPlayerEvent(actions: VideoEvent.play));
+              }
+            }
+          },
+          child: const SizedBox.expand());
+    }
+  }
+
   Widget _videoMenu(
     BuildContext context,
     Video videoData,
@@ -543,7 +589,8 @@ class _VideoItemState extends State<VideoItem> {
                           showDialog(
                               context: context,
                               builder: (_) => AlertDialog(
-                                    title: Text(LocaleKeys.message_delete_video.tr()),
+                                    title: Text(
+                                        LocaleKeys.message_delete_video.tr()),
                                     actions: [
                                       TextButton(
                                         onPressed: () => context.pop(),
@@ -559,16 +606,20 @@ class _VideoItemState extends State<VideoItem> {
                                       ),
                                       TextButton(
                                         onPressed: () {
-                                          BlocProvider.of<VideoPlayerBloc>(context).add(
+                                          BlocProvider.of<VideoPlayerBloc>(
+                                                  context)
+                                              .add(
                                             VideoPlayerEvent(
                                                 actions: VideoEvent.delete,
                                                 postId: videoData.id,
                                                 videoUrl: videoData.videoUrl,
-                                                thumnailUrl: videoData.thumnail),
+                                                thumnailUrl:
+                                                    videoData.thumnail),
                                           );
 
                                           //for refresh video list
-                                          BlocProvider.of<UploadBloc>(context).add(
+                                          BlocProvider.of<UploadBloc>(context)
+                                              .add(
                                             DeleteVideo(
                                               pagingIndex: widget.index,
                                             ),
@@ -621,15 +672,18 @@ class _VideoItemState extends State<VideoItem> {
     );
   }
 
-  void addListener({required VideoPlayerState state, required Video videoData}) {
+  void addListener(
+      {required VideoPlayerState state, required Video videoData}) {
     state.controller!.addListener(() {
       int duratio = state.controller!.value.duration.inSeconds;
       double minDur = 3 / 10 * duratio;
       if (mounted) {
         final vBloc = BlocProvider.of<VideoPlayerBloc>(context);
 
-        if (state.controller!.value.position.inSeconds > minDur.toInt() && !isViewed) {
-          RepositoryProvider.of<VideoRepository>(context).addViewsCount(videoData.id!);
+        if (state.controller!.value.position.inSeconds > minDur.toInt() &&
+            !isViewed) {
+          RepositoryProvider.of<VideoRepository>(context)
+              .addViewsCount(videoData.id!);
           debugPrint('add views');
           isViewed = true;
           // state.controller!.removeListener(() {});
@@ -642,7 +696,8 @@ class _VideoItemState extends State<VideoItem> {
             ),
           );
         } else {
-          if (state.controller!.value.isPlaying && isBufferingIndicatorVisible) {
+          if (state.controller!.value.isPlaying &&
+              isBufferingIndicatorVisible) {
             vBloc.add(
               const VideoPlayerEvent(
                 actions: VideoEvent.removeBufferingIndicator,
@@ -659,24 +714,29 @@ class _VideoItemState extends State<VideoItem> {
     return GestureDetector(
       onTap: () {
         int likeCount = videoData.likesCount;
-        String? uid = RepositoryProvider.of<AuthRepository>(context).currentUser?.uid;
+        String? uid =
+            RepositoryProvider.of<AuthRepository>(context).currentUser?.uid;
         if (uid == null) {
           showAuthBottomSheetFunc(context);
         } else {
           bool isLiked = videoData.likes.contains(uid);
           BlocProvider.of<LikeVideoCubit>(context).likePost(
-              postId: videoData.id!, stateFromDatabase: isLiked, databaseLikeCount: likeCount);
+              postId: videoData.id!,
+              stateFromDatabase: isLiked,
+              databaseLikeCount: likeCount);
         }
       },
       child: BlocBuilder<LikeVideoCubit, LikeVideoState>(
         buildWhen: (previous, current) {
-          if (current is ShowDobleTapLikeWidget || current is RemoveDoubleTapLikeWidget) {
+          if (current is ShowDobleTapLikeWidget ||
+              current is RemoveDoubleTapLikeWidget) {
             return false;
           }
           return true;
         },
         builder: (context, state) {
-          String? uid = RepositoryProvider.of<AuthRepository>(context).currentUser?.uid;
+          String? uid =
+              RepositoryProvider.of<AuthRepository>(context).currentUser?.uid;
           bool isLiked = videoData.likes.contains(uid);
           if (state is VideoIsLiked) {
             return Icon(
@@ -736,7 +796,10 @@ class _VideoItemState extends State<VideoItem> {
   void _toProfile(BuildContext context, User data) {
     context.push(APP_PAGE.profile.toPath,
         extra: ProfilePayload(
-            uid: data.id, name: data.name!, userName: data.userName!, photoURL: data.photo!));
+            uid: data.id,
+            name: data.name!,
+            userName: data.userName!,
+            photoURL: data.photo!));
   }
 
   Align _buildProgerBarIndicatorView() {
@@ -755,7 +818,7 @@ class _VideoItemState extends State<VideoItem> {
           if (state.status == VideoPlayerStatus.initialized) {
             return SizedBox(
               height: 3,
-              child: CachedVideoProgressIndicator(
+              child: VideoProgressIndicator(
                 state.controller!,
                 padding: EdgeInsets.zero,
                 colors: VideoProgressColors(
@@ -772,10 +835,11 @@ class _VideoItemState extends State<VideoItem> {
   }
 
   FutureBuilder<User> _bottomOverLay(BuildContext context, Video videoData) {
-    final UserRepository userRepository = RepositoryProvider.of<UserRepository>(context);
+    final UserRepository userRepository =
+        RepositoryProvider.of<UserRepository>(context);
     return FutureBuilder(
-      future:
-          RepositoryProvider.of<VideoRepository>(context).getVideoOwnerData(widget.videoData.uid),
+      future: RepositoryProvider.of<VideoRepository>(context)
+          .getVideoOwnerData(widget.videoData.uid),
       builder: (context, snapshot) {
         var data = snapshot.data;
         if (snapshot.hasData) {
@@ -793,7 +857,8 @@ class _VideoItemState extends State<VideoItem> {
                       },
                       child: Text(
                         '@${data!.userName!}',
-                        style: TextStyle(color: COLOR_white_fff5f5f5, fontSize: 14),
+                        style: TextStyle(
+                            color: COLOR_white_fff5f5f5, fontSize: 14),
                       ),
                     ),
                     SizedBox(
@@ -805,31 +870,41 @@ class _VideoItemState extends State<VideoItem> {
                             stream: userRepository.isFollowingStream(data.id),
                             builder: (_, AsyncSnapshot<bool> snapshot) {
                               bool? isFollowing = snapshot.data;
-                              if (!snapshot.hasData || snapshot.hasError || isFollowing!) {
+                              if (!snapshot.hasData ||
+                                  snapshot.hasError ||
+                                  isFollowing!) {
                                 return Container(
                                   height: Dimens.DIMENS_28,
                                 );
                               }
 
                               return BlocProvider(
-                                create: (context) =>
-                                    FollowCubit(RepositoryProvider.of<UserRepository>(context)),
+                                create: (context) => FollowCubit(
+                                    RepositoryProvider.of<UserRepository>(
+                                        context)),
                                 child: BlocBuilder<FollowCubit, FollowState>(
                                   builder: (context, state) {
                                     return Material(
                                       borderRadius: BorderRadius.circular(5),
-                                      color: state.status == BlocStatus.following || isFollowing
+                                      color: state.status ==
+                                                  BlocStatus.following ||
+                                              isFollowing
                                           ? Colors.transparent
-                                          : Theme.of(context).colorScheme.onTertiary,
+                                          : Theme.of(context)
+                                              .colorScheme
+                                              .onTertiary,
                                       child: InkWell(
                                         borderRadius: BorderRadius.circular(5),
                                         onTap: () {
-                                          if (firebaseAuth.currentUser == null) {
+                                          if (firebaseAuth.currentUser ==
+                                              null) {
                                             showAuthBottomSheetFunc(context);
                                           } else {
-                                            BlocProvider.of<FollowCubit>(context)
+                                            BlocProvider.of<FollowCubit>(
+                                                    context)
                                                 .followButtonHandle(
-                                              currentUserUid: firebaseAuth.currentUser!.uid,
+                                              currentUserUid:
+                                                  firebaseAuth.currentUser!.uid,
                                               uid: data.id,
                                               stateFromDatabase: isFollowing,
                                             );
@@ -843,18 +918,28 @@ class _VideoItemState extends State<VideoItem> {
                                           alignment: Alignment.center,
                                           decoration: BoxDecoration(
                                               border: Border.all(
-                                                color: state.status == BlocStatus.following ||
+                                                color: state.status ==
+                                                            BlocStatus
+                                                                .following ||
                                                         isFollowing
-                                                    ? Theme.of(context).colorScheme.primary
+                                                    ? Theme.of(context)
+                                                        .colorScheme
+                                                        .primary
                                                     : Colors.transparent,
                                               ),
-                                              borderRadius: BorderRadius.circular(8),
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
                                               color: Colors.transparent),
                                           child: Text(
-                                            state.status == BlocStatus.following || isFollowing
-                                                ? LocaleKeys.label_following.tr()
+                                            state.status ==
+                                                        BlocStatus.following ||
+                                                    isFollowing
+                                                ? LocaleKeys.label_following
+                                                    .tr()
                                                 : LocaleKeys.label_follow.tr(),
-                                            style: Theme.of(context).textTheme.bodySmall,
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .bodySmall,
                                           ),
                                         ),
                                       ),
@@ -886,13 +971,16 @@ class _VideoItemState extends State<VideoItem> {
                       final textPainter = TextPainter(
                         text: TextSpan(
                           text: text,
-                          style: const TextStyle(fontSize: 14.0, fontWeight: FontWeight.w400),
+                          style: const TextStyle(
+                              fontSize: 14.0, fontWeight: FontWeight.w400),
                         ),
                         textDirection: TextDirection.ltr,
                       );
-                      textPainter.layout(maxWidth: MediaQuery.of(context).size.width * 0.7);
-                      final lines =
-                          (textPainter.size.height / textPainter.preferredLineHeight).ceil();
+                      textPainter.layout(
+                          maxWidth: MediaQuery.of(context).size.width * 0.7);
+                      final lines = (textPainter.size.height /
+                              textPainter.preferredLineHeight)
+                          .ceil();
                       return SizedBox(
                         width: MediaQuery.of(context).size.width * 0.7,
                         child: SingleChildScrollView(
@@ -910,7 +998,8 @@ class _VideoItemState extends State<VideoItem> {
                                           fontWeight: FontWeight.w400),
                                     ),
                               Visibility(
-                                visible: videoData.caption.isNotEmpty || videoData.game != null,
+                                visible: videoData.caption.isNotEmpty ||
+                                    videoData.game != null,
                                 child: SizedBox(
                                   height: Dimens.DIMENS_10,
                                 ),
@@ -918,7 +1007,8 @@ class _VideoItemState extends State<VideoItem> {
                               lines > 2
                                   ? InkWell(
                                       onTap: () {
-                                        BlocProvider.of<CaptionsCubit>(context).captionsHandle();
+                                        BlocProvider.of<CaptionsCubit>(context)
+                                            .captionsHandle();
                                       },
                                       child: Text(
                                         maxLines != null
@@ -956,25 +1046,27 @@ class _VideoItemState extends State<VideoItem> {
                         child: SizedBox(
                           width: Dimens.DIMENS_150,
                           height: Dimens.DIMENS_24,
-                          child: Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
-                            Icon(
-                              BootstrapIcons.controller,
-                              color: COLOR_white_fff5f5f5,
-                              size: 16,
-                            ),
-                            SizedBox(
-                              width: Dimens.DIMENS_10,
-                            ),
-                            Text(
-                              videoData.game!.gameTitle!,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontWeight: FontWeight.w300,
-                                fontSize: 12,
-                                color: COLOR_white_fff5f5f5,
-                              ),
-                            ),
-                          ]),
+                          child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  BootstrapIcons.controller,
+                                  color: COLOR_white_fff5f5f5,
+                                  size: 16,
+                                ),
+                                SizedBox(
+                                  width: Dimens.DIMENS_10,
+                                ),
+                                Text(
+                                  videoData.game!.gameTitle!,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w300,
+                                    fontSize: 12,
+                                    color: COLOR_white_fff5f5f5,
+                                  ),
+                                ),
+                              ]),
                         ),
                       )
                     : Container()

@@ -13,7 +13,7 @@ enum VideoPlayerStatus {
 
 class VideoPlayerState extends Equatable {
   final VideoPlayerStatus status;
-  final CachedVideoPlayerController? controller;
+  final CachedVideoPlayerPlusController? controller;
   final String? error;
 
   const VideoPlayerState({

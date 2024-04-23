@@ -67,7 +67,8 @@ class _VideoEditorState extends State<VideoEditor> {
     super.dispose();
   }
 
-  void _showErrorSnackBar(String message) => ScaffoldMessenger.of(context).showSnackBar(
+  void _showErrorSnackBar(String message) =>
+      ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(message),
           duration: const Duration(seconds: 1),
@@ -93,9 +94,11 @@ class _VideoEditorState extends State<VideoEditor> {
           under30secButMoreThan5MB ||
           _controller.isRotated ||
           _controller.video.value.size.width != _controller.croppedArea.width ||
-          _controller.video.value.size.height != _controller.croppedArea.height) {
+          _controller.video.value.size.height !=
+              _controller.croppedArea.height) {
         final video = await exportVideo(
-          customInstruction: " -crf 28 -c:v libx264 -c:a aac -b:v 1250k -b:a 192k ",
+          customInstruction:
+              " -crf 28 -c:v libx264 -c:a aac -b:v 1250k -b:a 192k ",
           onStatistics: (stats) => _exportingProgress.value =
               stats.getProgress(_controller.trimmedDuration.inMilliseconds),
         );
@@ -110,7 +113,8 @@ class _VideoEditorState extends State<VideoEditor> {
         if (!mounted) return;
         context.push(
           APP_PAGE.addDetails.toPath,
-          extra: AddDetails(videoFile: File(_controller.file.path), thumbnail: file),
+          extra: AddDetails(
+              videoFile: File(_controller.file.path), thumbnail: file),
         );
       }
       _isExporting.value = false;
@@ -144,10 +148,10 @@ class _VideoEditorState extends State<VideoEditor> {
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async {
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (bool canPop) async {
         _removeFile();
-        return false;
       },
       child: Scaffold(
         backgroundColor: COLOR_black_ff121212,
@@ -165,23 +169,27 @@ class _VideoEditorState extends State<VideoEditor> {
                               children: [
                                 Expanded(
                                   child: TabBarView(
-                                    physics: const NeverScrollableScrollPhysics(),
+                                    physics:
+                                        const NeverScrollableScrollPhysics(),
                                     children: [
                                       Stack(
                                         alignment: Alignment.center,
                                         children: [
-                                          CropGridViewer.preview(controller: _controller),
+                                          CropGridViewer.preview(
+                                              controller: _controller),
                                           AnimatedBuilder(
                                             animation: _controller.video,
                                             builder: (_, __) => AnimatedOpacity(
-                                              opacity: _controller.isPlaying ? 0 : 1,
+                                              opacity:
+                                                  _controller.isPlaying ? 0 : 1,
                                               duration: kThemeAnimationDuration,
                                               child: GestureDetector(
                                                 onTap: _controller.video.play,
                                                 child: Container(
                                                   width: 40,
                                                   height: 40,
-                                                  decoration: const BoxDecoration(
+                                                  decoration:
+                                                      const BoxDecoration(
                                                     color: Colors.white,
                                                     shape: BoxShape.circle,
                                                   ),
@@ -205,10 +213,12 @@ class _VideoEditorState extends State<VideoEditor> {
                                     children: [
                                       Expanded(
                                         child: TabBarView(
-                                          physics: const NeverScrollableScrollPhysics(),
+                                          physics:
+                                              const NeverScrollableScrollPhysics(),
                                           children: [
                                             Column(
-                                              mainAxisAlignment: MainAxisAlignment.center,
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
                                               children: _trimSlider(),
                                             ),
                                           ],
@@ -220,20 +230,26 @@ class _VideoEditorState extends State<VideoEditor> {
                                             child: IconButton(
                                               color: COLOR_white_fff5f5f5,
                                               onPressed: () =>
-                                                  _controller.rotate90Degrees(RotateDirection.left),
-                                              icon:
-                                                  const Icon(BootstrapIcons.arrow_counterclockwise),
-                                              tooltip:
-                                                  LocaleKeys.label_rotate_counterclockwise.tr(),
+                                                  _controller.rotate90Degrees(
+                                                      RotateDirection.left),
+                                              icon: const Icon(BootstrapIcons
+                                                  .arrow_counterclockwise),
+                                              tooltip: LocaleKeys
+                                                  .label_rotate_counterclockwise
+                                                  .tr(),
                                             ),
                                           ),
                                           Expanded(
                                             child: IconButton(
                                               color: COLOR_white_fff5f5f5,
-                                              onPressed: () => _controller
-                                                  .rotate90Degrees(RotateDirection.right),
-                                              icon: const Icon(BootstrapIcons.arrow_clockwise),
-                                              tooltip: LocaleKeys.label_rotate_clockwise.tr(),
+                                              onPressed: () =>
+                                                  _controller.rotate90Degrees(
+                                                      RotateDirection.right),
+                                              icon: const Icon(BootstrapIcons
+                                                  .arrow_clockwise),
+                                              tooltip: LocaleKeys
+                                                  .label_rotate_clockwise
+                                                  .tr(),
                                             ),
                                           ),
                                           Expanded(
@@ -243,10 +259,13 @@ class _VideoEditorState extends State<VideoEditor> {
                                                 context,
                                                 MaterialPageRoute<void>(
                                                   builder: (context) =>
-                                                      CropScreen(controller: _controller),
+                                                      CropScreen(
+                                                          controller:
+                                                              _controller),
                                                 ),
                                               ),
-                                              icon: const Icon(BootstrapIcons.crop),
+                                              icon: const Icon(
+                                                  BootstrapIcons.crop),
                                               tooltip: 'Open crop screen',
                                             ),
                                           ),
@@ -313,7 +332,8 @@ class _VideoEditorState extends State<VideoEditor> {
             ),
             Material(
               color: COLOR_grey.withOpacity(0.6),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(50)),
               child: InkWell(
                 borderRadius: BorderRadius.circular(50),
                 onTap: () {
@@ -325,7 +345,8 @@ class _VideoEditorState extends State<VideoEditor> {
                   alignment: Alignment.center,
                   padding: const EdgeInsets.only(right: 2, bottom: 1),
                   decoration: BoxDecoration(
-                      color: Colors.transparent, borderRadius: BorderRadius.circular(50)),
+                      color: Colors.transparent,
+                      borderRadius: BorderRadius.circular(50)),
                   child: Icon(
                     BootstrapIcons.arrow_left,
                     size: Dimens.DIMENS_20,
@@ -335,7 +356,8 @@ class _VideoEditorState extends State<VideoEditor> {
             ),
             const Spacer(),
             Material(
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(50)),
               child: InkWell(
                 onTap: _exportVideo,
                 splashColor: COLOR_black_ff121212.withOpacity(0.4),
@@ -422,7 +444,8 @@ class _VideoEditorState extends State<VideoEditor> {
           child: TrimTimeline(
             controller: _controller,
             localSeconds: LocaleKeys.label_sconds.tr(),
-            textStyle: TextStyle(fontSize: FontSize.FONT_SIZE_8, color: COLOR_white_fff5f5f5),
+            textStyle: TextStyle(
+                fontSize: FontSize.FONT_SIZE_8, color: COLOR_white_fff5f5f5),
             padding: const EdgeInsets.only(top: 10),
           ),
         ),
@@ -488,8 +511,9 @@ class _VideoEditorState extends State<VideoEditor> {
     final inputPath = kIsWeb
         ? webInputPath(FileFormat.fromMimeType(_controller.file.mimeType))
         : _controller.file.path;
-    final outputPath =
-        kIsWeb ? webOutputPath(outputFormat) : await ioOutputPath(inputPath, outputFormat);
+    final outputPath = kIsWeb
+        ? webOutputPath(outputFormat)
+        : await ioOutputPath(inputPath, outputFormat);
 
     String quotedInputPath = '"$inputPath"';
     String quotedOutputPath = '"$outputPath"';
@@ -519,7 +543,7 @@ class _VideoEditorState extends State<VideoEditor> {
         onStatistics: onStatistics,
       );
     } else {
-          debugPrint('f fio'); 
+      debugPrint('f fio');
 
       return const FFmpegExport().executeFFmpegIO(
         execute: execute,
@@ -542,14 +566,17 @@ class _VideoEditorState extends State<VideoEditor> {
       imageFormat: ImageFormat.JPEG,
       thumbnailPath: kIsWeb ? null : (await getTemporaryDirectory()).path,
       video: _controller.file.path,
-      timeMs: _controller.selectedCoverVal?.timeMs ?? _controller.startTrim.inMilliseconds,
+      timeMs: _controller.selectedCoverVal?.timeMs ??
+          _controller.startTrim.inMilliseconds,
       quality: quality,
     );
 
-    final inputPath =
-        kIsWeb ? webInputPath(FileFormat.fromMimeType(coverFile.mimeType)) : coverFile.path;
-    final outputPath =
-        kIsWeb ? webOutputPath(outputFormat) : await ioOutputPath(coverFile.path, outputFormat);
+    final inputPath = kIsWeb
+        ? webInputPath(FileFormat.fromMimeType(coverFile.mimeType))
+        : coverFile.path;
+    final outputPath = kIsWeb
+        ? webOutputPath(outputFormat)
+        : await ioOutputPath(coverFile.path, outputFormat);
 
     var config = _controller.createCoverFFmpegConfig();
     final execute = config.createExportCommand(
@@ -614,7 +641,9 @@ class FFmpegExport {
         }
       },
       null,
-      onStatistics != null ? (s) => onStatistics(FFmpegStatistics.fromIOStatistics(s)) : null,
+      onStatistics != null
+          ? (s) => onStatistics(FFmpegStatistics.fromIOStatistics(s))
+          : null,
     );
 
     return completer.future;
@@ -716,7 +745,9 @@ class FFmpegStatistics {
   }
 
   double getProgress(int videoDurationMs) {
-    return videoDurationMs <= 0.0 ? 0.0 : (time / videoDurationMs).clamp(0.0, 1.0);
+    return videoDurationMs <= 0.0
+        ? 0.0
+        : (time / videoDurationMs).clamp(0.0, 1.0);
   }
 
   static int _timeToMs(String timeString) {

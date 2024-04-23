@@ -1,12 +1,29 @@
+import 'package:cached_video_player_plus/cached_video_player_plus.dart';
 import 'package:flutter/foundation.dart';
-import 'package:video_cached_player/video_cached_player.dart';
 
 class VideoPlayerRepository {
-  CachedVideoPlayerController? _controller;
+  CachedVideoPlayerPlusController? _controller;
 
-  Future<CachedVideoPlayerController?> initVideoPlayer(String url) async {
+  Future<CachedVideoPlayerPlusController?> initVideoPlayer(String url) async {
     try {
-      _controller = CachedVideoPlayerController.network(url);
+      if (kIsWeb) {
+        _controller = CachedVideoPlayerPlusController.networkUrl(
+              Uri.parse(url),
+              httpHeaders: {
+                'Cache-Control': 'max-age=3600',
+              },
+              invalidateCacheIfOlderThan: const Duration(
+                minutes: 5,
+              ),
+            );
+      } else {
+        _controller = CachedVideoPlayerPlusController.networkUrl(
+              Uri.parse(url),
+              invalidateCacheIfOlderThan: const Duration(
+                minutes: 5,
+              ),
+            );
+      }
       await _controller!.initialize();
 
       debugPrint('ctrlll is ' + _controller!.value.isInitialized.toString());
@@ -17,9 +34,10 @@ class VideoPlayerRepository {
     }
   }
 
-  CachedVideoPlayerController? get controller => _controller;
+  CachedVideoPlayerPlusController? get controller => _controller;
 
-  set setController(CachedVideoPlayerController? cachedVideoPlayerController) {
+  set setController(
+      CachedVideoPlayerPlusController? cachedVideoPlayerController) {
     _controller = cachedVideoPlayerController;
   }
 }

@@ -1,9 +1,9 @@
 import 'package:bloc/bloc.dart';
+import 'package:cached_video_player_plus/cached_video_player_plus.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:personal_project/data/repository/video_player_repository.dart';
 import 'package:personal_project/domain/reporsitory/video_repository.dart';
-import 'package:video_cached_player/video_cached_player.dart';
 
 part 'video_player_event.dart';
 part 'video_player_state.dart';
@@ -13,7 +13,7 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
     required this.videoPlayerRepository,
     required this.videoRepository,
   }) : super(const VideoPlayerInitial()) {
-    CachedVideoPlayerController? controller;
+    CachedVideoPlayerPlusController? controller;
     on<VideoPlayerEvent>((event, emit) async {
       debugPrint('init v player event');
       if (event.actions == VideoEvent.initialize) {
@@ -47,18 +47,18 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
     });
   }
 
-  void _playVideo(CachedVideoPlayerController? controller, Emitter<VideoPlayerState> emit) {
+  void _playVideo(CachedVideoPlayerPlusController? controller, Emitter<VideoPlayerState> emit) {
     controller!.play();
     emit(const VideoPlayerState(status: VideoPlayerStatus.playing));
   }
 
-  void _pauseVideo(CachedVideoPlayerController? controller, Emitter<VideoPlayerState> emit) {
+  void _pauseVideo(CachedVideoPlayerPlusController? controller, Emitter<VideoPlayerState> emit) {
     controller!.pause();
     // emit(VideoPaused(opacity: 1, size: Dimens.DIMENS_50));
     emit(const VideoPlayerState(status: VideoPlayerStatus.paused));
   }
 
-  Future<void> _initVideoPlayer(CachedVideoPlayerController? controller, VideoPlayerEvent event,
+  Future<void> _initVideoPlayer(CachedVideoPlayerPlusController? controller, VideoPlayerEvent event,
       Emitter<VideoPlayerState> emit) async {
     try {
       emit(const VideoPlayerInitial());
