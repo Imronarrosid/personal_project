@@ -146,8 +146,11 @@ class UserRepository implements UserUseCaseType {
   Future<int> getFollowingCount(uid) async {
     try {
       int following = 0;
-      var followingDoc =
-          await firebaseFirestore.collection('users').doc(uid).collection('following').get();
+      var followingDoc = await firebaseFirestore
+          .collection('users')
+          .doc(uid)
+          .collection('following')
+          .get();
 
       following = followingDoc.docs.length;
 
@@ -161,8 +164,11 @@ class UserRepository implements UserUseCaseType {
   Future<int> getFollowerCount(String uid) async {
     try {
       int followers = 0;
-      var followerDoc =
-          await firebaseFirestore.collection('users').doc(uid).collection('followers').get();
+      var followerDoc = await firebaseFirestore
+          .collection('users')
+          .doc(uid)
+          .collection('followers')
+          .get();
       followers = followerDoc.docs.length;
       return followers;
     } catch (e) {
@@ -174,7 +180,10 @@ class UserRepository implements UserUseCaseType {
   Future<int> getLikesCount(String uid) async {
     int likes = 0;
 
-    var myVideos = await firebaseFirestore.collection('videos').where('uid', isEqualTo: uid).get();
+    var myVideos = await firebaseFirestore
+        .collection('videos')
+        .where('uid', isEqualTo: uid)
+        .get();
 
     for (var item in myVideos.docs) {
       if (item.data().containsKey('likesCount')) {
@@ -187,7 +196,8 @@ class UserRepository implements UserUseCaseType {
   }
 
   @override
-  Future<void> followUser({required String currentUserUid, required String uid}) async {
+  Future<void> followUser(
+      {required String currentUserUid, required String uid}) async {
     var doc = await firebaseFirestore
         .collection('users')
         .doc(uid)
@@ -228,15 +238,26 @@ class UserRepository implements UserUseCaseType {
     }
   }
 
-  Future<Stream> getUser(String uid) async {
+  Stream getUser(String uid) {
     Stream data = firebaseFirestore.collection('users').doc(uid).snapshots();
     return data;
+  }
+
+  Stream<User>? userDataStream(String uid) {
+    return firebaseFirestore
+        .collection('users')
+        .doc(uid)
+        .snapshots()
+        .map((user) => User.fromSnap(user));
   }
 
   @override
   Future<List<String>> getUserVideoThumnails(String uid) async {
     List<String> thumbnails = [];
-    var myVideos = await firebaseFirestore.collection('videos').where('uid', isEqualTo: uid).get();
+    var myVideos = await firebaseFirestore
+        .collection('videos')
+        .where('uid', isEqualTo: uid)
+        .get();
 
     for (var i = 0; i < myVideos.docs.length; i++) {
       thumbnails.add((myVideos.docs[i].data() as dynamic)['thumnail']);
@@ -245,7 +266,8 @@ class UserRepository implements UserUseCaseType {
     return Future.value(thumbnails);
   }
 
-  Future<bool> isFollowig({required String currentUserUid, required String otherUserUid}) async {
+  Future<bool> isFollowig(
+      {required String currentUserUid, required String otherUserUid}) async {
     await firebaseFirestore
         .collection('user')
         .doc(otherUserUid)
@@ -296,7 +318,10 @@ class UserRepository implements UserUseCaseType {
       await firebaseFirestore
           .collection('users')
           .doc(firebaseAuth.currentUser!.uid)
-          .update({'userName': newName, 'userNameUpdatedAt': FieldValue.serverTimestamp()});
+          .update({
+        'userName': newName,
+        'userNameUpdatedAt': FieldValue.serverTimestamp()
+      });
       await firebaseFirestore
           .collection('userNames')
           .doc(firebaseAuth.currentUser!.uid)
@@ -412,7 +437,10 @@ class UserRepository implements UserUseCaseType {
 
       // debugPrint('games ${rfs.length}');
       for (var element in gv) {
-        var game = await firebaseFirestore.collection('gameFavorites').doc(element).get();
+        var game = await firebaseFirestore
+            .collection('gameFavorites')
+            .doc(element)
+            .get();
         if (game.exists) {
           gameFav.add(GameFav.fromSnap(game));
 
@@ -454,7 +482,8 @@ class UserRepository implements UserUseCaseType {
           .limit(limit)
           .get();
       for (var element in snapshot.docs) {
-        DocumentSnapshot docs = await firebaseFirestore.collection('users').doc(element.id).get();
+        DocumentSnapshot docs =
+            await firebaseFirestore.collection('users').doc(element.id).get();
         users.add(User.fromSnap(docs));
       }
       return users;
@@ -468,7 +497,8 @@ class UserRepository implements UserUseCaseType {
     try {
       String avatar;
 
-      DocumentSnapshot snap = await firebaseFirestore.collection('userNames').doc(uid).get();
+      DocumentSnapshot snap =
+          await firebaseFirestore.collection('userNames').doc(uid).get();
 
       avatar = snap['userName'];
       return avatar;
