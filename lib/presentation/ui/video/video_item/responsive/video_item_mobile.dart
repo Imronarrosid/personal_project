@@ -28,6 +28,7 @@ import 'package:personal_project/presentation/shared_components/menu_modal_botto
 import 'package:personal_project/presentation/ui/add_details/bloc/upload_bloc.dart';
 import 'package:personal_project/presentation/ui/auth/auth.dart';
 import 'package:personal_project/presentation/ui/comments/comments_page.dart';
+import 'package:personal_project/presentation/ui/home/cubit/home_cubit.dart';
 import 'package:personal_project/presentation/ui/profile/cubit/follow_cubit.dart';
 import 'package:personal_project/presentation/ui/video/list_video/bloc/video_player_bloc.dart';
 import 'package:personal_project/presentation/ui/video/list_video/cubit/captions_cubit.dart';
@@ -36,7 +37,7 @@ import 'package:personal_project/presentation/ui/video/list_video/cubit/video_si
 import 'package:personal_project/utils/number_format.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
-class VideoItem extends StatefulWidget {
+class VideoItemMobile extends StatefulWidget {
   final int index;
   final Video videoData;
 
@@ -45,7 +46,7 @@ class VideoItem extends StatefulWidget {
   /// play and pause
   final bool auto;
   final bool? isForLogedUserVideo;
-  const VideoItem({
+  const VideoItemMobile({
     super.key,
     required this.index,
     required this.videoData,
@@ -54,10 +55,10 @@ class VideoItem extends StatefulWidget {
   });
 
   @override
-  State<VideoItem> createState() => _VideoItemState();
+  State<VideoItemMobile> createState() => _VideoItemMobileState();
 }
 
-class _VideoItemState extends State<VideoItem> {
+class _VideoItemMobileState extends State<VideoItemMobile> {
   // ignore: non_constant_identifier_names
   final double _IC_LABEL_FONTSIZE = 12;
   bool isViewed = false;
@@ -92,17 +93,7 @@ class _VideoItemState extends State<VideoItem> {
             },
             child: GestureDetector(
               onTap: () {
-                final VideoPlayerRepository repo =
-                    RepositoryProvider.of<VideoPlayerRepository>(context);
-                VideoPlayerBloc bloc =
-                    BlocProvider.of<VideoPlayerBloc>(context);
-                if (repo.controller != null) {
-                  if (repo.controller!.value.isPlaying) {
-                    bloc.add(const VideoPlayerEvent(actions: VideoEvent.pause));
-                  } else {
-                    bloc.add(const VideoPlayerEvent(actions: VideoEvent.play));
-                  }
-                }
+                _onTap(context);
               },
               onDoubleTap: () {
                 String? uid = RepositoryProvider.of<AuthRepository>(context)
@@ -150,6 +141,19 @@ class _VideoItemState extends State<VideoItem> {
             ));
       }),
     );
+  }
+
+  void _onTap(BuildContext context) {
+    final VideoPlayerRepository repo =
+        RepositoryProvider.of<VideoPlayerRepository>(context);
+    VideoPlayerBloc bloc = BlocProvider.of<VideoPlayerBloc>(context);
+    if (repo.controller != null) {
+      if (repo.controller!.value.isPlaying) {
+        bloc.add(const VideoPlayerEvent(actions: VideoEvent.pause));
+      } else {
+        bloc.add(const VideoPlayerEvent(actions: VideoEvent.play));
+      }
+    }
   }
 
   BlocBuilder<VideoPlayerBloc, VideoPlayerState> _bufferingIndicator() {
@@ -795,13 +799,16 @@ class _VideoItemState extends State<VideoItem> {
   }
 
   void _toProfile(BuildContext context, User data) {
-    context.push(
-      APP_PAGE.profile.toPath,
-      extra: ProfilePayload(
-        user: data,
-        isForOtherUser: true,
-      ),
-    );
+    if (MediaQuery.of(context).size.width > mobileWidth) {
+      BlocProvider.of<HomeCubit>(context).changePage(5, data: data);
+    } else {
+      context.push(
+        APP_PAGE.profile.toPath,
+        extra: ProfilePayload(
+          user: data,
+        ),
+      );
+    }
   }
 
   Align _buildProgerBarIndicatorView() {

@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:personal_project/domain/model/game_fav_modal.dart';
+import 'package:personal_project/domain/model/user.dart';
 
 class ProfileData {
   final String name;
@@ -25,16 +26,11 @@ class ProfileData {
 }
 
 class ProfilePayload {
-  final String uid, name, userName, photoURL;
-  final Timestamp? nameUpdatedAt, userNameUpdatedAt, userCreatedAt;
+  final bool? isForOtherUser;
+  final User user;
 
   ProfilePayload({
-    this.userCreatedAt,
-    required this.uid,
-    required this.name,
-    required this.userName,
-    required this.photoURL,
-    this.nameUpdatedAt,
-    this.userNameUpdatedAt,
+    required this.user,
+    this.isForOtherUser = false,
   });
 }

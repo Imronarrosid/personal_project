@@ -3,6 +3,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:go_router/go_router.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:personal_project/constant/color.dart';
@@ -23,43 +24,23 @@ import 'package:personal_project/presentation/ui/auth/auth.dart';
 import 'package:personal_project/presentation/ui/auth/bloc/auth_bloc.dart';
 import 'package:personal_project/presentation/ui/comments/bloc/comment_bloc.dart';
 import 'package:personal_project/presentation/ui/comments/bloc/comments_paging_bloc.dart';
+import 'package:personal_project/presentation/ui/comments/bloc/desktop_comments_bloc.dart';
 import 'package:personal_project/presentation/ui/comments/cubit/like_comment_cubit.dart';
+import 'package:personal_project/presentation/ui/comments/cubit/replies_cubit.dart';
 import 'package:personal_project/presentation/ui/video/list_video/cubit/video_size_cubit.dart';
 import 'package:personal_project/utils/number_format.dart';
 import 'package:timeago/timeago.dart' as tago;
 
-import 'cubit/replies_cubit.dart';
-
-Future<dynamic> showCommentsBottomSheet(
-  BuildContext context, {
-  required String postId,
-}) {
-  return showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      barrierColor: Colors.transparent,
-      useSafeArea: true,
-      isDismissible: true,
-      elevation: 0,
-      enableDrag: false,
-      isScrollControlled: true,
-      builder: (_) {
-        return CommentBottomSheet(
-          postId: postId,
-        );
-      });
-}
-
-class CommentBottomSheet extends StatefulWidget {
+class DesktopCommentsView extends StatefulWidget {
   final String postId;
 
-  const CommentBottomSheet({super.key, required this.postId});
+  const DesktopCommentsView({super.key, required this.postId});
 
   @override
-  State<CommentBottomSheet> createState() => _CommentBottomSheetState();
+  State<DesktopCommentsView> createState() => _DesktopCommentsViewState();
 }
 
-class _CommentBottomSheetState extends State<CommentBottomSheet> {
+class _DesktopCommentsViewState extends State<DesktopCommentsView> {
   final TextEditingController _textEditingController = TextEditingController();
 
   final List<Comment> _newCommentItems = [];
@@ -164,56 +145,37 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                 onTap: () {
                   FocusScope.of(context).unfocus();
                 },
-                child: DraggableScrollableSheet(
-                  initialChildSize:
-                      0.7, // Initial height as a fraction of the screen height
-                  maxChildSize: 0.7, // Maximum height when fully expanded
-                  minChildSize: 0.1, // Minimum height when collapsed,
-                  snap: true,
-
-                  snapSizes: const <double>[0.7],
-                  controller: _draggableController,
-                  builder: (BuildContext context,
-                      ScrollController scrollController) {
-                    //To prevent comments list overlaped by header.
-                    scrollController.addListener(() {
-                      debugPrint('offset: //${scrollController.offset}');
-                      if (scrollController.offset > 0) {
-                        scrollController.jumpTo(0.0);
-                      }
-                    });
-
-                    return Scaffold(
-                      backgroundColor: Colors.transparent,
-                      key: _globalKey,
-                      body: Container(
-                        height: MediaQuery.of(context).size.height,
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.secondary,
-                          borderRadius: const BorderRadius.only(
-                            topLeft: Radius.circular(10),
-                            topRight: Radius.circular(10),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.horizontal(
+                      right: Radius.circular(Dimens.DIMENS_10)),
+                  child: Scaffold(
+                    backgroundColor: Theme.of(context).colorScheme.tertiary,
+                    appBar: AppBar(
+                      backgroundColor: Theme.of(context).colorScheme.tertiary,
+                      title: Text(LocaleKeys.title_comments.tr()),
+                      actions: <Widget>[
+                        IconButton(
+                          onPressed: () {
+                            BlocProvider.of<DesktopCommentsBloc>(context)
+                                .add(CloseDesktopComments());
+                          },
+                          icon: Icon(
+                            BootstrapIcons.x,
+                            size: Dimens.DIMENS_34,
                           ),
                         ),
-                        child: Column(
-                          children: [
-                            Expanded(
-                              child: CustomScrollView(
-                                controller: scrollController,
-                                slivers: <Widget>[
-                                  _commentsHeaders(context),
-                                  _buildCommentsList(context, onRefresh: () {
-                                    return _refreshComments(context);
-                                  }),
-                                ],
-                              ),
-                            ),
-                            _buildCommnetsInput(context)
-                          ],
-                        ),
-                      ),
-                    );
-                  },
+                      ],
+                    ),
+                    body: Container(
+                      child:
+                          // _commentsHeaders(context),
+
+                          _buildCommentsList(context, onRefresh: () {
+                        return _refreshComments(context);
+                      }),
+                    ),
+                    bottomNavigationBar: _buildCommnetsInput(context),
+                  ),
                 ),
               ),
             ],
@@ -240,6 +202,7 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
             BoxDecoration(color: Theme.of(context).colorScheme.tertiary),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
           children: [
             BlocConsumer<CommentBloc, CommentState>(
               listener: (_, state) {
@@ -255,53 +218,54 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                 }
                 return false;
               },
-              builder: (_, state) {
+              builder: (context, state) {
                 return Padding(
                   padding: EdgeInsets.only(
                     left: Dimens.DIMENS_8,
                   ),
                   child: Visibility(
-                      visible: state.status == CommentStatus.startReply ||
-                          state.status == CommentStatus.typing ||
-                          state.status == CommentStatus.open,
-                      child: Row(
-                        children: [
-                          Text(
-                            '${LocaleKeys.label_reply_to.tr()} ',
+                    visible: state.status == CommentStatus.startReply ||
+                        state.status == CommentStatus.typing ||
+                        state.status == CommentStatus.open,
+                    child: Row(
+                      children: [
+                        Text(
+                          '${LocaleKeys.label_reply_to.tr()} ',
+                          style: TextStyle(
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onSurface
+                                .withOpacity(0.6),
+                            fontWeight: FontWeight.w300,
+                          ),
+                        ),
+                        Text(' $_repliedUserName'),
+                        SizedBox(
+                          width: Dimens.DIMENS_8,
+                        ),
+                        InkWell(
+                          onTap: () {
+                            BlocProvider.of<CommentBloc>(context).add(
+                              UnfocusForm(),
+                            );
+                            _isForReply = false;
+                            FocusScope.of(context).unfocus();
+                          },
+                          child: Text(
+                            LocaleKeys.label_cancel.tr(),
                             style: TextStyle(
                               color: Theme.of(context)
                                   .colorScheme
                                   .onSurface
-                                  .withOpacity(0.6),
-                              fontWeight: FontWeight.w300,
+                                  .withOpacity(
+                                    0.6,
+                                  ),
                             ),
                           ),
-                          Text(' $_repliedUserName'),
-                          SizedBox(
-                            width: Dimens.DIMENS_8,
-                          ),
-                          InkWell(
-                            onTap: () {
-                              BlocProvider.of<CommentBloc>(context).add(
-                                UnfocusForm(),
-                              );
-                              _isForReply = false;
-                              FocusScope.of(context).unfocus();
-                            },
-                            child: Text(
-                              LocaleKeys.label_cancel.tr(),
-                              style: TextStyle(
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .onSurface
-                                    .withOpacity(
-                                      0.6,
-                                    ),
-                              ),
-                            ),
-                          )
-                        ],
-                      )),
+                        )
+                      ],
+                    ),
+                  ),
                 );
               },
             ),
@@ -1153,15 +1117,15 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
     );
   }
 
-  SliverFillRemaining _buildCommentsList(
+  RefreshIndicator _buildCommentsList(
     BuildContext context, {
     required Future<void> Function() onRefresh,
   }) {
-    return SliverFillRemaining(
-      child: RefreshIndicator(
-        onRefresh: onRefresh,
-        child: SizedBox(
-          height: MediaQuery.of(context).size.height,
+    return RefreshIndicator(
+      onRefresh: onRefresh,
+      child: Expanded(
+        child: Container(
+          height: MediaQuery.of(context).size.height - 120,
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
             child: Column(
@@ -1256,15 +1220,12 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
         });
   }
 
-  SliverAppBar _commentsHeaders(BuildContext context) {
-    return SliverAppBar(
+  AppBar _commentsHeaders(BuildContext context) {
+    return AppBar(
       title: Text(LocaleKeys.title_comments.tr()),
-      floating: false,
-      pinned: true,
       elevation: 0.2,
       scrolledUnderElevation: 1,
       shadowColor: COLOR_white_fff5f5f5,
-      forceElevated: true,
       leading: Container(),
       leadingWidth: Dimens.DIMENS_3,
       actions: [

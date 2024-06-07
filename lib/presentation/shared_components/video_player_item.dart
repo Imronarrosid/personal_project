@@ -3,8 +3,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:personal_project/data/repository/video_player_repository.dart';
 import 'package:personal_project/domain/model/video_model.dart';
 import 'package:personal_project/domain/reporsitory/video_repository.dart';
+import 'package:personal_project/presentation/responsive/responsive_layout.dart';
 import 'package:personal_project/presentation/ui/video/list_video/bloc/video_player_bloc.dart';
 import 'package:personal_project/presentation/ui/video/list_video/video_item.dart';
+import 'package:personal_project/presentation/ui/video/video_item/responsive/video_item_desktop.dart';
+import 'package:personal_project/presentation/ui/video/video_item/responsive/video_item_mobile.dart';
 
 class VideoPlayerItem extends StatelessWidget {
   final int index;
@@ -38,11 +41,19 @@ class VideoPlayerItem extends StatelessWidget {
             VideoPlayerEvent(
                 actions: VideoEvent.initialize, videoUrl: item.videoUrl),
           ),
-        child: VideoItem(
-          index: index,
-          videoData: item,
-          auto: auto,
-          isForLogedUserVideo: isForLogedUserVideo,
+        child: ResponsiveLayout(
+          mobileBody: VideoItemMobile(
+            index: index,
+            videoData: item,
+            auto: auto,
+            isForLogedUserVideo: isForLogedUserVideo,
+          ),
+          desktopBody: VideoItemDesktop(
+            index: index,
+            videoData: item,
+            auto: auto,
+            isForLogedUserVideo: isForLogedUserVideo,
+          ),
         ),
       ),
     );

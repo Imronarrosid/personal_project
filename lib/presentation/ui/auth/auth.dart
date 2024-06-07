@@ -76,13 +76,9 @@ void showAuthBottomSheetFunc(BuildContext context) {
                       child: InkWell(
                         splashColor: COLOR_grey,
                         borderRadius: BorderRadius.circular(50),
-                        onTap: () async {
-                          if (await checkNetwork() && context.mounted) {
-                            BlocProvider.of<AuthBloc>(context)
-                                .add(LogInWithGoogle());
-                          } else {
-                            showNoInternetSnackBar();
-                          }
+                        onTap: () {
+                          BlocProvider.of<AuthBloc>(context)
+                              .add(LogInWithGoogle());
                         },
                         child: Container(
                           height: Dimens.DIMENS_45,

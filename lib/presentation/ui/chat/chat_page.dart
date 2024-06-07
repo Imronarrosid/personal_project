@@ -20,6 +20,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:personal_project/constant/dimens.dart';
 import 'package:personal_project/data/repository/chat_repository.dart';
 import 'package:personal_project/domain/model/chat_data_models.dart';
+import 'package:personal_project/domain/model/user.dart' as models;
 import 'package:personal_project/domain/model/profile_data_model.dart';
 import 'package:personal_project/domain/reporsitory/auth_reposotory.dart';
 import 'package:personal_project/domain/reporsitory/user_repository.dart';
@@ -357,10 +358,14 @@ class _ChatPageState extends State<ChatPage> {
       context.push(
         APP_PAGE.profile.toPath,
         extra: ProfilePayload(
-            uid: user.id,
-            name: widget.data.name!,
+          user: models.User(
+            id: user.id,
+            name: widget.data.name,
             userName: widget.data.userName,
-            photoURL: widget.data.avatar),
+            photo: widget.data.avatar,
+          ),
+          isForOtherUser: true,
+        ),
       );
     }
   }

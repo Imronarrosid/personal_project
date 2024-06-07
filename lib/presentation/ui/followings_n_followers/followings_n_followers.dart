@@ -134,10 +134,8 @@ class FollowingNFollowersTab extends StatelessWidget {
                                 context.push(
                                   APP_PAGE.profile.toPath,
                                   extra: ProfilePayload(
-                                    uid: user.id,
-                                    name: user.name!,
-                                    userName: user.userName!,
-                                    photoURL: user.photo!,
+                                    user: user,
+                                    isForOtherUser: true,
                                   ),
                                 );
                               },

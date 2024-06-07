@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 Future<bool> checkNetwork() async {
  
    try {
-    final result = await http.get(Uri.parse('http://google.com'));
+    final result = await http.get(Uri.parse('www.google.com'));
     if(result.statusCode==200){
       return true;
     }

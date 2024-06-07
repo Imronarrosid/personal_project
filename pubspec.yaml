@@ -90,6 +90,7 @@ dependencies:
   google_sign_in_web: ^0.12.4
   http: ^1.2.1
   fast_cached_network_image: ^1.2.9
+  sidebarx: ^0.17.1
 
 dev_dependencies:
   flutter_test:

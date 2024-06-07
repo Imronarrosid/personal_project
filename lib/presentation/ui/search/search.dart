@@ -35,7 +35,8 @@ class _SearchPageState extends State<SearchPage> {
     return RepositoryProvider(
       create: (context) => SearchRepository(),
       child: BlocProvider(
-        create: (context) => SearchBloc(RepositoryProvider.of<SearchRepository>(context)),
+        create: (context) =>
+            SearchBloc(RepositoryProvider.of<SearchRepository>(context)),
         child: Builder(builder: (context) {
           return GestureDetector(
             onTap: () => FocusScope.of(context).unfocus(),
@@ -54,9 +55,11 @@ class _SearchPageState extends State<SearchPage> {
                         focusNode: _focusNode,
                         controller: _textEditingController,
                         onChanged: (query) {
-                          final searchBloc = BlocProvider.of<SearchBloc>(context);
+                          final searchBloc =
+                              BlocProvider.of<SearchBloc>(context);
                           if (_debounce?.isActive ?? false) _debounce?.cancel();
-                          _debounce = Timer(const Duration(milliseconds: 500), () {
+                          _debounce =
+                              Timer(const Duration(milliseconds: 500), () {
                             // do something with query
                             searchBloc.add(SearchEvent(query));
                           });
@@ -76,14 +79,17 @@ class _SearchPageState extends State<SearchPage> {
                               return GestureDetector(
                                   onTap: () {
                                     _textEditingController.clear();
-                                    context.read<SearchBloc>().add(const ResetSearchEvent());
+                                    context
+                                        .read<SearchBloc>()
+                                        .add(const ResetSearchEvent());
                                   },
                                   child: const Icon(Icons.close));
                             },
                           ),
                           suffixIconColor: COLOR_grey,
                           border: OutlineInputBorder(
-                              borderSide: BorderSide.none, borderRadius: BorderRadius.circular(10)),
+                              borderSide: BorderSide.none,
+                              borderRadius: BorderRadius.circular(10)),
                         ),
                       ),
                     )),
@@ -106,20 +112,22 @@ class _SearchPageState extends State<SearchPage> {
                               tileColor: Colors.transparent,
                               onTap: () {
                                 debugPrint('photo${result.photo}');
-                                context.push(APP_PAGE.profile.toPath,
-                                    extra: ProfilePayload(
-                                      uid: result.id,
-                                      name: result.name!,
-                                      userName: result.userName!,
-                                      photoURL: result.photo!,
-                                    ));
-                                if (FocusManager.instance.primaryFocus != null) {
+                                context.push(
+                                  APP_PAGE.profile.toPath,
+                                  extra: ProfilePayload(
+                                    user: result,
+                                    isForOtherUser: true,
+                                  ),
+                                );
+                                if (FocusManager.instance.primaryFocus !=
+                                    null) {
                                   FocusManager.instance.primaryFocus!.unfocus();
                                 }
                                 debugPrint('profile');
                               },
                               leading: CircleAvatar(
-                                backgroundColor: Theme.of(context).colorScheme.tertiary,
+                                backgroundColor:
+                                    Theme.of(context).colorScheme.tertiary,
                                 backgroundImage: CachedNetworkImageProvider(
                                   result.photo!,
                                 ),
@@ -159,7 +167,8 @@ class InitWidget extends StatelessWidget {
               padding: EdgeInsets.all(Dimens.DIMENS_12),
               child: Text(
                 LocaleKeys.label_suggestions.tr(),
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                style:
+                    const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
             ),
             FutureBuilder(
@@ -187,10 +196,8 @@ class InitWidget extends StatelessWidget {
                         context.push(
                           APP_PAGE.profile.toPath,
                           extra: ProfilePayload(
-                            uid: user.id,
-                            name: user.name!,
-                            userName: user.userName!,
-                            photoURL: user.photo!,
+                            user: user,
+                            isForOtherUser: true,
                           ),
                         );
                       },
@@ -203,7 +210,8 @@ class InitWidget extends StatelessWidget {
               padding: EdgeInsets.all(Dimens.DIMENS_12),
               child: Text(
                 LocaleKeys.title_videos.tr(),
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                style:
+                    const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
             ),
             FutureBuilder<List<Video>>(
@@ -247,12 +255,16 @@ class InitWidget extends StatelessWidget {
                                           Text(
                                             '${item.views.length} ',
                                             style: TextStyle(
-                                                color: Theme.of(context).colorScheme.primary),
+                                                color: Theme.of(context)
+                                                    .colorScheme
+                                                    .primary),
                                           ),
                                           Text(
                                             LocaleKeys.label_views.tr(),
                                             style: TextStyle(
-                                                color: Theme.of(context).colorScheme.primary),
+                                                color: Theme.of(context)
+                                                    .colorScheme
+                                                    .primary),
                                           )
                                         ],
                                       ),
@@ -264,7 +276,8 @@ class InitWidget extends StatelessWidget {
                           ),
                         );
                       },
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: 3,
                         childAspectRatio: 9 / 16,
                         crossAxisSpacing: 2,
@@ -279,11 +292,15 @@ class InitWidget extends StatelessWidget {
                     itemBuilder: (context, index) {
                       return Container(
                         decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                          color: Theme.of(context)
+                              .colorScheme
+                              .onSurface
+                              .withOpacity(0.6),
                         ),
                       );
                     },
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 3,
                       childAspectRatio: 6 / 9,
                       crossAxisSpacing: 2,

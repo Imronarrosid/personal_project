@@ -48,7 +48,9 @@ class AppRouter {
     refreshListenable: appService,
     routerNeglect: true,
     debugLogDiagnostics: true,
-    initialLocation: appService.onboarding ? APP_PAGE.home.toPath : APP_PAGE.onBoarding.toPath,
+    initialLocation: appService.onboarding
+        ? APP_PAGE.home.toPath
+        : APP_PAGE.onBoarding.toPath,
     routes: <GoRoute>[
       GoRoute(
           path: APP_PAGE.home.toPath,
@@ -69,7 +71,8 @@ class AppRouter {
         path: APP_PAGE.upload.toPath,
         name: APP_PAGE.upload.toName,
         pageBuilder: (context, state) {
-          final List<CameraDescription> camera = state.extra as List<CameraDescription>;
+          final List<CameraDescription> camera =
+              state.extra as List<CameraDescription>;
           return MaterialPage(
               child: UploadPage(
             cameras: camera,
@@ -142,7 +145,8 @@ class AppRouter {
           path: APP_PAGE.followingNFonllowers.toPath,
           name: APP_PAGE.followingNFonllowers.toName,
           builder: (context, state) {
-            FollowingNFollowersData data = state.extra as FollowingNFollowersData;
+            FollowingNFollowersData data =
+                state.extra as FollowingNFollowersData;
             return FollowingsNFollowers(
               data: data,
             );
@@ -163,7 +167,6 @@ class AppRouter {
           ProfilePayload data = state.extra as ProfilePayload;
           return ProfilePage(
             payload: data,
-            isForOtherUser: true,
           );
         },
         pageBuilder: (context, state) {
@@ -171,18 +174,19 @@ class AppRouter {
           return CustomTransitionPage(
             child: ProfilePage(
               payload: data,
-              isForOtherUser: true,
             ),
-            transitionsBuilder: (context, animation, secondaryAnimation, child) => SlideTransition(
-                position: animation.drive(
-                  Tween<Offset>(
-                    begin: const Offset(0.75, 0),
-                    end: Offset.zero,
-                  ).chain(
-                    CurveTween(curve: Curves.ease),
-                  ),
-                ),
-                child: child),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) =>
+                    SlideTransition(
+                        position: animation.drive(
+                          Tween<Offset>(
+                            begin: const Offset(0.75, 0),
+                            end: Offset.zero,
+                          ).chain(
+                            CurveTween(curve: Curves.ease),
+                          ),
+                        ),
+                        child: child),
           );
         },
       ),
@@ -206,16 +210,17 @@ class AppRouter {
         name: APP_PAGE.cachesPage.toName,
         pageBuilder: (context, state) => CustomTransitionPage(
           child: const CachesPage(),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) => SlideTransition(
-              position: animation.drive(
-                Tween<Offset>(
-                  begin: const Offset(0.75, 0),
-                  end: Offset.zero,
-                ).chain(
-                  CurveTween(curve: Curves.ease),
-                ),
-              ),
-              child: child),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) =>
+              SlideTransition(
+                  position: animation.drive(
+                    Tween<Offset>(
+                      begin: const Offset(0.75, 0),
+                      end: Offset.zero,
+                    ).chain(
+                      CurveTween(curve: Curves.ease),
+                    ),
+                  ),
+                  child: child),
         ),
         builder: (context, state) {
           return const CachesPage();
@@ -228,16 +233,18 @@ class AppRouter {
           final ChatData data = state.extra as ChatData;
           return CustomTransitionPage(
             child: ChatPage(data: data),
-            transitionsBuilder: (context, animation, secondaryAnimation, child) => SlideTransition(
-                position: animation.drive(
-                  Tween<Offset>(
-                    begin: const Offset(0.75, 0),
-                    end: Offset.zero,
-                  ).chain(
-                    CurveTween(curve: Curves.ease),
-                  ),
-                ),
-                child: child),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) =>
+                    SlideTransition(
+                        position: animation.drive(
+                          Tween<Offset>(
+                            begin: const Offset(0.75, 0),
+                            end: Offset.zero,
+                          ).chain(
+                            CurveTween(curve: Curves.ease),
+                          ),
+                        ),
+                        child: child),
           );
         },
         builder: (context, state) {
@@ -253,16 +260,18 @@ class AppRouter {
         pageBuilder: (context, state) {
           return CustomTransitionPage(
             child: const SearchRoomPage(),
-            transitionsBuilder: (context, animation, secondaryAnimation, child) => SlideTransition(
-                position: animation.drive(
-                  Tween<Offset>(
-                    begin: const Offset(0.75, 0),
-                    end: Offset.zero,
-                  ).chain(
-                    CurveTween(curve: Curves.ease),
-                  ),
-                ),
-                child: child),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) =>
+                    SlideTransition(
+                        position: animation.drive(
+                          Tween<Offset>(
+                            begin: const Offset(0.75, 0),
+                            end: Offset.zero,
+                          ).chain(
+                            CurveTween(curve: Curves.ease),
+                          ),
+                        ),
+                        child: child),
           );
         },
         builder: (context, state) {
@@ -276,16 +285,18 @@ class AppRouter {
           final PlaySingleData data = state.extra as PlaySingleData;
           return CustomTransitionPage(
             child: PlaySingleVideoPage(data: data),
-            transitionsBuilder: (context, animation, secondaryAnimation, child) => SlideTransition(
-                position: animation.drive(
-                  Tween<Offset>(
-                    begin: const Offset(0.75, 0),
-                    end: Offset.zero,
-                  ).chain(
-                    CurveTween(curve: Curves.ease),
-                  ),
-                ),
-                child: child),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) =>
+                    SlideTransition(
+                        position: animation.drive(
+                          Tween<Offset>(
+                            begin: const Offset(0.75, 0),
+                            end: Offset.zero,
+                          ).chain(
+                            CurveTween(curve: Curves.ease),
+                          ),
+                        ),
+                        child: child),
           );
         },
         builder: (context, state) {
@@ -300,16 +311,18 @@ class AppRouter {
           final VideoFromGameData data = state.extra as VideoFromGameData;
           return CustomTransitionPage(
             child: VideoFromGamePage(data: data),
-            transitionsBuilder: (context, animation, secondaryAnimation, child) => SlideTransition(
-                position: animation.drive(
-                  Tween<Offset>(
-                    begin: const Offset(0.75, 0),
-                    end: Offset.zero,
-                  ).chain(
-                    CurveTween(curve: Curves.ease),
-                  ),
-                ),
-                child: child),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) =>
+                    SlideTransition(
+                        position: animation.drive(
+                          Tween<Offset>(
+                            begin: const Offset(0.75, 0),
+                            end: Offset.zero,
+                          ).chain(
+                            CurveTween(curve: Curves.ease),
+                          ),
+                        ),
+                        child: child),
           );
         },
         builder: (context, state) {
@@ -325,16 +338,18 @@ class AppRouter {
         pageBuilder: (context, state) {
           return CustomTransitionPage(
             child: const SelectGamePage(),
-            transitionsBuilder: (context, animation, secondaryAnimation, child) => SlideTransition(
-                position: animation.drive(
-                  Tween<Offset>(
-                    begin: const Offset(0.75, 0),
-                    end: Offset.zero,
-                  ).chain(
-                    CurveTween(curve: Curves.ease),
-                  ),
-                ),
-                child: child),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) =>
+                    SlideTransition(
+                        position: animation.drive(
+                          Tween<Offset>(
+                            begin: const Offset(0.75, 0),
+                            end: Offset.zero,
+                          ).chain(
+                            CurveTween(curve: Curves.ease),
+                          ),
+                        ),
+                        child: child),
           );
         },
         builder: (context, state) {
@@ -347,16 +362,18 @@ class AppRouter {
         pageBuilder: (context, state) {
           return CustomTransitionPage(
             child: const MenuPage(),
-            transitionsBuilder: (context, animation, secondaryAnimation, child) => SlideTransition(
-                position: animation.drive(
-                  Tween<Offset>(
-                    begin: const Offset(0.75, 0),
-                    end: Offset.zero,
-                  ).chain(
-                    CurveTween(curve: Curves.ease),
-                  ),
-                ),
-                child: child),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) =>
+                    SlideTransition(
+                        position: animation.drive(
+                          Tween<Offset>(
+                            begin: const Offset(0.75, 0),
+                            end: Offset.zero,
+                          ).chain(
+                            CurveTween(curve: Curves.ease),
+                          ),
+                        ),
+                        child: child),
           );
         },
         builder: (context, state) {
@@ -369,16 +386,18 @@ class AppRouter {
         pageBuilder: (context, state) {
           return CustomTransitionPage(
             child: const LanguagePage(),
-            transitionsBuilder: (context, animation, secondaryAnimation, child) => SlideTransition(
-                position: animation.drive(
-                  Tween<Offset>(
-                    begin: const Offset(0.75, 0),
-                    end: Offset.zero,
-                  ).chain(
-                    CurveTween(curve: Curves.ease),
-                  ),
-                ),
-                child: child),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) =>
+                    SlideTransition(
+                        position: animation.drive(
+                          Tween<Offset>(
+                            begin: const Offset(0.75, 0),
+                            end: Offset.zero,
+                          ).chain(
+                            CurveTween(curve: Curves.ease),
+                          ),
+                        ),
+                        child: child),
           );
         },
         builder: (context, state) {
