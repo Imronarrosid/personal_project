@@ -1,6 +1,7 @@
 {
   "project_info": {
     "project_number": "225501447717",
+    "firebase_url": "https://personal-project-4e389-default-rtdb.asia-southeast1.firebasedatabase.app",
     "project_id": "personal-project-4e389",
     "storage_bucket": "personal-project-4e389.appspot.com"
   },
@@ -13,6 +14,22 @@
         }
       },
       "oauth_client": [
+        {
+          "client_id": "225501447717-bps1u2ali9ht3i2oppt3dfq6lc7d48pb.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.personal_project",
+            "certificate_hash": "f5a0a8efafbdf77eb0b103c566a9ec3c9a7d2710"
+          }
+        },
+        {
+          "client_id": "225501447717-n2issrtjt564h91d7s42s81qqbnaoek9.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.personal_project",
+            "certificate_hash": "a169d9401063bef378f787e251ebf4f9fe8bced4"
+          }
+        },
         {
           "client_id": "225501447717-tc0ugbbo16m7rth6is43gf6fsbmqco4j.apps.googleusercontent.com",
           "client_type": 3
