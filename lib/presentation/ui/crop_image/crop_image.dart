@@ -20,8 +20,8 @@ Future<File?> cropImage(
       uiSettings: [
         AndroidUiSettings(
             toolbarTitle: LocaleKeys.title_crop.tr(),
-            toolbarColor: Theme.of(context).colorScheme.secondary,
-            toolbarWidgetColor: Theme.of(context).colorScheme.primary,
+            toolbarColor: Theme.of(context).colorScheme.background,
+            toolbarWidgetColor: Theme.of(context).colorScheme.onSurface,
             initAspectRatio: CropAspectRatioPreset.square,
             hideBottomControls: true,
             lockAspectRatio: true),

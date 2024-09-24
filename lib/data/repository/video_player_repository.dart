@@ -8,25 +8,25 @@ class VideoPlayerRepository {
     try {
       if (kIsWeb) {
         _controller = CachedVideoPlayerPlusController.networkUrl(
-              Uri.parse(url),
-              httpHeaders: {
-                'Cache-Control': 'max-age=3600',
-              },
-              invalidateCacheIfOlderThan: const Duration(
-                minutes: 5,
-              ),
-            );
+          Uri.parse(url),
+          httpHeaders: {
+            'Cache-Control': 'max-age=3600',
+          },
+          invalidateCacheIfOlderThan: const Duration(
+            minutes: 5,
+          ),
+        );
       } else {
         _controller = CachedVideoPlayerPlusController.networkUrl(
-              Uri.parse(url),
-              invalidateCacheIfOlderThan: const Duration(
-                minutes: 5,
-              ),
-            );
+          Uri.parse(url),
+          invalidateCacheIfOlderThan: const Duration(
+            days: 30,
+          ),
+        );
       }
       await _controller!.initialize();
 
-      debugPrint('ctrlll is ' + _controller!.value.isInitialized.toString());
+      debugPrint('ctrlll is ${_controller!.value.isInitialized}');
       return _controller;
     } catch (e) {
       debugPrint(e.toString());

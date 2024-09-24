@@ -18,7 +18,7 @@ void showModalBottomSheetMenu(
             height: height ?? 200,
             padding: EdgeInsets.all(Dimens.DIMENS_12),
             decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.secondary,
+                color: Theme.of(context).colorScheme.background,
                 borderRadius: BorderRadius.circular(10)),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

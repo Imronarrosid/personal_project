@@ -1,6 +1,8 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:extended_nested_scroll_view/extended_nested_scroll_view.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
@@ -9,64 +11,129 @@ import 'package:personal_project/constant/color.dart';
 import 'package:personal_project/constant/dimens.dart';
 import 'package:personal_project/data/repository/following_n_followers_repository.dart';
 import 'package:personal_project/domain/model/following_n_followers_data_model.dart';
-import 'package:personal_project/domain/model/profile_data_model.dart';
 import 'package:personal_project/domain/model/user.dart';
 import 'package:personal_project/domain/reporsitory/auth_reposotory.dart';
 import 'package:personal_project/domain/reporsitory/user_repository.dart';
 import 'package:personal_project/presentation/l10n/stings.g.dart';
+import 'package:personal_project/presentation/responsive/dimension.dart';
+import 'package:personal_project/presentation/router/app_router.dart';
 import 'package:personal_project/presentation/router/route_utils.dart';
+import 'package:personal_project/presentation/shared_components/handel_back_button.dart';
 import 'package:personal_project/presentation/shared_components/keep_alive_page.dart';
 import 'package:personal_project/presentation/ui/auth/auth.dart';
 import 'package:personal_project/presentation/ui/followings_n_followers/bloc/following_n_followers_bloc.dart';
 import 'package:personal_project/presentation/ui/profile/cubit/follow_cubit.dart';
+import 'package:provider/provider.dart';
 
-class FollowingsNFollowers extends StatelessWidget {
-  final FollowingNFollowersData data;
-  const FollowingsNFollowers({super.key, required this.data});
+class FollowingsNFollowers extends StatefulWidget {
+  final String userName;
+  final String tab;
+  const FollowingsNFollowers({
+    super.key,
+    required this.userName,
+    required this.tab,
+  });
+
+  @override
+  State<FollowingsNFollowers> createState() => _FollowingsNFollowersState();
+}
+
+class _FollowingsNFollowersState extends State<FollowingsNFollowers>
+    with SingleTickerProviderStateMixin {
+  late final TabController tabController;
+  int index = 0;
+  @override
+  void initState() {
+    switch (widget.tab) {
+      case 'following':
+        index = 1;
+        break;
+      case 'followers':
+        index = 0;
+        break;
+      default:
+        index = 0;
+        break;
+    }
+    tabController = TabController(initialIndex: index, length: 2, vsync: this);
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: DefaultTabController(
-        initialIndex: data.initialIndex,
-        length: 2,
-        child: NestedScrollView(
+    Size size = MediaQuery.of(context).size;
+    return HandleBackButton(
+      child: Scaffold(
+        backgroundColor: size.width > mobileWidth ? Colors.transparent : null,
+        body: ExtendedNestedScrollView(
           headerSliverBuilder: (context, innerBoxIsScrolled) {
             return [
               SliverAppBar(
+                leading: BackButton(
+                  onPressed: () {
+                    final AppRouter appRouter =
+                        Provider.of(context, listen: false);
+
+                    appRouter.onBackButtonPressed(context);
+                  },
+                ),
                 elevation: 1,
                 scrolledUnderElevation: 0,
                 pinned: true,
-                shape: Border(
-                  bottom: BorderSide(
-                      color: Theme.of(context).colorScheme.primary, width: 0.2),
-                ),
-                title: Text(data.userName),
-                bottom: TabBar(indicatorSize: TabBarIndicatorSize.tab, tabs: [
-                  Tab(
-                    text: LocaleKeys.label_followers.tr(),
-                  ),
-                  Tab(
-                    text: LocaleKeys.label_following.tr(),
-                  ),
-                ]),
+                shape: size.width > mobileWidth
+                    ? const RoundedRectangleBorder(
+                        borderRadius:
+                            BorderRadius.vertical(top: Radius.circular(12)),
+                      )
+                    : Border(
+                        bottom: BorderSide(
+                            color: Theme.of(context).colorScheme.primary,
+                            width: 0.2),
+                      ),
+                title: Text(widget.userName),
+                bottom: TabBar(
+                    controller: tabController,
+                    indicatorSize: TabBarIndicatorSize.tab,
+                    tabs: [
+                      Tab(
+                        text: LocaleKeys.label_followers.tr(),
+                      ),
+                      Tab(
+                        text: LocaleKeys.label_following.tr(),
+                      ),
+                    ]),
               ),
             ];
           },
-          body: TabBarView(children: [
-            KeepAlivePage(
-              child: FollowingNFollowersTab(
-                uid: data.uid,
-                tabFor: TabFor.followers,
-              ),
-            ),
-            KeepAlivePage(
-              child: FollowingNFollowersTab(
-                uid: data.uid,
-                tabFor: TabFor.following,
-              ),
-            ),
-          ]),
+          onlyOneScrollInBody: true,
+          body: StreamBuilder<User>(
+              stream: context
+                  .read<UserRepository>()
+                  .userDataStreamByUsername(widget.userName),
+              builder: (context, snapshot) {
+                User? data = snapshot.data;
+                if (!snapshot.hasData) {
+                  return const Center(
+                    child: CircularProgressIndicator(),
+                  );
+                }
+                return TabBarView(controller: tabController, children: [
+                  KeepAlivePage(
+                    child: FollowingNFollowersTab(
+                      key: Key(TabFor.followers.name),
+                      uid: data!.id,
+                      tabFor: TabFor.followers,
+                    ),
+                  ),
+                  KeepAlivePage(
+                    child: FollowingNFollowersTab(
+                      key: Key(TabFor.following.name),
+                      uid: data.id,
+                      tabFor: TabFor.following,
+                    ),
+                  ),
+                ]);
+              }),
         ),
       ),
     );
@@ -97,7 +164,12 @@ class FollowingNFollowersTab extends StatelessWidget {
             if (state.status == FollowingNFollowersStatus.initial) {
               return const Center(child: CircularProgressIndicator());
             }
+
             return PagedListView<int, String>(
+                padding: EdgeInsets.zero,
+                key: PageStorageKey(tabFor.name),
+                addAutomaticKeepAlives: true,
+                scrollController: ScrollController(initialScrollOffset: 0),
                 builderDelegate: PagedChildBuilderDelegate(
                   noItemsFoundIndicatorBuilder: (context) {
                     if (tabFor == TabFor.followers) {
@@ -131,12 +203,8 @@ class FollowingNFollowersTab extends StatelessWidget {
                             return ListTile(
                               tileColor: Colors.transparent,
                               onTap: () {
-                                context.push(
-                                  APP_PAGE.profile.toPath,
-                                  extra: ProfilePayload(
-                                    user: user,
-                                    isForOtherUser: true,
-                                  ),
+                                context.go(
+                                  '${APP_PAGE.profile.toPath}/${user.userName}',
                                 );
                               },
                               leading: CircleAvatar(
@@ -153,7 +221,7 @@ class FollowingNFollowersTab extends StatelessWidget {
                                     .apply(
                                       color: Theme.of(context)
                                           .colorScheme
-                                          .primary
+                                          .onSurface
                                           .withOpacity(0.6),
                                     ),
                               ),

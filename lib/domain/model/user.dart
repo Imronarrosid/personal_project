@@ -91,6 +91,20 @@ class User extends Equatable {
         lastSeen: snap['lastSeen'],
         userNameUpdatedAt: snap['userNameUpdatedAt']);
   }
+  static User fromMap(Map<String, dynamic> snapshot) {
+    var snap = snapshot;
+    return User(
+        name: snap['name'],
+        userName: snap['userName'],
+        photo: snap['photoUrl'],
+        email: snap['email'],
+        id: snap['uid'],
+        createdAt: snap['createdAt'],
+        nameUpdatedAt: snap['nameUpdatedAt'],
+        searchKey: snap['searchKey'],
+        lastSeen: snap['lastSeen'],
+        userNameUpdatedAt: snap['userNameUpdatedAt']);
+  }
 
   @override
   List<Object?> get props => [

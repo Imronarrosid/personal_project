@@ -474,9 +474,8 @@ class _VideoItemState extends State<VideoItem> {
                   if (videoData.category == 'Entertainment')
                     GestureDetector(
                       onTap: () {
-                        context.push(
-                          APP_PAGE.VBC.toPath,
-                          extra: VideoCategory(category: 'Entertainment'),
+                        context.go(
+                          '${APP_PAGE.category.toPath}/${videoData.category}',
                         );
                       },
                       child: Container(
@@ -504,12 +503,9 @@ class _VideoItemState extends State<VideoItem> {
                           //         game: videoData.game!,
                           //         captions: videoData.caption,
                           //         profileImg: data!.photo!));
-                          context.push(
-                            APP_PAGE.VBC.toPath,
-                            extra: VideoCategory(
-                              gameFav: videoData.game,
-                            ),
-                          );
+                           context.go(
+                          '${APP_PAGE.category.toPath}/${videoData.category}',
+                        );
                         } else {
                           Fluttertoast.showToast(
                               gravity: ToastGravity.TOP,
@@ -1038,12 +1034,9 @@ class _VideoItemState extends State<VideoItem> {
                           //     profileImg: data.photo!,
                           //   ),
                           // );
-                          context.push(
-                            APP_PAGE.VBC.toPath,
-                            extra: VideoCategory(
-                              gameFav: videoData.game,
-                            ),
-                          );
+                          context.go(
+                          '${APP_PAGE.category.toPath}/${videoData.category}',
+                        );
                         },
                         child: SizedBox(
                           width: Dimens.DIMENS_150,

@@ -51,6 +51,8 @@ class DefaultFirebaseOptions {
     authDomain: 'personal-project-4e389.firebaseapp.com',
     storageBucket: 'personal-project-4e389.appspot.com',
     measurementId: 'G-XMQGSRLVQ4',
+    databaseURL:
+        'https://personal-project-4e389-default-rtdb.asia-southeast1.firebasedatabase.app',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
@@ -59,6 +61,8 @@ class DefaultFirebaseOptions {
     messagingSenderId: '225501447717',
     projectId: 'personal-project-4e389',
     storageBucket: 'personal-project-4e389.appspot.com',
+    databaseURL:
+        'https://personal-project-4e389-default-rtdb.asia-southeast1.firebasedatabase.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
@@ -68,6 +72,8 @@ class DefaultFirebaseOptions {
     projectId: 'personal-project-4e389',
     storageBucket: 'personal-project-4e389.appspot.com',
     iosBundleId: 'com.example.personalProject',
+    databaseURL:
+        'https://personal-project-4e389-default-rtdb.asia-southeast1.firebasedatabase.app',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
@@ -77,5 +83,7 @@ class DefaultFirebaseOptions {
     projectId: 'personal-project-4e389',
     storageBucket: 'personal-project-4e389.appspot.com',
     iosBundleId: 'com.example.personalProject.RunnerTests',
+    databaseURL:
+        'https://personal-project-4e389-default-rtdb.asia-southeast1.firebasedatabase.app',
   );
 }

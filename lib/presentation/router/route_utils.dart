@@ -4,7 +4,10 @@ enum APP_PAGE {
   splash,
   login,
   home,
+  forYou,
+  search,
   chat,
+  message,
   upload,
   error,
   profile,
@@ -26,8 +29,11 @@ enum APP_PAGE {
   videoFromGame,
   followingNFonllowers,
   searchRoom,
-  VBC,
+  category,
   selectCover,
+  mabarChat,
+  following,
+  followers,
 }
 
 extension AppPageExtension on APP_PAGE {
@@ -39,6 +45,12 @@ extension AppPageExtension on APP_PAGE {
         return "/login";
       case APP_PAGE.upload:
         return "/upload";
+      case APP_PAGE.forYou:
+        return "/foryou";
+      case APP_PAGE.search:
+        return "/search";
+      case APP_PAGE.message:
+        return "/message";
       case APP_PAGE.splash:
         return "/splash";
       case APP_PAGE.error:
@@ -83,10 +95,16 @@ extension AppPageExtension on APP_PAGE {
         return "/chat";
       case APP_PAGE.searchRoom:
         return "/search-room";
-      case APP_PAGE.VBC:
-        return "/VBC";
+      case APP_PAGE.category:
+        return "/category";
       case APP_PAGE.selectCover:
         return "/selec-cover";
+      case APP_PAGE.mabarChat:
+        return "/mabar";
+      case APP_PAGE.following:
+        return "/following";
+      case APP_PAGE.followers:
+        return "/followers";
       default:
         return "/";
     }
@@ -100,6 +118,12 @@ extension AppPageExtension on APP_PAGE {
         return "LOGIN";
       case APP_PAGE.upload:
         return "UPLOAD";
+      case APP_PAGE.forYou:
+        return "FORYOU";
+      case APP_PAGE.search:
+        return "SEARCH";
+      case APP_PAGE.message:
+        return "Message";
       case APP_PAGE.splash:
         return "SPLASH";
       case APP_PAGE.error:
@@ -144,10 +168,16 @@ extension AppPageExtension on APP_PAGE {
         return "CHAT";
       case APP_PAGE.searchRoom:
         return "SEARCH-ROOM";
-      case APP_PAGE.VBC:
-        return "VBC";
+      case APP_PAGE.category:
+        return "CATEGORY";
       case APP_PAGE.selectCover:
         return "SC";
+      case APP_PAGE.mabarChat:
+        return "MABAR";
+      case APP_PAGE.following:
+        return "FOLLOWING";
+      case APP_PAGE.followers:
+        return "FOLLOWERS";
       default:
         return "HOME";
     }

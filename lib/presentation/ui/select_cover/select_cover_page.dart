@@ -64,7 +64,8 @@ class _SelectCoverState extends State<SelectCover> {
     super.dispose();
   }
 
-  void _showErrorSnackBar(String message) => ScaffoldMessenger.of(context).showSnackBar(
+  void _showErrorSnackBar(String message) =>
+      ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(message),
           duration: const Duration(seconds: 1),
@@ -94,23 +95,27 @@ class _SelectCoverState extends State<SelectCover> {
                               children: [
                                 Expanded(
                                   child: TabBarView(
-                                    physics: const NeverScrollableScrollPhysics(),
+                                    physics:
+                                        const NeverScrollableScrollPhysics(),
                                     children: [
                                       Stack(
                                         alignment: Alignment.center,
                                         children: [
-                                          CropGridViewer.preview(controller: _controller),
+                                          CropGridViewer.preview(
+                                              controller: _controller),
                                           AnimatedBuilder(
                                             animation: _controller.video,
                                             builder: (_, __) => AnimatedOpacity(
-                                              opacity: _controller.isPlaying ? 0 : 1,
+                                              opacity:
+                                                  _controller.isPlaying ? 0 : 1,
                                               duration: kThemeAnimationDuration,
                                               child: GestureDetector(
                                                 onTap: _controller.video.play,
                                                 child: Container(
                                                   width: 40,
                                                   height: 40,
-                                                  decoration: const BoxDecoration(
+                                                  decoration:
+                                                      const BoxDecoration(
                                                     color: Colors.white,
                                                     shape: BoxShape.circle,
                                                   ),
@@ -134,7 +139,8 @@ class _SelectCoverState extends State<SelectCover> {
                                     children: [
                                       Expanded(
                                         child: TabBarView(
-                                          physics: const NeverScrollableScrollPhysics(),
+                                          physics:
+                                              const NeverScrollableScrollPhysics(),
                                           children: [
                                             // Column(
                                             //   mainAxisAlignment:
@@ -206,7 +212,8 @@ class _SelectCoverState extends State<SelectCover> {
             ),
             Material(
               color: COLOR_grey.withOpacity(0.6),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(50)),
               child: InkWell(
                 borderRadius: BorderRadius.circular(50),
                 onTap: () {
@@ -218,7 +225,8 @@ class _SelectCoverState extends State<SelectCover> {
                   alignment: Alignment.center,
                   padding: const EdgeInsets.only(right: 2, bottom: 1),
                   decoration: BoxDecoration(
-                      color: Colors.transparent, borderRadius: BorderRadius.circular(50)),
+                      color: Colors.transparent,
+                      borderRadius: BorderRadius.circular(50)),
                   child: Icon(
                     BootstrapIcons.arrow_left,
                     size: Dimens.DIMENS_20,
@@ -228,7 +236,8 @@ class _SelectCoverState extends State<SelectCover> {
             ),
             const Spacer(),
             Material(
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(50)),
               child: InkWell(
                 onTap: _exportCover,
                 splashColor: COLOR_black_ff121212.withOpacity(0.4),
@@ -340,19 +349,22 @@ class _SelectCoverState extends State<SelectCover> {
       imageFormat: ImageFormat.JPEG,
       thumbnailPath: kIsWeb ? null : (await getTemporaryDirectory()).path,
       video: _controller.file.path,
-      timeMs: _controller.selectedCoverVal?.timeMs ?? _controller.startTrim.inMilliseconds,
+      timeMs: _controller.selectedCoverVal?.timeMs ??
+          _controller.startTrim.inMilliseconds,
       quality: quality,
     );
 
-    final inputPath =
-        kIsWeb ? webInputPath(FileFormat.fromMimeType(coverFile.mimeType)) : coverFile.path;
-    final outputPath =
-        kIsWeb ? webOutputPath(outputFormat) : await ioOutputPath(coverFile.path, outputFormat);
+    final inputPath = kIsWeb
+        ? webInputPath(FileFormat.fromMimeType(coverFile.mimeType))
+        : coverFile.path;
+    final outputPath = kIsWeb
+        ? webOutputPath(outputFormat)
+        : await ioOutputPath(coverFile.path, outputFormat);
 
     var config = _controller.createCoverFFmpegConfig();
     final execute = config.createExportCommand(
-      inputPath: '"$inputPath"',
-      outputPath: '"$outputPath"',
+      inputPath: kIsWeb ? inputPath : '"$inputPath"',
+      outputPath: kIsWeb ? outputPath : '"$outputPath"',
       scale: scale,
       quality: quality,
       isFiltersEnabled: isFiltersEnabled,
@@ -409,7 +421,9 @@ class FFmpegExport {
         }
       },
       null,
-      onStatistics != null ? (s) => onStatistics(FFmpegStatistics.fromIOStatistics(s)) : null,
+      onStatistics != null
+          ? (s) => onStatistics(FFmpegStatistics.fromIOStatistics(s))
+          : null,
     );
 
     return completer.future;
@@ -426,7 +440,12 @@ class FFmpegExport {
     FFmpeg? ffmpeg;
     final logs = <String>[];
     try {
-      ffmpeg = createFFmpeg(CreateFFmpegParam(log: false));
+      ffmpeg = createFFmpeg(
+        CreateFFmpegParam(
+          log: true,
+          corePath: 'https://unpkg.com/@ffmpeg/core@0.11.0/dist/ffmpeg-core.js',
+        ),
+      );
       ffmpeg.setLogger((LoggerParam logger) {
         logs.add('[${logger.type}] ${logger.message}');
 
@@ -510,7 +529,9 @@ class FFmpegStatistics {
   }
 
   double getProgress(int videoDurationMs) {
-    return videoDurationMs <= 0.0 ? 0.0 : (time / videoDurationMs).clamp(0.0, 1.0);
+    return videoDurationMs <= 0.0
+        ? 0.0
+        : (time / videoDurationMs).clamp(0.0, 1.0);
   }
 
   static int _timeToMs(String timeString) {

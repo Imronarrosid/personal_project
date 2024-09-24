@@ -12,6 +12,7 @@ import 'package:personal_project/config/bloc_status_enum.dart';
 import 'package:personal_project/constant/color.dart';
 import 'package:personal_project/constant/dimens.dart';
 import 'package:personal_project/data/repository/coment_repository.dart';
+import 'package:personal_project/data/repository/upload_repository.dart';
 import 'package:personal_project/data/repository/video_player_repository.dart';
 import 'package:personal_project/domain/model/category_model.dart';
 import 'package:personal_project/domain/model/profile_data_model.dart';
@@ -34,6 +35,7 @@ import 'package:personal_project/presentation/ui/video/list_video/bloc/video_pla
 import 'package:personal_project/presentation/ui/video/list_video/cubit/captions_cubit.dart';
 import 'package:personal_project/presentation/ui/video/list_video/cubit/like_video_cubit.dart';
 import 'package:personal_project/presentation/ui/video/list_video/cubit/video_size_cubit.dart';
+import 'package:personal_project/presentation/ui/video/video_item/video_padding_notifier.dart';
 import 'package:personal_project/utils/number_format.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
@@ -120,7 +122,8 @@ class _VideoItemMobileState extends State<VideoItemMobile> {
                       child: Text('Video deleted'),
                     );
                   }
-                  return SizedBox(
+                  return Container(
+                    color: Colors.black,
                     width: size.width,
                     height: size.height,
                     child: Stack(children: <Widget>[
@@ -206,16 +209,11 @@ class _VideoItemMobileState extends State<VideoItemMobile> {
   Widget _videoView(Size size, Video videoData) {
     final VideoPlayerRepository repo =
         RepositoryProvider.of<VideoPlayerRepository>(context);
-    return BlocBuilder<VideoSizeCubit, VideoSizeState>(
-      builder: (context, state) {
-        double bottomPadding = 0.0;
-        if (state is VideoSizeChanged) {
-          double sizeCommentView = ((size.height * state.size) - 85);
-          bottomPadding = sizeCommentView.isNegative ? 0 : sizeCommentView;
-          if (state.size == 0.1) {
-            bottomPadding = 0;
-          }
-        }
+    return ListenableBuilder(
+      listenable: VideoPaddingNOtifire.instance,
+      builder: (context, child) {
+        double bottomPadding = VideoPaddingNOtifire.instance.bottomPadding;
+        debugPrint('bottompadding $bottomPadding');
         return Container(
           width: size.width,
           height: size.height,
@@ -404,8 +402,10 @@ class _VideoItemMobileState extends State<VideoItemMobile> {
                     create: (context) => CommentRepository(),
                     child: GestureDetector(
                       onTap: () {
-                        BlocProvider.of<VideoSizeCubit>(context)
-                            .changeVideoSize(0.7);
+                        VideoPaddingNOtifire.instance.setBottomPdding(
+                            bottomSheetHeight:
+                                ((MediaQuery.of(context).size.height * 0.7) -
+                                    85));
                         showCommentsBottomSheet(
                           context,
                           postId: widget.videoData.id!,
@@ -475,69 +475,44 @@ class _VideoItemMobileState extends State<VideoItemMobile> {
                     videoData,
                     authRepository,
                   ),
-                  if (videoData.category == 'Entertainment')
-                    GestureDetector(
-                      onTap: () {
-                        context.push(
-                          APP_PAGE.VBC.toPath,
-                          extra: VideoCategory(category: 'Entertainment'),
-                        );
-                      },
-                      child: Container(
-                        width: Dimens.DIMENS_30,
-                        height: Dimens.DIMENS_30,
-                        decoration: BoxDecoration(
-                          border: Border.all(color: COLOR_white_fff5f5f5),
-                          color: COLOR_black_ff121212,
-                          borderRadius: BorderRadius.circular(
-                            8,
+                  GestureDetector(
+                    onTap: () {
+                      if (videoData.category != '') {
+                        // context.push(APP_PAGE.videoFromGame.toPath,
+                        //     extra: VideoFromGameData(
+                        //         game: videoData.game!,
+                        //         captions: videoData.caption,
+                        //         profileImg: data!.photo!));
+                        context.go(
+                          '${APP_PAGE.category.toPath}/${videoData.category}',
+                          extra: VideoCategory(
+                            gameFav: videoData.game,
                           ),
-                        ),
-                        child: const Icon(
-                          Icons.movie_outlined,
-                          size: 18,
-                        ),
+                        );
+                      } else {
+                        Fluttertoast.showToast(
+                            gravity: ToastGravity.TOP,
+                            msg: LocaleKeys.message_no_game.tr());
+                      }
+                    },
+                    child: Container(
+                      width: Dimens.DIMENS_30,
+                      height: Dimens.DIMENS_30,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        border: Border.all(color: COLOR_white_fff5f5f5),
+                        borderRadius: BorderRadius.circular(8),
+                        color: const Color.fromARGB(255, 27, 26, 26),
                       ),
-                    )
-                  else
-                    GestureDetector(
-                      onTap: () {
-                        if (videoData.game != null) {
-                          // context.push(APP_PAGE.videoFromGame.toPath,
-                          //     extra: VideoFromGameData(
-                          //         game: videoData.game!,
-                          //         captions: videoData.caption,
-                          //         profileImg: data!.photo!));
-                          context.push(
-                            APP_PAGE.VBC.toPath,
-                            extra: VideoCategory(
-                              gameFav: videoData.game,
-                            ),
-                          );
-                        } else {
-                          Fluttertoast.showToast(
-                              gravity: ToastGravity.TOP,
-                              msg: LocaleKeys.message_no_game.tr());
-                        }
-                      },
-                      child: Container(
-                        width: Dimens.DIMENS_30,
-                        height: Dimens.DIMENS_30,
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          border: Border.all(color: COLOR_white_fff5f5f5),
-                          borderRadius: BorderRadius.circular(8),
-                          color: const Color.fromARGB(255, 27, 26, 26),
-                        ),
-                        child: (videoData.game == null)
-                            ? Icon(
-                                BootstrapIcons.controller,
-                                color: COLOR_white_fff5f5f5,
-                                size: Dimens.DIMENS_15,
-                              )
-                            : _buildGameImage(videoData),
-                      ),
-                    )
+                      child: (videoData.game == null)
+                          ? Icon(
+                              BootstrapIcons.controller,
+                              color: COLOR_white_fff5f5f5,
+                              size: Dimens.DIMENS_15,
+                            )
+                          : _buildGameImage(videoData),
+                    ),
+                  )
                 ],
               ),
             );
@@ -668,11 +643,37 @@ class _VideoItemMobileState extends State<VideoItemMobile> {
     return ClipRRect(
       borderRadius: BorderRadius.circular(8),
       child: SizedBox.expand(
-        child: CachedNetworkImage(
-          imageUrl: videoData.game!.gameImage!,
-          errorWidget: (_, __, ___) => Container(),
-          fit: BoxFit.cover,
-        ),
+        child: videoData.category == 'Non Gaming'
+            ? Container(
+                width: Dimens.DIMENS_30,
+                height: Dimens.DIMENS_30,
+                decoration: BoxDecoration(
+                  border: Border.all(color: COLOR_white_fff5f5f5),
+                  color: COLOR_black_ff121212,
+                  borderRadius: BorderRadius.circular(
+                    8,
+                  ),
+                ),
+                child: const Icon(
+                  Icons.movie_outlined,
+                  size: 18,
+                ),
+              )
+            : FutureBuilder(
+                future:
+                    UploadRepository.instance.getGameAvatar(videoData.category),
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData) {
+                    return Container(
+                      color: COLOR_black_900,
+                    );
+                  }
+                  return CachedNetworkImage(
+                    imageUrl: videoData.game!.gameImage!,
+                    errorWidget: (_, __, ___) => Container(),
+                    fit: BoxFit.cover,
+                  );
+                }),
       ),
     );
   }
@@ -802,12 +803,7 @@ class _VideoItemMobileState extends State<VideoItemMobile> {
     if (MediaQuery.of(context).size.width > mobileWidth) {
       BlocProvider.of<HomeCubit>(context).changePage(5, data: data);
     } else {
-      context.push(
-        APP_PAGE.profile.toPath,
-        extra: ProfilePayload(
-          user: data,
-        ),
-      );
+      context.go('/profile/${data.userName}', extra: data);
     }
   }
 
@@ -1045,8 +1041,8 @@ class _VideoItemMobileState extends State<VideoItemMobile> {
                           //     profileImg: data.photo!,
                           //   ),
                           // );
-                          context.push(
-                            APP_PAGE.VBC.toPath,
+                          context.go(
+                            APP_PAGE.category.toPath,
                             extra: VideoCategory(
                               gameFav: videoData.game,
                             ),

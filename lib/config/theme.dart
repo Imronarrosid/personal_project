@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:personal_project/constant/color.dart';
 
 class AppTheme {
@@ -47,7 +48,6 @@ class AppTheme {
         color: COLOR_white_fff5f5f5,
       ),
     ),
-    listTileTheme: ListTileThemeData(tileColor: COLOR_black_900),
     tabBarTheme: TabBarTheme(
         unselectedLabelColor: Colors.white38,
         overlayColor: MaterialStateProperty.all<Color>(Colors.black12)),
@@ -59,26 +59,17 @@ class AppTheme {
       labelStyle: TextStyle(color: COLOR_white_fff5f5f5),
     ),
     colorScheme: ColorScheme.dark(
-        primary: COLOR_white_fff5f5f5,
+        primary: COLOR_purple,
         onPrimary: COLOR_white_fff5f5f5,
-        onSecondary: COLOR_black_ff121212,
-        secondary: COLOR_black_ff121212,
+        onSecondary: COLOR_white_fff5f5f5,
+        secondary: COLOR_white_fff5f5f5,
         onSurface: COLOR_white_fff5f5f5,
         onTertiary: COLOR_purple,
         tertiary: COLOR_black_900),
     iconTheme: IconThemeData(
       color: COLOR_white_fff5f5f5,
     ),
-    textTheme: TextTheme(
-      titleLarge: TextStyle(
-        color: COLOR_white_fff5f5f5,
-      ),
-      titleMedium: TextStyle(
-        color: COLOR_white_fff5f5f5,
-      ),
-      titleSmall: TextStyle(
-        color: COLOR_white_fff5f5f5,
-      ),
-    ),
+    textTheme: GoogleFonts.openSansTextTheme(
+        const TextTheme().apply(displayColor: COLOR_white_fff5f5f5)),
   );
 }

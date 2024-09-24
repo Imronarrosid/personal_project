@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:bootstrap_icons/bootstrap_icons.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
@@ -26,7 +27,9 @@ class _VideoPreviewPageState extends State<VideoPreviewPage> {
 
   @override
   void initState() {
-    _videoPlayerController = VideoPlayerController.file(widget.previewData)
+    _videoPlayerController = kIsWeb
+        ? VideoPlayerController.networkUrl(Uri.parse(widget.previewData.path))
+        : VideoPlayerController.file(widget.previewData)
       ..initialize().then((_) {
         if (_videoPlayerController.value.isInitialized) {
           setState(() {});
@@ -47,8 +50,9 @@ class _VideoPreviewPageState extends State<VideoPreviewPage> {
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
-      persistentFooterButtons: [
-        Material(
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Material(
           color: Theme.of(context).colorScheme.onTertiary,
           borderRadius: BorderRadius.circular(10),
           child: InkWell(
@@ -66,8 +70,8 @@ class _VideoPreviewPageState extends State<VideoPreviewPage> {
               child: Text(LocaleKeys.title_upload.tr()),
             ),
           ),
-        )
-      ],
+        ),
+      ),
       body: Stack(
         children: [
           SizedBox.expand(

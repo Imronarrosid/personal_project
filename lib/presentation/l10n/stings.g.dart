@@ -68,6 +68,7 @@ abstract class  LocaleKeys {
   static const label_share = 'label_share';
   static const label_game = 'label_game';
   static const label_cover = 'label_cover';
+  static const label_slect_cover = 'label_slect_cover';
   static const label_replies = 'label_replies';
   static const label_reply = 'label_reply';
   static const label_reply_to = 'label_reply_to';

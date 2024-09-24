@@ -25,24 +25,21 @@ import 'package:personal_project/presentation/ui/comments/bloc/comment_bloc.dart
 import 'package:personal_project/presentation/ui/comments/bloc/comments_paging_bloc.dart';
 import 'package:personal_project/presentation/ui/comments/cubit/like_comment_cubit.dart';
 import 'package:personal_project/presentation/ui/video/list_video/cubit/video_size_cubit.dart';
+import 'package:personal_project/presentation/ui/video/video_item/video_padding_notifier.dart';
 import 'package:personal_project/utils/number_format.dart';
 import 'package:timeago/timeago.dart' as tago;
 
 import 'cubit/replies_cubit.dart';
 
-Future<dynamic> showCommentsBottomSheet(
+showCommentsBottomSheet(
   BuildContext context, {
   required String postId,
 }) {
-  return showModalBottomSheet(
+  return showBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      barrierColor: Colors.transparent,
-      useSafeArea: true,
-      isDismissible: true,
       elevation: 0,
       enableDrag: false,
-      isScrollControlled: true,
       builder: (_) {
         return CommentBottomSheet(
           postId: postId,
@@ -81,9 +78,10 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
   void initState() {
     _draggableController.addListener(() {
       debugPrint('height ${_draggableController.size.toString()}');
-
-      BlocProvider.of<VideoSizeCubit>(context)
-          .changeVideoSize(_draggableController.size);
+      double size =
+          ((MediaQuery.of(context).size.height * _draggableController.size) -
+              85);
+      VideoPaddingNOtifire.instance.setBottomPdding(bottomSheetHeight: size);
     });
     super.initState();
   }
@@ -189,7 +187,7 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                       body: Container(
                         height: MediaQuery.of(context).size.height,
                         decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.secondary,
+                          color: Theme.of(context).colorScheme.background,
                           borderRadius: const BorderRadius.only(
                             topLeft: Radius.circular(10),
                             topRight: Radius.circular(10),
@@ -226,11 +224,7 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
   Widget _buildCommnetsInput(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        border: Border(
-          top: BorderSide(
-            color: COLOR_black_ff121212.withOpacity(0.4),
-          ),
-        ),
+        borderRadius: BorderRadius.circular(50),
       ),
       child: Container(
         padding: EdgeInsets.symmetric(
@@ -316,7 +310,7 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                     child: Container(
                       decoration: BoxDecoration(
                           color: Theme.of(context).colorScheme.tertiary,
-                          borderRadius: BorderRadius.circular(10)),
+                          borderRadius: BorderRadius.circular(50)),
                       child: BlocBuilder<AuthBloc, AuthState>(
                         builder: (context, state) {
                           return GestureDetector(
@@ -332,41 +326,49 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                                 showAuthBottomSheetFunc(context);
                               }
                             },
-                            child: TextField(
-                              focusNode: _focusNode,
-                              controller: _textEditingController,
-                              decoration: InputDecoration(
-                                  enabled:
-                                      state.status == AuthStatus.authenticated,
-                                  contentPadding: EdgeInsets.symmetric(
-                                      horizontal: Dimens.DIMENS_12),
-                                  hintText:
-                                      LocaleKeys.message_add_comments.tr(),
-                                  hintStyle: const TextStyle(
-                                      fontWeight: FontWeight.normal),
-                                  border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(10))),
-                              textAlignVertical: TextAlignVertical.center,
-                              keyboardType: TextInputType.multiline,
-                              minLines: 1,
-                              maxLines: 3,
-                              onChanged: (text) {
-                                final CommentBloc commentsBloc =
-                                    BlocProvider.of<CommentBloc>(context);
-                                if (text.endsWith('\n')) {
-                                  // Handle the Enter key press
+                            child: Container(
+                              decoration: BoxDecoration(
+                                  color:
+                                      Theme.of(context).colorScheme.background,
+                                  borderRadius: BorderRadius.circular(50)),
+                              child: TextField(
+                                focusNode: _focusNode,
+                                controller: _textEditingController,
+                                decoration: InputDecoration(
+                                    enabled: state.status ==
+                                        AuthStatus.authenticated,
+                                    contentPadding: EdgeInsets.symmetric(
+                                        horizontal: Dimens.DIMENS_12),
+                                    hintText:
+                                        LocaleKeys.message_add_comments.tr(),
+                                    hintStyle: const TextStyle(
+                                        fontWeight: FontWeight.normal),
+                                    border: OutlineInputBorder(
+                                        borderSide: BorderSide.none,
+                                        borderRadius:
+                                            BorderRadius.circular(50))),
+                                textAlignVertical: TextAlignVertical.center,
+                                keyboardType: TextInputType.multiline,
+                                minLines: 1,
+                                maxLines: 3,
+                                onChanged: (text) {
+                                  final CommentBloc commentsBloc =
+                                      BlocProvider.of<CommentBloc>(context);
+                                  if (text.endsWith('\n')) {
+                                    // Handle the Enter key press
 
-                                  // You can add your custom logic here
-                                }
-                                if (text.isNotEmpty) {
-                                  commentsBloc.add(InputComments());
-                                } else {
-                                  commentsBloc.add(TapCommentForm());
-                                }
-                              },
-                              onSubmitted: (_) {
-                                debugPrint('Submit');
-                              },
+                                    // You can add your custom logic here
+                                  }
+                                  if (text.isNotEmpty) {
+                                    commentsBloc.add(InputComments());
+                                  } else {
+                                    commentsBloc.add(TapCommentForm());
+                                  }
+                                },
+                                onSubmitted: (_) {
+                                  debugPrint('Submit');
+                                },
+                              ),
                             ),
                           );
                         },
@@ -518,12 +520,8 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                           children: [
                             GestureDetector(
                               onTap: () {
-                                context.push(
-                                  APP_PAGE.profile.toPath,
-                                  extra: ProfilePayload(
-                                    user: data,
-                                    isForOtherUser: true,
-                                  ),
+                                context.go(
+                                  '/u${APP_PAGE.profile.toPath}/${data.id}',
                                 );
                               },
                               child: Text(
@@ -938,12 +936,8 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                             children: [
                               GestureDetector(
                                 onTap: () {
-                                  context.push(
-                                    APP_PAGE.profile.toPath,
-                                    extra: ProfilePayload(
-                                      user: data,
-                                      isForOtherUser: true,
-                                    ),
+                                  context.go(
+                                    '/u${APP_PAGE.profile.toPath}/${data.id}',
                                   );
                                 },
                                 child: Text(
@@ -1272,7 +1266,7 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
             onPressed: () {
               BlocProvider.of<VideoSizeCubit>(context).changeVideoSize(0);
               // context.pop();
-              _draggableController.animateTo(0.2,
+              _draggableController.animateTo(0.1,
                   duration: const Duration(
                     milliseconds: 200,
                   ),
@@ -1353,17 +1347,16 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
   }
 
   void _onAvatarTap(BuildContext context, User data) {
-    context.push(
-      APP_PAGE.profile.toPath,
-      extra: ProfilePayload(
-        user: data,
-        isForOtherUser: true,
-      ),
+    context.go(
+      '/u${APP_PAGE.profile.toPath}/${data.id}',
     );
   }
 
   @override
   void dispose() {
+    if (VideoPaddingNOtifire.instance.bottomPadding > 0) {
+      VideoPaddingNOtifire.instance.setBottomPdding(bottomSheetHeight: 0);
+    }
     _textEditingController.dispose();
     _draggableController.dispose();
     super.dispose();

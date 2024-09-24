@@ -6,7 +6,10 @@ import 'package:personal_project/constant/color.dart';
 import 'package:personal_project/constant/dimens.dart';
 import 'package:personal_project/data/repository/file_repository.dart';
 import 'package:personal_project/presentation/l10n/stings.g.dart';
+import 'package:personal_project/presentation/responsive/dimension.dart';
+import 'package:personal_project/presentation/router/app_router.dart';
 import 'package:personal_project/presentation/ui/storage/cubit/storage_cubit.dart';
+import 'package:provider/provider.dart';
 
 class CachesPage extends StatelessWidget {
   const CachesPage({super.key});
@@ -23,6 +26,12 @@ class CachesPage extends StatelessWidget {
           return Scaffold(
             appBar: AppBar(
               elevation: 0,
+              leading: BackButton(
+                onPressed: () {
+                  Provider.of<AppRouter>(context, listen: false)
+                      .onBackButtonPressed(context);
+                },
+              ),
               title: Text(LocaleKeys.title_storage.tr()),
             ),
             body: Column(
@@ -109,7 +118,7 @@ class CachesPage extends StatelessWidget {
     bool isClearCahce = false;
     showDialog(
         context: context,
-        builder: (_) {
+        builder: (context) {
           return AlertDialog(
             title: Text(LocaleKeys.message_delete_cache.tr()),
             actions: [

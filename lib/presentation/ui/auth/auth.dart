@@ -20,12 +20,12 @@ void showAuthBottomSheetFunc(BuildContext context) {
       isScrollControlled: true,
       builder: (context) {
         return Container(
-          decoration: const BoxDecoration(
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(8),
-              topRight: Radius.circular(8),
-            ),
-          ),
+          decoration: BoxDecoration(
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(8),
+                topRight: Radius.circular(8),
+              ),
+              color: Theme.of(context).colorScheme.background),
           width: MediaQuery.of(context).size.width,
           height: MediaQuery.of(context).size.height * 0.7,
           child: SingleChildScrollView(
@@ -61,7 +61,7 @@ void showAuthBottomSheetFunc(BuildContext context) {
                     style: Theme.of(context).textTheme.bodyMedium!.apply(
                           color: Theme.of(context)
                               .colorScheme
-                              .primary
+                              .onSurface
                               .withOpacity(0.6),
                         ),
                   ),
@@ -89,7 +89,7 @@ void showAuthBottomSheetFunc(BuildContext context) {
                               border: Border.all(
                                 color: Theme.of(context)
                                     .colorScheme
-                                    .primary
+                                    .onSurface
                                     .withOpacity(0.4),
                               ),
                               borderRadius: BorderRadius.circular(50)),

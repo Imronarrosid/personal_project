@@ -53,7 +53,7 @@ void showEditUserNameModal(BuildContext context,
               child: Container(
                 padding: EdgeInsets.all(Dimens.DIMENS_12),
                 decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.secondary,
+                    color: Theme.of(context).colorScheme.background,
                     borderRadius: BorderRadius.circular(10)),
                 height: 270,
                 child: Column(

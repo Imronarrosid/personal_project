@@ -19,134 +19,147 @@ class CropScreen extends StatelessWidget {
       backgroundColor: COLOR_black_ff121212,
       body: SafeArea(
         child: Padding(
-          padding: EdgeInsets.symmetric(vertical: Dimens.DIMENS_24),
-          child: Column(children: [
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: Dimens.DIMENS_15),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  IconButton(
+          padding: EdgeInsets.only(
+              top: Dimens.DIMENS_8,
+              right: Dimens.DIMENS_8,
+              bottom: Dimens.DIMENS_8),
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              color: Theme.of(context).colorScheme.tertiary,
+            ),
+            child: Column(children: [
+              Padding(
+                padding: EdgeInsets.all(Dimens.DIMENS_15),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    IconButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                        icon: Icon(
+                          BootstrapIcons.x,
+                          size: Dimens.DIMENS_34,
+                        ),
+                        color: COLOR_white_fff5f5f5),
+                    Expanded(
+                      child: Text(
+                        LocaleKeys.title_crop.tr(),
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: FontSize.FONT_SIZE_18,
+                            color: COLOR_white_fff5f5f5),
+                      ),
+                    ),
+                    IconButton(
                       onPressed: () {
+                        // WAY 1: validate crop parameters set in the crop view
+                        controller.applyCacheCrop();
+                        // WAY 2: update manually with Offset values
+                        // controller.updateCrop(const Offset(0.2, 0.2), const Offset(0.8, 0.8));
                         Navigator.pop(context);
                       },
-                      icon: Icon(
-                        BootstrapIcons.x,
-                        size: Dimens.DIMENS_34,
-                      ),
-                      color: COLOR_white_fff5f5f5),
-                  Expanded(
-                    child: Text(
-                      LocaleKeys.title_crop.tr(),
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: FontSize.FONT_SIZE_18,
-                          color: COLOR_white_fff5f5f5),
+                      icon: Icon(BootstrapIcons.check, size: Dimens.DIMENS_34),
+                      color: const CropGridStyle().selectedBoundariesColor,
                     ),
-                  ),
-                  IconButton(
-                    onPressed: () {
-                      // WAY 1: validate crop parameters set in the crop view
-                      controller.applyCacheCrop();
-                      // WAY 2: update manually with Offset values
-                      // controller.updateCrop(const Offset(0.2, 0.2), const Offset(0.8, 0.8));
-                      Navigator.pop(context);
-                    },
-                    icon: Icon(BootstrapIcons.check, size: Dimens.DIMENS_34),
-                    color: const CropGridStyle().selectedBoundariesColor,
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(height: Dimens.DIMENS_20),
-            Expanded(
-              child: CropGridViewer.edit(
-                controller: controller,
-                rotateCropArea: false,
-                margin: const EdgeInsets.symmetric(horizontal: 20),
-              ),
-            ),
-            const SizedBox(height: 15),
-            Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
-              Expanded(
-                flex: 4,
-                child: AnimatedBuilder(
-                  animation: controller,
-                  builder: (_, __) => Column(
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          IconButton(
-                            color: COLOR_white_fff5f5f5,
-                            onPressed: () =>
-                                controller.preferredCropAspectRatio = controller
-                                    .preferredCropAspectRatio
-                                    ?.toFraction()
-                                    .inverse()
-                                    .toDouble(),
-                            icon: controller.preferredCropAspectRatio != null &&
-                                    controller.preferredCropAspectRatio! < 1
-                                ? Icon(
-                                    Icons.panorama_vertical_select_rounded,
-                                    color: const CropGridStyle()
-                                        .selectedBoundariesColor,
-                                  )
-                                : const Icon(Icons.panorama_vertical_rounded),
-                          ),
-                          IconButton(
-                            color: COLOR_white_fff5f5f5,
-                            onPressed: () =>
-                                controller.preferredCropAspectRatio = controller
-                                    .preferredCropAspectRatio
-                                    ?.toFraction()
-                                    .inverse()
-                                    .toDouble(),
-                            icon: controller.preferredCropAspectRatio != null &&
-                                    controller.preferredCropAspectRatio! > 1
-                                ? Icon(
-                                    Icons.panorama_horizontal_select_rounded,
-                                    color: const CropGridStyle()
-                                        .selectedBoundariesColor,
-                                  )
-                                : const Icon(Icons.panorama_horizontal_rounded),
-                          ),
-                          IconButton(
-                            color: COLOR_white_fff5f5f5,
-                            onPressed: () => controller
-                                .rotate90Degrees(RotateDirection.left),
-                            icon: const Icon(
-                                BootstrapIcons.arrow_counterclockwise),
-                          ),
-                          IconButton(
-                            color: COLOR_white_fff5f5f5,
-                            onPressed: () => controller
-                                .rotate90Degrees(RotateDirection.right),
-                            icon: const Icon(BootstrapIcons.arrow_clockwise),
-                          ),
-                        ],
-                      ),
-                      SizedBox(
-                        height: Dimens.DIMENS_8,
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          _buildCropButton(context, null),
-                          _buildCropButton(context, 1.toFraction()),
-                          _buildCropButton(
-                              context, Fraction.fromString("9/16")),
-                          _buildCropButton(context, Fraction.fromString("3/4")),
-                        ],
-                      )
-                    ],
-                  ),
+                  ],
                 ),
               ),
+              SizedBox(height: Dimens.DIMENS_20),
+              Expanded(
+                child: CropGridViewer.edit(
+                  controller: controller,
+                  rotateCropArea: false,
+                  margin: const EdgeInsets.symmetric(horizontal: 20),
+                ),
+              ),
+              const SizedBox(height: 15),
+              Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
+                Expanded(
+                  flex: 4,
+                  child: AnimatedBuilder(
+                    animation: controller,
+                    builder: (_, __) => Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            IconButton(
+                              color: COLOR_white_fff5f5f5,
+                              onPressed: () =>
+                                  controller.preferredCropAspectRatio =
+                                      controller.preferredCropAspectRatio
+                                          ?.toFraction()
+                                          .inverse()
+                                          .toDouble(),
+                              icon: controller.preferredCropAspectRatio !=
+                                          null &&
+                                      controller.preferredCropAspectRatio! < 1
+                                  ? Icon(
+                                      Icons.panorama_vertical_select_rounded,
+                                      color: const CropGridStyle()
+                                          .selectedBoundariesColor,
+                                    )
+                                  : const Icon(Icons.panorama_vertical_rounded),
+                            ),
+                            IconButton(
+                              color: COLOR_white_fff5f5f5,
+                              onPressed: () =>
+                                  controller.preferredCropAspectRatio =
+                                      controller.preferredCropAspectRatio
+                                          ?.toFraction()
+                                          .inverse()
+                                          .toDouble(),
+                              icon: controller.preferredCropAspectRatio !=
+                                          null &&
+                                      controller.preferredCropAspectRatio! > 1
+                                  ? Icon(
+                                      Icons.panorama_horizontal_select_rounded,
+                                      color: const CropGridStyle()
+                                          .selectedBoundariesColor,
+                                    )
+                                  : const Icon(
+                                      Icons.panorama_horizontal_rounded),
+                            ),
+                            IconButton(
+                              color: COLOR_white_fff5f5f5,
+                              onPressed: () => controller
+                                  .rotate90Degrees(RotateDirection.left),
+                              icon: const Icon(
+                                  BootstrapIcons.arrow_counterclockwise),
+                            ),
+                            IconButton(
+                              color: COLOR_white_fff5f5f5,
+                              onPressed: () => controller
+                                  .rotate90Degrees(RotateDirection.right),
+                              icon: const Icon(BootstrapIcons.arrow_clockwise),
+                            ),
+                          ],
+                        ),
+                        SizedBox(
+                          height: Dimens.DIMENS_8,
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            _buildCropButton(context, null),
+                            _buildCropButton(context, 1.toFraction()),
+                            _buildCropButton(
+                                context, Fraction.fromString("9/16")),
+                            _buildCropButton(
+                                context, Fraction.fromString("3/4")),
+                          ],
+                        )
+                      ],
+                    ),
+                  ),
+                ),
+              ]),
+              const SizedBox(height: 15),
             ]),
-            const SizedBox(height: 15),
-          ]),
+          ),
         ),
       ),
     );

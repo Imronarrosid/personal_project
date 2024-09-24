@@ -18,9 +18,13 @@ import 'package:personal_project/domain/reporsitory/auth_reposotory.dart';
 import 'package:personal_project/domain/reporsitory/user_repository.dart';
 import 'package:personal_project/domain/services/firebase/firebase_service.dart';
 import 'package:personal_project/presentation/l10n/stings.g.dart';
+import 'package:personal_project/presentation/router/app_router.dart';
 import 'package:personal_project/presentation/router/route_utils.dart';
 import 'package:personal_project/presentation/shared_components/not_authenticated_page.dart';
 import 'package:personal_project/presentation/theme/user_profile_theme.dart';
+import 'package:provider/provider.dart';
+
+import '../auth/bloc/auth_bloc.dart';
 
 // import 'chat.dart';
 // import 'login.dart';
@@ -143,118 +147,65 @@ class _MessagePageState extends State<MessagePage> {
     }
     final UserRepository userRepository =
         RepositoryProvider.of<UserRepository>(context);
-    return Scaffold(
-      appBar: AppBar(
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.search),
-            onPressed: _user == null
-                ? null
-                : () {
-                    // Navigator.of(context).push(
-                    //   MaterialPageRoute(
-                    //     fullscreenDialog: true,
-                    //     builder: (context) => const UsersPage(),
-                    //   ),
-                    // );
-                    context.push(APP_PAGE.searchRoom.toPath);
-                  },
-          ),
-        ],
-        // leading: IconButton(
-        //   icon: const Icon(Icons.logout),
-        //   onPressed: _user == null ? null : logout,
-        // ),
-        systemOverlayStyle: SystemUiOverlayStyle.light,
-        title: Text(LocaleKeys.label_chat.tr()),
-      ),
-      body: _user == null
-          ? const NotAuthenticatedPage()
-          : SingleChildScrollView(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: EdgeInsets.only(
-                        top: Dimens.DIMENS_18, left: Dimens.DIMENS_12),
-                    child: Text(LocaleKeys.label_suggestions.tr()),
-                  ),
-                  SizedBox(
-                    width: MediaQuery.of(context).size.width,
-                    height: Dimens.DIMENS_105,
-                    child: FutureBuilder<List<models.User>>(
-                        future: userRepository.getUserListWithLimit(7),
-                        builder: (context,
-                            AsyncSnapshot<List<models.User>>? snapshot) {
-                          List<models.User>? users = snapshot?.data;
+    return BackButtonListener(
+      onBackButtonPressed: () async {
+        AppRouter appRouter = Provider.of<AppRouter>(context, listen: false);
+        appRouter.onBackButtonPressed(context);
 
-                          if (!snapshot!.hasData || snapshot.hasError) {
-                            return ListView.builder(
-                              scrollDirection: Axis.horizontal,
-                              itemCount: 7,
-                              itemBuilder: (context, index) => Container(
-                                  width: Dimens.DIMENS_85,
-                                  padding: EdgeInsets.all(Dimens.DIMENS_10),
-                                  alignment: Alignment.center,
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    children: [
-                                      CircleAvatar(
-                                        radius: Dimens.DIMENS_28,
-                                        backgroundColor: Theme.of(context)
-                                            .colorScheme
-                                            .tertiary,
-                                      ),
-                                      SizedBox(
-                                        height: Dimens.DIMENS_6,
-                                      ),
-                                      Text(
-                                        '',
-                                        overflow: TextOverflow.ellipsis,
-                                        textAlign: TextAlign.center,
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .bodySmall,
-                                      )
-                                    ],
-                                  )),
-                            );
-                          }
+        return true;
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.search),
+              onPressed: _user == null
+                  ? null
+                  : () {
+                      // Navigator.of(context).push(
+                      //   MaterialPageRoute(
+                      //     fullscreenDialog: true,
+                      //     builder: (context) => const UsersPage(),
+                      //   ),
+                      // );
+                      context.push(APP_PAGE.searchRoom.toPath);
+                    },
+            ),
+          ],
+          // leading: IconButton(
+          //   icon: const Icon(Icons.logout),
+          //   onPressed: _user == null ? null : logout,
+          // ),
+          systemOverlayStyle: SystemUiOverlayStyle.light,
+          title: Text(LocaleKeys.label_chat.tr()),
+        ),
+        body: BlocBuilder<AuthBloc, AuthState>(
+          builder: (context, state) {
+            if (state.status == AuthStatus.authenticated) {
+              return SingleChildScrollView(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: EdgeInsets.only(
+                          top: Dimens.DIMENS_18, left: Dimens.DIMENS_12),
+                      child: Text(LocaleKeys.label_suggestions.tr()),
+                    ),
+                    SizedBox(
+                      width: MediaQuery.of(context).size.width,
+                      height: Dimens.DIMENS_105,
+                      child: FutureBuilder<List<models.User>>(
+                          future: userRepository.getUserListWithLimit(7),
+                          builder: (context,
+                              AsyncSnapshot<List<models.User>>? snapshot) {
+                            List<models.User>? users = snapshot?.data;
 
-                          return ListView(
-                            shrinkWrap: true,
-                            scrollDirection: Axis.horizontal,
-                            children: [
-                              ...List.generate(users!.length, (index) {
-                                models.User user = users[index];
-                                return InkWell(
-                                  onTap: () async {
-                                    types.User otherUser = types.User(
-                                        id: user.id,
-                                        createdAt: user.createdAt!
-                                                .toDate()
-                                                .millisecondsSinceEpoch ~/
-                                            1000,
-                                        firstName: user.userName);
-                                    if (!mounted) return;
-
-                                    final room = await FirebaseChatCore.instance
-                                        .createRoom(otherUser);
-
-                                    if (!mounted) return;
-                                    context.push(
-                                      APP_PAGE.chat.toPath,
-                                      extra: ChatData(
-                                          room: room,
-                                          userName: user.userName!,
-                                          avatar: user.photo!,
-                                          name: user.name),
-                                    );
-                                  },
-                                  child: Container(
+                            if (!snapshot!.hasData || snapshot.hasError) {
+                              return ListView.builder(
+                                scrollDirection: Axis.horizontal,
+                                itemCount: 7,
+                                itemBuilder: (context, index) => Container(
                                     width: Dimens.DIMENS_85,
                                     padding: EdgeInsets.all(Dimens.DIMENS_10),
                                     alignment: Alignment.center,
@@ -264,23 +215,17 @@ class _MessagePageState extends State<MessagePage> {
                                       crossAxisAlignment:
                                           CrossAxisAlignment.center,
                                       children: [
-                                        SizedBox(
-                                          height: Dimens.DIMENS_6,
-                                        ),
                                         CircleAvatar(
                                           radius: Dimens.DIMENS_28,
                                           backgroundColor: Theme.of(context)
                                               .colorScheme
                                               .tertiary,
-                                          backgroundImage:
-                                              CachedNetworkImageProvider(
-                                                  user.photo!),
                                         ),
                                         SizedBox(
                                           height: Dimens.DIMENS_6,
                                         ),
                                         Text(
-                                          user.userName!,
+                                          '',
                                           overflow: TextOverflow.ellipsis,
                                           textAlign: TextAlign.center,
                                           style: Theme.of(context)
@@ -288,101 +233,179 @@ class _MessagePageState extends State<MessagePage> {
                                               .bodySmall,
                                         )
                                       ],
-                                    ),
-                                  ),
-                                );
-                              }),
-                              users.isEmpty
-                                  ? Container(
-                                      width: MediaQuery.of(context).size.width,
+                                    )),
+                              );
+                            }
+
+                            return ListView(
+                              shrinkWrap: true,
+                              scrollDirection: Axis.horizontal,
+                              children: [
+                                ...List.generate(users!.length, (index) {
+                                  models.User user = users[index];
+                                  return InkWell(
+                                    onTap: () async {
+                                      types.User otherUser = types.User(
+                                          id: user.id,
+                                          createdAt: user.createdAt!
+                                                  .toDate()
+                                                  .millisecondsSinceEpoch ~/
+                                              1000,
+                                          firstName: user.userName);
+                                      if (!mounted) return;
+
+                                      final room = await FirebaseChatCore
+                                          .instance
+                                          .createRoom(otherUser);
+
+                                      if (!context.mounted) return;
+                                      context.go(
+                                        APP_PAGE.message.toPath +
+                                            APP_PAGE.chat.toPath,
+                                        extra: ChatData(
+                                            room: room,
+                                            userName: user.userName!,
+                                            avatar: user.photo!,
+                                            name: user.name),
+                                      );
+                                    },
+                                    child: Container(
+                                      width: Dimens.DIMENS_85,
+                                      padding: EdgeInsets.all(Dimens.DIMENS_10),
                                       alignment: Alignment.center,
-                                      child: Text(
-                                        LocaleKeys.message_no_suggestion.tr(),
-                                        textAlign: TextAlign.center,
+                                      child: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        children: [
+                                          SizedBox(
+                                            height: Dimens.DIMENS_6,
+                                          ),
+                                          CircleAvatar(
+                                            radius: Dimens.DIMENS_28,
+                                            backgroundColor: Theme.of(context)
+                                                .colorScheme
+                                                .tertiary,
+                                            backgroundImage:
+                                                CachedNetworkImageProvider(
+                                                    user.photo!),
+                                          ),
+                                          SizedBox(
+                                            height: Dimens.DIMENS_6,
+                                          ),
+                                          Text(
+                                            user.userName!,
+                                            overflow: TextOverflow.ellipsis,
+                                            textAlign: TextAlign.center,
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .bodySmall,
+                                          )
+                                        ],
                                       ),
-                                    )
-                                  : Container(),
-                              users.length < 6
-                                  ? Container()
-                                  : InkWell(
-                                      onTap: () {
-                                        context
-                                            .push(APP_PAGE.searchRoom.toPath);
-                                      },
-                                      child: Container(
-                                        padding:
-                                            EdgeInsets.all(Dimens.DIMENS_10),
-                                        child: Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.start,
-                                          children: [
-                                            SizedBox(
-                                              height: Dimens.DIMENS_6,
-                                            ),
-                                            CircleAvatar(
-                                              backgroundColor: Theme.of(context)
-                                                  .colorScheme
-                                                  .onTertiary,
-                                              radius: Dimens.DIMENS_28,
-                                              child: const Icon(
-                                                  BootstrapIcons.plus),
-                                            ),
-                                            SizedBox(
-                                              height: Dimens.DIMENS_6,
-                                            ),
-                                            Text(
-                                              LocaleKeys.label_others.tr(),
-                                              style: Theme.of(context)
-                                                  .textTheme
-                                                  .bodySmall,
-                                            ),
-                                          ],
+                                    ),
+                                  );
+                                }),
+                                users.isEmpty
+                                    ? Container(
+                                        width:
+                                            MediaQuery.of(context).size.width,
+                                        alignment: Alignment.center,
+                                        child: Text(
+                                          LocaleKeys.message_no_suggestion.tr(),
+                                          textAlign: TextAlign.center,
+                                        ),
+                                      )
+                                    : Container(),
+                                users.length < 6
+                                    ? Container()
+                                    : InkWell(
+                                        onTap: () {
+                                          context
+                                              .push(APP_PAGE.searchRoom.toPath);
+                                        },
+                                        child: Container(
+                                          padding:
+                                              EdgeInsets.all(Dimens.DIMENS_10),
+                                          child: Column(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.start,
+                                            children: [
+                                              SizedBox(
+                                                height: Dimens.DIMENS_6,
+                                              ),
+                                              CircleAvatar(
+                                                backgroundColor:
+                                                    Theme.of(context)
+                                                        .colorScheme
+                                                        .onTertiary,
+                                                radius: Dimens.DIMENS_28,
+                                                child: const Icon(
+                                                    BootstrapIcons.plus),
+                                              ),
+                                              SizedBox(
+                                                height: Dimens.DIMENS_6,
+                                              ),
+                                              Text(
+                                                LocaleKeys.label_others.tr(),
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .bodySmall,
+                                              ),
+                                            ],
+                                          ),
                                         ),
                                       ),
-                                    ),
-                            ],
-                          );
-                        }),
-                  ),
-                  Padding(
-                    padding: EdgeInsets.only(left: Dimens.DIMENS_12),
-                    child: Text(LocaleKeys.label_message.tr()),
-                  ),
-                  StreamBuilder<List<types.Room>>(
-                    stream: FirebaseChatCore.instance.rooms(),
-                    builder: (context, snapshot) {
-                      if (!snapshot.hasData) {
-                        return Container(
-                            padding: EdgeInsets.only(top: Dimens.DIMENS_150),
+                              ],
+                            );
+                          }),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.only(left: Dimens.DIMENS_12),
+                      child: Text(LocaleKeys.label_message.tr()),
+                    ),
+                    StreamBuilder<List<types.Room>>(
+                      stream: FirebaseChatCore.instance.rooms(),
+                      builder: (context, snapshot) {
+                        if (!snapshot.hasData) {
+                          return Container(
+                              padding: EdgeInsets.only(top: Dimens.DIMENS_150),
+                              alignment: Alignment.center,
+                              child: const CircularProgressIndicator());
+                        }
+                        if (snapshot.data!.isEmpty) {
+                          return Container(
                             alignment: Alignment.center,
-                            child: const CircularProgressIndicator());
-                      }
-                      if (snapshot.data!.isEmpty) {
-                        return Container(
-                          alignment: Alignment.center,
-                          padding: EdgeInsets.only(top: Dimens.DIMENS_150),
-                          margin: const EdgeInsets.only(
-                            bottom: 200,
-                          ),
-                          child: Text(LocaleKeys.message_no_message.tr()),
+                            padding: EdgeInsets.only(top: Dimens.DIMENS_150),
+                            margin: const EdgeInsets.only(
+                              bottom: 200,
+                            ),
+                            child: Text(LocaleKeys.message_no_message.tr()),
+                          );
+                        }
+
+                        return ListView.builder(
+                          physics: const NeverScrollableScrollPhysics(),
+                          shrinkWrap: true,
+                          itemCount: snapshot.data!.length,
+                          itemBuilder: (context, index) {
+                            final room = snapshot.data![index];
+
+                            return _buildRoom(room);
+                          },
                         );
-                      }
-
-                      return ListView.builder(
-                        physics: const NeverScrollableScrollPhysics(),
-                        shrinkWrap: true,
-                        itemCount: snapshot.data!.length,
-                        itemBuilder: (context, index) {
-                          final room = snapshot.data![index];
-
-                          return _buildRoom(room);
-                        },
-                      );
-                    },
-                  ),
-                ],
-              ),
-            ),
+                      },
+                    ),
+                  ],
+                ),
+              );
+            } else {
+              return const NotAuthenticatedPage();
+            }
+          },
+        ),
+      ),
     );
   }
 
@@ -418,8 +441,8 @@ class _MessagePageState extends State<MessagePage> {
                 return ListTile(
                   tileColor: Colors.transparent,
                   onTap: () {
-                    context.push(
-                      APP_PAGE.chat.toPath,
+                    context.go(
+                      APP_PAGE.message.toPath + APP_PAGE.chat.toPath,
                       extra: ChatData(
                         room: room,
                         userName: data!.userName!,
@@ -471,12 +494,13 @@ class _MessagePageState extends State<MessagePage> {
                 Theme.of(context).textTheme.bodySmall!.apply(color: COLOR_grey),
           )
         : Text(
-            DateFormat('D/MM/yy').format(
+            DateFormat('EEE,MM/yy').format(
               DateTime.fromMillisecondsSinceEpoch(
                   message!.createdAt ?? DateTime.now().millisecondsSinceEpoch),
             ),
             style: Theme.of(context).textTheme.bodySmall!.apply(
-                color: Theme.of(context).colorScheme.primary.withOpacity(0.7)),
+                color:
+                    Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
           );
   }
 
@@ -489,7 +513,7 @@ class _MessagePageState extends State<MessagePage> {
         '${LocaleKeys.label_you.tr()}: ${_getMessage(message.type, message: message)}',
         overflow: TextOverflow.ellipsis,
         style: TextStyle(
-          color: Theme.of(context).colorScheme.primary.withOpacity(0.7),
+          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
         ),
       );
     } else if (roomType == types.RoomType.group) {
@@ -497,14 +521,13 @@ class _MessagePageState extends State<MessagePage> {
         '${snapshot.data!}: ${_getMessage(message.type, message: message)}',
         overflow: TextOverflow.ellipsis,
         style: TextStyle(
-            color: Theme.of(context).colorScheme.primary.withOpacity(0.7)),
+            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
       );
     }
-    return Text(
-        '${snapshot.data!}: ${_getMessage(message.type, message: message)}',
+    return Text(' ${_getMessage(message.type, message: message)}',
         overflow: TextOverflow.ellipsis,
         style: TextStyle(
-          color: Theme.of(context).colorScheme.primary.withOpacity(0.7),
+          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
         ));
   }
 

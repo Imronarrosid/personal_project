@@ -5,6 +5,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -27,7 +28,10 @@ import 'package:personal_project/domain/reporsitory/user_repository.dart';
 import 'package:personal_project/presentation/l10n/locale_code.dart';
 import 'package:personal_project/presentation/l10n/stings.g.dart';
 import 'package:personal_project/presentation/router/route_utils.dart';
+import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
+
+import '../../router/app_router.dart';
 
 class ChatPage extends StatefulWidget {
   const ChatPage({
@@ -250,122 +254,145 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-        appBar: AppBar(
-          systemOverlayStyle: SystemUiOverlayStyle.light,
-          backgroundColor: Theme.of(context).colorScheme.tertiary,
-          title: ListTile(
-            contentPadding: EdgeInsets.zero,
-            leading: Ink(
-              width: Dimens.DIMENS_42,
-              height: Dimens.DIMENS_42,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(50),
-                image: DecorationImage(
-                  fit: BoxFit.cover,
-                  image: CachedNetworkImageProvider(
-                    widget.data.avatar,
-                  ),
-                ),
-              ),
-              child: InkWell(
-                borderRadius: BorderRadius.circular(50),
-                onTap: () {
-                  _toProfile(context);
+  Widget build(BuildContext context) => BackButtonListener(
+        onBackButtonPressed: () async {
+          if (!kIsWeb) {
+            context.pop();
+            return true;
+          }
+          return true;
+        },
+        child: BackButtonListener(
+          onBackButtonPressed: () async {
+            final AppRouter appRouter = Provider.of(context, listen: false);
+
+            appRouter.onBackButtonPressed(context);
+            return true;
+          },
+          child: Scaffold(
+            appBar: AppBar(
+              leading: BackButton(
+                onPressed: () {
+                  final AppRouter appRouter =
+                      Provider.of(context, listen: false);
+
+                  appRouter.onBackButtonPressed(context);
                 },
               ),
-            ),
-            title: GestureDetector(
-              onTap: () {
-                _toProfile(context);
-              },
-              child: Text(
-                widget.data.userName,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ),
-          actions: [
-            PopupMenuButton(
-              elevation: 3,
-              surfaceTintColor: Theme.of(context).colorScheme.secondary,
-              itemBuilder: (_) {
-                return [
-                  PopupMenuItem(
-                    height: Dimens.DIMENS_38,
+              systemOverlayStyle: SystemUiOverlayStyle.light,
+              backgroundColor: Theme.of(context).colorScheme.tertiary,
+              title: ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: Ink(
+                  width: Dimens.DIMENS_42,
+                  height: Dimens.DIMENS_42,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(50),
+                    image: DecorationImage(
+                      fit: BoxFit.cover,
+                      image: CachedNetworkImageProvider(
+                        widget.data.avatar,
+                      ),
+                    ),
+                  ),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(50),
                     onTap: () {
                       _toProfile(context);
                     },
-                    child: Text(
-                      LocaleKeys.label_see_profile.tr(),
-                    ),
-                  )
-                ];
-              },
-            )
-          ],
-        ),
-        body: StreamBuilder<types.Room>(
-            stream: FirebaseChatCore.instance.room(widget.data.room.id),
-            builder: (context, snapshot) {
-              if (!snapshot.hasData) {
-                return const Center(
-                  child: CircularProgressIndicator(),
-                );
-              }
-              return StreamBuilder<List<types.Message>>(
-                stream: FirebaseChatCore.instance.messages(snapshot.data!),
+                  ),
+                ),
+                title: GestureDetector(
+                  onTap: () {
+                    _toProfile(context);
+                  },
+                  child: Text(
+                    widget.data.userName,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ),
+              actions: [
+                PopupMenuButton(
+                  elevation: 3,
+                  surfaceTintColor: Theme.of(context).colorScheme.secondary,
+                  itemBuilder: (_) {
+                    return [
+                      PopupMenuItem(
+                        height: Dimens.DIMENS_38,
+                        onTap: () {
+                          _toProfile(context);
+                        },
+                        child: Text(
+                          LocaleKeys.label_see_profile.tr(),
+                        ),
+                      )
+                    ];
+                  },
+                )
+              ],
+            ),
+            body: StreamBuilder<types.Room>(
+                stream: FirebaseChatCore.instance.room(widget.data.room.id),
                 builder: (context, snapshot) {
                   if (!snapshot.hasData) {
-                    return const Center(child: CircularProgressIndicator());
+                    return const Center(
+                      child: CircularProgressIndicator(),
+                    );
                   }
-                  return Chat(
-                    dateLocale: context.locale.languageCode,
-                    theme: _chatTheme(context),
-                    avatarBuilder: _buildAvatar,
-                    l10n: _getL10n(context),
-                    showUserNames: true,
-                    nameBuilder: _buildName,
-                    showUserAvatars: true,
-                    textMessageOptions: TextMessageOptions(
-                      onLinkPressed: (p0) {
-                        Uri url = Uri.parse(p0);
-                        launchUrl(url);
-                      },
-                    ),
-                    isAttachmentUploading: _isAttachmentUploading,
-                    messages: snapshot.data ?? [],
-                    hideBackgroundOnEmojiMessages: false,
-                    onAttachmentPressed: _handleAtachmentPressed,
-                    onMessageTap: _handleMessageTap,
-                    onPreviewDataFetched: _handlePreviewDataFetched,
-                    onSendPressed: _handleSendPressed,
-                    user: types.User(
-                      id: FirebaseChatCore.instance.firebaseUser?.uid ?? '',
-                    ),
+                  return StreamBuilder<List<types.Message>>(
+                    stream: FirebaseChatCore.instance.messages(snapshot.data!),
+                    builder: (context, snapshot) {
+                      if (!snapshot.hasData) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+                      return Chat(
+                        dateLocale: context.locale.languageCode,
+                        theme: _chatTheme(context),
+                        avatarBuilder: _buildAvatar,
+                        l10n: _getL10n(context),
+                        showUserNames: true,
+                        nameBuilder: _buildName,
+                        showUserAvatars: true,
+                        textMessageOptions: TextMessageOptions(
+                          onLinkPressed: (p0) {
+                            Uri url = Uri.parse(p0);
+                            launchUrl(url);
+                          },
+                        ),
+                        isAttachmentUploading: _isAttachmentUploading,
+                        messages: snapshot.data ?? [],
+                        hideBackgroundOnEmojiMessages: false,
+                        onAttachmentPressed: _handleAtachmentPressed,
+                        onMessageTap: _handleMessageTap,
+                        onPreviewDataFetched: _handlePreviewDataFetched,
+                        onSendPressed: _handleSendPressed,
+                        user: types.User(
+                          id: FirebaseChatCore.instance.firebaseUser?.uid ?? '',
+                        ),
+                      );
+                    },
                   );
-                },
-              );
-            }),
+                }),
+          ),
+        ),
       );
 
-  void _toProfile(BuildContext context) {
+  void _toProfile(BuildContext context) async {
     final AuthRepository repo = RepositoryProvider.of<AuthRepository>(context);
+    final UserRepository userRepository =
+        RepositoryProvider.of<UserRepository>(context);
+
+    String userName;
     if (widget.data.room.type == types.RoomType.direct) {
       types.User user = widget.data.room.users
           .firstWhere((element) => element.id != repo.currentUser!.uid);
+
+      userName = await userRepository.getUserNameOnly(user.id);
+      if (!context.mounted) return;
       context.push(
-        APP_PAGE.profile.toPath,
-        extra: ProfilePayload(
-          user: models.User(
-            id: user.id,
-            name: widget.data.name,
-            userName: widget.data.userName,
-            photo: widget.data.avatar,
-          ),
-          isForOtherUser: true,
-        ),
+        '${APP_PAGE.profile.toPath}/$userName',
       );
     }
   }
@@ -393,12 +420,12 @@ class _ChatPageState extends State<ChatPage> {
           color: Theme.of(context).colorScheme.onSurface),
       userAvatarNameColors: [Theme.of(context).colorScheme.onSurface],
       secondaryColor: Theme.of(context).colorScheme.tertiary,
-      primaryColor: Theme.of(context).colorScheme.onTertiary,
+      primaryColor: Theme.of(context).colorScheme.tertiary,
       inputBackgroundColor: Theme.of(context).colorScheme.tertiary,
       inputMargin: EdgeInsets.symmetric(
           horizontal: Dimens.DIMENS_6, vertical: Dimens.DIMENS_5),
       inputBorderRadius: BorderRadius.circular(50),
-      backgroundColor: Theme.of(context).colorScheme.secondary,
+      backgroundColor: Theme.of(context).colorScheme.background,
     );
   }
 

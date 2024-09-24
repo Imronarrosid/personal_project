@@ -13,24 +13,27 @@ class ProfileData {
   final List<String> gameFavoritesId;
   final List<GameFav> gameFav;
 
-  ProfileData(
-      {required this.userName,
-      required this.userCreatedAt,
-      required this.photoUrl,
-      required this.name,
-      required this.updatedAt,
-      required this.bio,
-      required this.userNameUpdatedAt,
-      required this.gameFav,
-      required this.gameFavoritesId});
+  ProfileData({
+    required this.userName,
+    required this.userCreatedAt,
+    required this.photoUrl,
+    required this.name,
+    required this.updatedAt,
+    required this.bio,
+    required this.userNameUpdatedAt,
+    required this.gameFav,
+    required this.gameFavoritesId,
+  });
 }
 
 class ProfilePayload {
   final bool? isForOtherUser;
+  final String? username;
   final User user;
 
   ProfilePayload({
     required this.user,
+    this.username,
     this.isForOtherUser = false,
   });
 }

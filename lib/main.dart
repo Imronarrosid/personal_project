@@ -1,9 +1,13 @@
+import 'dart:io';
+
 import 'package:camera/camera.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:go_router/go_router.dart';
 import 'package:personal_project/config/theme.dart';
 import 'package:personal_project/data/repository/chat_repository.dart';
@@ -32,6 +36,7 @@ import 'package:personal_project/presentation/ui/video/list_video/cubit/video_si
 import 'package:personal_project/presentation/ui/video_preview/bloc/video_preview_bloc.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_strategy/url_strategy.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -39,11 +44,18 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  final SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-  SystemChrome.setPreferredOrientations([
-    DeviceOrientation.portraitUp,
-    DeviceOrientation.portraitDown,
-  ]);
+  final SharedPreferences sharedPreferences =
+      await SharedPreferences.getInstance();
+  await dotenv.load(fileName: ".env");
+  // if (!kIsWeb) {
+  //   SystemChrome.setPreferredOrientations([
+  //     DeviceOrientation.portraitUp,
+  //     DeviceOrientation.portraitDown,
+  //   ]);
+  // }
+  setPathUrlStrategy();
+
+  GoRouter.optionURLReflectsImperativeAPIs = true;
   runApp(EasyLocalization(
       supportedLocales: L10n.all,
       path: 'assets/strings/l10n',
@@ -93,12 +105,13 @@ class _MyAppState extends State<MyApp> {
         Provider<AuthService>(create: (_) => authService),
       ],
       child: Builder(builder: (context) {
-        final GoRouter goRouter = Provider.of<AppRouter>(context, listen: false).router;
+        final GoRouter goRouter =
+            Provider.of<AppRouter>(context, listen: false).router;
 
         return MultiRepositoryProvider(
           providers: [
             RepositoryProvider(
-              create: (context) => AuthRepository(),
+              create: (context) => AuthRepository()..initAuthRepository(),
             ),
             RepositoryProvider(
               create: (context) => VideoRepository(),
@@ -126,9 +139,10 @@ class _MyAppState extends State<MyApp> {
               ),
               BlocProvider(
                 create: (context) {
-                  final AuthRepository repo = RepositoryProvider.of<AuthRepository>(context);
+                  final AuthRepository repo =
+                      RepositoryProvider.of<AuthRepository>(context);
 
-                  return AuthBloc(repo)..add(InitAuth());
+                  return AuthBloc(repo);
                 },
               ),
               BlocProvider(
@@ -144,7 +158,8 @@ class _MyAppState extends State<MyApp> {
                 },
               ),
               BlocProvider(create: (context) {
-                final UserRepository repository = RepositoryProvider.of<UserRepository>(context);
+                final UserRepository repository =
+                    RepositoryProvider.of<UserRepository>(context);
                 return EditBioCubit(repository);
               }),
               BlocProvider(create: (context) {

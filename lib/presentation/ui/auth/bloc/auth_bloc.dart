@@ -11,7 +11,10 @@ part 'auth_state.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   AuthBloc(this.authRepository)
-      : super(const AuthState(status: AuthStatus.initial)) {
+      : super(AuthState(
+            status: authRepository.currentUser != null
+                ? AuthStatus.authenticated
+                : AuthStatus.notAuthenticated)) {
     on<InitAuth>((event, emit) async {
       emit(const AuthState(status: AuthStatus.loading));
       if (authRepository.currentUser != null) {

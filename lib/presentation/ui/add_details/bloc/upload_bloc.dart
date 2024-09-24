@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
+import 'package:personal_project/data/repository/upload_repository.dart';
 import 'package:personal_project/domain/model/game_fav_modal.dart';
 import 'package:personal_project/domain/reporsitory/video_repository.dart';
 
@@ -18,7 +19,7 @@ class UploadBloc extends Bloc<UploadEvent, UploadState> {
           ),
           event.caption));
       try {
-        await videoRepository.uploapVideo(
+        await UploadRepository.instance.uploapVideo(
           songName: 'tidak diketahui',
           caption: event.caption,
           videoPath: event.videoPath,
@@ -43,6 +44,7 @@ class UploadBloc extends Bloc<UploadEvent, UploadState> {
   }
   void _removeFile(String path) {
     File(path).deleteSync(recursive: true);
+    UploadRepository.instance.removeExportedFile();
   }
 
   VideoRepository videoRepository;

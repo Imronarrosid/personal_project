@@ -15,8 +15,10 @@ import 'package:personal_project/domain/reporsitory/search_repository.dart';
 import 'package:personal_project/domain/reporsitory/user_repository.dart';
 import 'package:personal_project/domain/reporsitory/video_repository.dart';
 import 'package:personal_project/presentation/l10n/stings.g.dart';
+import 'package:personal_project/presentation/router/app_router.dart';
 import 'package:personal_project/presentation/router/route_utils.dart';
 import 'package:personal_project/presentation/ui/search/bloc/search_bloc.dart';
+import 'package:provider/provider.dart';
 
 class SearchPage extends StatefulWidget {
   const SearchPage({super.key});
@@ -38,107 +40,118 @@ class _SearchPageState extends State<SearchPage> {
         create: (context) =>
             SearchBloc(RepositoryProvider.of<SearchRepository>(context)),
         child: Builder(builder: (context) {
-          return GestureDetector(
-            onTap: () => FocusScope.of(context).unfocus(),
-            child: FocusScope(
-              node: FocusScopeNode(),
-              child: Scaffold(
-                resizeToAvoidBottomInset: false,
-                appBar: AppBar(
-                    elevation: 0,
-                    toolbarHeight: 80,
-                    title: Container(
-                      decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.tertiary,
-                          borderRadius: BorderRadius.circular(10)),
-                      child: TextField(
-                        focusNode: _focusNode,
-                        controller: _textEditingController,
-                        onChanged: (query) {
-                          final searchBloc =
-                              BlocProvider.of<SearchBloc>(context);
-                          if (_debounce?.isActive ?? false) _debounce?.cancel();
-                          _debounce =
-                              Timer(const Duration(milliseconds: 500), () {
-                            // do something with query
-                            searchBloc.add(SearchEvent(query));
-                          });
-                        },
-                        decoration: InputDecoration(
-                          prefixIcon: const Icon(Icons.search),
-                          hintText: LocaleKeys.label_search.tr(),
-                          contentPadding: const EdgeInsets.all(5),
-                          suffixIcon: BlocBuilder<SearchBloc, SearchState>(
-                            builder: (context, state) {
-                              if (state.status == SearchStatus.initial) {
-                                return const SizedBox(
-                                  width: 0,
-                                  height: 0,
-                                );
-                              }
-                              return GestureDetector(
-                                  onTap: () {
-                                    _textEditingController.clear();
-                                    context
-                                        .read<SearchBloc>()
-                                        .add(const ResetSearchEvent());
-                                  },
-                                  child: const Icon(Icons.close));
-                            },
-                          ),
-                          suffixIconColor: COLOR_grey,
-                          border: OutlineInputBorder(
-                              borderSide: BorderSide.none,
-                              borderRadius: BorderRadius.circular(10)),
-                        ),
-                      ),
-                    )),
-                body: BlocBuilder<SearchBloc, SearchState>(
-                  builder: (context, state) {
-                    if (state.status == SearchStatus.loading) {
-                      return const Center(child: CircularProgressIndicator());
-                    }
-                    if (state.status == SearchStatus.noItemFound) {
-                      return Center(
-                          child: Text(LocaleKeys.message_not_found
-                              .tr(args: [_textEditingController.text])));
-                    }
-                    if (state.status == SearchStatus.success) {
-                      return ListView.builder(
-                          itemCount: state.results!.length,
-                          itemBuilder: (ctx, index) {
-                            final result = state.results![index];
-                            return ListTile(
-                              tileColor: Colors.transparent,
-                              onTap: () {
-                                debugPrint('photo${result.photo}');
-                                context.push(
-                                  APP_PAGE.profile.toPath,
-                                  extra: ProfilePayload(
-                                    user: result,
-                                    isForOtherUser: true,
-                                  ),
-                                );
-                                if (FocusManager.instance.primaryFocus !=
-                                    null) {
-                                  FocusManager.instance.primaryFocus!.unfocus();
+          return BackButtonListener(
+            onBackButtonPressed: () async {
+              AppRouter appRouter =
+                  Provider.of<AppRouter>(context, listen: false);
+              appRouter.onBackButtonPressed(context);
+
+              return true;
+            },
+            child: GestureDetector(
+              onTap: () => FocusScope.of(context).unfocus(),
+              child: FocusScope(
+                node: FocusScopeNode(),
+                child: Scaffold(
+                  resizeToAvoidBottomInset: false,
+                  appBar: AppBar(
+                      elevation: 0,
+                      toolbarHeight: 80,
+                      title: Container(
+                        decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.tertiary,
+                            borderRadius: BorderRadius.circular(10)),
+                        child: TextField(
+                          focusNode: _focusNode,
+                          controller: _textEditingController,
+                          onChanged: (query) {
+                            final searchBloc =
+                                BlocProvider.of<SearchBloc>(context);
+                            if (_debounce?.isActive ?? false)
+                              _debounce?.cancel();
+                            _debounce =
+                                Timer(const Duration(milliseconds: 500), () {
+                              // do something with query
+                              searchBloc.add(SearchEvent(query));
+                            });
+                          },
+                          decoration: InputDecoration(
+                            prefixIcon: const Icon(Icons.search),
+                            hintText: LocaleKeys.label_search.tr(),
+                            contentPadding: const EdgeInsets.all(5),
+                            suffixIcon: BlocBuilder<SearchBloc, SearchState>(
+                              builder: (context, state) {
+                                if (state.status == SearchStatus.initial) {
+                                  return const SizedBox(
+                                    width: 0,
+                                    height: 0,
+                                  );
                                 }
-                                debugPrint('profile');
+                                return GestureDetector(
+                                    onTap: () {
+                                      _textEditingController.clear();
+                                      context
+                                          .read<SearchBloc>()
+                                          .add(const ResetSearchEvent());
+                                    },
+                                    child: const Icon(Icons.close));
                               },
-                              leading: CircleAvatar(
-                                backgroundColor:
-                                    Theme.of(context).colorScheme.tertiary,
-                                backgroundImage: CachedNetworkImageProvider(
-                                  result.photo!,
+                            ),
+                            suffixIconColor: COLOR_grey,
+                            border: OutlineInputBorder(
+                                borderSide: BorderSide.none,
+                                borderRadius: BorderRadius.circular(10)),
+                          ),
+                        ),
+                      )),
+                  body: BlocBuilder<SearchBloc, SearchState>(
+                    builder: (context, state) {
+                      if (state.status == SearchStatus.loading) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+                      if (state.status == SearchStatus.noItemFound) {
+                        return Center(
+                            child: Text(LocaleKeys.message_not_found
+                                .tr(args: [_textEditingController.text])));
+                      }
+                      if (state.status == SearchStatus.success) {
+                        return ListView.builder(
+                            itemCount: state.results!.length,
+                            itemBuilder: (ctx, index) {
+                              final result = state.results![index];
+                              return ListTile(
+                                tileColor: Colors.transparent,
+                                onTap: () {
+                                  debugPrint('photo${result.photo}');
+                                  context.go(
+                                    '/@${result.userName!}',
+                                    extra: ProfilePayload(
+                                      user: result,
+                                      isForOtherUser: true,
+                                    ),
+                                  );
+                                  if (FocusManager.instance.primaryFocus !=
+                                      null) {
+                                    FocusManager.instance.primaryFocus!
+                                        .unfocus();
+                                  }
+                                  debugPrint('profile');
+                                },
+                                leading: CircleAvatar(
+                                  backgroundColor:
+                                      Theme.of(context).colorScheme.tertiary,
+                                  backgroundImage: CachedNetworkImageProvider(
+                                    result.photo!,
+                                  ),
                                 ),
-                              ),
-                              title: Text(result.name!),
-                              subtitle: Text(result.userName!),
-                            );
-                          });
-                    }
-                    return const InitWidget();
-                  },
+                                title: Text(result.name!),
+                                subtitle: Text(result.userName!),
+                              );
+                            });
+                      }
+                      return const InitWidget();
+                    },
+                  ),
                 ),
               ),
             ),
@@ -193,12 +206,8 @@ class InitWidget extends StatelessWidget {
                       title: Text(user.userName!),
                       tileColor: Colors.transparent,
                       onTap: () {
-                        context.push(
-                          APP_PAGE.profile.toPath,
-                          extra: ProfilePayload(
-                            user: user,
-                            isForOtherUser: true,
-                          ),
+                        context.go(
+                          '/@${user.userName}',
                         );
                       },
                     );
@@ -231,8 +240,8 @@ class InitWidget extends StatelessWidget {
                             color: COLOR_black,
                             child: GestureDetector(
                               onTap: () {
-                                context.push(
-                                  APP_PAGE.videoItem.toPath,
+                                context.go(
+                                  '${APP_PAGE.videoItem.toPath}/${item.id}',
                                   extra: PlaySingleData(
                                     index: index,
                                     videoData: item,
@@ -255,16 +264,12 @@ class InitWidget extends StatelessWidget {
                                           Text(
                                             '${item.views.length} ',
                                             style: TextStyle(
-                                                color: Theme.of(context)
-                                                    .colorScheme
-                                                    .primary),
+                                                color: COLOR_white_fff5f5f5),
                                           ),
                                           Text(
                                             LocaleKeys.label_views.tr(),
                                             style: TextStyle(
-                                                color: Theme.of(context)
-                                                    .colorScheme
-                                                    .primary),
+                                                color: COLOR_white_fff5f5f5),
                                           )
                                         ],
                                       ),

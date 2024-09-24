@@ -5,7 +5,10 @@ import 'package:go_router/go_router.dart';
 import 'package:personal_project/constant/dimens.dart';
 import 'package:personal_project/presentation/l10n/locale_code.dart';
 import 'package:personal_project/presentation/l10n/stings.g.dart';
+import 'package:personal_project/presentation/responsive/dimension.dart';
+import 'package:personal_project/presentation/router/app_router.dart';
 import 'package:personal_project/presentation/ui/language/cubit/language_cubit.dart';
+import 'package:provider/provider.dart';
 
 class LanguagePage extends StatelessWidget {
   const LanguagePage({super.key});
@@ -15,6 +18,12 @@ class LanguagePage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
+        leading: BackButton(
+          onPressed: () {
+            Provider.of<AppRouter>(context, listen: false)
+                .onBackButtonPressed(context);
+          },
+        ),
         title: Text(LocaleKeys.title_language.tr()),
       ),
       body: BlocBuilder<LanguageCubit, LanguageState>(
@@ -30,29 +39,40 @@ class LanguagePage extends StatelessWidget {
               SizedBox(
                 height: Dimens.DIMENS_12,
               ),
-              RadioListTile(
-                shape: const RoundedRectangleBorder(
-                    borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(10),
-                        topRight: Radius.circular(10))),
-                groupValue: context.locale.languageCode,
-                value: LOCALE.id.code,
-                onChanged: (value) {
-                  _setLocale(context, value!);
-                },
-                title: Text(LocaleKeys.label_language_indonesia.tr()),
+              SizedBox(
+                width: 200,
+                height: 60,
+                child: RadioListTile(
+                  shape: const RoundedRectangleBorder(
+                      borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(10),
+                          topRight: Radius.circular(10))),
+                  groupValue: context.locale.languageCode,
+                  value: LOCALE.id.code,
+                  onChanged: (value) {
+                    _setLocale(context, value!);
+                  },
+                  title: Text(LocaleKeys.label_language_indonesia.tr()),
+                ),
               ),
-              RadioListTile(
-                shape: const RoundedRectangleBorder(
-                    borderRadius: BorderRadius.only(
-                        bottomLeft: Radius.circular(10),
-                        bottomRight: Radius.circular(10))),
-                groupValue: context.locale.languageCode,
-                value: LOCALE.en.code,
-                onChanged: (value) {
-                  _setLocale(context, value!);
-                },
-                title: Text(LocaleKeys.label_language_english.tr()),
+              SizedBox(
+                width: 200,
+                height: 60,
+                child: RadioListTile(
+                  shape: const RoundedRectangleBorder(
+                      borderRadius: BorderRadius.only(
+                          bottomLeft: Radius.circular(10),
+                          bottomRight: Radius.circular(10))),
+                  groupValue: context.locale.languageCode,
+                  value: LOCALE.en.code,
+                  onChanged: (value) {
+                    _setLocale(context, value!);
+                  },
+                  title: SizedBox(
+                      width: 100,
+                      height: 20,
+                      child: Text(LocaleKeys.label_language_english.tr())),
+                ),
               ),
             ]),
           );

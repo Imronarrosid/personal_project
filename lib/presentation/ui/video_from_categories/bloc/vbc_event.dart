@@ -8,7 +8,7 @@ sealed class VbcEvent extends Equatable {
 }
 
 final class InitVbcEvent extends VbcEvent {
-  final VideoCategory category;
+  final String category;
   const InitVbcEvent({
     required this.category,
   });

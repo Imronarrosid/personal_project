@@ -39,7 +39,10 @@ import 'package:personal_project/presentation/ui/video/list_video/cubit/captions
 import 'package:personal_project/presentation/ui/video/list_video/cubit/like_video_cubit.dart';
 import 'package:personal_project/presentation/ui/video/list_video/cubit/video_size_cubit.dart';
 import 'package:personal_project/utils/number_format.dart';
+import 'package:solar_icons/solar_icons.dart';
 import 'package:visibility_detector/visibility_detector.dart';
+
+import '../../../../../data/repository/upload_repository.dart';
 
 class VideoItemDesktop extends StatefulWidget {
   final int index;
@@ -83,135 +86,141 @@ class _VideoItemDesktopState extends State<VideoItemDesktop>
     final VideoRepository videoRepository =
         RepositoryProvider.of<VideoRepository>(context);
 
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider(
-          create: (context) => LikeVideoCubit(videoRepository),
-        ),
-        BlocProvider(create: ((context) => CaptionsCubit())),
-        BlocProvider(
-          create: (_) => DesktopCommentsBloc(),
-        )
-      ],
-      child: Builder(builder: (context) {
-        return BlocListener<VideoPlayerBloc, VideoPlayerState>(
-            listener: (context, state) {
-              debugPrint(state.toString());
+    return SafeArea(
+      child: MultiBlocProvider(
+        providers: [
+          BlocProvider(
+            create: (context) => LikeVideoCubit(videoRepository),
+          ),
+          BlocProvider(create: ((context) => CaptionsCubit())),
+          BlocProvider(
+            create: (_) => DesktopCommentsBloc(),
+          )
+        ],
+        child: Builder(builder: (context) {
+          return BlocListener<VideoPlayerBloc, VideoPlayerState>(
+              listener: (context, state) {
+                debugPrint(state.toString());
 
-              if (state.status == VideoPlayerStatus.initialized) {
-                if (isViewed == false) {
-                  addListener(state: state, videoData: videoData);
-                }
-              }
-            },
-            child: GestureDetector(
-              onTap: () {
-                final VideoPlayerRepository repo =
-                    RepositoryProvider.of<VideoPlayerRepository>(context);
-                VideoPlayerBloc bloc =
-                    BlocProvider.of<VideoPlayerBloc>(context);
-                if (repo.controller != null) {
-                  if (repo.controller!.value.isPlaying) {
-                    bloc.add(const VideoPlayerEvent(actions: VideoEvent.pause));
-                  } else {
-                    bloc.add(const VideoPlayerEvent(actions: VideoEvent.play));
+                if (state.status == VideoPlayerStatus.initialized) {
+                  if (isViewed == false) {
+                    addListener(state: state, videoData: videoData);
                   }
                 }
               },
-              onDoubleTap: () {
-                String? uid = RepositoryProvider.of<AuthRepository>(context)
-                    .currentUser
-                    ?.uid;
-                bool isLiked = videoData.likes.contains(uid);
-                BlocProvider.of<LikeVideoCubit>(context).doubleTapToLike(
-                  postId: videoData.id!,
-                  dataBaseState: isLiked,
-                  databaseLikeCount: videoData.likesCount,
-                );
-              },
-              child: BlocBuilder<VideoPlayerBloc, VideoPlayerState>(
-                buildWhen: (previous, current) {
-                  if (current.status != VideoPlayerStatus.videoDeleted) {
-                    return false;
-                  } else {
-                    return true;
+              child: GestureDetector(
+                onTap: () {
+                  final VideoPlayerRepository repo =
+                      RepositoryProvider.of<VideoPlayerRepository>(context);
+                  VideoPlayerBloc bloc =
+                      BlocProvider.of<VideoPlayerBloc>(context);
+                  if (repo.controller != null) {
+                    if (repo.controller!.value.isPlaying) {
+                      bloc.add(
+                          const VideoPlayerEvent(actions: VideoEvent.pause));
+                    } else {
+                      bloc.add(
+                          const VideoPlayerEvent(actions: VideoEvent.play));
+                    }
                   }
                 },
-                builder: (context, state) {
-                  if (state.status == VideoPlayerStatus.videoDeleted) {
-                    return const Center(
-                      child: Text('Video deleted'),
-                    );
-                  }
-                  return Container(
-                    width: size.width,
-                    height: size.height,
-                    color: Theme.of(context).colorScheme.secondary,
-                    padding: const EdgeInsets.all(8),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        BlocBuilder<DesktopCommentsBloc, DesktopCommentsState>(
-                          builder: (context, state) {
-                            return ClipRRect(
-                              borderRadius: state.status ==
-                                      DesktopCommentsStatus.opened
-                                  ? const BorderRadiusDirectional.horizontal(
-                                      start: Radius.circular(8))
-                                  : BorderRadius.circular(8),
-                              child: AspectRatio(
-                                aspectRatio: 9 / 16,
-                                child: Stack(
-                                  alignment: Alignment.center,
-                                  children: [
-                                    _videoView(size, videoData),
-                                    _playButton(),
-                                    _bufferingIndicator(),
-                                    _bottomOverLay(context, videoData),
-                                    _rightOverayInside(
-                                        context, videoData, authRepository),
-                                    _buildProgerBarIndicatorView(),
-                                    const Align(
-                                      alignment: Alignment.center,
-                                      child: LikeWidget(),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                        _rightOveray(context, videoData, authRepository),
-                        BlocBuilder<DesktopCommentsBloc, DesktopCommentsState>(
-                          builder: (context, state) {
-                            return SizedBox(
-                              width:
-                                  state.status == DesktopCommentsStatus.opened
-                                      ? 400
-                                      : Dimens.DIMENS_50,
-                              child:
-                                  state.status == DesktopCommentsStatus.opened
-                                      ? Container(
-                                          width: 400,
-                                          child: DesktopCommentsView(
-                                            postId: state.postId!,
-                                          ),
-                                        )
-                                      : Container(
-                                          width: Dimens.DIMENS_50,
-                                        ),
-                            );
-                          },
-                        )
-                      ],
-                    ),
+                onDoubleTap: () {
+                  String? uid = RepositoryProvider.of<AuthRepository>(context)
+                      .currentUser
+                      ?.uid;
+                  bool isLiked = videoData.likes.contains(uid);
+                  BlocProvider.of<LikeVideoCubit>(context).doubleTapToLike(
+                    postId: videoData.id!,
+                    dataBaseState: isLiked,
+                    databaseLikeCount: videoData.likesCount,
                   );
                 },
-              ),
-            ));
-      }),
+                child: BlocBuilder<VideoPlayerBloc, VideoPlayerState>(
+                  buildWhen: (previous, current) {
+                    if (current.status != VideoPlayerStatus.videoDeleted) {
+                      return false;
+                    } else {
+                      return true;
+                    }
+                  },
+                  builder: (context, state) {
+                    if (state.status == VideoPlayerStatus.videoDeleted) {
+                      return const Center(
+                        child: Text('Video deleted'),
+                      );
+                    }
+                    return Container(
+                      width: size.width,
+                      height: size.height,
+                      color: Theme.of(context).colorScheme.background,
+                      padding: const EdgeInsets.all(8),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          BlocBuilder<DesktopCommentsBloc,
+                              DesktopCommentsState>(
+                            builder: (context, state) {
+                              return ClipRRect(
+                                borderRadius: state.status ==
+                                        DesktopCommentsStatus.opened
+                                    ? const BorderRadiusDirectional.horizontal(
+                                        start: Radius.circular(8))
+                                    : BorderRadius.circular(8),
+                                child: AspectRatio(
+                                  aspectRatio: 9 / 16,
+                                  child: Stack(
+                                    alignment: Alignment.center,
+                                    children: [
+                                      _videoView(size, videoData),
+                                      _playButton(),
+                                      _bufferingIndicator(),
+                                      _bottomOverLay(context, videoData),
+                                      _rightOverayInside(
+                                          context, videoData, authRepository),
+                                      _buildProgerBarIndicatorView(),
+                                      const Align(
+                                        alignment: Alignment.center,
+                                        child: LikeWidget(),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                          _rightOveray(context, videoData, authRepository),
+                          BlocBuilder<DesktopCommentsBloc,
+                              DesktopCommentsState>(
+                            builder: (context, state) {
+                              return SizedBox(
+                                width:
+                                    state.status == DesktopCommentsStatus.opened
+                                        ? 400
+                                        : Dimens.DIMENS_50,
+                                child:
+                                    state.status == DesktopCommentsStatus.opened
+                                        ? Container(
+                                            width: 400,
+                                            child: DesktopCommentsView(
+                                              postId: state.postId!,
+                                            ),
+                                          )
+                                        : Container(
+                                            width: Dimens.DIMENS_50,
+                                          ),
+                              );
+                            },
+                          )
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ));
+        }),
+      ),
     );
   }
 
@@ -276,6 +285,7 @@ class _VideoItemDesktopState extends State<VideoItemDesktop>
           }
         }
         return Container(
+          color: Colors.black,
           padding: EdgeInsets.only(
             top: bottomPadding == 0.0 ? 0 : Dimens.DIMENS_32,
             bottom: bottomPadding,
@@ -536,69 +546,44 @@ class _VideoItemDesktopState extends State<VideoItemDesktop>
                           videoData,
                           authRepository,
                         ),
-                        if (videoData.category == 'Entertainment')
-                          GestureDetector(
-                            onTap: () {
-                              context.push(
-                                APP_PAGE.VBC.toPath,
-                                extra: VideoCategory(category: 'Entertainment'),
-                              );
-                            },
-                            child: Container(
-                              width: Dimens.DIMENS_30,
-                              height: Dimens.DIMENS_30,
-                              decoration: BoxDecoration(
-                                border: Border.all(color: COLOR_white_fff5f5f5),
-                                color: COLOR_black_ff121212,
-                                borderRadius: BorderRadius.circular(
-                                  8,
+                        GestureDetector(
+                          onTap: () {
+                            if (videoData.category != '') {
+                              // context.push(APP_PAGE.videoFromGame.toPath,
+                              //     extra: VideoFromGameData(
+                              //         game: videoData.game!,
+                              //         captions: videoData.caption,
+                              //         profileImg: data!.photo!));
+                              context.go(
+                                '${APP_PAGE.category.toPath}/${videoData.category}',
+                                extra: VideoCategory(
+                                  gameFav: videoData.game,
                                 ),
-                              ),
-                              child: const Icon(
-                                Icons.movie_outlined,
-                                size: 18,
-                              ),
+                              );
+                            } else {
+                              Fluttertoast.showToast(
+                                  gravity: ToastGravity.TOP,
+                                  msg: LocaleKeys.message_no_game.tr());
+                            }
+                          },
+                          child: Container(
+                            width: Dimens.DIMENS_30,
+                            height: Dimens.DIMENS_30,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              border: Border.all(color: COLOR_white_fff5f5f5),
+                              borderRadius: BorderRadius.circular(8),
+                              color: const Color.fromARGB(255, 27, 26, 26),
                             ),
-                          )
-                        else
-                          GestureDetector(
-                            onTap: () {
-                              if (videoData.game != null) {
-                                // context.push(APP_PAGE.videoFromGame.toPath,
-                                //     extra: VideoFromGameData(
-                                //         game: videoData.game!,
-                                //         captions: videoData.caption,
-                                //         profileImg: data!.photo!));
-                                context.push(
-                                  APP_PAGE.VBC.toPath,
-                                  extra: VideoCategory(
-                                    gameFav: videoData.game,
-                                  ),
-                                );
-                              } else {
-                                Fluttertoast.showToast(
-                                    gravity: ToastGravity.TOP,
-                                    msg: LocaleKeys.message_no_game.tr());
-                              }
-                            },
-                            child: Container(
-                              width: Dimens.DIMENS_30,
-                              height: Dimens.DIMENS_30,
-                              alignment: Alignment.center,
-                              decoration: BoxDecoration(
-                                border: Border.all(color: COLOR_white_fff5f5f5),
-                                borderRadius: BorderRadius.circular(8),
-                                color: const Color.fromARGB(255, 27, 26, 26),
-                              ),
-                              child: (videoData.game == null)
-                                  ? Icon(
-                                      BootstrapIcons.controller,
-                                      color: COLOR_white_fff5f5f5,
-                                      size: Dimens.DIMENS_15,
-                                    )
-                                  : _buildGameImage(videoData),
-                            ),
-                          )
+                            child: (videoData.game == null)
+                                ? Icon(
+                                    Icons.movie_outlined,
+                                    color: COLOR_white_fff5f5f5,
+                                    size: Dimens.DIMENS_15,
+                                  )
+                                : _buildGameImage(videoData),
+                          ),
+                        )
                       ],
                     );
                   } else {
@@ -769,69 +754,44 @@ class _VideoItemDesktopState extends State<VideoItemDesktop>
                           videoData,
                           authRepository,
                         ),
-                        if (videoData.category == 'Entertainment')
-                          GestureDetector(
-                            onTap: () {
-                              context.push(
-                                APP_PAGE.VBC.toPath,
-                                extra: VideoCategory(category: 'Entertainment'),
-                              );
-                            },
-                            child: Container(
-                              width: Dimens.DIMENS_30,
-                              height: Dimens.DIMENS_30,
-                              decoration: BoxDecoration(
-                                border: Border.all(color: COLOR_white_fff5f5f5),
-                                color: COLOR_black_ff121212,
-                                borderRadius: BorderRadius.circular(
-                                  8,
+                        GestureDetector(
+                          onTap: () {
+                            if (videoData.category != '') {
+                              // context.push(APP_PAGE.videoFromGame.toPath,
+                              //     extra: VideoFromGameData(
+                              //         game: videoData.game!,
+                              //         captions: videoData.caption,
+                              //         profileImg: data!.photo!));
+                              context.go(
+                                '${APP_PAGE.category.toPath}/${videoData.category}',
+                                extra: VideoCategory(
+                                  gameFav: videoData.game,
                                 ),
-                              ),
-                              child: const Icon(
-                                Icons.movie_outlined,
-                                size: 18,
-                              ),
+                              );
+                            } else {
+                              Fluttertoast.showToast(
+                                  gravity: ToastGravity.TOP,
+                                  msg: LocaleKeys.message_no_game.tr());
+                            }
+                          },
+                          child: Container(
+                            width: Dimens.DIMENS_30,
+                            height: Dimens.DIMENS_30,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              border: Border.all(color: COLOR_white_fff5f5f5),
+                              borderRadius: BorderRadius.circular(8),
+                              color: const Color.fromARGB(255, 27, 26, 26),
                             ),
-                          )
-                        else
-                          GestureDetector(
-                            onTap: () {
-                              if (videoData.game != null) {
-                                // context.push(APP_PAGE.videoFromGame.toPath,
-                                //     extra: VideoFromGameData(
-                                //         game: videoData.game!,
-                                //         captions: videoData.caption,
-                                //         profileImg: data!.photo!));
-                                context.push(
-                                  APP_PAGE.VBC.toPath,
-                                  extra: VideoCategory(
-                                    gameFav: videoData.game,
-                                  ),
-                                );
-                              } else {
-                                Fluttertoast.showToast(
-                                    gravity: ToastGravity.TOP,
-                                    msg: LocaleKeys.message_no_game.tr());
-                              }
-                            },
-                            child: Container(
-                              width: Dimens.DIMENS_30,
-                              height: Dimens.DIMENS_30,
-                              alignment: Alignment.center,
-                              decoration: BoxDecoration(
-                                border: Border.all(color: COLOR_white_fff5f5f5),
-                                borderRadius: BorderRadius.circular(8),
-                                color: const Color.fromARGB(255, 27, 26, 26),
-                              ),
-                              child: (videoData.game == null)
-                                  ? Icon(
-                                      BootstrapIcons.controller,
-                                      color: COLOR_white_fff5f5f5,
-                                      size: Dimens.DIMENS_15,
-                                    )
-                                  : _buildGameImage(videoData),
-                            ),
-                          )
+                            child: (videoData.game == null)
+                                ? Icon(
+                                      Icons.movie_outlined,
+                                    color: COLOR_white_fff5f5f5,
+                                    size: Dimens.DIMENS_15,
+                                  )
+                                : _buildGameImage(videoData),
+                          ),
+                        )
                       ],
                     ),
                   );
@@ -965,11 +925,37 @@ class _VideoItemDesktopState extends State<VideoItemDesktop>
     return ClipRRect(
       borderRadius: BorderRadius.circular(8),
       child: SizedBox.expand(
-        child: CachedNetworkImage(
-          imageUrl: videoData.game!.gameImage!,
-          errorWidget: (_, __, ___) => Container(),
-          fit: BoxFit.cover,
-        ),
+        child: videoData.category == 'Non Gaming'
+            ? Container(
+                width: Dimens.DIMENS_30,
+                height: Dimens.DIMENS_30,
+                decoration: BoxDecoration(
+                  border: Border.all(color: COLOR_white_fff5f5f5),
+                  color: COLOR_black_ff121212,
+                  borderRadius: BorderRadius.circular(
+                    8,
+                  ),
+                ),
+                child: const Icon(
+                  Icons.movie_outlined,
+                  size: 18,
+                ),
+              )
+            : FutureBuilder(
+                future:
+                    UploadRepository.instance.getGameAvatar(videoData.category),
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData) {
+                    return Container(
+                      color: COLOR_black_900,
+                    );
+                  }
+                  return CachedNetworkImage(
+                    imageUrl: videoData.game!.gameImage!,
+                    errorWidget: (_, __, ___) => Container(),
+                    fit: BoxFit.cover,
+                  );
+                }),
       ),
     );
   }
@@ -1097,19 +1083,9 @@ class _VideoItemDesktopState extends State<VideoItemDesktop>
 
   void _toProfile(BuildContext context, User data) {
     if (mobileWidth < MediaQuery.of(context).size.width) {
-      context.read<HomeCubit>().changePage(
-            5,
-            data: data,
-          );
-
-      debugPrint("navigate top " + data.toJson().toString());
+      context.go('/@${data.userName}', extra: data);
     } else {
-      context.push(
-        APP_PAGE.profile.toPath,
-        extra: ProfilePayload(
-          user: data,
-        ),
-      );
+      context.go('/@${data.userName}', extra: data);
     }
   }
 
@@ -1236,7 +1212,7 @@ class _VideoItemDesktopState extends State<VideoItemDesktop>
                                                         isFollowing
                                                     ? Theme.of(context)
                                                         .colorScheme
-                                                        .primary
+                                                        .onSurface
                                                     : Colors.transparent,
                                               ),
                                               borderRadius:
@@ -1348,11 +1324,8 @@ class _VideoItemDesktopState extends State<VideoItemDesktop>
                           //     profileImg: data.photo!,
                           //   ),
                           // );
-                          context.push(
-                            APP_PAGE.VBC.toPath,
-                            extra: VideoCategory(
-                              gameFav: videoData.game,
-                            ),
+                          context.go(
+                            '${APP_PAGE.category.toPath}/${videoData.category}',
                           );
                         },
                         child: SizedBox(

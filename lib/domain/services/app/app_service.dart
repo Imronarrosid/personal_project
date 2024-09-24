@@ -9,6 +9,7 @@ String ONBOARD_KEY = "GD2G82CG9G82VDFGVD22DVG";
 
 class AppService with ChangeNotifier {
   late final SharedPreferences sharedPreferences;
+
   bool _loginState = false;
   bool _initialized = false;
   bool _onboarding = false;
@@ -55,5 +56,14 @@ class AppService with ChangeNotifier {
 
   List<String> getAllSelectedGameFav() {
     return sharedPreferences.getStringList('gameFav') ?? <String>[];
+  }
+
+  Future<void> saveUploadProgress(String filePath) async {
+    await sharedPreferences.setString('uploadingUrl', filePath);
+  }
+
+  Future<void> clearUploadProgress() async {
+    await sharedPreferences.remove('uploadingUrl');
+    await sharedPreferences.remove('uploadProgress');
   }
 }

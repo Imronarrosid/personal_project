@@ -100,6 +100,11 @@ class VideoFromGamePage extends StatelessWidget {
                                   color: COLOR_black,
                                   child: GestureDetector(
                                     onTap: () {
+                                      String route = GoRouter.of(context)
+                                          .routeInformationProvider
+                                          .value
+                                          .uri
+                                          .path;
                                       context.push(
                                         APP_PAGE.videoItem.toPath,
                                         extra: PlaySingleData(

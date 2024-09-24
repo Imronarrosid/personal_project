@@ -3,7 +3,9 @@ import 'dart:async';
 import 'package:chips_choice/chips_choice.dart';
 import 'package:dots_indicator/dots_indicator.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:personal_project/constant/dimens.dart';
@@ -66,7 +68,7 @@ class _OnBoardingPageState extends State<OnBoardingPage> {
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
                     color:
-                        Theme.of(context).colorScheme.primary.withOpacity(0.6)),
+                        Theme.of(context).colorScheme.secondary.withOpacity(0.6)),
               ),
             ),
           ),
@@ -116,155 +118,151 @@ class _OnBoardingPageState extends State<OnBoardingPage> {
           )
         ],
       ),
-      body: SizedBox(
-        width: MediaQuery.of(context).size.width,
-        height: MediaQuery.of(context).size.height,
+      body: Container(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            SizedBox(
-              width: MediaQuery.of(context).size.width,
-              height: MediaQuery.of(context).size.height - 150,
-              child: PageView(
-                controller: _controller,
-                onPageChanged: (value) {
-                  setState(() {
-                    _currentPage = value;
-                  });
-                },
-                children: [
-                  SizedBox(
-                    width: MediaQuery.of(context).size.width,
-                    height: MediaQuery.of(context).size.height - 200,
-                    child: Padding(
-                      padding: const EdgeInsets.all(24.0),
-                      child: Column(
-                        children: [
-                          SizedBox(
-                            height: Dimens.DIMENS_60,
+            Expanded(
+              child: SizedBox(
+                child: PageView(
+                  controller: _controller,
+                  onPageChanged: (value) {
+                    setState(() {
+                      _currentPage = value;
+                    });
+                  },
+                  children: [
+                    Container(
+                      child: SizedBox(
+                        child: Padding(
+                          padding: const EdgeInsets.all(24.0),
+                          child: Column(
+                            children: [
+                              SizedBox(
+                                height: Dimens.DIMENS_60,
+                              ),
+                              SizedBox(
+                                width: MediaQuery.of(context).size.width,
+                                child: Text(
+                                  LocaleKeys.message_welcome_to_gamepiun.tr(),
+                                  textAlign: TextAlign.left,
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .headlineLarge!
+                                      .apply(fontWeightDelta: 2),
+                                ),
+                              ),
+                              SizedBox(
+                                width: MediaQuery.of(context).size.width,
+                                child: Text(
+                                  LocaleKeys.message_share_gaming_content.tr(),
+                                  textAlign: TextAlign.left,
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodyMedium!
+                                      .apply(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .primary
+                                              .withOpacity(0.7)),
+                                ),
+                              ),
+                              SizedBox(
+                                height: Dimens.DIMENS_34,
+                              ),
+                              Image.asset(
+                                Images.IC_GAMEPIUN512X521,
+                                width: Dimens.DIMENS_250,
+                              )
+                            ],
                           ),
-                          SizedBox(
-                            width: MediaQuery.of(context).size.width,
-                            child: Text(
-                              LocaleKeys.message_welcome_to_gamepiun.tr(),
-                              textAlign: TextAlign.left,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .headlineLarge!
-                                  .apply(fontWeightDelta: 2),
-                            ),
-                          ),
-                          SizedBox(
-                            width: MediaQuery.of(context).size.width,
-                            child: Text(
-                              LocaleKeys.message_share_gaming_content.tr(),
-                              textAlign: TextAlign.left,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodyMedium!
-                                  .apply(
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .primary
-                                          .withOpacity(0.7)),
-                            ),
-                          ),
-                          SizedBox(
-                            height: Dimens.DIMENS_34,
-                          ),
-                          Image.asset(
-                            Images.IC_GAMEPIUN512X521,
-                            width: Dimens.DIMENS_250,
-                          )
-                        ],
+                        ),
                       ),
                     ),
-                  ),
-                  SizedBox(
-                    width: MediaQuery.of(context).size.width,
-                    height: MediaQuery.of(context).size.height - 200,
-                    child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                          Padding(
-                            padding: EdgeInsets.only(
-                                left: Dimens.DIMENS_12, top: Dimens.DIMENS_12),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  LocaleKeys.label_favorite_games.tr(),
-                                  style: const TextStyle(
-                                      fontSize: 22,
-                                      fontWeight: FontWeight.w900),
-                                ),
-                                SizedBox(
-                                  height: Dimens.DIMENS_16,
-                                ),
-                                Text(
-                                  LocaleKeys.message_select_your_game_favorite
-                                      .tr(),
-                                  style: const TextStyle(
-                                      fontSize: 22,
-                                      fontWeight: FontWeight.w900),
-                                ),
-                              ],
+                    Container(
+                      child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            Padding(
+                              padding: EdgeInsets.only(
+                                  left: Dimens.DIMENS_12, top: Dimens.DIMENS_12),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    LocaleKeys.label_favorite_games.tr(),
+                                    style: const TextStyle(
+                                        fontSize: 22,
+                                        fontWeight: FontWeight.w900),
+                                  ),
+                                  SizedBox(
+                                    height: Dimens.DIMENS_16,
+                                  ),
+                                  Text(
+                                    LocaleKeys.message_select_your_game_favorite
+                                        .tr(),
+                                    style: const TextStyle(
+                                        fontSize: 22,
+                                        fontWeight: FontWeight.w900),
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
-                          FutureBuilder(
-                              future: userRepository.getAllGameFav(),
-                              builder: (context, snapshot) {
-                                List<GameFav> gameFav = snapshot.data ?? [];
-                                List<String> gameOptions = [];
-                                for (var element in gameFav) {
-                                  gameOptions.add(element.gameTitle!);
-                                }
-                                if (snapshot.hasData && gameFav.isNotEmpty) {
-                                  return ChipsChoice<String>.multiple(
-                                    value: titleList,
-                                    onChanged: (val) =>
-                                        setState(() => titleList = val),
-                                    choiceItems:
-                                        C2Choice.listFrom<String, String>(
-                                      source: gameOptions,
-                                      value: (i, v) => gameOptions[i],
-                                      label: (i, v) => v,
-                                      tooltip: (i, v) => v,
-                                      avatarImage: (index, item) =>
-                                          NetworkImage(
-                                              gameFav[index].gameImage!),
-                                    ),
-                                    choiceStyle: C2ChipStyle.toned(
-                                      selectedStyle: C2ChipStyle.filled(),
-                                      borderRadius: const BorderRadius.all(
-                                        Radius.circular(50),
+                            FutureBuilder(
+                                future: userRepository.getAllGameFav(),
+                                builder: (context, snapshot) {
+                                  List<GameFav> gameFav = snapshot.data ?? [];
+                                  List<String> gameOptions = [];
+                                  for (var element in gameFav) {
+                                    gameOptions.add(element.gameTitle!);
+                                  }
+                                  if (snapshot.hasData && gameFav.isNotEmpty) {
+                                    return ChipsChoice<String>.multiple(
+                                      value: titleList,
+                                      onChanged: (val) =>
+                                          setState(() => titleList = val),
+                                      choiceItems:
+                                          C2Choice.listFrom<String, String>(
+                                        source: gameOptions,
+                                        value: (i, v) => gameOptions[i],
+                                        label: (i, v) => v,
+                                        tooltip: (i, v) => v,
+                                        avatarImage: (index, item) =>
+                                            NetworkImage(
+                                                gameFav[index].gameImage!),
                                       ),
-                                    ),
-                                    // leading: IconButton(
-                                    //   tooltip: 'Add Choice',
-                                    //   icon: const Icon(Icons.add_box_rounded),
-                                    //   onPressed: () => setState(
-                                    //     () => options.add('Opt #${options.length + 1}'),
-                                    //   ),
-                                    // ),
-                                    // trailing: IconButton(
-                                    //   tooltip: 'Remove Choice',
-                                    //   icon: const Icon(Icons.remove_circle),
-                                    //   onPressed: () => setState(() => options.removeLast()),
-                                    // ),
-                                    wrapped: true,
-                                  );
-                                } else {
-                                  return const Expanded(
-                                    child: Center(
-                                      child: CircularProgressIndicator(),
-                                    ),
-                                  );
-                                }
-                              }),
-                        ]),
-                  ),
-                ],
+                                      choiceStyle: C2ChipStyle.toned(
+                                        selectedStyle: C2ChipStyle.filled(),
+                                        borderRadius: const BorderRadius.all(
+                                          Radius.circular(50),
+                                        ),
+                                      ),
+                                      // leading: IconButton(
+                                      //   tooltip: 'Add Choice',
+                                      //   icon: const Icon(Icons.add_box_rounded),
+                                      //   onPressed: () => setState(
+                                      //     () => options.add('Opt #${options.length + 1}'),
+                                      //   ),
+                                      // ),
+                                      // trailing: IconButton(
+                                      //   tooltip: 'Remove Choice',
+                                      //   icon: const Icon(Icons.remove_circle),
+                                      //   onPressed: () => setState(() => options.removeLast()),
+                                      // ),
+                                      wrapped: true,
+                                    );
+                                  } else {
+                                    return const Expanded(
+                                      child: Center(
+                                        child: CircularProgressIndicator(),
+                                      ),
+                                    );
+                                  }
+                                }),
+                          ]),
+                    ),
+                  ],
+                ),
               ),
             ),
             SizedBox(
@@ -305,13 +303,13 @@ class _OnBoardingPageState extends State<OnBoardingPage> {
   void cancel() {
     final appService = Provider.of<AppService>(context, listen: false);
     appService.onboarding = true;
-    context.pushReplacement(APP_PAGE.home.toPath);
+    context.go(APP_PAGE.forYou.toPath);
   }
 
   void _saveSelected() {
     final appService = Provider.of<AppService>(context, listen: false);
     appService.onboarding = true;
     appService.saveSelectedGamefav(titleList);
-    context.pushReplacement(APP_PAGE.home.toPath);
+    context.go(APP_PAGE.forYou.toPath);
   }
 }

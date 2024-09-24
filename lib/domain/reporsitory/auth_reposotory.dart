@@ -103,6 +103,21 @@ class AuthRepository implements AuthUseCaseType {
   /// the authentication state changes.
   ///
   /// Emits [User.empty] if the user is not authenticated.
+
+  User? currentUserData;
+
+  initAuthRepository() async {
+    if (firebaseAuth.currentUser != null) {
+      DocumentSnapshot docs = await firebaseFirestore
+          .collection('users')
+          .doc(firebaseAuth.currentUser!.uid)
+          .get();
+      if (docs.exists) {
+        currentUserData = User.fromSnap(docs);
+      }
+    }
+  }
+
   Stream<User> get user {
     return _firebaseAuth.authStateChanges().map((firebaseUser) {
       final user = firebaseUser == null ? User.empty : firebaseUser.toUser;

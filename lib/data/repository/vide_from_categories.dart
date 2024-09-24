@@ -16,7 +16,7 @@ class VBCREpository {
     _videoRepository.allVideoFromGame.clear();
   }
 
-  void initPagingController(VideoCategory category) {
+  void initPagingController(String category) {
     controller = PagingController<int, Video>(firstPageKey: 0);
     controller!.addPageRequestListener((pageKey) {
       debugPrint(_videoRepository.currentPageIndex.toString());
@@ -29,15 +29,21 @@ class VBCREpository {
   }
 
 //
-  Future<void> _fetchPage(int pageKey, VideoCategory category) async {
+  Future<void> _fetchPage(int pageKey, String category) async {
     try {
       List<Video> listVideo = [];
       final List<DocumentSnapshot<Object?>> newItems;
-      if (category.category != null) {
-        newItems = await getListVideoFromCategory(limit: _pageSize, category: category);
-      } else {
-        newItems = await getListVideoByGame(limit: _pageSize, category: category);
-      }
+      newItems =
+          await getListVideoFromCategory(limit: _pageSize, category: category);
+      // if (category == 'Non Gaming') {
+      //   newItems = await getListVideoFromCategory(
+      //       limit: _pageSize, category: 'Non Gaming');
+      // } else {
+      //   newItems = await getListVideoFromCategory(
+      //       limit: _pageSize, category: 'Non Gaming');
+      //   // newItems =
+      //   //     await getListVideoByGame(limit: _pageSize, category: category);
+      // }
       final isLastPage = newItems.length < _pageSize;
 
       debugPrint('new items$newItems');
@@ -58,7 +64,7 @@ class VBCREpository {
   }
 
   Future<List<DocumentSnapshot>> getListVideoFromCategory(
-      {required int limit, required VideoCategory category}) async {
+      {required int limit, required String category}) async {
     List<DocumentSnapshot> listDocs = [];
 
     QuerySnapshot querySnapshot;
@@ -66,14 +72,14 @@ class VBCREpository {
       if (allVideoFromCategory.isEmpty) {
         querySnapshot = await firebaseFirestore
             .collection('videos')
-            .where('category', isEqualTo: category.category)
+            .where('category', isEqualTo: category)
             .orderBy('createdAt', descending: true)
             .limit(limit)
             .get();
       } else {
         querySnapshot = await firebaseFirestore
             .collection('videos')
-            .where('category', isEqualTo: category.category)
+            .where('category', isEqualTo: category)
             .orderBy('createdAt', descending: true)
             .startAfterDocument(allVideoFromCategory.last)
             .limit(limit)

@@ -251,6 +251,26 @@ class UserRepository implements UserUseCaseType {
         .map((user) => User.fromSnap(user));
   }
 
+  Stream<User>? userDataStreamByUsername(String userName) {
+    try {
+      Stream<User> stream = firebaseFirestore
+          .collection('users')
+          .where('userName', isEqualTo: userName)
+          .limit(1)
+          .snapshots()
+          .map((user) {
+        if (user.docs.isNotEmpty) {
+          return User.fromSnap(user.docs.first);
+        }
+        throw 'User not found.';
+      });
+
+      return stream;
+    } catch (e) {
+      throw e.toString();
+    }
+  }
+
   @override
   Future<List<String>> getUserVideoThumnails(String uid) async {
     List<String> thumbnails = [];

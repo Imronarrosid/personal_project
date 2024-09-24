@@ -49,12 +49,8 @@ class CommentItem extends StatelessWidget {
                 tileColor: Colors.transparent,
                 leading: GestureDetector(
                   onTap: () {
-                    context.push(
-                      APP_PAGE.profile.toPath,
-                      extra: ProfilePayload(
-                        user: data,
-                        isForOtherUser: true,
-                      ),
+                    context.go(
+                      '/@${data.userName}',
                     );
                   },
                   child: CircleAvatar(
@@ -107,12 +103,8 @@ class CommentItem extends StatelessWidget {
 
                     GestureDetector(
                       onTap: () {
-                        context.push(
-                          APP_PAGE.profile.toPath,
-                          extra: ProfilePayload(
-                            user: data,
-                            isForOtherUser: true,
-                          ),
+                        context.go(
+                          '/@${data.userName}',
                         );
                       },
                       child: Text(
