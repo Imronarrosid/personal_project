@@ -5,6 +5,7 @@ import 'package:bootstrap_icons/bootstrap_icons.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:easy_localization/easy_localization.dart' as localization;
+import 'package:extended_nested_scroll_view/extended_nested_scroll_view.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -392,27 +393,31 @@ class _ProfilePageDesktopState extends State<ProfilePageDesktop>
       }),
       child: ScrollConfiguration(
         behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
-        child: CustomScrollView(slivers: [
-          topSectionView(authState, userData),
+        child: ExtendedNestedScrollView(
+          onlyOneScrollInBody: true,
+          pinnedHeaderSliverHeightBuilder: () => 55,
+          headerSliverBuilder: (context, innerBoxIsScrolled) => [
+            topSectionView(authState, userData),
 
-          SliverToBoxAdapter(
-            child: SizedBox(
-              height: Dimens.DIMENS_8,
+            SliverToBoxAdapter(
+              child: SizedBox(
+                height: Dimens.DIMENS_8,
+              ),
             ),
-          ),
-          // if ((userData.id) == authRepository.currentUser?.uid)
-          //   _editProfileBtn(context)
-          // else
-          //   _followBtn(userRepository, userData, theme, authState,
-          //       authRepository, context),
-          SliverToBoxAdapter(
-            child: SizedBox(
-              height: Dimens.DIMENS_8,
+            // if ((userData.id) == authRepository.currentUser?.uid)
+            //   _editProfileBtn(context)
+            // else
+            //   _followBtn(userRepository, userData, theme, authState,
+            //       authRepository, context),
+            SliverToBoxAdapter(
+              child: SizedBox(
+                height: Dimens.DIMENS_8,
+              ),
             ),
-          ),
-          _tabBar(context),
-          tabBarView(userData),
-        ]),
+            _tabBar(context),
+          ],
+          body: tabBarView(userData),
+        ),
       ),
     );
 
@@ -441,8 +446,8 @@ class _ProfilePageDesktopState extends State<ProfilePageDesktop>
     // ),
   }
 
-  SliverFillRemaining tabBarView(User userData) {
-    return SliverFillRemaining(
+  Container tabBarView(User userData) {
+    return Container(
       child: TabBarView(
         controller: _tabController,
         children: [
@@ -1387,6 +1392,7 @@ class VideoListView extends StatelessWidget {
                         .copyWith(scrollbars: false),
                     child: PagedGridView<int, String>(
                       pagingController: state.controller!,
+                      shrinkWrap: true,
                       padding: const EdgeInsets.only(top: 4),
                       builderDelegate: PagedChildBuilderDelegate(
                         noItemsFoundIndicatorBuilder: (context) => Center(
