@@ -1,6 +1,7 @@
 import 'package:bootstrap_icons/bootstrap_icons.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -29,6 +30,7 @@ import 'package:personal_project/presentation/ui/comments/cubit/like_comment_cub
 import 'package:personal_project/presentation/ui/comments/cubit/replies_cubit.dart';
 import 'package:personal_project/presentation/ui/video/list_video/cubit/video_size_cubit.dart';
 import 'package:personal_project/utils/number_format.dart';
+import 'package:solar_icons/solar_icons.dart';
 import 'package:timeago/timeago.dart' as tago;
 
 class DesktopCommentsView extends StatefulWidget {
@@ -80,108 +82,142 @@ class _DesktopCommentsViewState extends State<DesktopCommentsView> {
           create: (context) => ComentsPagingRepository(),
         ),
       ],
-      child: MultiBlocProvider(
-        providers: [
-          BlocProvider(
-            create: (context) =>
-                CommentBloc(RepositoryProvider.of<CommentRepository>(context)),
-          ),
-          BlocProvider(
-            create: (context) => CommentsPagingBloc(
-                RepositoryProvider.of<ComentsPagingRepository>(context))
-              ..add(InitCommentsPagingEvent(postId: widget.postId)),
-          ),
-        ],
-        child: MultiBlocListener(
-          listeners: [
-            BlocListener<CommentBloc, CommentState>(
-              listener: (context, state) {
-                if (state.status == CommentStatus.succes) {
-                  Comment commentToMove = state.comment!;
-                  _newCommentItems.add(commentToMove);
-                }
-
-                if (state.status == CommentStatus.startReply) {
-                  _isForReply = true;
-                } else if (state.status == CommentStatus.replyAdded) {
-                  _isForReply = false;
-                }
-              },
+      child: Builder(builder: (context) {
+        return MultiBlocProvider(
+          providers: [
+            BlocProvider(
+              create: (context) => CommentBloc(
+                  RepositoryProvider.of<CommentRepository>(context)),
             ),
-            BlocListener<VideoSizeCubit, VideoSizeState>(
-              listener: (_, state) {
-                if (state is VideoSizeChanged) {
-                  if (state.size < 0.13 && _isCanPop) {
-                    // context.pop();
-                    // ignore: prefer_const_constructors
-                    _draggableController.animateTo(0.0,
-                        duration: const Duration(milliseconds: 200),
-                        curve: Curves.easeInOut);
-                    _isCanPop = false;
-                    debugPrint('pop');
-                  }
-                }
-              },
+            BlocProvider(
+              create: (context) => CommentsPagingBloc(
+                  RepositoryProvider.of<ComentsPagingRepository>(context))
+                ..add(InitCommentsPagingEvent(postId: widget.postId)),
             ),
           ],
-          child: Stack(
-            children: [
-              InkWell(
-                splashFactory: NoSplash.splashFactory,
-                splashColor: Colors.transparent,
-                overlayColor:
-                    const MaterialStatePropertyAll<Color>(Colors.transparent),
-                onTap: () {
-                  _draggableController.animateTo(0.0,
-                      duration: const Duration(milliseconds: 200),
-                      curve: Curves.easeInOut);
-                },
-                child: SizedBox(
-                  width: MediaQuery.of(context).size.width,
-                  height: MediaQuery.of(context).size.height,
-                ),
-              ),
-              GestureDetector(
-                onTap: () {
-                  FocusScope.of(context).unfocus();
-                },
-                child: ClipRRect(
-                  borderRadius: BorderRadius.horizontal(
-                      right: Radius.circular(Dimens.DIMENS_10)),
-                  child: Scaffold(
-                    backgroundColor: Theme.of(context).colorScheme.tertiary,
-                    appBar: AppBar(
-                      backgroundColor: Theme.of(context).colorScheme.tertiary,
-                      title: Text(LocaleKeys.title_comments.tr()),
-                      actions: <Widget>[
-                        IconButton(
-                          onPressed: () {
-                            BlocProvider.of<DesktopCommentsBloc>(context)
-                                .add(CloseDesktopComments());
-                          },
-                          icon: Icon(
-                            BootstrapIcons.x,
-                            size: Dimens.DIMENS_34,
-                          ),
-                        ),
-                      ],
-                    ),
-                    body: Container(
-                      child:
-                          // _commentsHeaders(context),
+          child: MultiBlocListener(
+            listeners: [
+              BlocListener<CommentBloc, CommentState>(
+                listener: (context, state) {
+                  if (state.status == CommentStatus.succes) {
+                    Comment commentToMove = state.comment!;
+                    _newCommentItems.add(commentToMove);
+                  }
 
-                          _buildCommentsList(context, onRefresh: () {
-                        return _refreshComments(context);
-                      }),
-                    ),
-                    bottomNavigationBar: _buildCommnetsInput(context),
-                  ),
-                ),
+                  if (state.status == CommentStatus.startReply) {
+                    _isForReply = true;
+                  } else if (state.status == CommentStatus.replyAdded) {
+                    _isForReply = false;
+                  }
+                },
+              ),
+              BlocListener<VideoSizeCubit, VideoSizeState>(
+                listener: (context, state) {
+                  if (state is VideoSizeChanged) {
+                    if (state.size < 0.13 && _isCanPop) {
+                      // context.pop();
+                      // ignore: prefer_const_constructors
+                      _draggableController.animateTo(0.0,
+                          duration: const Duration(milliseconds: 200),
+                          curve: Curves.easeInOut);
+                      _isCanPop = false;
+                      debugPrint('pop');
+                    }
+                  }
+                },
               ),
             ],
+            child: Builder(builder: (context) {
+              return Stack(
+                children: [
+                  InkWell(
+                    splashFactory: NoSplash.splashFactory,
+                    splashColor: Colors.transparent,
+                    overlayColor: const MaterialStatePropertyAll<Color>(
+                        Colors.transparent),
+                    onTap: () {
+                      _draggableController.animateTo(0.0,
+                          duration: const Duration(milliseconds: 200),
+                          curve: Curves.easeInOut);
+                    },
+                    child: SizedBox(
+                      width: MediaQuery.of(context).size.width,
+                      height: MediaQuery.of(context).size.height,
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      FocusScope.of(context).unfocus();
+                    },
+                    child: SafeArea(
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.horizontal(
+                            right: Radius.circular(Dimens.DIMENS_10)),
+                        child: Column(
+                          children: [
+                            Container(
+                              height: 60,
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 12),
+                              decoration: BoxDecoration(
+                                  border: Border(
+                                    bottom: BorderSide(
+                                      width: 0.6,
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurface
+                                          .withOpacity(0.15),
+                                    ),
+                                  ),
+                                  color:
+                                      Theme.of(context).colorScheme.tertiary),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    LocaleKeys.title_comments.tr(),
+                                    style:
+                                        Theme.of(context).textTheme.titleLarge,
+                                  ),
+                                  IconButton(
+                                      onPressed: () {
+                                        BlocProvider.of<DesktopCommentsBloc>(
+                                                context)
+                                            .add(CloseDesktopComments());
+                                      },
+                                      icon: const Icon(Icons.close))
+                                ],
+                              ),
+                            ),
+                            Expanded(
+                              child: Scaffold(
+                                backgroundColor:
+                                    Theme.of(context).colorScheme.tertiary,
+                                body: Container(
+                                  child:
+                                      // _commentsHeaders(context),
+
+                                      _buildCommentsList(context,
+                                          onRefresh: () {
+                                    return _refreshComments(context);
+                                  }),
+                                ),
+                                bottomNavigationBar:
+                                    _buildCommnetsInput(context),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            }),
           ),
-        ),
-      ),
+        );
+      }),
     );
   }
 
@@ -1123,7 +1159,7 @@ class _DesktopCommentsViewState extends State<DesktopCommentsView> {
   }) {
     return RefreshIndicator(
       onRefresh: onRefresh,
-      child: Expanded(
+      child: Container(
         child: Container(
           height: MediaQuery.of(context).size.height - 120,
           child: SingleChildScrollView(
