@@ -86,83 +86,83 @@ class _VideoItemDesktopState extends State<VideoItemDesktop>
     final VideoRepository videoRepository =
         RepositoryProvider.of<VideoRepository>(context);
 
-    return SafeArea(
-      child: MultiBlocProvider(
-        providers: [
-          BlocProvider(
-            create: (context) => LikeVideoCubit(videoRepository),
-          ),
-          BlocProvider(create: ((context) => CaptionsCubit())),
-          BlocProvider(
-            create: (_) => DesktopCommentsBloc(),
-          )
-        ],
-        child: Builder(builder: (context) {
-          return BlocListener<VideoPlayerBloc, VideoPlayerState>(
-              listener: (context, state) {
-                debugPrint(state.toString());
-
-                if (state.status == VideoPlayerStatus.initialized) {
-                  if (isViewed == false) {
-                    addListener(state: state, videoData: videoData);
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (context) => LikeVideoCubit(videoRepository),
+        ),
+        BlocProvider(create: ((context) => CaptionsCubit())),
+        BlocProvider(
+          create: (_) => DesktopCommentsBloc(),
+        )
+      ],
+      child: Builder(builder: (context) {
+        return BlocListener<VideoPlayerBloc, VideoPlayerState>(
+            listener: (context, state) {
+              debugPrint(state.toString());
+    
+              if (state.status == VideoPlayerStatus.initialized) {
+                if (isViewed == false) {
+                  addListener(state: state, videoData: videoData);
+                }
+              }
+            },
+            child: GestureDetector(
+              onTap: () {
+                final VideoPlayerRepository repo =
+                    RepositoryProvider.of<VideoPlayerRepository>(context);
+                VideoPlayerBloc bloc =
+                    BlocProvider.of<VideoPlayerBloc>(context);
+                if (repo.controller != null) {
+                  if (repo.controller!.value.isPlaying) {
+                    bloc.add(
+                        const VideoPlayerEvent(actions: VideoEvent.pause));
+                  } else {
+                    bloc.add(
+                        const VideoPlayerEvent(actions: VideoEvent.play));
                   }
                 }
               },
-              child: GestureDetector(
-                onTap: () {
-                  final VideoPlayerRepository repo =
-                      RepositoryProvider.of<VideoPlayerRepository>(context);
-                  VideoPlayerBloc bloc =
-                      BlocProvider.of<VideoPlayerBloc>(context);
-                  if (repo.controller != null) {
-                    if (repo.controller!.value.isPlaying) {
-                      bloc.add(
-                          const VideoPlayerEvent(actions: VideoEvent.pause));
-                    } else {
-                      bloc.add(
-                          const VideoPlayerEvent(actions: VideoEvent.play));
-                    }
+              onDoubleTap: () {
+                String? uid = RepositoryProvider.of<AuthRepository>(context)
+                    .currentUser
+                    ?.uid;
+                bool isLiked = videoData.likes.contains(uid);
+                BlocProvider.of<LikeVideoCubit>(context).doubleTapToLike(
+                  postId: videoData.id!,
+                  dataBaseState: isLiked,
+                  databaseLikeCount: videoData.likesCount,
+                );
+              },
+              child: BlocBuilder<VideoPlayerBloc, VideoPlayerState>(
+                buildWhen: (previous, current) {
+                  if (current.status != VideoPlayerStatus.videoDeleted) {
+                    return false;
+                  } else {
+                    return true;
                   }
                 },
-                onDoubleTap: () {
-                  String? uid = RepositoryProvider.of<AuthRepository>(context)
-                      .currentUser
-                      ?.uid;
-                  bool isLiked = videoData.likes.contains(uid);
-                  BlocProvider.of<LikeVideoCubit>(context).doubleTapToLike(
-                    postId: videoData.id!,
-                    dataBaseState: isLiked,
-                    databaseLikeCount: videoData.likesCount,
-                  );
-                },
-                child: BlocBuilder<VideoPlayerBloc, VideoPlayerState>(
-                  buildWhen: (previous, current) {
-                    if (current.status != VideoPlayerStatus.videoDeleted) {
-                      return false;
-                    } else {
-                      return true;
-                    }
-                  },
-                  builder: (context, state) {
-                    if (state.status == VideoPlayerStatus.videoDeleted) {
-                      return const Center(
-                        child: Text('Video deleted'),
-                      );
-                    }
-                    return Container(
-                      width: size.width,
-                      height: size.height,
-                      color: Theme.of(context).colorScheme.background,
-                      padding: const EdgeInsets.all(8),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          BlocBuilder<DesktopCommentsBloc,
-                              DesktopCommentsState>(
-                            builder: (context, state) {
-                              return ClipRRect(
+                builder: (context, state) {
+                  if (state.status == VideoPlayerStatus.videoDeleted) {
+                    return const Center(
+                      child: Text('Video deleted'),
+                    );
+                  }
+                  return Container(
+                    width: size.width,
+                    height: size.height,
+                    color: Theme.of(context).colorScheme.background,
+                    padding: const EdgeInsets.all(8),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        BlocBuilder<DesktopCommentsBloc,
+                            DesktopCommentsState>(
+                          builder: (context, state) {
+                            return SafeArea(
+                              child: ClipRRect(
                                 borderRadius: state.status ==
                                         DesktopCommentsStatus.opened
                                     ? const BorderRadiusDirectional.horizontal(
@@ -187,40 +187,40 @@ class _VideoItemDesktopState extends State<VideoItemDesktop>
                                     ],
                                   ),
                                 ),
-                              );
-                            },
-                          ),
-                          _rightOveray(context, videoData, authRepository),
-                          BlocBuilder<DesktopCommentsBloc,
-                              DesktopCommentsState>(
-                            builder: (context, state) {
-                              return SizedBox(
-                                width:
-                                    state.status == DesktopCommentsStatus.opened
-                                        ? 400
-                                        : Dimens.DIMENS_50,
-                                child:
-                                    state.status == DesktopCommentsStatus.opened
-                                        ? Container(
-                                            width: 400,
-                                            child: DesktopCommentsView(
-                                              postId: state.postId!,
-                                            ),
-                                          )
-                                        : Container(
-                                            width: Dimens.DIMENS_50,
+                              ),
+                            );
+                          },
+                        ),
+                        _rightOveray(context, videoData, authRepository),
+                        BlocBuilder<DesktopCommentsBloc,
+                            DesktopCommentsState>(
+                          builder: (context, state) {
+                            return SizedBox(
+                              width:
+                                  state.status == DesktopCommentsStatus.opened
+                                      ? 400
+                                      : Dimens.DIMENS_50,
+                              child:
+                                  state.status == DesktopCommentsStatus.opened
+                                      ? Container(
+                                          width: 400,
+                                          child: DesktopCommentsView(
+                                            postId: state.postId!,
                                           ),
-                              );
-                            },
-                          )
-                        ],
-                      ),
-                    );
-                  },
-                ),
-              ));
-        }),
-      ),
+                                        )
+                                      : Container(
+                                          width: Dimens.DIMENS_50,
+                                        ),
+                            );
+                          },
+                        )
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ));
+      }),
     );
   }
 
