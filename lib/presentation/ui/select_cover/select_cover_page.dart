@@ -74,130 +74,122 @@ class _SelectCoverState extends State<SelectCover> {
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async {
-        _removeFile();
-        return false;
-      },
-      child: Scaffold(
-        backgroundColor: COLOR_black_ff121212,
-        body: _controller.initialized
-            ? SafeArea(
-                child: Stack(
-                  children: [
-                    Column(
-                      children: [
-                        _topNavBar(),
-                        Expanded(
-                          child: DefaultTabController(
-                            length: 1,
-                            child: Column(
-                              children: [
-                                Expanded(
-                                  child: TabBarView(
-                                    physics:
-                                        const NeverScrollableScrollPhysics(),
-                                    children: [
-                                      Stack(
-                                        alignment: Alignment.center,
-                                        children: [
-                                          CropGridViewer.preview(
-                                              controller: _controller),
-                                          AnimatedBuilder(
-                                            animation: _controller.video,
-                                            builder: (_, __) => AnimatedOpacity(
-                                              opacity:
-                                                  _controller.isPlaying ? 0 : 1,
-                                              duration: kThemeAnimationDuration,
-                                              child: GestureDetector(
-                                                onTap: _controller.video.play,
-                                                child: Container(
-                                                  width: 40,
-                                                  height: 40,
-                                                  decoration:
-                                                      const BoxDecoration(
-                                                    color: Colors.white,
-                                                    shape: BoxShape.circle,
-                                                  ),
-                                                  child: const Icon(
-                                                    Icons.play_arrow,
-                                                    color: Colors.black,
-                                                  ),
+    return Scaffold(
+      backgroundColor: COLOR_black_ff121212,
+      body: _controller.initialized
+          ? SafeArea(
+              child: Stack(
+                children: [
+                  Column(
+                    children: [
+                      _topNavBar(),
+                      Expanded(
+                        child: DefaultTabController(
+                          length: 1,
+                          child: Column(
+                            children: [
+                              Expanded(
+                                child: TabBarView(
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  children: [
+                                    Stack(
+                                      alignment: Alignment.center,
+                                      children: [
+                                        CropGridViewer.preview(
+                                            controller: _controller),
+                                        AnimatedBuilder(
+                                          animation: _controller.video,
+                                          builder: (_, __) => AnimatedOpacity(
+                                            opacity:
+                                                _controller.isPlaying ? 0 : 1,
+                                            duration: kThemeAnimationDuration,
+                                            child: GestureDetector(
+                                              onTap: _controller.video.play,
+                                              child: Container(
+                                                width: 40,
+                                                height: 40,
+                                                decoration: const BoxDecoration(
+                                                  color: Colors.white,
+                                                  shape: BoxShape.circle,
+                                                ),
+                                                child: const Icon(
+                                                  Icons.play_arrow,
+                                                  color: Colors.black,
                                                 ),
                                               ),
                                             ),
                                           ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Container(
+                                height: 210,
+                                margin: const EdgeInsets.only(top: 10),
+                                child: Column(
+                                  children: [
+                                    Expanded(
+                                      child: TabBarView(
+                                        physics:
+                                            const NeverScrollableScrollPhysics(),
+                                        children: [
+                                          // Column(
+                                          //   mainAxisAlignment:
+                                          //       MainAxisAlignment.center,
+                                          //   children: _trimSlider(),
+                                          // ),
+                                          _coverSelection(),
                                         ],
                                       ),
-                                    ],
-                                  ),
+                                    ),
+                                    SizedBox(
+                                      height: Dimens.DIMENS_24,
+                                    )
+                                  ],
                                 ),
-                                Container(
-                                  height: 210,
-                                  margin: const EdgeInsets.only(top: 10),
-                                  child: Column(
-                                    children: [
-                                      Expanded(
-                                        child: TabBarView(
-                                          physics:
-                                              const NeverScrollableScrollPhysics(),
-                                          children: [
-                                            // Column(
-                                            //   mainAxisAlignment:
-                                            //       MainAxisAlignment.center,
-                                            //   children: _trimSlider(),
-                                            // ),
-                                            _coverSelection(),
-                                          ],
-                                        ),
-                                      ),
-                                      SizedBox(
-                                        height: Dimens.DIMENS_24,
-                                      )
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
-                        )
-                      ],
+                        ),
+                      )
+                    ],
+                  ),
+                  ValueListenableBuilder(
+                    valueListenable: _isExporting,
+                    builder: (_, bool export, Widget? child) => AnimatedSize(
+                      duration: kThemeAnimationDuration,
+                      child: export ? child : null,
                     ),
-                    ValueListenableBuilder(
-                      valueListenable: _isExporting,
-                      builder: (_, bool export, Widget? child) => AnimatedSize(
-                        duration: kThemeAnimationDuration,
-                        child: export ? child : null,
-                      ),
-                      child: Container(
-                        alignment: Alignment.center,
-                        width: MediaQuery.of(context).size.width,
-                        height: MediaQuery.of(context).size.height,
-                        decoration: const BoxDecoration(color: Colors.black38),
-                        child: AlertDialog(
-                          title: ValueListenableBuilder(
-                            valueListenable: _exportingProgress,
-                            builder: (_, double value, __) => Row(
-                              children: [
-                                CircularProgressIndicator(value: value),
-                                SizedBox(
-                                  width: Dimens.DIMENS_12,
-                                ),
-                                Text(
-                                  "${LocaleKeys.message_wait.tr()} ${(value * 100).ceil()}%",
-                                  style: const TextStyle(fontSize: 12),
-                                ),
-                              ],
-                            ),
+                    child: Container(
+                      alignment: Alignment.center,
+                      width: MediaQuery.of(context).size.width,
+                      height: MediaQuery.of(context).size.height,
+                      decoration: const BoxDecoration(color: Colors.black38),
+                      child: AlertDialog(
+                        title: ValueListenableBuilder(
+                          valueListenable: _exportingProgress,
+                          builder: (_, double value, __) => Row(
+                            children: [
+                              CircularProgressIndicator(value: value),
+                              SizedBox(
+                                width: Dimens.DIMENS_12,
+                              ),
+                              Text(
+                                "${LocaleKeys.message_wait.tr()} ${(value * 100).ceil()}%",
+                                style: const TextStyle(fontSize: 12),
+                              ),
+                            ],
                           ),
                         ),
                       ),
-                    )
-                  ],
-                ),
-              )
-            : const Center(child: CircularProgressIndicator()),
-      ),
+                    ),
+                  )
+                ],
+              ),
+            )
+          : const Center(child: CircularProgressIndicator()),
     );
   }
 
