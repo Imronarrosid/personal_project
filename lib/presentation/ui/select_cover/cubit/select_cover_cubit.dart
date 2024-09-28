@@ -6,12 +6,18 @@ part 'select_cover_state.dart';
 
 class SelectCoverCubit extends Cubit<SelectCoverState> {
   SelectCoverCubit() : super(const SelectCoverInitial());
-  selectCover(String cover) {
+  void selectCover(String cover) {
     emit(
       SelectCoverState(
         status: BlocStatus.selected,
         coverPath: cover,
       ),
+    );
+  }
+
+  void resetCover() {
+    emit(
+      const SelectCoverState(status: BlocStatus.initial),
     );
   }
 }
