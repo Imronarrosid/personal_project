@@ -127,14 +127,14 @@ class _VideoEditorDesktopState extends State<VideoEditorDesktop> {
         );
         debugPrint('video size ${_fileMBSize(await video.readAsBytes())}');
         if (mounted) {
-          context.push(
+          context.go(
             APP_PAGE.upload.toPath + APP_PAGE.addDetails.toPath,
             extra: AddDetails(videoFile: File(video.path), thumbnail: file),
           );
         }
       } else {
         if (!mounted) return;
-        context.push(
+        context.go(
           APP_PAGE.upload.toPath + APP_PAGE.addDetails.toPath,
           extra: AddDetails(
               videoFile: File(_controller.file.path), thumbnail: file),
