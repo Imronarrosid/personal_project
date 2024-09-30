@@ -1,0 +1,176 @@
+import 'dart:async';
+
+import 'package:bootstrap_icons/bootstrap_icons.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+import 'package:personal_project/constant/color.dart';
+import 'package:personal_project/domain/model/game_fav_modal.dart';
+import 'package:personal_project/domain/reporsitory/search_repository.dart';
+import 'package:personal_project/domain/reporsitory/user_repository.dart';
+import 'package:personal_project/presentation/l10n/stings.g.dart';
+import 'package:personal_project/presentation/ui/add_details/select_game/bloc/search_game_bloc.dart';
+import 'package:personal_project/presentation/ui/add_details/select_game/cubit/select_game_cubit.dart';
+
+class SelectGamePageDesktop extends StatefulWidget {
+  const SelectGamePageDesktop({super.key});
+
+  @override
+  State<SelectGamePageDesktop> createState() => _SelectGamePageDesktopState();
+}
+
+class _SelectGamePageDesktopState extends State<SelectGamePageDesktop> {
+  final TextEditingController _textEditingController = TextEditingController();
+  Timer? _debounce;
+
+  @override
+  Widget build(BuildContext context) {
+    final UserRepository userRepository =
+        RepositoryProvider.of<UserRepository>(context);
+    return RepositoryProvider(
+      create: (context) => SearchRepository(),
+      child: BlocProvider(
+        create: (context) =>
+            SearchGameBloc(RepositoryProvider.of<SearchRepository>(context)),
+        child: Builder(builder: (context) {
+          return GestureDetector(
+            onTap: () => FocusScope.of(context).unfocus(),
+            child: Scaffold(
+              backgroundColor: COLOR_black_800,
+              appBar: AppBar(
+                  backgroundColor: COLOR_black_800,
+                  elevation: 0,
+                  toolbarHeight: 80,
+                  title: Container(
+                    decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.tertiary,
+                        borderRadius: BorderRadius.circular(10)),
+                    child: TextField(
+                      controller: _textEditingController,
+                      onChanged: (query) {
+                        if (_debounce?.isActive ?? false) _debounce?.cancel();
+                        _debounce =
+                            Timer(const Duration(milliseconds: 500), () {
+                          // do something with query
+                          final searchBloc =
+                              BlocProvider.of<SearchGameBloc>(context);
+                          searchBloc.add(SearchGameEvent(query));
+                        });
+                      },
+                      decoration: InputDecoration(
+                        prefixIcon: const Icon(Icons.search),
+                        hintText: LocaleKeys.label_search.tr(),
+                        contentPadding: const EdgeInsets.all(5),
+                        suffixIcon: GestureDetector(
+                            onTap: () {
+                              _textEditingController.clear();
+                            },
+                            child: const Icon(BootstrapIcons.x)),
+                        suffixIconColor: COLOR_grey,
+                        border: OutlineInputBorder(
+                            borderSide: BorderSide.none,
+                            borderRadius: BorderRadius.circular(10)),
+                      ),
+                    ),
+                  )),
+              body: BlocBuilder<SearchGameBloc, SearchState>(
+                builder: (_, state) {
+                  if (state.status == SearchStatus.loading) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  if (state.status == SearchStatus.noItemFound) {
+                    return Center(
+                        child: Text(LocaleKeys.message_not_found
+                            .tr(args: [state.query!])));
+                  }
+                  if (state.status == SearchStatus.success) {
+                    return ListView.builder(
+                        itemCount: state.results!.length,
+                        itemBuilder: (ctx, index) {
+                          final result = state.results![index];
+                          return ListTile(
+                            onTap: () {
+                              // debugPrint('photo${result.photo}');
+                              // context.push(APP_PAGE.profile.toPath,
+                              //     extra: ProfilePayload(
+                              //       uid: result.id,
+                              //       name: result.name!,
+                              //       userName: result.userName!,
+                              //       photoURL: result.photo!,
+                              //     ));
+                              // debugPrint('profile');
+                            },
+                            leading: CircleAvatar(
+                              backgroundColor: COLOR_grey,
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(50),
+                                child: CachedNetworkImage(
+                                  imageUrl: result.gameImage!,
+                                  fit: BoxFit.cover,
+                                  width: double.infinity,
+                                ),
+                              ),
+                            ),
+                            title: Text(result.gameTitle!),
+                          );
+                        });
+                  }
+                  return GestureDetector(
+                    onTap: () {
+                      FocusScope.of(context).unfocus();
+                    },
+                    child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+                        stream: userRepository.gameStream(),
+                        builder: (contex, snapshot) {
+                          var data = snapshot.data?.docs;
+                          if (!snapshot.hasData) {
+                            return const Center(
+                                child: CircularProgressIndicator());
+                          }
+                          return ListView.builder(
+                              itemCount: data!.length,
+                              itemBuilder: (_, index) {
+                                GameFav result = GameFav.fromSnap(data[index]);
+                                return ListTile(
+                                  onTap: () {
+                                    // debugPrint('photo${result.photo}');
+                                    // context.push(APP_PAGE.profile.toPath,
+                                    //     extra: ProfilePayload(
+                                    //       uid: result.id,
+                                    //       name: result.name!,
+                                    //       userName: result.userName!,
+                                    //       photoURL: result.photo!,
+                                    //     ));
+                                    // debugPrint('profile');
+                                    BlocProvider.of<SelectGameCubit>(context)
+                                        .selectGame(result);
+                                    context.pop();
+                                  },
+                                  leading: CircleAvatar(
+                                    backgroundColor: COLOR_grey,
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(50),
+                                      child: CachedNetworkImage(
+                                        imageUrl: result.gameImage!,
+                                        fit: BoxFit.cover,
+                                        width: double.infinity,
+                                      ),
+                                    ),
+                                  ),
+                                  title: Text(result.gameTitle!),
+                                );
+                              });
+                        }),
+                  );
+                },
+              ),
+            ),
+          );
+        }),
+      ),
+    );
+  }
+}
