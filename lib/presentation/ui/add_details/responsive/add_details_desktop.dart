@@ -20,21 +20,28 @@ import 'package:personal_project/domain/model/add_details_model.dart';
 import 'package:personal_project/domain/model/game_fav_modal.dart';
 import 'package:personal_project/domain/model/video_model.dart';
 import 'package:personal_project/domain/reporsitory/auth_reposotory.dart';
+import 'package:personal_project/domain/reporsitory/user_repository.dart';
+import 'package:personal_project/domain/services/firebase/firebase_service.dart';
 import 'package:personal_project/presentation/assets/images.dart';
 import 'package:personal_project/presentation/l10n/stings.g.dart';
 import 'package:personal_project/presentation/router/route_utils.dart';
 import 'package:personal_project/presentation/ui/add_details/bloc/upload_bloc.dart';
 import 'package:personal_project/presentation/ui/add_details/cubit/check_box_cubit.dart';
 import 'package:personal_project/presentation/ui/add_details/select_game/cubit/select_game_cubit.dart';
+import 'package:personal_project/presentation/ui/add_details/select_game/responsive/select_game_desktop.dart';
+import 'package:personal_project/presentation/ui/add_details/select_game/select_game_page.dart';
 import 'package:personal_project/presentation/ui/auth/auth.dart';
 import 'package:personal_project/presentation/ui/select_cover/cubit/select_cover_cubit.dart';
 import 'package:personal_project/presentation/ui/select_cover/select_cover_page.dart';
 import 'package:personal_project/presentation/ui/video/video_item/responsive/video_item_desktop.dart';
 import 'package:personal_project/presentation/ui/video/video_item/responsive/video_item_mobile.dart';
 import 'package:personal_project/utils/get_thumbnails.dart';
+import 'package:provider/provider.dart';
 import 'package:sidebarx/sidebarx.dart';
 import 'package:solar_icons/solar_icons.dart';
 import 'package:video_player/video_player.dart';
+
+import '../../select_cover/responsive/select_cover_destop.dart';
 
 class AddDetailsDesktop extends StatefulWidget {
   final AddDetails data;
@@ -51,9 +58,15 @@ class _AddDetailsDesktopState extends State<AddDetailsDesktop> {
   String? category;
   late File? coverFile;
 
+  ValueNotifier<String> caption = ValueNotifier<String>('');
+  updateCaptions(String newcaptions) {
+    caption.value = newcaptions;
+  }
+
   @override
   void initState() {
     BlocProvider.of<SelectGameCubit>(context).initSelectGame();
+    BlocProvider.of<SelectCoverCubit>(context).resetCover();
     coverFile = widget.data.thumbnail;
     super.initState();
   }
@@ -62,8 +75,12 @@ class _AddDetailsDesktopState extends State<AddDetailsDesktop> {
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
 
-    return BlocProvider(
-      create: (_) => CheckBoxCubit(),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (_) => CheckBoxCubit(),
+        ),
+      ],
       child: GestureDetector(
         onTap: () {
           // Dismiss the keyboard when tapping outside of text fields
@@ -83,6 +100,7 @@ class _AddDetailsDesktopState extends State<AddDetailsDesktop> {
               listener: (_, state) {
                 if (state.status == SelectGameStatus.selected) {
                   selectedGame = state.selectedGame!;
+                  category = state.selectedGame!.gameTitle;
                 }
               },
             ),
@@ -150,13 +168,13 @@ class _AddDetailsDesktopState extends State<AddDetailsDesktop> {
                             SizedBox(
                               height: Dimens.DIMENS_12,
                             ),
-                            Padding(
-                              padding: const EdgeInsets.only(
+                            const Padding(
+                              padding: EdgeInsets.only(
                                   left: 12, top: 18, bottom: 12),
                               child: Text(
                                 'Descriptions',
                                 textAlign: TextAlign.left,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -177,6 +195,7 @@ class _AddDetailsDesktopState extends State<AddDetailsDesktop> {
                                   maxLength: 1500,
                                   maxLines: 10,
                                   controller: textEditingController,
+                                  onChanged: updateCaptions,
                                   decoration: InputDecoration(
                                       contentPadding: EdgeInsets.zero,
                                       border: const OutlineInputBorder(
@@ -191,21 +210,26 @@ class _AddDetailsDesktopState extends State<AddDetailsDesktop> {
                               builder: (_, state) {
                                 return CheckboxListTile(
                                   tileColor: Colors.transparent,
-                                  title:
-                                      Text(LocaleKeys.label_entertainment.tr()),
+                                  title: const Text('Non gaming content'),
+                                  subtitle: Text(
+                                    'Check for non gaming content',
+                                    style: TextStyle(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurface
+                                          .withOpacity(0.6),
+                                    ),
+                                  ),
                                   checkColor:
                                       Theme.of(context).colorScheme.tertiary,
                                   value: state.status == BlocStatus.active,
                                   onChanged: (isActive) {
                                     BlocProvider.of<CheckBoxCubit>(context)
                                         .checkBoxHandle();
-                                    if (isActive!) {
-                                      BlocProvider.of<SelectGameCubit>(context)
-                                          .initSelectGame();
-                                      category = 'Entertainment';
-                                    } else {
-                                      category = 'Gaming';
-                                    }
+
+                                    BlocProvider.of<SelectGameCubit>(context)
+                                        .initSelectGame();
+                                    category = 'Non Gaming';
                                   },
                                 );
                               },
@@ -269,8 +293,7 @@ class _AddDetailsDesktopState extends State<AddDetailsDesktop> {
                                         title: Text(
                                             state.selectedGame!.gameTitle!),
                                         onTap: () {
-                                          context
-                                              .push(APP_PAGE.selectGame.toPath);
+                                          selectGameDialog(context);
                                         },
                                       );
                                     }
@@ -283,8 +306,9 @@ class _AddDetailsDesktopState extends State<AddDetailsDesktop> {
                                       trailing: const Icon(
                                           Icons.keyboard_arrow_right),
                                       onTap: () {
-                                        context
-                                            .push(APP_PAGE.selectGame.toPath);
+                                        selectGameDialog(context);
+                                        // context
+                                        //     .push(APP_PAGE.selectGame.toPath);
                                       },
                                     );
                                   },
@@ -328,7 +352,6 @@ class _AddDetailsDesktopState extends State<AddDetailsDesktop> {
                                                   widget.data.videoFile.path,
                                               caption:
                                                   textEditingController.text,
-                                              game: selectedGame,
                                               category: category,
                                             ),
                                           );
@@ -343,7 +366,7 @@ class _AddDetailsDesktopState extends State<AddDetailsDesktop> {
                                           style: TextStyle(
                                               color: Theme.of(context)
                                                   .colorScheme
-                                                  .surface,
+                                                  .onSurface,
                                               fontSize: FontSize.FONT_SIZE_12),
                                         ),
                                       )),
@@ -357,6 +380,7 @@ class _AddDetailsDesktopState extends State<AddDetailsDesktop> {
                         ),
                         Preview(
                           videoUrl: widget.data.videoFile.path,
+                          captionValueListener: caption,
                         ),
                         const SizedBox(
                           width: 12,
@@ -373,37 +397,87 @@ class _AddDetailsDesktopState extends State<AddDetailsDesktop> {
     );
   }
 
+  Future<dynamic> selectGameDialog(BuildContext context) {
+    return showDialog(
+        context: context,
+        builder: (context) {
+          return Dialog(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: SizedBox(
+                width: 720,
+                child: BackButtonListener(
+                    onBackButtonPressed: () async {
+                      context.pop();
+                      return true;
+                    },
+                    child: const SelectGamePageDesktop()),
+              ),
+            ),
+          );
+        });
+  }
+
   AspectRatio _coverView(BuildContext context, File file) {
     return AspectRatio(
       aspectRatio: 4 / 6,
       child: GestureDetector(onTap: () {
-        context.push(
-          APP_PAGE.videoPreview.toPath,
-          extra: widget.data.videoFile,
-        );
-      }, child: Builder(
-        builder: (_) {
-          if (kIsWeb) {
-            return SizedBox(
-              width: Dimens.DIMENS_85,
-              height: Dimens.DIMENS_120,
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(10),
-                child: Image(
-                    image: NetworkImage(
-                      file.path,
-                    ),
-                    fit: BoxFit.cover),
+        showDialog(
+          context: context,
+          builder: ((context) {
+            return Dialog(
+              child: SizedBox(
+                width: 720,
+                child: BackButtonListener(
+                  onBackButtonPressed: () async {
+                    context.pop();
+                    return true;
+                  },
+                  child: SelectCover(
+                    file: XFile(widget.data.videoFile.path),
+                  ),
+                ),
               ),
             );
-          }
-          return SizedBox(
-            width: Dimens.DIMENS_85,
-            height: Dimens.DIMENS_120,
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(10),
-              child: Image.file(file, fit: BoxFit.cover),
-            ),
+          }),
+        );
+        // context.push(
+        //   APP_PAGE.videoPreview.toPath,
+        //   extra: widget.data.videoFile,
+        // );
+      }, child: BlocBuilder<SelectCoverCubit, SelectCoverState>(
+        builder: (context, state) {
+          return Builder(
+            builder: (_) {
+              if (kIsWeb) {
+                return SizedBox(
+                  width: Dimens.DIMENS_85,
+                  height: Dimens.DIMENS_120,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: Image(
+                        image: NetworkImage(
+                          state.status == BlocStatus.selected
+                              ? state.coverPath!
+                              : file.path,
+                        ),
+                        fit: BoxFit.cover),
+                  ),
+                );
+              }
+              return SizedBox(
+                width: Dimens.DIMENS_85,
+                height: Dimens.DIMENS_120,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: Image.file(
+                      state.status == BlocStatus.selected
+                          ? File(state.coverPath!)
+                          : file,
+                      fit: BoxFit.cover),
+                ),
+              );
+            },
           );
         },
       )),
@@ -419,11 +493,27 @@ class _AddDetailsDesktopState extends State<AddDetailsDesktop> {
         child: InkWell(
           borderRadius: BorderRadius.circular(10),
           onTap: () {
-            context.push(
-              APP_PAGE.selectCover.toPath,
-              extra: XFile(
-                widget.data.videoFile.path,
-              ),
+            showDialog(
+              context: context,
+              builder: ((context) {
+                return Dialog(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: SizedBox(
+                      width: 720,
+                      child: BackButtonListener(
+                        onBackButtonPressed: () async {
+                          context.pop();
+                          return true;
+                        },
+                        child: SelectCoverDesktop(
+                          file: XFile(widget.data.videoFile.path),
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              }),
             );
           },
           child: AspectRatio(
@@ -462,9 +552,11 @@ class _AddDetailsDesktopState extends State<AddDetailsDesktop> {
 
 class Preview extends StatefulWidget {
   final String videoUrl;
+  final ValueListenable<String> captionValueListener;
   const Preview({
     super.key,
     required this.videoUrl,
+    required this.captionValueListener,
   });
 
   @override
@@ -538,9 +630,11 @@ class _PreviewState extends State<Preview> with SingleTickerProviderStateMixin {
               children: [
                 MobilePreview(
                   videoUrl: widget.videoUrl,
+                  captionValueListener: widget.captionValueListener,
                 ),
                 DesktopPreview(
                   videoUrl: widget.videoUrl,
+                  captionValueListener: widget.captionValueListener,
                 ),
               ],
             ),
@@ -553,9 +647,11 @@ class _PreviewState extends State<Preview> with SingleTickerProviderStateMixin {
 
 class DesktopPreview extends StatefulWidget {
   final String videoUrl;
+  final ValueListenable<String> captionValueListener;
   const DesktopPreview({
     super.key,
     required this.videoUrl,
+    required this.captionValueListener,
   });
 
   @override
@@ -637,6 +733,15 @@ class _DesktopPreviewState extends State<DesktopPreview> {
                             ),
                           ),
                           ListTile(
+                              title: Text('Mabar',
+                                  style: TextStyle(
+                                    color: Colors.white.withOpacity(0.7),
+                                  )),
+                              leading: Icon(
+                                SolarIconsOutline.gamepad,
+                                color: Colors.white.withOpacity(0.7),
+                              )),
+                          ListTile(
                               title: Text(LocaleKeys.label_chat.tr(),
                                   style: TextStyle(
                                     color: Colors.white.withOpacity(0.7),
@@ -663,6 +768,14 @@ class _DesktopPreviewState extends State<DesktopPreview> {
                               color: Colors.white.withOpacity(0.7),
                             ),
                           ),
+                          const Spacer(),
+                          ListTile(
+                            title: Text(LocaleKeys.label_profile.tr()),
+                            leading: Icon(
+                              SolarIconsOutline.hamburgerMenu,
+                              color: Colors.white.withOpacity(0.7),
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -676,39 +789,70 @@ class _DesktopPreviewState extends State<DesktopPreview> {
                         children: [
                           Padding(
                             padding: const EdgeInsets.all(8.0),
-                            child: Stack(
-                              children: [
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(8),
-                                  child: AspectRatio(
-                                    aspectRatio: 9 / 16,
-                                    child: Container(
-                                      color: Colors.black,
-                                      alignment: Alignment.center,
-                                      child: Align(
+                            child: AspectRatio(
+                              aspectRatio: 9 / 16,
+                              child: Stack(
+                                children: [
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(8),
+                                    child: AspectRatio(
+                                      aspectRatio: 9 / 16,
+                                      child: Container(
+                                        color: Colors.black,
                                         alignment: Alignment.center,
-                                        child: SizedBox.expand(
-                                          child: FittedBox(
-                                            fit: BoxFit.fitWidth,
-                                            child: SizedBox(
-                                              height: _videoController
-                                                      .value.isInitialized
-                                                  ? _videoController
-                                                      .value.size.height
-                                                  : 0,
-                                              width: _videoController
-                                                      .value.isInitialized
-                                                  ? _videoController
-                                                      .value.size.width
-                                                  : 0,
-                                              child: GestureDetector(
-                                                onTap: () {
-                                                  _videoController.value.isPlaying
-                                                      ? _videoController.pause()
-                                                      : _videoController.play();
-                                                },
-                                                child: VideoPlayer(
-                                                  _videoController,
+                                        child: Align(
+                                          alignment: Alignment.center,
+                                          child: SizedBox.expand(
+                                            child: FittedBox(
+                                              fit: BoxFit.fitWidth,
+                                              child: SizedBox(
+                                                height: _videoController
+                                                        .value.isInitialized
+                                                    ? _videoController
+                                                        .value.size.height
+                                                    : 0,
+                                                width: _videoController
+                                                        .value.isInitialized
+                                                    ? _videoController
+                                                        .value.size.width
+                                                    : 0,
+                                                child: GestureDetector(
+                                                  onTap: () {
+                                                    _videoController
+                                                            .value.isPlaying
+                                                        ? _videoController
+                                                            .pause()
+                                                        : _videoController
+                                                            .play();
+                                                  },
+                                                  child: BlocBuilder<
+                                                      SelectCoverCubit,
+                                                      SelectCoverState>(
+                                                    builder: (context, state) {
+                                                      if (state.status ==
+                                                              BlocStatus
+                                                                  .selected &&
+                                                          !_videoController
+                                                              .value
+                                                              .isPlaying) {
+                                                        if (kIsWeb) {
+                                                          return Image(
+                                                              image: NetworkImage(
+                                                                  state
+                                                                      .coverPath!),
+                                                              fit:
+                                                                  BoxFit.cover);
+                                                        }
+                                                        return Image.file(
+                                                          File(
+                                                              state.coverPath!),
+                                                        );
+                                                      }
+                                                      return VideoPlayer(
+                                                        _videoController,
+                                                      );
+                                                    },
+                                                  ),
                                                 ),
                                               ),
                                             ),
@@ -717,137 +861,189 @@ class _DesktopPreviewState extends State<DesktopPreview> {
                                       ),
                                     ),
                                   ),
-                                ),
-                                AspectRatio(
-                                  aspectRatio: 9 / 16,
-                                  child: SizedBox(
-                                    height: _videoController.value.size.height,
-                                    width: _videoController.value.size.width,
-                                    child: InkWell(
-                                      hoverColor: Colors.transparent,
-                                      splashColor: Colors.transparent,
-                                      overlayColor:
-                                          const MaterialStatePropertyAll<Color>(
-                                        Colors.transparent,
-                                      ),
-                                      onTap: () {
-                                        debugPrint('desktop preview');
-                                        _videoController.value.isPlaying
-                                            ? _videoController.pause()
-                                            : _videoController.play();
-                                      },
-                                      child: SizedBox(
-                                        height:
-                                            _videoController.value.size.height,
-                                        width: _videoController.value.size.width,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                Align(
-                                  alignment: Alignment.bottomLeft,
-                                  child: Padding(
-                                    padding: const EdgeInsets.only(
-                                        left: 12, bottom: 16),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Row(
-                                          children: [
-                                            GestureDetector(
-                                              child: Text(
-                                                '@username',
-                                                style: TextStyle(
-                                                    color: COLOR_white_fff5f5f5,
-                                                    fontSize: 14),
-                                              ),
-                                            ),
-                                            SizedBox(
-                                              width: Dimens.DIMENS_10,
-                                            ),
-                                            Container(
-                                              height: Dimens.DIMENS_28,
-                                              padding: EdgeInsets.symmetric(
-                                                horizontal: Dimens.DIMENS_16,
-                                              ),
-                                              alignment: Alignment.center,
-                                              decoration: BoxDecoration(
-                                                  borderRadius:
-                                                      BorderRadius.circular(8),
-                                                  color: Theme.of(context)
-                                                      .colorScheme
-                                                      .primary),
-                                              child: Text(
-                                                LocaleKeys.label_follow.tr(),
-                                                style: Theme.of(context)
-                                                    .textTheme
-                                                    .bodySmall,
-                                              ),
-                                            ),
-                                          ],
+                                  AspectRatio(
+                                    aspectRatio: 9 / 16,
+                                    child: SizedBox(
+                                      height:
+                                          _videoController.value.size.height,
+                                      width: _videoController.value.size.width,
+                                      child: InkWell(
+                                        hoverColor: Colors.transparent,
+                                        splashColor: Colors.transparent,
+                                        overlayColor:
+                                            const MaterialStatePropertyAll<
+                                                Color>(
+                                          Colors.transparent,
                                         ),
-                                        GestureDetector(
-                                          onTap: () {},
-                                          child: SizedBox(
-                                            width: Dimens.DIMENS_150,
-                                            height: Dimens.DIMENS_24,
-                                            child: Row(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.center,
-                                                children: [
-                                                  Icon(
-                                                    BootstrapIcons.controller,
-                                                    color: COLOR_white_fff5f5f5,
-                                                    size: 16,
-                                                  ),
-                                                  SizedBox(
-                                                    width: Dimens.DIMENS_10,
-                                                  ),
-                                                  Text(
-                                                    'GameTitle',
-                                                    overflow:
-                                                        TextOverflow.ellipsis,
-                                                    style: TextStyle(
-                                                      fontWeight: FontWeight.w300,
-                                                      fontSize: 12,
-                                                      color: COLOR_white_fff5f5f5,
-                                                    ),
-                                                  ),
-                                                ]),
-                                          ),
-                                        )
-                                      ],
+                                        onTap: () {
+                                          debugPrint('desktop preview');
+                                          _videoController.value.isPlaying
+                                              ? _videoController.pause()
+                                              : _videoController.play();
+                                        },
+                                        child: SizedBox(
+                                          height: _videoController
+                                              .value.size.height,
+                                          width:
+                                              _videoController.value.size.width,
+                                        ),
+                                      ),
                                     ),
                                   ),
-                                ),
-                                Align(
-                                  alignment: Alignment.bottomCenter,
-                                  child: Builder(
-                                    builder: (context) {
-                                      if (_videoController.value.isInitialized) {
-                                        return SizedBox(
-                                          width: 400,
-                                          height: 3,
-                                          child: VideoProgressIndicator(
-                                            _videoController,
-                                            padding: EdgeInsets.zero,
-                                            colors: VideoProgressColors(
-                                                bufferedColor:
-                                                    COLOR_white_fff5f5f5
-                                                        .withOpacity(0.3),
-                                                playedColor:
-                                                    COLOR_white_fff5f5f5),
-                                            allowScrubbing: true,
+                                  Align(
+                                    alignment: Alignment.bottomLeft,
+                                    child: Padding(
+                                      padding: const EdgeInsets.only(
+                                          left: 12, bottom: 16),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Row(
+                                            children: [
+                                              GestureDetector(
+                                                child: FutureBuilder(
+                                                    future: context
+                                                        .read<UserRepository>()
+                                                        .getUserNameOnly(
+                                                            firebaseAuth
+                                                                    .currentUser
+                                                                    ?.uid ??
+                                                                ''),
+                                                    builder:
+                                                        (context, snapshot) {
+                                                      if (snapshot.hasData &&
+                                                          snapshot.data!
+                                                              .isNotEmpty) {
+                                                        return Text(
+                                                          '@${snapshot.data}',
+                                                          style: TextStyle(
+                                                              color:
+                                                                  COLOR_white_fff5f5f5,
+                                                              fontSize: 14),
+                                                        );
+                                                      }
+                                                      return Text(
+                                                        '@username',
+                                                        style: TextStyle(
+                                                            color:
+                                                                COLOR_white_fff5f5f5,
+                                                            fontSize: 14),
+                                                      );
+                                                    }),
+                                              ),
+                                              SizedBox(
+                                                width: Dimens.DIMENS_10,
+                                              ),
+                                              Container(
+                                                height: Dimens.DIMENS_28,
+                                                padding: EdgeInsets.symmetric(
+                                                  horizontal: Dimens.DIMENS_16,
+                                                ),
+                                                alignment: Alignment.center,
+                                                decoration: BoxDecoration(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            8),
+                                                    color: Theme.of(context)
+                                                        .colorScheme
+                                                        .primary),
+                                                child: Text(
+                                                  LocaleKeys.label_follow.tr(),
+                                                  style: Theme.of(context)
+                                                      .textTheme
+                                                      .bodySmall,
+                                                ),
+                                              ),
+                                            ],
                                           ),
-                                        );
-                                      }
-                                      return Container();
-                                    },
+                                          Padding(
+                                            padding: EdgeInsets.only(right: 12),
+                                            child:
+                                                ValueListenableBuilder<String>(
+                                                    valueListenable: widget
+                                                        .captionValueListener,
+                                                    builder: (context, value,
+                                                        child) {
+                                                      return Text(value);
+                                                    }),
+                                          ),
+                                          BlocBuilder<SelectGameCubit,
+                                              SelectGameState>(
+                                            builder: (context, state) {
+                                              if (state.status ==
+                                                  SelectGameStatus.initial) {
+                                                return Container();
+                                              }
+
+                                              return SizedBox(
+                                                width: Dimens.DIMENS_150,
+                                                height: Dimens.DIMENS_24,
+                                                child: Row(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .center,
+                                                    children: [
+                                                      Icon(
+                                                        BootstrapIcons
+                                                            .controller,
+                                                        color:
+                                                            COLOR_white_fff5f5f5,
+                                                        size: 16,
+                                                      ),
+                                                      SizedBox(
+                                                        width: Dimens.DIMENS_10,
+                                                      ),
+                                                      Text(
+                                                        state.selectedGame!
+                                                            .gameTitle!,
+                                                        overflow: TextOverflow
+                                                            .ellipsis,
+                                                        style: TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.w300,
+                                                          fontSize: 12,
+                                                          color:
+                                                              COLOR_white_fff5f5f5,
+                                                        ),
+                                                      ),
+                                                    ]),
+                                              );
+                                            },
+                                          ),
+                                        ],
+                                      ),
+                                    ),
                                   ),
-                                )
-                              ],
+                                  Align(
+                                    alignment: Alignment.bottomCenter,
+                                    child: Builder(
+                                      builder: (context) {
+                                        if (_videoController
+                                            .value.isInitialized) {
+                                          return SizedBox(
+                                            width: 400,
+                                            height: 3,
+                                            child: VideoProgressIndicator(
+                                              _videoController,
+                                              padding: EdgeInsets.zero,
+                                              colors: VideoProgressColors(
+                                                  bufferedColor:
+                                                      COLOR_white_fff5f5f5
+                                                          .withOpacity(0.3),
+                                                  playedColor:
+                                                      COLOR_white_fff5f5f5),
+                                              allowScrubbing: true,
+                                            ),
+                                          );
+                                        }
+                                        return Container();
+                                      },
+                                    ),
+                                  )
+                                ],
+                              ),
                             ),
                           ),
                           Container(
@@ -903,10 +1099,28 @@ class _DesktopPreviewState extends State<DesktopPreview> {
                                     color:
                                         const Color.fromARGB(255, 27, 26, 26),
                                   ),
-                                  child: Icon(
-                                    BootstrapIcons.controller,
-                                    color: COLOR_white_fff5f5f5,
-                                    size: Dimens.DIMENS_15,
+                                  child: BlocBuilder<SelectGameCubit,
+                                      SelectGameState>(
+                                    builder: (context, state) {
+                                      if (state.status ==
+                                          SelectGameStatus.selected) {
+                                        return ClipRRect(
+                                          borderRadius:
+                                              BorderRadius.circular(8),
+                                          child: CachedNetworkImage(
+                                            width: double.infinity,
+                                            fit: BoxFit.cover,
+                                            imageUrl:
+                                                state.selectedGame!.gameImage!,
+                                          ),
+                                        );
+                                      }
+                                      return Icon(
+                                        SolarIconsOutline.gamepad,
+                                        color: COLOR_white_fff5f5f5,
+                                        size: Dimens.DIMENS_15,
+                                      );
+                                    },
                                   ),
                                 ),
                                 SizedBox(
@@ -965,9 +1179,11 @@ class _DesktopPreviewState extends State<DesktopPreview> {
 
 class MobilePreview extends StatefulWidget {
   final String videoUrl;
+  final ValueListenable<String> captionValueListener;
   const MobilePreview({
     super.key,
     required this.videoUrl,
+    required this.captionValueListener,
   });
 
   @override
@@ -978,6 +1194,7 @@ class _MobilePreviewState extends State<MobilePreview>
     with SingleTickerProviderStateMixin {
   late final TabController _tabController;
   late final VideoPlayerController _videoController;
+
   @override
   void initState() {
     _videoController = VideoPlayerController.networkUrl(Uri.parse(
@@ -1042,25 +1259,44 @@ class _MobilePreviewState extends State<MobilePreview>
                         _videoController.value.isPlaying
                             ? _videoController.pause()
                             : _videoController.play();
+                        setState(() {});
                       },
-                      child: VideoPlayer(
-                        _videoController,
-                      ),
+                      child: BlocBuilder<SelectCoverCubit, SelectCoverState>(
+                          builder: (context, state) {
+                        if (state.status == BlocStatus.selected &&
+                            !_videoController.value.isPlaying) {
+                          if (kIsWeb) {
+                            return Image(
+                                image: NetworkImage(state.coverPath!),
+                                fit: BoxFit.cover);
+                          }
+                          return Image.file(
+                            File(state.coverPath!),
+                          );
+                        }
+                        return VideoPlayer(
+                          _videoController,
+                        );
+                      }),
                     ),
                   ),
                   InkWell(
-                      hoverColor: Colors.transparent,
-                      splashColor: Colors.transparent,
-                      overlayColor: const MaterialStatePropertyAll<Color>(
-                        Colors.transparent,
-                      ),
-                      onTap: () => _videoController.value.isPlaying
+                    hoverColor: Colors.transparent,
+                    splashColor: Colors.transparent,
+                    overlayColor: const MaterialStatePropertyAll<Color>(
+                      Colors.transparent,
+                    ),
+                    onTap: () {
+                      _videoController.value.isPlaying
                           ? _videoController.pause()
-                          : _videoController.play(),
-                      child: const SizedBox(
-                        width: double.infinity,
-                        height: double.infinity,
-                      )),
+                          : _videoController.play();
+                      setState(() {});
+                    },
+                    child: const SizedBox(
+                      width: double.infinity,
+                      height: double.infinity,
+                    ),
+                  ),
                   Align(
                     alignment: Alignment.bottomRight,
                     child: Padding(
@@ -1111,10 +1347,25 @@ class _MobilePreviewState extends State<MobilePreview>
                               borderRadius: BorderRadius.circular(8),
                               color: const Color.fromARGB(255, 27, 26, 26),
                             ),
-                            child: Icon(
-                              BootstrapIcons.controller,
-                              color: COLOR_white_fff5f5f5,
-                              size: Dimens.DIMENS_15,
+                            child:
+                                BlocBuilder<SelectGameCubit, SelectGameState>(
+                              builder: (context, state) {
+                                if (state.status == SelectGameStatus.selected) {
+                                  return ClipRRect(
+                                    borderRadius: BorderRadius.circular(8),
+                                    child: CachedNetworkImage(
+                                      width: double.infinity,
+                                      fit: BoxFit.cover,
+                                      imageUrl: state.selectedGame!.gameImage!,
+                                    ),
+                                  );
+                                }
+                                return Icon(
+                                  SolarIconsOutline.gamepad,
+                                  color: COLOR_white_fff5f5f5,
+                                  size: Dimens.DIMENS_15,
+                                );
+                              },
                             ),
                           ),
                           SizedBox(
@@ -1135,12 +1386,29 @@ class _MobilePreviewState extends State<MobilePreview>
                           Row(
                             children: [
                               GestureDetector(
-                                child: Text(
-                                  '@username',
-                                  style: TextStyle(
-                                      color: COLOR_white_fff5f5f5,
-                                      fontSize: 14),
-                                ),
+                                child: FutureBuilder(
+                                    future: context
+                                        .read<UserRepository>()
+                                        .getUserNameOnly(
+                                            firebaseAuth.currentUser?.uid ??
+                                                ''),
+                                    builder: (context, snapshot) {
+                                      if (snapshot.hasData &&
+                                          snapshot.data!.isNotEmpty) {
+                                        return Text(
+                                          '@${snapshot.data}',
+                                          style: TextStyle(
+                                              color: COLOR_white_fff5f5f5,
+                                              fontSize: 14),
+                                        );
+                                      }
+                                      return Text(
+                                        '@username',
+                                        style: TextStyle(
+                                            color: COLOR_white_fff5f5f5,
+                                            fontSize: 14),
+                                      );
+                                    }),
                               ),
                               SizedBox(
                                 width: Dimens.DIMENS_10,
@@ -1162,32 +1430,50 @@ class _MobilePreviewState extends State<MobilePreview>
                               ),
                             ],
                           ),
+                          ValueListenableBuilder<String>(
+                              valueListenable: widget.captionValueListener,
+                              builder: (context, value, child) {
+                                return Padding(
+                                  padding: const EdgeInsets.only(right: 70.0),
+                                  child: Text(value),
+                                );
+                              }),
                           GestureDetector(
                             onTap: () {},
-                            child: SizedBox(
-                              width: Dimens.DIMENS_150,
-                              height: Dimens.DIMENS_24,
-                              child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    Icon(
-                                      BootstrapIcons.controller,
-                                      color: COLOR_white_fff5f5f5,
-                                      size: 16,
-                                    ),
-                                    SizedBox(
-                                      width: Dimens.DIMENS_10,
-                                    ),
-                                    Text(
-                                      'GameTitle',
-                                      overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.w300,
-                                        fontSize: 12,
-                                        color: COLOR_white_fff5f5f5,
-                                      ),
-                                    ),
-                                  ]),
+                            child:
+                                BlocBuilder<SelectGameCubit, SelectGameState>(
+                              builder: (context, state) {
+                                if (state.status == SelectGameStatus.initial) {
+                                  return Container();
+                                }
+
+                                return SizedBox(
+                                  width: Dimens.DIMENS_150,
+                                  height: Dimens.DIMENS_24,
+                                  child: Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      children: [
+                                        Icon(
+                                          BootstrapIcons.controller,
+                                          color: COLOR_white_fff5f5f5,
+                                          size: 16,
+                                        ),
+                                        SizedBox(
+                                          width: Dimens.DIMENS_10,
+                                        ),
+                                        Text(
+                                          state.selectedGame!.gameTitle!,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.w300,
+                                            fontSize: 12,
+                                            color: COLOR_white_fff5f5f5,
+                                          ),
+                                        ),
+                                      ]),
+                                );
+                              },
                             ),
                           )
                         ],
@@ -1239,7 +1525,7 @@ class _MobilePreviewState extends State<MobilePreview>
                       label: LocaleKeys.label_search.tr()),
                   BottomNavigationBarItem(
                     icon: const Icon(
-                      SolarIconsOutline.addSquare,
+                      SolarIconsBold.addSquare,
                       size: 24,
                     ),
                     label: '',
@@ -1254,7 +1540,7 @@ class _MobilePreviewState extends State<MobilePreview>
                     tooltip: LocaleKeys.label_chat.tr(),
                   ),
                   BottomNavigationBarItem(
-                    icon: Icon(SolarIconsOutline.user),
+                    icon: const Icon(SolarIconsOutline.user),
                     label: LocaleKeys.label_profile.tr(),
                     tooltip: LocaleKeys.label_profile.tr(),
                   ),
