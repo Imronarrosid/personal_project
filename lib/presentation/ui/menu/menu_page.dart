@@ -15,6 +15,7 @@ import 'package:personal_project/presentation/responsive/dimension.dart';
 import 'package:personal_project/presentation/router/route_utils.dart';
 import 'package:personal_project/presentation/ui/auth/auth.dart';
 import 'package:personal_project/presentation/ui/auth/bloc/auth_bloc.dart';
+import 'package:solar_icons/solar_icons.dart';
 
 class MenuPage extends StatefulWidget {
   final int index;
@@ -41,22 +42,11 @@ class _MenuPageState extends State<MenuPage> {
       body: Row(
         children: [
           (MediaQuery.of(context).size.width < 800)
-              ? SizedBox(
+              ? const SizedBox(
                   height: 0,
                   width: 0,
                 )
-              : Container(
-                  decoration: BoxDecoration(
-                    border: Border(
-                      right: BorderSide(
-                        color: Theme.of(context)
-                            .colorScheme
-                            .onSurface
-                            .withOpacity(0.3),
-                        width: 0.5,
-                      ),
-                    ),
-                  ),
+              : SizedBox(
                   width: 300,
                   height: MediaQuery.of(context).size.height,
                   child: Padding(
@@ -129,7 +119,7 @@ class _MenuPageState extends State<MenuPage> {
                                   child: ClipRRect(
                                     borderRadius: BorderRadius.circular(50),
                                     child:
-                                        const Icon(BootstrapIcons.person_fill),
+                                        const Icon(SolarIconsBold.user),
                                   ),
                                 ),
                               ),
@@ -194,7 +184,7 @@ class _MenuPageState extends State<MenuPage> {
                                 .colorScheme
                                 .primary
                                 .withOpacity(0.1),
-                            leading: const Icon(BootstrapIcons.globe2),
+                            leading: const Icon(Icons.language_rounded),
                             title: Text(LocaleKeys.title_language.tr()),
                             onTap: () {
                               context.go(
@@ -213,7 +203,7 @@ class _MenuPageState extends State<MenuPage> {
                                 .colorScheme
                                 .primary
                                 .withOpacity(0.1),
-                            leading: const Icon(BootstrapIcons.database),
+                            leading: const Icon(SolarIconsBold.database),
                             title: Text(LocaleKeys.title_storage.tr()),
                             onTap: () {
                               context.go(
@@ -281,7 +271,7 @@ class _MenuPageState extends State<MenuPage> {
                                   ),
                                 ),
                                 title: Text(LocaleKeys.label_login.tr()),
-                                leading: const Icon(Icons.login),
+                                leading: const Icon(SolarIconsBold.login_2),
                                 onTap: () {
                                   showAuthBottomSheetFunc(context);
                                 },
@@ -320,6 +310,13 @@ class _MenuPageState extends State<MenuPage> {
                         ]),
                   ),
                 ),
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 8.0),
+            child: SafeArea(
+                child: VerticalDivider(
+              thickness: 0.5,
+            )),
+          ),
           Expanded(child: widget.child)
         ],
       ),
