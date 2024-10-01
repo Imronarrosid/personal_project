@@ -242,16 +242,31 @@ class _HomePageState extends State<HomePage> {
                               }
                             },
                           ),
-                          SideBarItem(
-                            leadingIcon: const Icon(
-                              SolarIconsOutline.addSquare,
+                          Padding(
+                            padding: const EdgeInsets.only(
+                                top: 12, left: 12, right: 30),
+                            child: Material(
+                              color: Theme.of(context).colorScheme.primary,
+                              borderRadius: BorderRadius.circular(100),
+                              child: InkWell(
+                                borderRadius: BorderRadius.circular(100),
+                                onTap: () => context.go(APP_PAGE.upload.toPath),
+                                child: Container(
+                                  height: 38,
+                                  alignment: Alignment.center,
+                                  width: double.infinity,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(100),
+                                  ),
+                                  child: Text(
+                                    LocaleKeys.title_upload.tr(),
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                              ),
                             ),
-                            selectedIcon: const Icon(
-                              SolarIconsBold.addSquare,
-                            ),
-                            selected: widget.pageIndex == 4,
-                            title: LocaleKeys.title_upload.tr(),
-                            onTap: () => context.go(APP_PAGE.upload.toPath),
                           ),
                           Spacer(),
                           SideBarItem(
