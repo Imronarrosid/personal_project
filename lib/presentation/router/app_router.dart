@@ -236,7 +236,7 @@ class AppRouter {
                   path: APP_PAGE.mabarChat.toPath,
                   name: APP_PAGE.mabarChat.toName,
                   pageBuilder: (context, state) {
-                    return const MaterialPage(child: ChatView());
+                    return const NoTransitionPage(child: ChatView());
                   }),
               GoRoute(
                 path: APP_PAGE.upload.toPath,
@@ -307,6 +307,12 @@ class AppRouter {
               GoRoute(
                 path: APP_PAGE.editProfile.toPath,
                 name: APP_PAGE.editProfile.toName,
+                redirect: (context, state) {
+                  if (firebaseAuth.currentUser != null) {
+                    return APP_PAGE.forYou.toPath;
+                  }
+                  return null;
+                },
                 builder: (context, state) {
                   return const EditProfile();
                 },
@@ -698,11 +704,13 @@ class AppRouter {
               GoRoute(
                 path: APP_PAGE.profile.toPath,
                 name: APP_PAGE.profile.toName,
-                builder: (context, state) => Scaffold(
-                    appBar: AppBar(
-                      title: Text(LocaleKeys.title_profile.tr()),
-                    ),
-                    body: const NotAuthenticatedPage()),
+                pageBuilder: (context, state) => NoTransitionPage(
+                  child: Scaffold(
+                      appBar: AppBar(
+                        title: Text(LocaleKeys.title_profile.tr()),
+                      ),
+                      body: const NotAuthenticatedPage()),
+                ),
               ),
             ]),
           ],
