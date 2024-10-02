@@ -24,6 +24,7 @@ import 'package:personal_project/domain/services/firebase/firebase_service.dart'
 import 'package:personal_project/presentation/l10n/stings.g.dart';
 import 'package:personal_project/presentation/responsive/dimension.dart';
 import 'package:personal_project/presentation/router/route_utils.dart';
+import 'package:personal_project/presentation/shared_components/handel_back_button.dart';
 import 'package:personal_project/presentation/shared_components/not_authenticated_page.dart';
 import 'package:personal_project/presentation/ui/add_details/add_details_page.dart';
 import 'package:personal_project/presentation/ui/add_details/select_game/select_game_page.dart';
@@ -592,11 +593,7 @@ class AppRouter {
                             path: 'login',
                             pageBuilder: (context, state) {
                               return NoTransitionPage(
-                                child: BackButtonListener(
-                                  onBackButtonPressed: () async {
-                                    context.pop();
-                                    return true;
-                                  },
+                                child: HandleBackButton(
                                   child: Scaffold(
                                       appBar: AppBar(
                                         title:

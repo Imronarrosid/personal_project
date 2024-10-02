@@ -15,6 +15,7 @@ import 'package:personal_project/domain/services/firebase/firebase_service.dart'
 import 'package:personal_project/presentation/l10n/stings.g.dart';
 import 'package:personal_project/presentation/responsive/dimension.dart';
 import 'package:personal_project/presentation/router/route_utils.dart';
+import 'package:personal_project/presentation/shared_components/handel_back_button.dart';
 import 'package:personal_project/presentation/ui/auth/auth.dart';
 import 'package:personal_project/presentation/ui/auth/bloc/auth_bloc.dart';
 import 'package:provider/provider.dart';
@@ -40,244 +41,261 @@ class _MenuPageMobileState extends State<MenuPageMobile> {
         RepositoryProvider.of<UserRepository>(context);
 
 //  User user =            authRepository.getVideoOwnerData(authRepository.currentUser!.uid);
-    return Scaffold(
-      appBar: AppBar(
-        elevation: 0,
-        leading: BackButton(
-          onPressed: () {
-            Provider.of<AppRouter>(context, listen: false)
-                .onBackButtonPressed(context);
-          },
-        ),
-        title: Text(LocaleKeys.title_menu.tr()),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          SizedBox(
-            height: Dimens.DIMENS_42,
-          ),
-          _menuTitle(LocaleKeys.label_account.tr()),
-          SizedBox(
-            height: Dimens.DIMENS_8,
-          ),
-          BlocBuilder<AuthBloc, AuthState>(builder: (context, state) {
-            if (state.status == AuthStatus.authenticated) {
-              return StreamBuilder<User>(
-                  stream: userRepository
-                      .userDataStream(firebaseAuth.currentUser?.uid ?? ''),
-                  builder: (context, snapshot) {
-                    User? userdAdata = snapshot.data;
-
-                    return ListTile(
-                      tileColor: themeData.colorScheme.tertiary,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      leading: Builder(builder: (_) {
-                        if (userdAdata == null) {
-                          return CircleAvatar(
-                            backgroundColor:
-                                Theme.of(context).colorScheme.tertiary,
-                          );
-                        }
-                        return CircleAvatar(
-                          backgroundColor:
-                              Theme.of(context).colorScheme.secondary,
-                          backgroundImage: CachedNetworkImageProvider(
-                            userdAdata!.photo!,
-                          ),
-                        );
-                      }),
-                      selectedColor: Theme.of(context)
-                          .colorScheme
-                          .primary
-                          .withOpacity(0.3),
-                      title:
-                          _buildTitle(authRepository.currentUser!.displayName!),
-                      subtitle: _buildSubtitle(userdAdata?.userName ??
-                          LocaleKeys.label_user_name.tr()),
-                      trailing: const Icon(Icons.keyboard_arrow_right),
-                      onTap: () {
-                        context.go(APP_PAGE.editProfile.toPath);
-                      },
-                    );
-                  });
-            }
-            return ListTile(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-              leading: CircleAvatar(
-                backgroundColor: Theme.of(context).colorScheme.secondary,
-                child: Padding(
-                  padding: EdgeInsets.only(bottom: Dimens.DIMENS_3),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(50),
-                    child: const Icon(BootstrapIcons.person_fill),
-                  ),
-                ),
-              ),
-              onTap: () {
-                if (context.read<AuthRepository>().currentUser != null) {
-                  context.push(
-                    '${APP_PAGE.menu.toPath}${APP_PAGE.editProfile.toPath}',
-                  );
-                } else {
-                  context.push(
-                    '${APP_PAGE.menu.toPath}${APP_PAGE.login.toPath}',
-                  );
-                }
-              },
-              selectedTileColor:
-                  Theme.of(context).colorScheme.primary.withOpacity(0.1),
-              title: Text(LocaleKeys.label_account.tr()),
-              trailing: InkWell(
-                onTap: () {
-                  // context.pop();
-                  showAuthBottomSheetFunc(context);
-                },
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 15, vertical: 7),
-                  decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.onTertiary,
-                      borderRadius: BorderRadius.circular(5)),
-                  child: Text(
-                    LocaleKeys.label_login.tr(),
-                    style: TextStyle(color: COLOR_white_fff5f5f5),
-                  ),
-                ),
-              ),
-            );
-          }),
-          SizedBox(
-            height: Dimens.DIMENS_16,
-          ),
-          _menuTitle(LocaleKeys.label_settings.tr()),
-          SizedBox(
-            height: Dimens.DIMENS_8,
-          ),
-          ListTile(
-            shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(10),
-                topRight: Radius.circular(10),
-              ),
+    return HandleBackButton(
+      child: Scaffold(
+        appBar: _appbar(context),
+        body: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            SizedBox(
+              height: Dimens.DIMENS_42,
             ),
-            selectedTileColor:
-                Theme.of(context).colorScheme.primary.withOpacity(0.1),
-            leading: const Icon(BootstrapIcons.globe2),
-            title: Text(LocaleKeys.title_language.tr()),
-            onTap: () {
-              context
-                  .go('${APP_PAGE.menu.toPath}${APP_PAGE.languagePage.toPath}');
-            },
+            _menuTitle(LocaleKeys.label_account.tr()),
+            SizedBox(
+              height: Dimens.DIMENS_8,
+            ),
+            _accountMenu(userRepository, themeData, authRepository),
+            SizedBox(
+              height: Dimens.DIMENS_16,
+            ),
+            _menuTitle(LocaleKeys.label_settings.tr()),
+            SizedBox(
+              height: Dimens.DIMENS_8,
+            ),
+            _languageMenu(context),
+            _storageMenu(context),
+            SizedBox(
+              height: Dimens.DIMENS_16,
+            ),
+            _menuTitle(LocaleKeys.label_others.tr()),
+            SizedBox(
+              height: Dimens.DIMENS_8,
+            ),
+            _authMenu(),
+            _forAdmin(authRepository),
+          ]),
+        ),
+      ),
+    );
+  }
+
+  BlocBuilder<AuthBloc, AuthState> _forAdmin(AuthRepository authRepository) {
+    return BlocBuilder<AuthBloc, AuthState>(
+      builder: (context, state) {
+        if (state.status == AuthStatus.notAuthenticated ||
+            state.status == AuthStatus.loading) {
+          return Container();
+        }
+        return FutureBuilder(
+            future: authRepository.isAdmin(
+                authRepository.currentUser?.uid ?? state.user?.id ?? ''),
+            builder: (context, AsyncSnapshot<bool> snapshot) {
+              if (!snapshot.hasData ||
+                  snapshot.hasError ||
+                  snapshot.data == false) {
+                return Container();
+              }
+
+              return ListTile(
+                tileColor: COLOR_grey,
+                onTap: () {
+                  context.go(APP_PAGE.addGameFav.toPath);
+                },
+              );
+            });
+      },
+    );
+  }
+
+  AppBar _appbar(BuildContext context) {
+    return AppBar(
+      elevation: 0,
+      leading: BackButton(
+        onPressed: () {
+          Provider.of<AppRouter>(context, listen: false)
+              .onBackButtonPressed(context);
+        },
+      ),
+      title: Text(LocaleKeys.title_menu.tr()),
+    );
+  }
+
+  BlocBuilder<AuthBloc, AuthState> _accountMenu(UserRepository userRepository,
+      ThemeData themeData, AuthRepository authRepository) {
+    return BlocBuilder<AuthBloc, AuthState>(builder: (context, state) {
+      if (state.status == AuthStatus.authenticated) {
+        return StreamBuilder<User>(
+            stream: userRepository
+                .userDataStream(firebaseAuth.currentUser?.uid ?? ''),
+            builder: (context, snapshot) {
+              User? userdAdata = snapshot.data;
+
+              return ListTile(
+                tileColor: themeData.colorScheme.tertiary,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                leading: Builder(builder: (_) {
+                  if (userdAdata == null) {
+                    return CircleAvatar(
+                      backgroundColor: Theme.of(context).colorScheme.tertiary,
+                    );
+                  }
+                  return CircleAvatar(
+                    backgroundColor: Theme.of(context).colorScheme.secondary,
+                    backgroundImage: CachedNetworkImageProvider(
+                      userdAdata!.photo!,
+                    ),
+                  );
+                }),
+                selectedColor:
+                    Theme.of(context).colorScheme.primary.withOpacity(0.3),
+                title: _buildTitle(authRepository.currentUser!.displayName!),
+                subtitle: _buildSubtitle(
+                    userdAdata?.userName ?? LocaleKeys.label_user_name.tr()),
+                trailing: const Icon(Icons.keyboard_arrow_right),
+                onTap: () {
+                  context.go(APP_PAGE.editProfile.toPath);
+                },
+              );
+            });
+      }
+      return ListTile(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+        leading: CircleAvatar(
+          backgroundColor: Theme.of(context).colorScheme.secondary,
+          child: Padding(
+            padding: EdgeInsets.only(bottom: Dimens.DIMENS_3),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(50),
+              child: const Icon(BootstrapIcons.person_fill),
+            ),
           ),
-          ListTile(
+        ),
+        onTap: () {
+          if (context.read<AuthRepository>().currentUser != null) {
+            context.go(
+              '${APP_PAGE.menu.toPath}${APP_PAGE.editProfile.toPath}',
+            );
+          } else {
+            context.go(
+              '${APP_PAGE.menu.toPath}${APP_PAGE.login.toPath}',
+            );
+          }
+        },
+        selectedTileColor:
+            Theme.of(context).colorScheme.primary.withOpacity(0.1),
+        title: Text(LocaleKeys.label_account.tr()),
+        trailing: InkWell(
+          onTap: () {
+            // context.pop();
+            showAuthBottomSheetFunc(context);
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 7),
+            decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.onTertiary,
+                borderRadius: BorderRadius.circular(5)),
+            child: Text(
+              LocaleKeys.label_login.tr(),
+              style: TextStyle(color: COLOR_white_fff5f5f5),
+            ),
+          ),
+        ),
+      );
+    });
+  }
+
+  ListTile _languageMenu(BuildContext context) {
+    return ListTile(
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(10),
+          topRight: Radius.circular(10),
+        ),
+      ),
+      selectedTileColor: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+      leading: const Icon(BootstrapIcons.globe2),
+      title: Text(LocaleKeys.title_language.tr()),
+      onTap: () {
+        context.go('${APP_PAGE.menu.toPath}${APP_PAGE.languagePage.toPath}');
+      },
+    );
+  }
+
+  ListTile _storageMenu(BuildContext context) {
+    return ListTile(
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(10),
+          bottomRight: Radius.circular(10),
+        ),
+      ),
+      selectedTileColor: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+      leading: const Icon(BootstrapIcons.database),
+      title: Text(LocaleKeys.title_storage.tr()),
+      onTap: () {
+        context.go('${APP_PAGE.menu.toPath}${APP_PAGE.cachesPage.toPath}');
+      },
+    );
+  }
+
+  BlocBuilder<AuthBloc, AuthState> _authMenu() {
+    return BlocBuilder<AuthBloc, AuthState>(
+      builder: (context, state) {
+        if (state.status == AuthStatus.authenticated) {
+          return ListTile(
             shape: const RoundedRectangleBorder(
               borderRadius: BorderRadius.only(
                 bottomLeft: Radius.circular(10),
                 bottomRight: Radius.circular(10),
+                topLeft: Radius.circular(10),
+                topRight: Radius.circular(10),
               ),
             ),
-            selectedTileColor:
-                Theme.of(context).colorScheme.primary.withOpacity(0.1),
-            leading: const Icon(BootstrapIcons.database),
-            title: Text(LocaleKeys.title_storage.tr()),
+            title: Text(LocaleKeys.label_logout.tr()),
+            leading: const Icon(Icons.logout),
             onTap: () {
-              context
-                  .go('${APP_PAGE.menu.toPath}${APP_PAGE.cachesPage.toPath}');
-            },
-          ),
-          SizedBox(
-            height: Dimens.DIMENS_16,
-          ),
-          _menuTitle(LocaleKeys.label_others.tr()),
-          SizedBox(
-            height: Dimens.DIMENS_8,
-          ),
-          BlocBuilder<AuthBloc, AuthState>(
-            builder: (context, state) {
-              if (state.status == AuthStatus.authenticated) {
-                return ListTile(
-                  shape: const RoundedRectangleBorder(
-                    borderRadius: BorderRadius.only(
-                      bottomLeft: Radius.circular(10),
-                      bottomRight: Radius.circular(10),
-                      topLeft: Radius.circular(10),
-                      topRight: Radius.circular(10),
-                    ),
-                  ),
-                  title: Text(LocaleKeys.label_logout.tr()),
-                  leading: const Icon(Icons.logout),
-                  onTap: () {
-                    showDialog(
-                        context: context,
-                        builder: (context) {
-                          return AlertDialog(
-                            title: Text(LocaleKeys.label_logout.tr()),
-                            actions: [
-                              TextButton(
-                                  onPressed: () => context.pop(),
-                                  child: Text(LocaleKeys.label_cancel.tr())),
-                              TextButton(
-                                  onPressed: () {
-                                    BlocProvider.of<AuthBloc>(context)
-                                        .add(LogOut());
-                                    context.pop();
-                                  },
-                                  child: Text(LocaleKeys.label_oke.tr()))
-                            ],
-                          );
-                        });
-                  },
-                );
-              }
-              return ListTile(
-                shape: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.only(
-                    bottomLeft: Radius.circular(10),
-                    bottomRight: Radius.circular(10),
-                    topLeft: Radius.circular(10),
-                    topRight: Radius.circular(10),
-                  ),
-                ),
-                title: Text(LocaleKeys.label_login.tr()),
-                leading: const Icon(Icons.login),
-                onTap: () {
-                  showAuthBottomSheetFunc(context);
-                },
-              );
-            },
-          ),
-          BlocBuilder<AuthBloc, AuthState>(
-            builder: (context, state) {
-              if (state.status == AuthStatus.notAuthenticated ||
-                  state.status == AuthStatus.loading) {
-                return Container();
-              }
-              return FutureBuilder(
-                  future: authRepository.isAdmin(
-                      authRepository.currentUser?.uid ?? state.user?.id ?? ''),
-                  builder: (context, AsyncSnapshot<bool> snapshot) {
-                    if (!snapshot.hasData ||
-                        snapshot.hasError ||
-                        snapshot.data == false) {
-                      return Container();
-                    }
-
-                    return ListTile(
-                      tileColor: COLOR_grey,
-                      onTap: () {
-                        context.push(APP_PAGE.addGameFav.toPath);
-                      },
+              showDialog(
+                  context: context,
+                  builder: (context) {
+                    return AlertDialog(
+                      title: Text(LocaleKeys.label_logout.tr()),
+                      actions: [
+                        TextButton(
+                            onPressed: () => context.pop(),
+                            child: Text(LocaleKeys.label_cancel.tr())),
+                        TextButton(
+                            onPressed: () {
+                              BlocProvider.of<AuthBloc>(context).add(LogOut());
+                              context.pop();
+                            },
+                            child: Text(LocaleKeys.label_oke.tr()))
+                      ],
                     );
                   });
             },
+          );
+        }
+        return ListTile(
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.only(
+              bottomLeft: Radius.circular(10),
+              bottomRight: Radius.circular(10),
+              topLeft: Radius.circular(10),
+              topRight: Radius.circular(10),
+            ),
           ),
-        ]),
-      ),
+          title: Text(LocaleKeys.label_login.tr()),
+          leading: const Icon(Icons.login),
+          onTap: () {
+            showAuthBottomSheetFunc(context);
+          },
+        );
+      },
     );
   }
 
