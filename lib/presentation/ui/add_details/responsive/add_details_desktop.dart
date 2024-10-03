@@ -707,10 +707,29 @@ class _DesktopPreviewState extends State<DesktopPreview> {
                           Container(
                             alignment: Alignment.centerLeft,
                             height: 75,
-                            child: Padding(
-                              padding: const EdgeInsets.all(16.0),
-                              child: Image.asset(Images.IC_GAMEPIUN512X521),
+                            child: Row(
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.all(16.0),
+                                  child: Image.asset(
+                                    Images.IC_GAMEPIUN512X521,
+                                    width: 34,
+                                  ),
+                                ),
+                                Text(
+                                  'Gamepiun',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodyMedium!
+                                      .apply(
+                                          fontSizeDelta: 4,
+                                          fontWeightDelta: 35),
+                                )
+                              ],
                             ),
+                          ),
+                          const SizedBox(
+                            height: 12,
                           ),
                           ListTile(
                             selected: true,

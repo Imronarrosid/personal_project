@@ -173,10 +173,29 @@ class _HomePageState extends State<HomePage> {
                           Container(
                             alignment: Alignment.centerLeft,
                             height: 75,
-                            child: Padding(
-                              padding: const EdgeInsets.all(16.0),
-                              child: Image.asset(Images.IC_GAMEPIUN512X521),
+                            child: Row(
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.all(16.0),
+                                  child: Image.asset(
+                                    Images.IC_GAMEPIUN512X521,
+                                    width: 34,
+                                  ),
+                                ),
+                                Text(
+                                  'Gamepiun',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodyMedium!
+                                      .apply(
+                                          fontSizeDelta: 4,
+                                          fontWeightDelta: 35),
+                                )
+                              ],
                             ),
+                          ),
+                          const SizedBox(
+                            height: 12,
                           ),
                           SideBarItem(
                             leadingIcon: const Icon(
@@ -261,7 +280,7 @@ class _HomePageState extends State<HomePage> {
                                   child: Text(
                                     LocaleKeys.title_upload.tr(),
                                     style: const TextStyle(
-                                      fontSize: 12,
+                                        fontSize: 12,
                                         fontWeight: FontWeight.bold),
                                   ),
                                 ),
