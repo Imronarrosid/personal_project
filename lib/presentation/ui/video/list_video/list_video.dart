@@ -100,18 +100,21 @@ class _ListVideoState extends State<ListVideo> {
                         focusNode: FocusNode(),
                         autofocus: true,
                         onKeyEvent: (KeyEvent keyEvent) {
+                          debugPrint('index ${_controller.page}');
                           if (keyEvent.logicalKey ==
                               LogicalKeyboardKey.arrowDown) {
-                            _controller.animateToPage(
-                                (_controller.page?.toInt() ?? 0) + 1,
-                                duration: const Duration(milliseconds: 300),
-                                curve: Curves.bounceIn);
+                            _controller.nextPage(
+                              duration: const Duration(milliseconds: 300),
+                              curve: Curves.easeInCubic,
+                            );
                           } else if (keyEvent.logicalKey ==
                               LogicalKeyboardKey.arrowUp) {
-                            _controller.animateToPage(
-                                (_controller.page?.toInt() ?? 0) - 1,
+                            if (_controller.page!.toInt() > 0) {
+                              _controller.previousPage(
                                 duration: const Duration(milliseconds: 300),
-                                curve: Curves.bounceIn);
+                                curve: Curves.easeInCubic,
+                              );
+                            }
                           }
                         },
                         child: PagedPageView<int, Video>(
