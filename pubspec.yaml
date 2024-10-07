@@ -64,7 +64,6 @@ dependencies:
   timeago: ^3.5.0
   video_player: ^2.6.0
   chips_choice: ^3.0.1
-  ntp: ^2.0.0
   fluttertoast: ^8.2.4
   uuid: ^4.2.1
   restart_app: ^1.2.1

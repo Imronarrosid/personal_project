@@ -3,7 +3,7 @@ import 'package:personal_project/utils/get_ntp_time.dart';
 
 Future<bool> isCanEditName(Timestamp timestamp) async {
   // Get the current time
-  DateTime now = await getNtpTime();
+  DateTime now = await fetchTime();
 
   // Convert Firestore timestamp to DateTime
   DateTime timestampDateTime = timestamp.toDate();
@@ -20,7 +20,7 @@ Future<bool> isCanEditName(Timestamp timestamp) async {
 
 Future<int> calculateDaysAgo(Timestamp timestamp) async {
   // Get the current time
-  DateTime now = await getNtpTime();
+  DateTime now = await fetchTime();
 
   // Convert Firestore timestamp to DateTime
   DateTime timestampDateTime = timestamp.toDate();
@@ -33,7 +33,7 @@ Future<int> calculateDaysAgo(Timestamp timestamp) async {
 
 Future<int> daysUntilOneWeeks(Timestamp timestamp) async {
   // Get the current time
-  DateTime now = await getNtpTime();
+  DateTime now = await fetchTime();
 
   // Convert Firestore timestamp to DateTime
   DateTime timestampDateTime = timestamp.toDate();
