@@ -190,13 +190,6 @@ class AppRouter {
                         return const SearchPage();
                       },
                     ),
-                    GoRoute(
-                      path: APP_PAGE.editProfile.toPath.replaceAll('/', ''),
-                      // name: APP_PAGE.editProfile.toName,
-                      builder: (context, state) {
-                        return const EditProfile();
-                      },
-                    ),
                   ]),
             ]),
             // StatefulShellBranch(routes: [
@@ -309,7 +302,7 @@ class AppRouter {
                 path: APP_PAGE.editProfile.toPath,
                 name: APP_PAGE.editProfile.toName,
                 redirect: (context, state) {
-                  if (firebaseAuth.currentUser != null) {
+                  if (firebaseAuth.currentUser == null) {
                     return APP_PAGE.forYou.toPath;
                   }
                   return null;
@@ -520,7 +513,7 @@ class AppRouter {
                     if (state.uri.path == '/settings') {
                       if (MediaQuery.of(context).size.width > mobileWidth) {
                         if (firebaseAuth.currentUser != null) {
-                          return APP_PAGE.editProfile.toPath;
+                          return '${APP_PAGE.menu.toPath}${APP_PAGE.editProfile.toPath}';
                         }
                         return '${APP_PAGE.menu.toPath}${APP_PAGE.login.toPath}';
                       }
@@ -575,6 +568,14 @@ class AppRouter {
                           );
                         },
                         routes: [
+                          GoRoute(
+                            path:
+                                APP_PAGE.editProfile.toPath.replaceAll('/', ''),
+                            // name: APP_PAGE.editProfile.toName,
+                            builder: (context, state) {
+                              return const EditProfile();
+                            },
+                          ),
                           GoRoute(
                             path: 'language',
                             pageBuilder: (context, state) {

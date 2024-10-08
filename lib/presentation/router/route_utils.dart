@@ -66,7 +66,7 @@ extension AppPageExtension on APP_PAGE {
       case APP_PAGE.profile:
         return "/profile";
       case APP_PAGE.editProfile:
-        return "/edit-profile";
+        return "/edit";
       case APP_PAGE.editName:
         return "/name";
       case APP_PAGE.cropImage:
