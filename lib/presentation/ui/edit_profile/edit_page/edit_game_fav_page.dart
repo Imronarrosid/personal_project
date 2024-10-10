@@ -53,9 +53,12 @@ class _EditGameFavPageState extends State<EditGameFavPage> {
             icon: const Icon(BootstrapIcons.x),
           ),
           actions: [
-            IconButton(
-              onPressed: save,
-              icon: const Icon(BootstrapIcons.check),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: IconButton(
+                onPressed: save,
+                icon: const Icon(BootstrapIcons.check),
+              ),
             )
           ],
         ),

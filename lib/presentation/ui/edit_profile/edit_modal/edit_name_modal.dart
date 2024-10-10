@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:personal_project/constant/color.dart';
 import 'package:personal_project/constant/dimens.dart';
 import 'package:personal_project/presentation/l10n/stings.g.dart';
+import 'package:personal_project/presentation/responsive/dimension.dart';
 import 'package:personal_project/presentation/ui/edit_profile/cubit/edit_name_cubit.dart';
 import 'package:personal_project/utils/edit_name_check.dart';
 import 'package:personal_project/utils/is_same_day.dart';
@@ -28,134 +29,251 @@ void showEditNameModal(BuildContext context, String name, Timestamp timestamp,
   bool isCanEdit = await isCanEditName(timestamp) ||
       isSameDay(timestamp.toDate(), userCreatedAt.toDate());
   int daysCount = await daysUntilOneWeeks(timestamp);
-  if (context.mounted) {
+  if (context.mounted && MediaQuery.of(context).size.width > mobileWidth) {
+    showDialog(
+        context: context,
+        builder: (context) => Dialog(
+              surfaceTintColor: Colors.transparent,
+              backgroundColor: Theme.of(context).colorScheme.background,
+              child: Container(
+                  width: 400,
+                  height: 300,
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(
+                        height: Dimens.DIMENS_6,
+                      ),
+                      Text(
+                        LocaleKeys.label_name.tr(),
+                        style: const TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.w600),
+                      ),
+                      SizedBox(
+                        height: Dimens.DIMENS_8,
+                      ),
+                      Form(
+                        key: formKey,
+                        child: TextFormField(
+                          validator: validator,
+                          controller: controller,
+                          maxLength: 24,
+                          buildCounter: (context,
+                              {required currentLength,
+                              required isFocused,
+                              required maxLength}) {
+                            return const Text('');
+                          },
+                          onChanged: (value) {
+                            formKey.currentState!.validate();
+                          },
+                          enabled: isCanEdit,
+                          autofocus: true,
+                          decoration: InputDecoration(
+                              border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10))),
+                        ),
+                      ),
+                      SizedBox(
+                        height: Dimens.DIMENS_8,
+                      ),
+                      isCanEdit
+                          ? Text(
+                              LocaleKeys.message_edit_can_name_every_7_day.tr())
+                          : Text(LocaleKeys.message_edit_name_day_later
+                              .tr(args: [daysCount.toString()])),
+                      SizedBox(
+                        height: Dimens.DIMENS_18,
+                      ),
+                      InkWell(
+                        onTap: isCanEdit
+                            ? () {
+                                if (formKey.currentState!.validate() &&
+                                    name != controller.text) {
+                                  BlocProvider.of<EditNameCubit>(context)
+                                      .editName(controller.text);
+                                  debugPrint('editname');
+                                }
+                              }
+                            : null,
+                        child: Container(
+                          width: double.infinity,
+                          height: Dimens.DIMENS_38,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                              color: isCanEdit
+                                  ? Theme.of(context).colorScheme.primary
+                                  : Theme.of(context).colorScheme.tertiary,
+                              borderRadius: BorderRadius.circular(50)),
+                          child: BlocBuilder<EditNameCubit, EditNameState>(
+                            builder: (context, state) {
+                              debugPrint('state ${state.status}');
+                              if (state.status == EditNameStatus.editProccess) {
+                                return SizedBox(
+                                  width: Dimens.DIMENS_18,
+                                  height: Dimens.DIMENS_18,
+                                  child: CircularProgressIndicator(
+                                    color:
+                                        Theme.of(context).colorScheme.secondary,
+                                  ),
+                                );
+                              }
+                              return Text(
+                                LocaleKeys.label_save.tr(),
+                                style: TextStyle(
+                                    color: isCanEdit &&
+                                            name != controller.text.trim()
+                                        ? Theme.of(context)
+                                            .colorScheme
+                                            .secondary
+                                        : COLOR_black_ff121212),
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                    ],
+                  )),
+            ));
+  } else {
     showModalBottomSheet(
         backgroundColor: Colors.transparent,
         isScrollControlled: true,
         elevation: 0,
         context: context,
         builder: (context) {
-          return BlocListener<EditNameCubit, EditNameState>(
-            listener: (context, state) {
-              if (state.status == EditNameStatus.nameEditSuccess) {
-                context.pop();
-              }
-            },
-            child: Padding(
-              padding: EdgeInsets.only(
-                  bottom: MediaQuery.of(context).viewInsets.bottom),
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Container(
-                  padding: EdgeInsets.all(Dimens.DIMENS_12),
-                  decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.background,
-                      borderRadius: BorderRadius.circular(10)),
-                  height: 250,
-                  child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Align(
-                          alignment: Alignment.center,
-                          child: Container(
-                            width: Dimens.DIMENS_50,
-                            height: Dimens.DIMENS_5,
-                            decoration: BoxDecoration(
-                                color: Theme.of(context).colorScheme.tertiary,
-                                borderRadius: BorderRadius.circular(50)),
-                          ),
+          return editNameView(context, formKey, validator, controller,
+              isCanEdit, daysCount, name);
+        });
+  }
+}
+
+BlocListener<EditNameCubit, EditNameState> editNameView(
+    BuildContext context,
+    GlobalKey<FormState> formKey,
+    String? validator(String? value),
+    TextEditingController controller,
+    bool isCanEdit,
+    int daysCount,
+    String name) {
+  return BlocListener<EditNameCubit, EditNameState>(
+    listener: (context, state) {
+      if (state.status == EditNameStatus.nameEditSuccess) {
+        context.pop();
+      }
+    },
+    child: Padding(
+      padding:
+          EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Container(
+          padding: EdgeInsets.all(Dimens.DIMENS_12),
+          decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.background,
+              borderRadius: BorderRadius.circular(10)),
+          height: 250,
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Align(
+              alignment: Alignment.center,
+              child: Container(
+                width: Dimens.DIMENS_50,
+                height: Dimens.DIMENS_5,
+                decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.tertiary,
+                    borderRadius: BorderRadius.circular(50)),
+              ),
+            ),
+            SizedBox(
+              height: Dimens.DIMENS_6,
+            ),
+            Text(
+              LocaleKeys.label_name.tr(),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+            ),
+            SizedBox(
+              height: Dimens.DIMENS_8,
+            ),
+            Form(
+              key: formKey,
+              child: TextFormField(
+                validator: validator,
+                controller: controller,
+                maxLength: 24,
+                buildCounter: (context,
+                    {required currentLength,
+                    required isFocused,
+                    required maxLength}) {
+                  return const Text('');
+                },
+                onChanged: (value) {
+                  formKey.currentState!.validate();
+                },
+                enabled: isCanEdit,
+                autofocus: true,
+                decoration: InputDecoration(
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10))),
+              ),
+            ),
+            SizedBox(
+              height: Dimens.DIMENS_8,
+            ),
+            isCanEdit
+                ? Text(LocaleKeys.message_edit_can_name_every_7_day.tr())
+                : Text(LocaleKeys.message_edit_name_day_later
+                    .tr(args: [daysCount.toString()])),
+            SizedBox(
+              height: Dimens.DIMENS_18,
+            ),
+            InkWell(
+              onTap: isCanEdit
+                  ? () {
+                      if (formKey.currentState!.validate() &&
+                          name != controller.text) {
+                        BlocProvider.of<EditNameCubit>(context)
+                            .editName(controller.text);
+                        debugPrint('editname');
+                      }
+                    }
+                  : null,
+              child: Container(
+                width: double.infinity,
+                height: Dimens.DIMENS_38,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                    color: isCanEdit
+                        ? Theme.of(context).colorScheme.primary
+                        : Theme.of(context).colorScheme.tertiary,
+                    borderRadius: BorderRadius.circular(50)),
+                child: BlocBuilder<EditNameCubit, EditNameState>(
+                  builder: (context, state) {
+                    debugPrint('state ${state.status}');
+                    if (state.status == EditNameStatus.editProccess) {
+                      return SizedBox(
+                        width: Dimens.DIMENS_18,
+                        height: Dimens.DIMENS_18,
+                        child: CircularProgressIndicator(
+                          color: Theme.of(context).colorScheme.secondary,
                         ),
-                        SizedBox(
-                          height: Dimens.DIMENS_6,
-                        ),
-                        Text(
-                          LocaleKeys.label_name.tr(),
-                          style: const TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.w600),
-                        ),
-                        SizedBox(
-                          height: Dimens.DIMENS_8,
-                        ),
-                        Form(
-                          key: formKey,
-                          child: TextFormField(
-                            validator: validator,
-                            controller: controller,
-                            onChanged: (value) {
-                              formKey.currentState!.validate();
-                            },
-                            enabled: isCanEdit,
-                            autofocus: true,
-                            decoration: InputDecoration(
-                                border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(10))),
-                          ),
-                        ),
-                        SizedBox(
-                          height: Dimens.DIMENS_8,
-                        ),
-                        isCanEdit
-                            ? Text(LocaleKeys.message_edit_can_name_every_7_day
-                                .tr())
-                            : Text(LocaleKeys.message_edit_name_day_later
-                                .tr(args: [daysCount.toString()])),
-                        SizedBox(
-                          height: Dimens.DIMENS_18,
-                        ),
-                        InkWell(
-                          onTap: isCanEdit
-                              ? () {
-                                  if (formKey.currentState!.validate() &&
-                                      name != controller.text) {
-                                    BlocProvider.of<EditNameCubit>(context)
-                                        .editName(controller.text);
-                                    debugPrint('editname');
-                                  }
-                                }
-                              : null,
-                          child: Container(
-                            width: double.infinity,
-                            height: Dimens.DIMENS_38,
-                            alignment: Alignment.center,
-                            decoration: BoxDecoration(
-                                color: isCanEdit
-                                    ? Theme.of(context).colorScheme.primary
-                                    : Theme.of(context).colorScheme.tertiary,
-                                borderRadius: BorderRadius.circular(50)),
-                            child: BlocBuilder<EditNameCubit, EditNameState>(
-                              builder: (context, state) {
-                                debugPrint('state ${state.status}');
-                                if (state.status ==
-                                    EditNameStatus.editProccess) {
-                                  return SizedBox(
-                                    width: Dimens.DIMENS_18,
-                                    height: Dimens.DIMENS_18,
-                                    child: CircularProgressIndicator(
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .secondary,
-                                    ),
-                                  );
-                                }
-                                return Text(
-                                  LocaleKeys.label_save.tr(),
-                                  style: TextStyle(
-                                      color: isCanEdit &&
-                                              name != controller.text.trim()
-                                          ? Theme.of(context)
-                                              .colorScheme
-                                              .secondary
-                                          : COLOR_black_ff121212),
-                                );
-                              },
-                            ),
-                          ),
-                        ),
-                      ]),
+                      );
+                    }
+                    return Text(
+                      LocaleKeys.label_save.tr(),
+                      style: TextStyle(
+                          color: isCanEdit && name != controller.text.trim()
+                              ? Theme.of(context).colorScheme.secondary
+                              : COLOR_black_ff121212),
+                    );
+                  },
                 ),
               ),
             ),
-          );
-        });
-  }
+          ]),
+        ),
+      ),
+    ),
+  );
 }
