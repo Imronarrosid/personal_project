@@ -13,6 +13,7 @@ import 'package:personal_project/domain/model/user.dart';
 import 'package:personal_project/domain/reporsitory/auth_reposotory.dart';
 import 'package:personal_project/domain/reporsitory/user_repository.dart';
 import 'package:personal_project/presentation/l10n/stings.g.dart';
+import 'package:personal_project/presentation/responsive/dimension.dart';
 import 'package:personal_project/presentation/router/route_utils.dart';
 import 'package:personal_project/presentation/shared_components/handel_back_button.dart';
 import 'package:personal_project/presentation/ui/edit_profile/cubit/edit_bio_cubit.dart';
@@ -81,7 +82,10 @@ class _EditProfileState extends State<EditProfile> {
                     .onBackButtonPressed(context);
               },
             ),
-            title: Text(LocaleKeys.label_edit_profile.tr()),
+            title: Text(
+              LocaleKeys.label_edit_profile.tr(),
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
             backgroundColor: Colors.transparent,
             elevation: 0,
           ),
@@ -138,272 +142,248 @@ class _EditProfileState extends State<EditProfile> {
                                 ),
                               );
                             }),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(LocaleKeys.label_name.tr()),
-                                BlocBuilder<EditNameCubit, EditNameState>(
+                        ListTile(
+                          isThreeLine: true,
+                          title: Text(
+                            LocaleKeys.label_name.tr(),
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          trailing: BlocConsumer<EditNameCubit, EditNameState>(
+                            listener: (context, state) {
+                              if (state.status ==
+                                  EditNameStatus.nameEditSuccess) {
+                                lastUpdate = Timestamp.now();
+                              }
+                            },
+                            builder: (context, state) {
+                              return IconButton(
+                                  onPressed: () {
+                                    // context.push(APP_PAGE.editName.toPath, extra: editNata);
+                                    showEditNameModal(
+                                        context,
+                                        state.status ==
+                                                EditNameStatus.nameEditSuccess
+                                            ? state.name!
+                                            : user.name!,
+                                        lastUpdate!,
+                                        user.createdAt!);
+                                  },
+                                  icon: const Icon(SolarIconsOutline.pen));
+                            },
+                          ),
+                          subtitle: BlocBuilder<EditNameCubit, EditNameState>(
+                            builder: (context, state) {
+                              if (state.status == EditNameStatus.initial) {
+                                return Text(
+                                  user.name!,
+                                  style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w500),
+                                );
+                              }
+                              return Text(
+                                state.status == EditNameStatus.nameEditSuccess
+                                    ? state.name!
+                                    : user.name!,
+                                style: const TextStyle(
+                                    fontSize: 16, fontWeight: FontWeight.w500),
+                              );
+                            },
+                          ),
+                        ),
+                        ListTile(
+                          isThreeLine: true,
+                          trailing: BlocConsumer<EditUserNameCubit,
+                              EditUserNameState>(
+                            listener: (context, state) {
+                              if (state.status == EditUserNameStatus.success) {
+                                userNameUpdatedAt = Timestamp.now();
+                              }
+                            },
+                            builder: (context, state) {
+                              return IconButton(
+                                  onPressed: () {
+                                    showEditUserNameModal(context,
+                                        userName: user.userName!,
+                                        lastUpdate: userNameUpdatedAt!,
+                                        userCreatedAt:
+                                            snapshot.data!.createdAt!);
+                                  },
+                                  icon: const Icon(SolarIconsOutline.pen));
+                            },
+                          ),
+                          title: Text(
+                            LocaleKeys.label_user_name.tr(),
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          subtitle:
+                              BlocBuilder<EditUserNameCubit, EditUserNameState>(
+                            builder: (context, state) {
+                              debugPrint('state ${state.status}');
+                              if (state.status == EditUserNameStatus.initial) {
+                                return Text(
+                                  user.userName!,
+                                  style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w500),
+                                );
+                              }
+                              return Text(
+                                state.status == EditUserNameStatus.success
+                                    ? state.newUserName!
+                                    : user.userName!,
+                                style: const TextStyle(
+                                    fontSize: 16, fontWeight: FontWeight.w500),
+                              );
+                            },
+                          ),
+                        ),
+                        ListTile(
+                          isThreeLine: true,
+                          title: Text(
+                            LocaleKeys.label_bio.tr(),
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          trailing: IconButton(
+                              onPressed: () {
+                                showEditBioMpdal(context, bio: bio!);
+                              },
+                              icon: const Icon(SolarIconsOutline.pen)),
+                          subtitle: FutureBuilder(
+                              future: userRepository
+                                  .getBio(authRepository.currentUser!.uid),
+                              builder: (context, snapshot) {
+                                if (snapshot.hasData) {
+                                  bio = snapshot.data;
+                                }
+                                if (!snapshot.hasData) {
+                                  return Container();
+                                }
+                                debugPrint('abc bio $bio');
+                                return BlocBuilder<EditBioCubit, EditBioState>(
                                   builder: (context, state) {
-                                    if (state.status ==
-                                        EditNameStatus.initial) {
-                                      return Text(
-                                        user.name!,
-                                        style: const TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.w500),
-                                      );
+                                    if (state.status == EditBioStatus.succes) {
+                                      bio = state.bio!;
                                     }
+                                    debugPrint('abc $bio stts ${state.status}');
                                     return Text(
-                                      state.status ==
-                                              EditNameStatus.nameEditSuccess
-                                          ? state.name!
-                                          : user.name!,
+                                      bio!,
                                       style: const TextStyle(
                                           fontSize: 16,
                                           fontWeight: FontWeight.w500),
                                     );
                                   },
-                                ),
-                              ],
-                            ),
-                            BlocConsumer<EditNameCubit, EditNameState>(
-                              listener: (context, state) {
-                                if (state.status ==
-                                    EditNameStatus.nameEditSuccess) {
-                                  lastUpdate = Timestamp.now();
-                                }
-                              },
-                              builder: (context, state) {
-                                return IconButton(
-                                    onPressed: () {
-                                      // context.push(APP_PAGE.editName.toPath, extra: editNata);
-                                      showEditNameModal(
-                                          context,
-                                          state.status ==
-                                                  EditNameStatus.nameEditSuccess
-                                              ? state.name!
-                                              : user.name!,
-                                          lastUpdate!,
-                                          user.createdAt!);
-                                    },
-                                    icon: const Icon(SolarIconsOutline.pen));
-                              },
-                            )
-                          ],
+                                );
+                              }),
                         ),
-                        Divider(
-                          color: COLOR_grey,
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(LocaleKeys.label_user_name.tr()),
-                                BlocBuilder<EditUserNameCubit,
-                                    EditUserNameState>(
-                                  builder: (context, state) {
-                                    debugPrint('state ${state.status}');
-                                    if (state.status ==
-                                        EditUserNameStatus.initial) {
-                                      return Text(
-                                        user.userName!,
-                                        style: const TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.w500),
-                                      );
-                                    }
-                                    return Text(
-                                      state.status == EditUserNameStatus.success
-                                          ? state.newUserName!
-                                          : user.userName!,
-                                      style: const TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w500),
-                                    );
-                                  },
-                                ),
-                              ],
-                            ),
-                            BlocConsumer<EditUserNameCubit, EditUserNameState>(
-                              listener: (context, state) {
-                                if (state.status ==
-                                    EditUserNameStatus.success) {
-                                  userNameUpdatedAt = Timestamp.now();
-                                }
-                              },
-                              builder: (context, state) {
-                                return IconButton(
-                                    onPressed: () {
-                                      showEditUserNameModal(context,
-                                          userName: user.userName!,
-                                          lastUpdate: userNameUpdatedAt!,
-                                          userCreatedAt:
-                                              snapshot.data!.createdAt!);
-                                    },
-                                    icon: const Icon(SolarIconsOutline.pen));
-                              },
-                            )
-                          ],
-                        ),
-                        Divider(
-                          color: COLOR_grey,
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(LocaleKeys.label_bio.tr()),
-                                FutureBuilder(
-                                    future: userRepository.getBio(
-                                        authRepository.currentUser!.uid),
-                                    builder: (context, snapshot) {
-                                      if (snapshot.hasData) {
-                                        bio = snapshot.data;
-                                      }
-                                      if (!snapshot.hasData) {
-                                        return Container();
-                                      }
-                                      debugPrint('abc bio $bio');
-                                      return BlocBuilder<EditBioCubit,
-                                          EditBioState>(
-                                        builder: (context, state) {
-                                          if (state.status ==
-                                              EditBioStatus.succes) {
-                                            bio = state.bio!;
-                                          }
-                                          debugPrint(
-                                              'abc $bio stts ${state.status}');
-                                          return Text(
-                                            bio!,
-                                            style: const TextStyle(
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.w500),
-                                          );
-                                        },
-                                      );
-                                    }),
-                              ],
-                            ),
-                            BlocBuilder<EditBioCubit, EditBioState>(
-                              builder: (_, state) {
-                                if (state.status == EditBioStatus.succes) {
-                                  bio = state.bio!;
-                                }
-                                return IconButton(
-                                    onPressed: () {
-                                      showEditBioMpdal(context, bio: bio!);
-                                    },
-                                    icon: const Icon(SolarIconsOutline.pen));
-                              },
-                            )
-                          ],
-                        ),
-                        Divider(
-                          color: COLOR_grey,
-                        ),
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(LocaleKeys.label_favorite_games.tr()),
-                                  FutureBuilder(
-                                      future: userRepository.getSelectedGames(
-                                          authRepository.currentUser!.uid),
-                                      builder: (context, snapshot) {
-                                        debugPrint('poiuy  ${snapshot.data}');
-                                        if (snapshot.hasData) {
-                                          games = snapshot.data;
-                                        }
-                                        if (!snapshot.hasData ||
-                                            snapshot.hasError) {
-                                          return Container();
-                                        }
-
-                                        return BlocBuilder<GameFavCubit,
-                                            GameFavState>(
-                                          builder: (context, state) {
-                                            if (state.sattus ==
-                                                GameFavSattus.succes) {
-                                              games = state.gameFav!;
-                                              return Wrap(
-                                                  children: List<Chip>.generate(
-                                                games!.length,
-                                                (index) => Chip(
-                                                  avatar: CircleAvatar(
-                                                    backgroundColor: COLOR_grey,
-                                                    child: ClipRRect(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              50),
-                                                      child: CachedNetworkImage(
-                                                        imageUrl: games![index]
-                                                            .gameImage!,
-                                                        fit: BoxFit.cover,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  label: Text(
-                                                      games![index].gameTitle!),
-                                                ),
-                                              ).toList());
-                                            }
-                                            return Wrap(
-                                                spacing: Dimens.DIMENS_8,
-                                                children: List<Chip>.generate(
-                                                  games!.length,
-                                                  (index) => Chip(
-                                                    avatar: CircleAvatar(
-                                                      backgroundColor:
-                                                          COLOR_grey,
-                                                      backgroundImage:
-                                                          CachedNetworkImageProvider(
-                                                              games![index]
-                                                                  .gameImage!),
-                                                    ),
-                                                    label: Text(games![index]
-                                                        .gameTitle!),
-                                                  ),
-                                                ).toList());
-                                          },
-                                        );
-                                      }),
-                                ],
-                              ),
-                            ),
-                            IconButton(
-                                onPressed: () {
-                                  debugPrint(games.toString());
-                                  if (games != null) {
-                                    showDialog(
+                        ListTile(
+                          trailing: IconButton(
+                              onPressed: () {
+                                debugPrint(games.toString());
+                                if (games != null) {
+                                  showDialog(
                                       context: context,
-                                      builder: (context) => Dialog.fullscreen(
-                                        child: BackButtonListener(
-                                          onBackButtonPressed: () async {
-                                            context.pop();
-                                            return true;
-                                          },
-                                          child: EditGameFavPage(
-                                            gameFav: [...games!],
+                                      builder: (context) {
+                                        if (MediaQuery.of(context).size.width >
+                                            mobileWidth) {
+                                          return Dialog(
+                                            clipBehavior: Clip.hardEdge,
+                                            child: SizedBox(
+                                              width: 600,
+                                              height: 800,
+                                              child: BackButtonListener(
+                                                onBackButtonPressed: () async {
+                                                  context.pop();
+                                                  return true;
+                                                },
+                                                child: EditGameFavPage(
+                                                  gameFav: [...games!],
+                                                ),
+                                              ),
+                                            ),
+                                          );
+                                        }
+                                        return Dialog.fullscreen(
+                                          child: BackButtonListener(
+                                            onBackButtonPressed: () async {
+                                              context.pop();
+                                              return true;
+                                            },
+                                            child: EditGameFavPage(
+                                              gameFav: [...games!],
+                                            ),
                                           ),
-                                        ),
-                                      ),
-                                    );
-                                  }
-                                },
-                                icon: const Icon(SolarIconsOutline.pen))
-                          ],
-                        )
+                                        );
+                                      });
+                                }
+                              },
+                              icon: const Icon(SolarIconsOutline.pen)),
+                          isThreeLine: true,
+                          title: Text(
+                            LocaleKeys.label_favorite_games.tr(),
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          subtitle: FutureBuilder(
+                              future: userRepository.getSelectedGames(
+                                  authRepository.currentUser!.uid),
+                              builder: (context, snapshot) {
+                                debugPrint('poiuy  ${snapshot.data}');
+                                if (snapshot.hasData) {
+                                  games = snapshot.data;
+                                }
+                                if (!snapshot.hasData || snapshot.hasError) {
+                                  return Container();
+                                }
+
+                                return BlocBuilder<GameFavCubit, GameFavState>(
+                                  builder: (context, state) {
+                                    if (state.sattus == GameFavSattus.succes) {
+                                      games = state.gameFav!;
+                                      return Wrap(
+                                          spacing: Dimens.DIMENS_6,
+                                          runSpacing: Dimens.DIMENS_6,
+                                          children: List<Chip>.generate(
+                                            games!.length,
+                                            (index) => Chip(
+                                              side: BorderSide.none,
+                                              avatar: CircleAvatar(
+                                                backgroundColor: COLOR_grey,
+                                                child: ClipRRect(
+                                                  borderRadius:
+                                                      BorderRadius.circular(50),
+                                                  child: CachedNetworkImage(
+                                                    imageUrl: games![index]
+                                                        .gameImage!,
+                                                    fit: BoxFit.cover,
+                                                  ),
+                                                ),
+                                              ),
+                                              label: Text(
+                                                  games![index].gameTitle!),
+                                            ),
+                                          ).toList());
+                                    }
+                                    return Wrap(
+                                        spacing: Dimens.DIMENS_6,
+                                        runSpacing: Dimens.DIMENS_6,
+                                        children: List<Chip>.generate(
+                                          games!.length,
+                                          (index) => Chip(
+                                            side: BorderSide.none,
+                                            avatar: CircleAvatar(
+                                              backgroundColor: COLOR_grey,
+                                              backgroundImage:
+                                                  CachedNetworkImageProvider(
+                                                      games![index].gameImage!),
+                                            ),
+                                            label:
+                                                Text(games![index].gameTitle!),
+                                          ),
+                                        ).toList());
+                                  },
+                                );
+                              }),
+                        ),
                       ],
                     ),
                   ),
