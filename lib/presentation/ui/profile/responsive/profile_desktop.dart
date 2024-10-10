@@ -30,6 +30,7 @@ import 'package:personal_project/domain/reporsitory/video_repository.dart';
 import 'package:personal_project/domain/services/firebase/firebase_service.dart';
 import 'package:personal_project/presentation/l10n/stings.g.dart';
 import 'package:personal_project/presentation/router/route_utils.dart';
+import 'package:personal_project/presentation/shared_components/expandable_text.dart';
 import 'package:personal_project/presentation/shared_components/keep_alive_page.dart';
 import 'package:personal_project/presentation/shared_components/not_authenticated_page.dart';
 import 'package:personal_project/presentation/ui/add_details/bloc/upload_bloc.dart';
@@ -784,9 +785,7 @@ class _ProfilePageDesktopState extends State<ProfilePageDesktop>
 
     if (!isToEditProfile && mounted) {
       isToEditProfile = true;
-      context.go(
-        APP_PAGE.editProfile.toPath,
-      );
+      context.go('${APP_PAGE.menu.toPath}${APP_PAGE.editProfile.toPath}');
     }
     isToEditProfile = false;
   }
@@ -957,6 +956,7 @@ class _ProfilePageDesktopState extends State<ProfilePageDesktop>
                       } else if (state is ShowLessBio) {
                         maxLines = 5;
                       }
+                      return ExpandableText(text: bio!);
                       return LayoutBuilder(builder: (context, constraints) {
                         String text = bio!;
                         final textPainter = TextPainter(
@@ -967,7 +967,7 @@ class _ProfilePageDesktopState extends State<ProfilePageDesktop>
                           ),
                           textDirection: TextDirection.ltr,
                         );
-                        textPainter.layout(maxWidth: double.infinity);
+                        textPainter.layout(maxWidth: 300);
                         final lines = (textPainter.size.height /
                                 textPainter.preferredLineHeight)
                             .ceil();
