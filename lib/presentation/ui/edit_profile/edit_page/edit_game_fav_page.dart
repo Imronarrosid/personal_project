@@ -109,9 +109,17 @@ class _EditGameFavPageState extends State<EditGameFavPage> {
                   ),
 
                   choiceStyle: C2ChipStyle.toned(
-                    selectedStyle: C2ChipStyle.filled(),
-                    borderRadius: const BorderRadius.all(
-                      Radius.circular(5),
+                    focusedStyle: C2ChipStyle(
+                        overlayColor: Theme.of(context).colorScheme.onSurface,
+                        backgroundColor:
+                            Theme.of(context).colorScheme.onSurface),
+                    selectedStyle: C2ChipStyle.filled(
+                        color: Theme.of(context).colorScheme.primary,
+                        borderStyle: BorderStyle.solid),
+                    pressedStyle: C2ChipStyle(
+                      backgroundAlpha: 100,
+                      backgroundColor: Theme.of(context).colorScheme.primary,
+                      foregroundColor: Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
                   // leading: IconButton(
