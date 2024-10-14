@@ -21,89 +21,93 @@ void showFollowDialog(
         return Dialog(
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          child: DefaultTabController(
-            initialIndex: initialIndex,
-            length: 2,
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: Scaffold(
-                // backgroundColor: size.width > mobileWidth ? Colors.transparent : null,
-                body: ExtendedNestedScrollView(
-                  headerSliverBuilder: (context, innerBoxIsScrolled) {
-                    return [
-                      SliverAppBar(
-                        elevation: 1,
-                        scrolledUnderElevation: 0,
-                        pinned: true,
-                        shape: const RoundedRectangleBorder(
-                          borderRadius:
-                              BorderRadius.vertical(top: Radius.circular(12)),
-                        ),
-                        title: Text(userName),
-                        bottom: TabBar(
-                            dividerHeight: 1,
-                            dividerColor: Theme.of(context)
-                                .colorScheme
-                                .onSurface
-                                .withOpacity(0.15),
-                            overlayColor: MaterialStatePropertyAll<Color>(
-                                Theme.of(context)
-                                    .colorScheme
-                                    .onSurface
-                                    .withOpacity(0.12)),
-                            indicatorWeight: 2,
-                            labelColor: Theme.of(context).colorScheme.onSurface,
-                            indicator: BoxDecoration(
-                              border: Border(
-                                bottom: BorderSide(
-                                  color: Theme.of(context)
+          child: SizedBox(
+            width: 720,
+            child: DefaultTabController(
+              initialIndex: initialIndex,
+              length: 2,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Scaffold(
+                  // backgroundColor: size.width > mobileWidth ? Colors.transparent : null,
+                  body: ExtendedNestedScrollView(
+                    headerSliverBuilder: (context, innerBoxIsScrolled) {
+                      return [
+                        SliverAppBar(
+                          elevation: 1,
+                          scrolledUnderElevation: 0,
+                          pinned: true,
+                          shape: const RoundedRectangleBorder(
+                            borderRadius:
+                                BorderRadius.vertical(top: Radius.circular(12)),
+                          ),
+                          title: Text(userName),
+                          bottom: TabBar(
+                              dividerHeight: 1,
+                              dividerColor: Theme.of(context)
+                                  .colorScheme
+                                  .onSurface
+                                  .withOpacity(0.15),
+                              overlayColor: MaterialStatePropertyAll<Color>(
+                                  Theme.of(context)
                                       .colorScheme
-                                      .onSurface, // Color of the indicator
-                                  width: 1.5, // Thickness of the indicator
+                                      .onSurface
+                                      .withOpacity(0.12)),
+                              indicatorWeight: 2,
+                              labelColor:
+                                  Theme.of(context).colorScheme.onSurface,
+                              indicator: BoxDecoration(
+                                border: Border(
+                                  bottom: BorderSide(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurface, // Color of the indicator
+                                    width: 1.5, // Thickness of the indicator
+                                  ),
                                 ),
                               ),
-                            ),
-                            indicatorSize: TabBarIndicatorSize.tab,
-                            tabs: [
-                              Tab(
-                                text: LocaleKeys.label_followers.tr(),
+                              indicatorSize: TabBarIndicatorSize.tab,
+                              tabs: [
+                                Tab(
+                                  text: LocaleKeys.label_followers.tr(),
+                                ),
+                                Tab(
+                                  text: LocaleKeys.label_following.tr(),
+                                ),
+                              ]),
+                        ),
+                      ];
+                    },
+                    onlyOneScrollInBody: true,
+                    body: StreamBuilder<User>(
+                        stream: context
+                            .read<UserRepository>()
+                            .userDataStreamByUsername(userName),
+                        builder: (context, snapshot) {
+                          User? data = snapshot.data;
+                          if (!snapshot.hasData) {
+                            return const Center(
+                              child: CircularProgressIndicator(),
+                            );
+                          }
+                          return TabBarView(children: [
+                            KeepAlivePage(
+                              child: FollowingNFollowersTab(
+                                key: Key(TabFor.followers.name),
+                                uid: data!.id,
+                                tabFor: TabFor.followers,
                               ),
-                              Tab(
-                                text: LocaleKeys.label_following.tr(),
+                            ),
+                            KeepAlivePage(
+                              child: FollowingNFollowersTab(
+                                key: Key(TabFor.following.name),
+                                uid: data.id,
+                                tabFor: TabFor.following,
                               ),
-                            ]),
-                      ),
-                    ];
-                  },
-                  onlyOneScrollInBody: true,
-                  body: StreamBuilder<User>(
-                      stream: context
-                          .read<UserRepository>()
-                          .userDataStreamByUsername(userName),
-                      builder: (context, snapshot) {
-                        User? data = snapshot.data;
-                        if (!snapshot.hasData) {
-                          return const Center(
-                            child: CircularProgressIndicator(),
-                          );
-                        }
-                        return TabBarView(children: [
-                          KeepAlivePage(
-                            child: FollowingNFollowersTab(
-                              key: Key(TabFor.followers.name),
-                              uid: data!.id,
-                              tabFor: TabFor.followers,
                             ),
-                          ),
-                          KeepAlivePage(
-                            child: FollowingNFollowersTab(
-                              key: Key(TabFor.following.name),
-                              uid: data.id,
-                              tabFor: TabFor.following,
-                            ),
-                          ),
-                        ]);
-                      }),
+                          ]);
+                        }),
+                  ),
                 ),
               ),
             ),

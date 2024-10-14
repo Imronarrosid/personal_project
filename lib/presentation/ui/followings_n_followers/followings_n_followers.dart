@@ -204,8 +204,9 @@ class FollowingNFollowersTab extends StatelessWidget {
                               tileColor: Colors.transparent,
                               onTap: () {
                                 context.go(
-                                  '${APP_PAGE.profile.toPath}/${user.userName}',
+                                  '/@${user.userName}',
                                 );
+                                context.pop();
                               },
                               leading: CircleAvatar(
                                 backgroundImage: CachedNetworkImageProvider(
