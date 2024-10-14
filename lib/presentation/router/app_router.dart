@@ -346,7 +346,7 @@ class AppRouter {
                       redirect: (context, state) {
                         final ChatData? data = state.extra as ChatData?;
                         if (data == null) {
-                          return APP_PAGE.forYou.toPath;
+                          return APP_PAGE.message.toPath;
                         }
                         return null;
                       },

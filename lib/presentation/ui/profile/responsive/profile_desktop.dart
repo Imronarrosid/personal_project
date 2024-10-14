@@ -670,10 +670,10 @@ class _ProfilePageDesktopState extends State<ProfilePageDesktop>
             borderRadius: BorderRadius.circular(8),
             onTap: () async {
               if (authState.status == AuthStatus.authenticated) {
-                User user =
-                    await userRepository.getOtherUserData(widget.userDaata!.id);
+                User user = await userRepository
+                    .getOtherUserData(widget.userDaata?.id ?? userData.id);
                 types.User otherUser = types.User(
-                    id: widget.userDaata!.id,
+                    id: user.id,
                     createdAt:
                         user.createdAt!.toDate().millisecondsSinceEpoch ~/ 1000,
                     firstName: user.userName);
@@ -683,9 +683,9 @@ class _ProfilePageDesktopState extends State<ProfilePageDesktop>
                 final room =
                     await FirebaseChatCore.instance.createRoom(otherUser);
 
-                if (!mounted) return;
-                context.push(
-                  APP_PAGE.chat.toPath,
+                if (!context.mounted) return;
+                context.go(
+                  APP_PAGE.message.toPath + APP_PAGE.chat.toPath,
                   extra: ChatData(
                     room: room,
                     userName: user.userName!,
