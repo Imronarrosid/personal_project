@@ -1139,7 +1139,7 @@ class _ProfilePageDesktopState extends State<ProfilePageDesktop>
                 height: Dimens.DIMENS_2,
               ),
               bioSectionView(uid: userData.id),
-              // gameFavView(userData.id),
+              gameFavView(userData.id),
             ],
           ),
           SizedBox(
