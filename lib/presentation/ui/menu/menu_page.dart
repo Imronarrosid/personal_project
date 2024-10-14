@@ -12,11 +12,15 @@ import 'package:personal_project/domain/reporsitory/auth_reposotory.dart';
 import 'package:personal_project/domain/reporsitory/user_repository.dart';
 import 'package:personal_project/presentation/l10n/stings.g.dart';
 import 'package:personal_project/presentation/responsive/dimension.dart';
+import 'package:personal_project/presentation/responsive/responsive_layout.dart';
 import 'package:personal_project/presentation/router/route_utils.dart';
 import 'package:personal_project/presentation/shared_components/handel_back_button.dart';
 import 'package:personal_project/presentation/ui/auth/auth.dart';
 import 'package:personal_project/presentation/ui/auth/bloc/auth_bloc.dart';
 import 'package:solar_icons/solar_icons.dart';
+
+import '../../../domain/model/user.dart';
+import '../../../domain/services/firebase/firebase_service.dart';
 
 class MenuPage extends StatefulWidget {
   final int index;
@@ -37,13 +41,15 @@ class _MenuPageState extends State<MenuPage> {
     final ThemeData themeData = Theme.of(context);
     AuthRepository authRepository =
         RepositoryProvider.of<AuthRepository>(context);
+    UserRepository userRepository =
+        RepositoryProvider.of<UserRepository>(context);
 
 //  User user =            authRepository.getVideoOwnerData(authRepository.currentUser!.uid);
     return HandleBackButton(
       child: Scaffold(
         body: Row(
           children: [
-            (MediaQuery.of(context).size.width < 800)
+            (MediaQuery.of(context).size.width < mobileWidth)
                 ? const SizedBox(
                     height: 0,
                     width: 0,
@@ -52,7 +58,8 @@ class _MenuPageState extends State<MenuPage> {
                     width: 300,
                     height: MediaQuery.of(context).size.height,
                     child: Padding(
-                      padding: EdgeInsets.symmetric(horizontal: Dimens.DIMENS_12),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: Dimens.DIMENS_12),
                       child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -70,102 +77,8 @@ class _MenuPageState extends State<MenuPage> {
                             SizedBox(
                               height: Dimens.DIMENS_8,
                             ),
-                            BlocBuilder<AuthBloc, AuthState>(
-                                builder: (context, state) {
-                              if (state.status == AuthStatus.authenticated) {
-                                return ListTile(
-                                  tileColor: themeData.colorScheme.tertiary,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  leading: StreamBuilder<String>(
-                                      initialData: state.user!.photo,
-                                      stream: UserRepository()
-                                          .getAvatar(state.user!.id),
-                                      builder:
-                                          (_, AsyncSnapshot<String> snapshot) {
-                                        return CircleAvatar(
-                                          backgroundColor: Theme.of(context)
-                                              .colorScheme
-                                              .secondary,
-                                          backgroundImage:
-                                              CachedNetworkImageProvider(
-                                            snapshot.data!,
-                                          ),
-                                        );
-                                      }),
-                                  selected: widget.index == 0,
-                                  selectedColor: Theme.of(context)
-                                      .colorScheme
-                                      .primary
-                                      .withOpacity(0.3),
-                                  title: _buildTitle(state.user!.name!),
-                                  subtitle: _buildSubtitle(state.user!.userName!),
-                                  trailing:
-                                      const Icon(Icons.keyboard_arrow_right),
-                                  onTap: () {
-                                    context.go(APP_PAGE.editProfile.toPath);
-                                  },
-                                );
-                              }
-                              return ListTile(
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                leading: CircleAvatar(
-                                  backgroundColor:
-                                      Theme.of(context).colorScheme.secondary,
-                                  child: Padding(
-                                    padding:
-                                        EdgeInsets.only(bottom: Dimens.DIMENS_3),
-                                    child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(50),
-                                      child: const Icon(SolarIconsBold.user),
-                                    ),
-                                  ),
-                                ),
-                                onTap: () {
-                                  if (context
-                                          .read<AuthRepository>()
-                                          .currentUser !=
-                                      null) {
-                                    context.go(
-                                      '${APP_PAGE.menu.toPath}${APP_PAGE.editProfile.toPath}',
-                                    );
-                                  } else {
-                                    context.go(
-                                      '${APP_PAGE.menu.toPath}${APP_PAGE.login.toPath}',
-                                    );
-                                  }
-                                },
-                                selectedTileColor: Theme.of(context)
-                                    .colorScheme
-                                    .primary
-                                    .withOpacity(0.1),
-                                selected: widget.index == 0,
-                                title: Text(LocaleKeys.label_account.tr()),
-                                trailing: InkWell(
-                                  onTap: () {
-                                    // context.pop();
-                                    showAuthBottomSheetFunc(context);
-                                  },
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 15, vertical: 7),
-                                    decoration: BoxDecoration(
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .onTertiary,
-                                        borderRadius: BorderRadius.circular(5)),
-                                    child: Text(
-                                      LocaleKeys.label_login.tr(),
-                                      style:
-                                          TextStyle(color: COLOR_white_fff5f5f5),
-                                    ),
-                                  ),
-                                ),
-                              );
-                            }),
+                            _accountMenu(
+                                userRepository, themeData, authRepository),
                             SizedBox(
                               height: Dimens.DIMENS_16,
                             ),
@@ -281,7 +194,8 @@ class _MenuPageState extends State<MenuPage> {
                             ),
                             BlocBuilder<AuthBloc, AuthState>(
                               builder: (context, state) {
-                                if (state.status == AuthStatus.notAuthenticated ||
+                                if (state.status ==
+                                        AuthStatus.notAuthenticated ||
                                     state.status == AuthStatus.loading) {
                                   return Container();
                                 }
@@ -290,14 +204,14 @@ class _MenuPageState extends State<MenuPage> {
                                         authRepository.currentUser?.uid ??
                                             state.user?.id ??
                                             ''),
-                                    builder:
-                                        (context, AsyncSnapshot<bool> snapshot) {
+                                    builder: (context,
+                                        AsyncSnapshot<bool> snapshot) {
                                       if (!snapshot.hasData ||
                                           snapshot.hasError ||
                                           snapshot.data == false) {
                                         return Container();
                                       }
-      
+
                                       return ListTile(
                                         tileColor: COLOR_grey,
                                         onTap: () {
@@ -311,13 +225,23 @@ class _MenuPageState extends State<MenuPage> {
                           ]),
                     ),
                   ),
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 8.0),
-              child: SafeArea(
-                  child: VerticalDivider(
-                thickness: 0.5,
-              )),
-            ),
+            MediaQuery.of(context).size.width < mobileWidth
+                ? const SizedBox(
+                    width: 0,
+                    height: 0,
+                  )
+                : SafeArea(
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: VerticalDivider(
+                        color: Theme.of(context)
+                            .colorScheme
+                            .onSurface
+                            .withOpacity(0.24),
+                        thickness: 0.2,
+                      ),
+                    ),
+                  ),
             Expanded(child: widget.child)
           ],
         ),
@@ -338,5 +262,94 @@ class _MenuPageState extends State<MenuPage> {
       title,
       style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14),
     );
+  }
+
+  BlocBuilder<AuthBloc, AuthState> _accountMenu(UserRepository userRepository,
+      ThemeData themeData, AuthRepository authRepository) {
+    return BlocBuilder<AuthBloc, AuthState>(builder: (context, state) {
+      if (state.status == AuthStatus.authenticated) {
+        return StreamBuilder<User>(
+            stream: userRepository
+                .userDataStream(firebaseAuth.currentUser?.uid ?? ''),
+            builder: (context, snapshot) {
+              User? userdAdata = snapshot.data;
+
+              return ListTile(
+                tileColor: themeData.colorScheme.tertiary,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                leading: Builder(builder: (_) {
+                  if (userdAdata == null) {
+                    return CircleAvatar(
+                      backgroundColor: Theme.of(context).colorScheme.tertiary,
+                    );
+                  }
+                  return CircleAvatar(
+                    backgroundColor: Theme.of(context).colorScheme.secondary,
+                    backgroundImage: CachedNetworkImageProvider(
+                      userdAdata!.photo!,
+                    ),
+                  );
+                }),
+                selectedColor:
+                    Theme.of(context).colorScheme.primary.withOpacity(0.3),
+                title: _buildTitle(authRepository.currentUser!.displayName!),
+                subtitle: _buildSubtitle(
+                    userdAdata?.userName ?? LocaleKeys.label_user_name.tr()),
+                trailing: const Icon(Icons.keyboard_arrow_right),
+                onTap: () {
+                  context
+                      .go(APP_PAGE.menu.toPath + APP_PAGE.editProfile.toPath);
+                },
+              );
+            });
+      }
+      return ListTile(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+        leading: CircleAvatar(
+          backgroundColor: Theme.of(context).colorScheme.secondary,
+          child: Padding(
+            padding: EdgeInsets.only(bottom: Dimens.DIMENS_3),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(50),
+              child: const Icon(BootstrapIcons.person_fill),
+            ),
+          ),
+        ),
+        onTap: () {
+          if (context.read<AuthRepository>().currentUser != null) {
+            context.go(
+              '${APP_PAGE.menu.toPath}${APP_PAGE.editProfile.toPath}',
+            );
+          } else {
+            context.go(
+              '${APP_PAGE.menu.toPath}${APP_PAGE.login.toPath}',
+            );
+          }
+        },
+        selectedTileColor:
+            Theme.of(context).colorScheme.primary.withOpacity(0.1),
+        title: Text(LocaleKeys.label_account.tr()),
+        trailing: InkWell(
+          onTap: () {
+            // context.pop();
+            showAuthBottomSheetFunc(context);
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 7),
+            decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.onTertiary,
+                borderRadius: BorderRadius.circular(5)),
+            child: Text(
+              LocaleKeys.label_login.tr(),
+              style: TextStyle(color: COLOR_white_fff5f5f5),
+            ),
+          ),
+        ),
+      );
+    });
   }
 }
