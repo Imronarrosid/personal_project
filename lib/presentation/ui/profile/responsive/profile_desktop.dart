@@ -796,8 +796,8 @@ class _ProfilePageDesktopState extends State<ProfilePageDesktop>
       data: Theme.of(context).copyWith(
         useMaterial3: false,
       ),
-      child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: Dimens.DIMENS_12),
+      child: SizedBox(
+        width: 400,
         child: BlocConsumer<GameFavCubit, GameFavState>(
           listener: (context, state) {
             if (state.sattus == GameFavSattus.succes) {
@@ -861,15 +861,16 @@ class _ProfilePageDesktopState extends State<ProfilePageDesktop>
                                           .seeMoreGameFavHandle();
                                     },
                                     child: Chip(
-                                        materialTapTargetSize:
-                                            MaterialTapTargetSize.shrinkWrap,
-                                        visualDensity: VisualDensity.compact,
-                                        label: Text(
-                                          LocaleKeys.label_see_less
-                                              .tr()
-                                              .replaceAll('.', ''),
-                                          style: const TextStyle(fontSize: 11),
-                                        )),
+                                      materialTapTargetSize:
+                                          MaterialTapTargetSize.shrinkWrap,
+                                      visualDensity: VisualDensity.compact,
+                                      label: Text(
+                                        LocaleKeys.label_see_less
+                                            .tr()
+                                            .replaceAll('.', ''),
+                                        style: const TextStyle(fontSize: 11),
+                                      ),
+                                    ),
                                   )
                                 : Container()
                           ],
@@ -1135,10 +1136,10 @@ class _ProfilePageDesktopState extends State<ProfilePageDesktop>
               ),
               _buildUserName(
                   userData.userName ?? LocaleKeys.label_user_name.tr()),
-              SizedBox(
-                height: Dimens.DIMENS_2,
-              ),
               bioSectionView(uid: userData.id),
+              SizedBox(
+                height: Dimens.DIMENS_6,
+              ),
               gameFavView(userData.id),
             ],
           ),
