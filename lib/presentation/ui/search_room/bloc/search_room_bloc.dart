@@ -21,12 +21,14 @@ class SearchRoomBloc extends Bloc<SearchRoomEvent, SearchRoomState> {
         List<User> results =
             await repository.searchUserFromFollowing(event.query);
 
-        if (results.isNotEmpty) {
+        if (results.isNotEmpty && event.query.isNotEmpty) {
           emit(
             SearchRoomState(status: SearchRoomStatus.success, results: results),
           );
-        } else {
+        } else if (results.isEmpty && event.query.isNotEmpty) {
           emit(const SearchRoomState(status: SearchRoomStatus.noItemFound));
+        } else {
+          emit(const SearchRoomState(status: SearchRoomStatus.initial));
         }
       } catch (e) {
         debugPrint(e.toString());

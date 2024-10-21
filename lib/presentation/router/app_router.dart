@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -7,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:personal_project/data/repository/chat_repository.dart';
 import 'package:personal_project/data/repository/vide_from_categories.dart';
 import 'package:personal_project/domain/model/add_details_model.dart';
 import 'package:personal_project/domain/model/category_model.dart';
@@ -59,6 +61,7 @@ import 'package:personal_project/presentation/ui/video_preview/video_previe_page
 import 'package:solar_icons/solar_icons.dart';
 
 import '../shared_components/keep_alive_page.dart';
+import '../ui/message/responsive/message_desktop.dart';
 
 class AppRouter {
   late final AppService appService;
@@ -334,48 +337,40 @@ class AppRouter {
                     );
                   }),
               GoRoute(
-                  path: APP_PAGE.message.toPath,
-                  name: APP_PAGE.message.toName,
-                  pageBuilder: (context, state) {
-                    return const NoTransitionPage(child: MessagePage());
-                  },
-                  routes: [
-                    GoRoute(
-                      path: APP_PAGE.chat.toPath.replaceAll('/', ''),
-                      name: APP_PAGE.chat.toName,
-                      redirect: (context, state) {
-                        final ChatData? data = state.extra as ChatData?;
-                        if (data == null) {
-                          return APP_PAGE.message.toPath;
-                        }
-                        return null;
-                      },
-                      pageBuilder: (context, state) {
-                        final ChatData? data = state.extra as ChatData?;
-                        return CustomTransitionPage(
-                          child: ChatPage(data: data!),
-                          transitionsBuilder:
-                              (context, animation, secondaryAnimation, child) =>
-                                  SlideTransition(
-                                      position: animation.drive(
-                                        Tween<Offset>(
-                                          begin: const Offset(0.75, 0),
-                                          end: Offset.zero,
-                                        ).chain(
-                                          CurveTween(curve: Curves.ease),
-                                        ),
-                                      ),
-                                      child: child),
-                        );
-                      },
-                      builder: (context, state) {
-                        final ChatData data = state.extra as ChatData;
-                        return ChatPage(
-                          data: data,
-                        );
-                      },
-                    ),
-                  ]),
+                path: APP_PAGE.chat.toPath,
+                redirect: (context, state) {
+                  final ChatData? data = state.extra as ChatData?;
+                  if (data == null) {
+                    return APP_PAGE.message.toPath;
+                  }
+                  return null;
+                },
+                pageBuilder: (context, state) {
+                  final ChatData? data = state.extra as ChatData?;
+                  return CustomTransitionPage(
+                    child: ChatPage(data: data!),
+                    transitionsBuilder:
+                        (context, animation, secondaryAnimation, child) =>
+                            SlideTransition(
+                                position: animation.drive(
+                                  Tween<Offset>(
+                                    begin: const Offset(0.75, 0),
+                                    end: Offset.zero,
+                                  ).chain(
+                                    CurveTween(curve: Curves.ease),
+                                  ),
+                                ),
+                                child: child),
+                  );
+                },
+                builder: (context, state) {
+                  final ChatData data = state.extra as ChatData;
+                  return ChatPage(
+                    data: data,
+                  );
+                },
+              ),
+              _messageRoute(),
               GoRoute(
                 path: APP_PAGE.cropImage.toPath,
                 name: APP_PAGE.cropImage.toName,
@@ -569,6 +564,9 @@ class AppRouter {
                         },
                         routes: [
                           GoRoute(
+                            redirect: (context, state) {
+                              return null;
+                            },
                             path:
                                 APP_PAGE.editProfile.toPath.replaceAll('/', ''),
                             // name: APP_PAGE.editProfile.toName,
@@ -607,64 +605,64 @@ class AppRouter {
                           ),
                         ])
                   ]),
-              GoRoute(
-                  path: APP_PAGE.upload.toPath,
-                  name: APP_PAGE.upload.toName,
-                  redirect: (context, state) {
-                    if (state.fullPath == '/upload') {
-                      return '${APP_PAGE.menu.toPath}${APP_PAGE.login.toPath}';
-                    }
-                    return null;
-                  },
-                  pageBuilder: (context, state) {
-                    return NoTransitionPage(child: Container());
-                  },
-                  routes: [
-                    ShellRoute(
-                        pageBuilder: (context, state, child) {
-                          String routeName = GoRouter.of(context)
-                              .routeInformationProvider
-                              .value
-                              .uri
-                              .path;
-                          int menuIndex = 0;
-                          if (routeName == '/settings/login') {
-                            menuIndex = 0;
-                          } else if (routeName == '/settings/language') {
-                            menuIndex = 1;
-                          } else if (routeName == '/settings/caches') {
-                            menuIndex = 2;
-                          }
-                          debugPrint(menuIndex.toString() + routeName);
-                          return NoTransitionPage(
-                            child: MenuPage(index: menuIndex, child: child),
-                          );
-                        },
-                        routes: [
-                          GoRoute(
-                            path: 'video-editor',
-                            pageBuilder: (context, state) {
-                              return const NoTransitionPage(
-                                  child: LanguagePage());
-                            },
-                          ),
-                          GoRoute(
-                            path: 'caches',
-                            pageBuilder: (context, state) {
-                              return const NoTransitionPage(
-                                  child: CachesPage());
-                            },
-                          ),
-                          GoRoute(
-                            path: 'login',
-                            pageBuilder: (context, state) {
-                              return const NoTransitionPage(
-                                child: NotAuthenticatedPage(),
-                              );
-                            },
-                          ),
-                        ])
-                  ]),
+              // GoRoute(
+              //     path: APP_PAGE.upload.toPath,
+              //     name: APP_PAGE.upload.toName,
+              //     redirect: (context, state) {
+              //       if (state.fullPath == '/upload') {
+              //         return '${APP_PAGE.menu.toPath}${APP_PAGE.login.toPath}';
+              //       }
+              //       return null;
+              //     },
+              //     pageBuilder: (context, state) {
+              //       return NoTransitionPage(child: Container());
+              //     },
+              //     routes: [
+              //       ShellRoute(
+              //           pageBuilder: (context, state, child) {
+              //             String routeName = GoRouter.of(context)
+              //                 .routeInformationProvider
+              //                 .value
+              //                 .uri
+              //                 .path;
+              //             int menuIndex = 0;
+              //             if (routeName == '/settings/login') {
+              //               menuIndex = 0;
+              //             } else if (routeName == '/settings/language') {
+              //               menuIndex = 1;
+              //             } else if (routeName == '/settings/caches') {
+              //               menuIndex = 2;
+              //             }
+              //             debugPrint(menuIndex.toString() + routeName);
+              //             return NoTransitionPage(
+              //               child: MenuPage(index: menuIndex, child: child),
+              //             );
+              //           },
+              //           routes: [
+              //             GoRoute(
+              //               path: 'video-editor',
+              //               pageBuilder: (context, state) {
+              //                 return const NoTransitionPage(
+              //                     child: LanguagePage());
+              //               },
+              //             ),
+              //             GoRoute(
+              //               path: 'caches',
+              //               pageBuilder: (context, state) {
+              //                 return const NoTransitionPage(
+              //                     child: CachesPage());
+              //               },
+              //             ),
+              //             GoRoute(
+              //               path: 'login',
+              //               pageBuilder: (context, state) {
+              //                 return const NoTransitionPage(
+              //                   child: NotAuthenticatedPage(),
+              //                 );
+              //               },
+              //             ),
+              //           ])
+              //     ]),
               GoRoute(
                 path: APP_PAGE.languagePage.toPath,
                 name: APP_PAGE.languagePage.toName,
@@ -715,6 +713,107 @@ class AppRouter {
           // errorBuilder: (context, state) => ErrorPage(error: state.error.toString()),
         )
       ]);
+
+  GoRoute _messageRoute() {
+    return GoRoute(
+        path: APP_PAGE.message.toPath,
+        name: APP_PAGE.message.toName,
+        redirect: (context, state) {
+          if (state.uri.path ==
+                  APP_PAGE.message.toPath + APP_PAGE.chat.toPath ||
+              state.uri.path == APP_PAGE.message.toPath) {
+            if (MediaQuery.of(context).size.width < mobileWidth) {
+              return APP_PAGE.message.toPath;
+            } else if (MediaQuery.of(context).size.width < mediumWidth) {
+              return APP_PAGE.message.toPath;
+            } else if (MediaQuery.of(context).size.width > mediumWidth) {
+              return APP_PAGE.message.toPath + APP_PAGE.chat.toPath;
+            }
+          }
+          // if (state.uri.path == APP_PAGE.message.toPath) {
+          //   if (MediaQuery.of(context).size.width > mobileWidth) {
+          //     return APP_PAGE.message.toPath + APP_PAGE.chat.toPath;
+          //   } else {
+          //     return APP_PAGE.message.toPath;
+          //   }
+          // }
+          return null;
+        },
+        pageBuilder: (context, state) {
+          return const NoTransitionPage(child: MessagePage());
+        },
+        routes: [
+          ShellRoute(
+              builder: (context, state, child) {
+                return MessageDesktop(
+                  child: child,
+                );
+              },
+              routes: [
+                GoRoute(
+                  path: APP_PAGE.chat.toPath.replaceAll('/', ''),
+                  pageBuilder: (context, state) => NoTransitionPage(
+                    child: Scaffold(
+                      body: Container(
+                        alignment: Alignment.center,
+                        child: const Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(SolarIconsOutline.chatRoundDots),
+                            SizedBox(
+                              width: 12,
+                            ),
+                            Text('Kirim pesan')
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                GoRoute(
+                  path: ':username',
+                  redirect: (context, state) {
+                    final ChatData? data = state.extra as ChatData?;
+                    if (data == null &&
+                        context.read<ChatRepository>().chatData == null) {
+                      return APP_PAGE.message.toPath + APP_PAGE.chat.toPath;
+                    }
+                    return null;
+                  },
+                  onExit: (context) async {
+                    context.read<ChatRepository>().setChatData = null;
+
+                    return true;
+                  },
+                  pageBuilder: (context, state) {
+                    final ChatData? data = state.extra as ChatData?;
+                    if (data != null) {
+                      context.read<ChatRepository>().setChatData = data;
+                    }
+                    return CustomTransitionPage(
+                      child: ChatPage(
+                        data: context.read<ChatRepository>().chatData!,
+                        key: ValueKey(state.pathParameters['username']),
+                      ),
+                      transitionsBuilder:
+                          (context, animation, secondaryAnimation, child) =>
+                              SlideTransition(
+                                  position: animation.drive(
+                                    Tween<Offset>(
+                                      begin: const Offset(0.75, 0),
+                                      end: Offset.zero,
+                                    ).chain(
+                                      CurveTween(curve: Curves.ease),
+                                    ),
+                                  ),
+                                  child: child),
+                    );
+                  },
+                ),
+              ]),
+        ]);
+  }
 
   void manageRoute(BuildContext context) {
     final String routeName =

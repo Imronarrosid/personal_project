@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -7,10 +8,18 @@ import 'package:personal_project/domain/model/user.dart';
 import 'package:personal_project/domain/services/firebase/firebase_service.dart';
 import 'package:personal_project/domain/services/uuid_generator.dart';
 
+import '../../domain/model/chat_data_models.dart';
+
 class ChatRepository {
   List<String> _followingUidList = [];
 
   final List<DocumentSnapshot> _docs = [];
+
+  static ChatData? _chatData;
+
+  ChatData? get chatData => _chatData;
+
+  set setChatData(ChatData? chatData) => _chatData = chatData;
 
   void clearPreviouseData() {
     _docs.clear();
@@ -122,12 +131,11 @@ class ChatRepository {
     }
   }
 
-  Future<String> uploadFile(File file) async {
+  Future<String> uploadFile(File file, {required String name}) async {
     try {
-      String uuid = generateUuid();
       final Reference reference = firebaseStorage
           .ref('files/${firebaseAuth.currentUser!.uid}')
-          .child(uuid);
+          .child('[${DateTime.timestamp()}]$name');
       await reference.putFile(file);
       final uri = await reference.getDownloadURL();
       return uri;
@@ -137,13 +145,40 @@ class ChatRepository {
     }
   }
 
-  Future<String> uploadImage(File file) async {
+  Future<String> uploadFileWeb(Uint8List data, {required String name}) async {
     try {
-      String uuid = generateUuid();
+      final Reference reference = firebaseStorage
+          .ref('files/${firebaseAuth.currentUser!.uid}')
+          .child('[${DateTime.timestamp()}]$name');
+      await reference.putData(data);
+      final uri = await reference.getDownloadURL();
+      return uri;
+    } catch (e) {
+      debugPrint(e.toString());
+      return '';
+    }
+  }
+
+  Future<String> uploadImage(File file, {required String name}) async {
+    try {
       final Reference reference = firebaseStorage
           .ref('chat_images/${firebaseAuth.currentUser!.uid}')
-          .child(uuid);
+          .child('[${DateTime.timestamp()}]$name');
       await reference.putFile(file);
+      final uri = await reference.getDownloadURL();
+      return uri;
+    } catch (e) {
+      debugPrint(e.toString());
+      return '';
+    }
+  }
+
+  Future<String> uploadImageWeb(Uint8List data, {required String name}) async {
+    try {
+      final Reference reference = firebaseStorage
+          .ref('chat_images/${firebaseAuth.currentUser!.uid}')
+          .child('[${DateTime.timestamp()}]$name');
+      await reference.putData(data);
       final uri = await reference.getDownloadURL();
       return uri;
     } catch (e) {

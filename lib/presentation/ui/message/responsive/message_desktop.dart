@@ -26,30 +26,35 @@ import 'package:personal_project/presentation/shared_components/not_authenticate
 import 'package:personal_project/presentation/theme/user_profile_theme.dart';
 import 'package:provider/provider.dart';
 
-import '../../../data/repository/chat_repository.dart';
-import '../auth/bloc/auth_bloc.dart';
-import '../search_room/bloc/search_room_bloc.dart';
+import '../../../../data/repository/chat_repository.dart';
+import '../../../responsive/dimension.dart';
+import '../../auth/bloc/auth_bloc.dart';
+import '../../search_room/bloc/search_room_bloc.dart';
+import '../../search_room/search_room_page.dart';
 
 // import 'chat.dart';
 // import 'login.dart';
 // import 'users.dart';
 // import 'util.dart';
 
-class MessagePage extends StatefulWidget {
-  const MessagePage({super.key});
+class MessageDesktop extends StatefulWidget {
+  final Widget child;
+  const MessageDesktop({
+    super.key,
+    required this.child,
+  });
 
   @override
-  State<MessagePage> createState() => _MessagePageState();
+  State<MessageDesktop> createState() => _MessageDesktopState();
 }
 
-class _MessagePageState extends State<MessagePage> {
+class _MessageDesktopState extends State<MessageDesktop> {
   bool _error = false;
   bool _initialized = false;
   User? _user;
   final TextEditingController _textEditingController = TextEditingController();
   Timer? _debounce;
   final FocusNode _serchFocus = FocusNode();
-
   @override
   void initState() {
     initializeFlutterFire();
@@ -161,6 +166,45 @@ class _MessagePageState extends State<MessagePage> {
 
         return true;
       },
+      child: Row(
+        children: [
+          _roomView(context, userRepository),
+          MediaQuery.of(context).size.width < mediumWidth
+              ? const SizedBox(
+                  width: 0,
+                  height: 0,
+                )
+              : SafeArea(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                    child: VerticalDivider(
+                      color: Theme.of(context)
+                          .colorScheme
+                          .onSurface
+                          .withOpacity(0.24),
+                      thickness: 0.2,
+                    ),
+                  ),
+                ),
+          Expanded(
+              child: Padding(
+            padding: const EdgeInsets.only(top: 8.0, right: 8.0),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: widget.child,
+            ),
+          )),
+        ],
+      ),
+    );
+  }
+
+  SizedBox _roomView(BuildContext context, UserRepository userRepository) {
+    if (MediaQuery.of(context).size.width < mediumWidth) {
+      return const SizedBox(width: 0, height: 0);
+    }
+    return SizedBox(
+      width: 400,
       child: BlocProvider(
         create: (context) =>
             SearchRoomBloc(RepositoryProvider.of<ChatRepository>(context))
@@ -266,6 +310,13 @@ class _MessagePageState extends State<MessagePage> {
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _textEditingController.dispose();
+    _serchFocus.dispose();
+    super.dispose();
   }
 
   AppBar _appBar(BuildContext context) {
@@ -449,7 +500,9 @@ class _MessagePageState extends State<MessagePage> {
                 users.length < 6
                     ? Container()
                     : InkWell(
-                        onTap: () {},
+                        onTap: () {
+                          _serchFocus.requestFocus();
+                        },
                         child: Container(
                           padding: EdgeInsets.all(Dimens.DIMENS_10),
                           child: Column(
@@ -481,63 +534,54 @@ class _MessagePageState extends State<MessagePage> {
     );
   }
 
-  Padding _searchBar(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Container(
-        decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.tertiary,
-            borderRadius: BorderRadius.circular(50)),
-        child: TextField(
-          controller: _textEditingController,
-          onChanged: (query) {
-            final searchBloc = BlocProvider.of<SearchRoomBloc>(context);
-            if (_debounce?.isActive ?? false) _debounce?.cancel();
-            _debounce = Timer(const Duration(milliseconds: 500), () {
-              // do something with query
-              searchBloc.add(SearchRoom(query));
-            });
-          },
-          decoration: InputDecoration(
-            prefixIcon: const Padding(
-              padding: EdgeInsets.only(left: 8.0, top: 0.3),
-              child: Icon(Icons.search_rounded),
-            ),
-            hintText: LocaleKeys.label_search.tr(),
-            contentPadding: const EdgeInsets.all(5),
-            suffixIcon: BlocBuilder<SearchRoomBloc, SearchRoomState>(
-              builder: (context, state) {
-                if (state.status == SearchRoomStatus.initial) {
-                  return const SizedBox(
-                    width: 0,
-                    height: 0,
-                  );
-                }
-                return GestureDetector(
-                  onTap: () {
-                    _textEditingController.clear();
-
-                    context.read<SearchRoomBloc>().add(const InitSearchRoom());
-                  },
-                  child: const Icon(BootstrapIcons.x),
-                );
-              },
-            ),
-            suffixIconColor: COLOR_grey,
-            border: OutlineInputBorder(
-                borderSide: BorderSide.none,
-                borderRadius: BorderRadius.circular(500)),
+  Container _searchBar(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.tertiary,
+          borderRadius: BorderRadius.circular(50)),
+      child: TextField(
+        focusNode: _serchFocus,
+        controller: _textEditingController,
+        onChanged: (query) {
+          final searchBloc = BlocProvider.of<SearchRoomBloc>(context);
+          if (_debounce?.isActive ?? false) _debounce?.cancel();
+          _debounce = Timer(const Duration(milliseconds: 500), () {
+            // do something with query
+            searchBloc.add(SearchRoom(query));
+          });
+        },
+        decoration: InputDecoration(
+          prefixIcon: const Padding(
+            padding: EdgeInsets.only(left: 8.0, top: 0.3),
+            child: Icon(Icons.search_rounded),
           ),
+          hintText: LocaleKeys.label_search.tr(),
+          contentPadding: const EdgeInsets.all(5),
+          suffixIcon: BlocBuilder<SearchRoomBloc, SearchRoomState>(
+            builder: (context, state) {
+              if (state.status == SearchRoomStatus.initial) {
+                return const SizedBox(
+                  width: 0,
+                  height: 0,
+                );
+              }
+              return GestureDetector(
+                onTap: () {
+                  _textEditingController.clear();
+
+                  context.read<SearchRoomBloc>().add(const InitSearchRoom());
+                },
+                child: const Icon(BootstrapIcons.x),
+              );
+            },
+          ),
+          suffixIconColor: COLOR_grey,
+          border: OutlineInputBorder(
+              borderSide: BorderSide.none,
+              borderRadius: BorderRadius.circular(500)),
         ),
       ),
     );
-  }
-
-  @override
-  void dispose() {
-    _textEditingController.dispose();
-    _serchFocus.dispose();
-    super.dispose();
   }
 
   FutureBuilder<models.User> _buildRoom(types.Room room) {
@@ -571,6 +615,9 @@ class _MessagePageState extends State<MessagePage> {
                 }
                 return ListTile(
                   tileColor: Colors.transparent,
+                  selected: isSelected(context, data),
+                  selectedTileColor:
+                      Theme.of(context).colorScheme.primary.withOpacity(0.11),
                   onTap: () {
                     context.go(
                       '${APP_PAGE.message.toPath}/${data.userName}',
@@ -615,6 +662,16 @@ class _MessagePageState extends State<MessagePage> {
         });
   }
 
+  bool isSelected(BuildContext context, models.User? data) {
+    if (GoRouter.of(context).routeInformationProvider.value.uri.path ==
+        APP_PAGE.message.toPath + APP_PAGE.chat.toPath) {
+      debugPrint('chstttt1');
+      return false;
+    }
+    return data!.userName ==
+        GoRouterState.of(context).pathParameters['username'];
+  }
+
   Text _messageCreated(types.Message? message, BuildContext context) {
     return _isSameDay(
             message?.createdAt ?? DateTime.now().millisecondsSinceEpoch)
@@ -642,6 +699,7 @@ class _MessagePageState extends State<MessagePage> {
     if (message.author.id == currentUser) {
       return Text(
         '${LocaleKeys.label_you.tr()}: ${_getMessage(message.type, message: message)}',
+        maxLines: 1,
         overflow: TextOverflow.ellipsis,
         style: TextStyle(
           color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
@@ -658,6 +716,7 @@ class _MessagePageState extends State<MessagePage> {
     }
     return Text(' ${_getMessage(message.type, message: message)}',
         overflow: TextOverflow.ellipsis,
+        maxLines: 1,
         style: TextStyle(
           color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
         ));

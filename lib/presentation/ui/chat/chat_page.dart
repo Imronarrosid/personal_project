@@ -28,7 +28,9 @@ import 'package:personal_project/domain/reporsitory/user_repository.dart';
 import 'package:personal_project/presentation/l10n/locale_code.dart';
 import 'package:personal_project/presentation/l10n/stings.g.dart';
 import 'package:personal_project/presentation/router/route_utils.dart';
+import 'package:personal_project/presentation/ui/chat/list_chat_notifier.dart';
 import 'package:provider/provider.dart';
+import 'package:universal_html/html.dart' as html;
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../router/app_router.dart';
@@ -48,11 +50,19 @@ class ChatPage extends StatefulWidget {
 
 class _ChatPageState extends State<ChatPage> {
   bool _isAttachmentUploading = false;
+  ChatData? chatData;
+  ListChatNotifier listChatNotifier = ListChatNotifier();
+
+  @override
+  void initState() {
+    chatData = widget.data;
+    super.initState();
+  }
 
   void _handleAtachmentPressed() {
     showModalBottomSheet<void>(
       context: context,
-      backgroundColor: Colors.transparent,
+      backgroundColor: Theme.of(context).colorScheme.background,
       elevation: 0,
       builder: (BuildContext context) => SafeArea(
         child: Padding(
@@ -60,7 +70,7 @@ class _ChatPageState extends State<ChatPage> {
           child: Container(
             padding: EdgeInsets.all(Dimens.DIMENS_12),
             decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.secondary,
+                color: Theme.of(context).colorScheme.background,
                 borderRadius: BorderRadius.circular(10)),
             height: 230,
             child: Column(
@@ -132,27 +142,44 @@ class _ChatPageState extends State<ChatPage> {
       type: FileType.any,
     );
 
-    if (result != null && result.files.single.path != null) {
+    if (result != null && result.files.isNotEmpty) {
       _setAttachmentUploading(true);
       final name = result.files.single.name;
-      final filePath = result.files.single.path!;
-      final file = File(filePath);
+      // final filePath = result.files.single.path!;
+      // final file = File(filePath);
 
       try {
-        final uri = await repo.uploadFile(file);
+        final uri = kIsWeb
+            ? await repo.uploadFileWeb(result.files.single.bytes!, name: name)
+            : await repo.uploadFile(File(result.files.single.path!),
+                name: name);
 
         final message = types.PartialFile(
-          mimeType: lookupMimeType(filePath),
+          mimeType: await getMimeTypeFromUrl(
+              Uri.dataFromBytes(result.files.single.bytes!).toString()),
           name: name,
           size: result.files.single.size,
           uri: uri,
         );
 
-        FirebaseChatCore.instance.sendMessage(message, widget.data.room.id);
+        FirebaseChatCore.instance.sendMessage(message, chatData!.room.id);
         _setAttachmentUploading(false);
       } finally {
         _setAttachmentUploading(false);
       }
+    }
+  }
+
+  Future<String> getMimeTypeFromUrl(String url) async {
+    var response = await http.head(Uri.parse(url));
+
+    if (response.headers.containsKey('content-type')) {
+      String? mimeType = response.headers['content-type'];
+      // print('MIME Type: $mimeType');
+      return mimeType!;
+    } else {
+      // print('MIME Type not found in headers');
+      return '';
     }
   }
 
@@ -167,27 +194,44 @@ class _ChatPageState extends State<ChatPage> {
 
     if (result != null) {
       _setAttachmentUploading(true);
-      final file = File(result.path);
-      final size = file.lengthSync();
+      final file = kIsWeb ? File('') : File(result.path);
+      final size = await result.readAsBytes().then((value) => value.length);
       final bytes = await result.readAsBytes();
       final image = await decodeImageFromList(bytes);
       final name = result.name;
 
       try {
-        final uri = await repo.uploadImage(file);
+        if (kIsWeb) {
+          final uri = await repo.uploadImageWeb(bytes, name: name);
 
-        final message = types.PartialImage(
-          height: image.height.toDouble(),
-          name: name,
-          size: size,
-          uri: uri,
-          width: image.width.toDouble(),
-        );
+          final message = types.PartialImage(
+            height: image.height.toDouble(),
+            name: name,
+            size: size,
+            uri: uri,
+            width: image.width.toDouble(),
+          );
 
-        FirebaseChatCore.instance.sendMessage(
-          message,
-          widget.data.room.id,
-        );
+          FirebaseChatCore.instance.sendMessage(
+            message,
+            chatData!.room.id,
+          );
+        } else {
+          final uri = await repo.uploadImage(file!, name: name);
+
+          final message = types.PartialImage(
+            height: image.height.toDouble(),
+            name: name,
+            size: size,
+            uri: uri,
+            width: image.width.toDouble(),
+          );
+
+          FirebaseChatCore.instance.sendMessage(
+            message,
+            chatData!.room.id,
+          );
+        }
         _setAttachmentUploading(false);
       } finally {
         _setAttachmentUploading(false);
@@ -198,34 +242,41 @@ class _ChatPageState extends State<ChatPage> {
   void _handleMessageTap(BuildContext _, types.Message message) async {
     if (message is types.FileMessage) {
       var localPath = message.uri;
-
+      debugPrint('urii ${message.uri}');
       if (message.uri.startsWith('http')) {
         try {
-          final updatedMessage = message.copyWith(isLoading: true);
-          FirebaseChatCore.instance.updateMessage(
-            updatedMessage,
-            widget.data.room.id,
-          );
+          if (!kIsWeb) {
+            final updatedMessage = message.copyWith(isLoading: true);
+            FirebaseChatCore.instance.updateMessage(
+              updatedMessage,
+              chatData!.room.id,
+            );
 
-          final client = http.Client();
-          final request = await client.get(Uri.parse(message.uri));
-          final bytes = request.bodyBytes;
-          final documentsDir = (await getApplicationDocumentsDirectory()).path;
-          localPath = '$documentsDir/${message.name}';
+            final client = http.Client();
+            final request = await client.get(Uri.parse(message.uri));
+            final bytes = request.bodyBytes;
+            final documentsDir =
+                (await getApplicationDocumentsDirectory()).path;
+            localPath = '$documentsDir/${message.name}';
 
-          if (!File(localPath).existsSync()) {
-            final file = File(localPath);
-            await file.writeAsBytes(bytes);
+            if (!File(localPath).existsSync()) {
+              final file = File(localPath);
+              await file.writeAsBytes(bytes);
+            }
           }
         } finally {
           final updatedMessage = message.copyWith(isLoading: false);
           FirebaseChatCore.instance.updateMessage(
             updatedMessage,
-            widget.data.room.id,
+            chatData!.room.id,
           );
         }
       }
-
+      if (kIsWeb) {
+        html.AnchorElement anchorElement = html.AnchorElement(href: message.uri)
+          ..setAttribute('download', message.name)
+          ..click();
+      }
       await OpenFilex.open(localPath);
     }
   }
@@ -236,14 +287,13 @@ class _ChatPageState extends State<ChatPage> {
   ) {
     final updatedMessage = message.copyWith(previewData: previewData);
 
-    FirebaseChatCore.instance
-        .updateMessage(updatedMessage, widget.data.room.id);
+    FirebaseChatCore.instance.updateMessage(updatedMessage, chatData!.room.id);
   }
 
   void _handleSendPressed(types.PartialText message) {
     FirebaseChatCore.instance.sendMessage(
       message,
-      widget.data.room.id,
+      chatData!.room.id,
     );
   }
 
@@ -291,7 +341,7 @@ class _ChatPageState extends State<ChatPage> {
                     image: DecorationImage(
                       fit: BoxFit.cover,
                       image: CachedNetworkImageProvider(
-                        widget.data.avatar,
+                        chatData!.avatar,
                       ),
                     ),
                   ),
@@ -307,7 +357,7 @@ class _ChatPageState extends State<ChatPage> {
                     _toProfile(context);
                   },
                   child: Text(
-                    widget.data.userName,
+                    chatData!.userName,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -334,46 +384,66 @@ class _ChatPageState extends State<ChatPage> {
               ],
             ),
             body: StreamBuilder<types.Room>(
-                stream: FirebaseChatCore.instance.room(widget.data.room.id),
+                stream: FirebaseChatCore.instance.room(chatData!.room.id),
                 builder: (context, snapshot) {
                   if (!snapshot.hasData) {
                     return const Center(
                       child: CircularProgressIndicator(),
                     );
                   }
-                  return StreamBuilder<List<types.Message>>(
-                    stream: FirebaseChatCore.instance.messages(snapshot.data!),
-                    builder: (context, snapshot) {
-                      if (!snapshot.hasData) {
-                        return const Center(child: CircularProgressIndicator());
-                      }
-                      return Chat(
-                        dateLocale: context.locale.languageCode,
-                        theme: _chatTheme(context),
-                        avatarBuilder: _buildAvatar,
-                        l10n: _getL10n(context),
-                        showUserNames: true,
-                        nameBuilder: _buildName,
-                        showUserAvatars: true,
-                        textMessageOptions: TextMessageOptions(
-                          onLinkPressed: (p0) {
-                            Uri url = Uri.parse(p0);
-                            launchUrl(url);
+                  return ListenableBuilder(
+                      listenable: listChatNotifier,
+                      builder: (context, child) {
+                        debugPrint('Reach limit ${listChatNotifier.limit}');
+                        return StreamBuilder<List<types.Message>>(
+                          stream: FirebaseChatCore.instance.messages(
+                              snapshot.data!,
+                              limit: listChatNotifier.limit),
+                          builder: (context, snapshot) {
+                            if (!snapshot.hasData) {
+                              return const Center(
+                                  child: CircularProgressIndicator());
+                            }
+                            debugPrint('Reach lenght ${snapshot.data!.length}');
+                            return Chat(
+                              onEndReached: () async {
+                                if (snapshot.connectionState !=
+                                    ConnectionState.waiting) {
+                                  listChatNotifier.onEndReached();
+                                  debugPrint('Reach end');
+                                }
+                              },
+                              isLastPage: listChatNotifier.limit >
+                                  snapshot.data!.length,
+                              dateLocale: context.locale.languageCode,
+                              theme: _chatTheme(context),
+                              avatarBuilder: _buildAvatar,
+                              l10n: _getL10n(context),
+                              showUserNames: true,
+                              nameBuilder: _buildName,
+                              showUserAvatars: true,
+                              textMessageOptions: TextMessageOptions(
+                                onLinkPressed: (p0) {
+                                  Uri url = Uri.parse(p0);
+                                  launchUrl(url);
+                                },
+                              ),
+                              isAttachmentUploading: _isAttachmentUploading,
+                              messages: snapshot.data ?? [],
+                              hideBackgroundOnEmojiMessages: false,
+                              onAttachmentPressed: _handleAtachmentPressed,
+                              onMessageTap: _handleMessageTap,
+                              onPreviewDataFetched: _handlePreviewDataFetched,
+                              onSendPressed: _handleSendPressed,
+                              user: types.User(
+                                id: FirebaseChatCore
+                                        .instance.firebaseUser?.uid ??
+                                    '',
+                              ),
+                            );
                           },
-                        ),
-                        isAttachmentUploading: _isAttachmentUploading,
-                        messages: snapshot.data ?? [],
-                        hideBackgroundOnEmojiMessages: false,
-                        onAttachmentPressed: _handleAtachmentPressed,
-                        onMessageTap: _handleMessageTap,
-                        onPreviewDataFetched: _handlePreviewDataFetched,
-                        onSendPressed: _handleSendPressed,
-                        user: types.User(
-                          id: FirebaseChatCore.instance.firebaseUser?.uid ?? '',
-                        ),
-                      );
-                    },
-                  );
+                        );
+                      });
                 }),
           ),
         ),
@@ -385,14 +455,14 @@ class _ChatPageState extends State<ChatPage> {
         RepositoryProvider.of<UserRepository>(context);
 
     String userName;
-    if (widget.data.room.type == types.RoomType.direct) {
-      types.User user = widget.data.room.users
+    if (chatData!.room.type == types.RoomType.direct) {
+      types.User user = chatData!.room.users
           .firstWhere((element) => element.id != repo.currentUser!.uid);
 
       userName = await userRepository.getUserNameOnly(user.id);
       if (!context.mounted) return;
-      context.push(
-        '${APP_PAGE.profile.toPath}/$userName',
+      context.go(
+        '${APP_PAGE.home.toPath}@$userName',
       );
     }
   }
@@ -420,7 +490,7 @@ class _ChatPageState extends State<ChatPage> {
           color: Theme.of(context).colorScheme.onSurface),
       userAvatarNameColors: [Theme.of(context).colorScheme.onSurface],
       secondaryColor: Theme.of(context).colorScheme.tertiary,
-      primaryColor: Theme.of(context).colorScheme.tertiary,
+      primaryColor: Theme.of(context).colorScheme.primary,
       inputBackgroundColor: Theme.of(context).colorScheme.tertiary,
       inputMargin: EdgeInsets.symmetric(
           horizontal: Dimens.DIMENS_6, vertical: Dimens.DIMENS_5),
@@ -439,57 +509,52 @@ class _ChatPageState extends State<ChatPage> {
     }
   }
 
-  Widget _buildName(_) {
-    if (widget.data.room.type == types.RoomType.direct) {
+  Widget _buildName(types.User user) {
+    if (chatData!.room.type == types.RoomType.direct) {
       return Text(
-        widget.data.userName,
+        chatData!.userName,
         style: TextStyle(
             color: Theme.of(context).colorScheme.onSurface.withOpacity(0.88)),
       );
     }
-    return Container();
+    return const Text('');
   }
 
   Widget _buildAvatar(types.User author) {
     final UserRepository repo = RepositoryProvider.of<UserRepository>(context);
-    return StreamBuilder(
-        stream: repo.getAvatar(author.id),
-        builder: (context, AsyncSnapshot<String> snapshot) {
-          String? avatar = snapshot.data;
-          if (!snapshot.hasData) {
-            return SizedBox(
-              width: Dimens.DIMENS_38,
-              height: Dimens.DIMENS_38,
-            );
-          }
-          return Material(
-            borderRadius: BorderRadius.circular(50),
-            child: InkWell(
-              borderRadius: BorderRadius.circular(50),
-              radius: Dimens.DIMENS_20,
-              onTap: () {
-                _toProfile(context);
-              },
-              child: Container(
-                width: Dimens.DIMENS_38,
-                height: Dimens.DIMENS_38,
-                padding: EdgeInsets.all(Dimens.DIMENS_5),
-                child: CircleAvatar(
-                  backgroundColor: Colors.transparent,
-                  radius: Dimens.DIMENS_13,
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(50),
-                    child: CachedNetworkImage(
-                      imageUrl: avatar!,
-                      fit: BoxFit.cover,
-                      width: double.infinity,
-                      height: double.infinity,
-                    ),
-                  ),
+    if (chatData!.room.type == types.RoomType.direct) {
+      return Material(
+        borderRadius: BorderRadius.circular(50),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(50),
+          radius: Dimens.DIMENS_20,
+          onTap: () {
+            _toProfile(context);
+          },
+          child: Container(
+            width: Dimens.DIMENS_38,
+            height: Dimens.DIMENS_38,
+            padding: EdgeInsets.all(Dimens.DIMENS_5),
+            child: CircleAvatar(
+              backgroundColor: Colors.transparent,
+              radius: Dimens.DIMENS_13,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(50),
+                child: CachedNetworkImage(
+                  imageUrl: chatData!.avatar,
+                  fit: BoxFit.cover,
+                  width: double.infinity,
+                  height: double.infinity,
                 ),
               ),
             ),
-          );
-        });
+          ),
+        ),
+      );
+    }
+    return SizedBox(
+      width: Dimens.DIMENS_38,
+      height: Dimens.DIMENS_38,
+    );
   }
 }
