@@ -21,6 +21,7 @@ import 'package:personal_project/presentation/router/app_router.dart';
 import 'package:personal_project/presentation/router/route_utils.dart';
 import 'package:personal_project/presentation/shared_components/custom_snackbar.dart';
 import 'package:personal_project/presentation/ui/add_details/bloc/upload_bloc.dart';
+import 'package:personal_project/presentation/ui/add_user_name/add_user_name_page.dart';
 import 'package:personal_project/presentation/ui/auth/bloc/auth_bloc.dart';
 import 'package:personal_project/presentation/ui/home/cubit/home_cubit.dart';
 import 'package:personal_project/presentation/ui/mabar/mabar_page.dart';
@@ -239,7 +240,8 @@ class _HomePageState extends State<HomePage> {
                             ),
                             selected: widget.pageIndex == 2,
                             title: LocaleKeys.label_chat.tr(),
-                            onTap: () => context.go(APP_PAGE.message.toPath),
+                            onTap: () => context.go(
+                                APP_PAGE.message.toPath + APP_PAGE.chat.toPath),
                           ),
                           SideBarItem(
                             selected: widget.pageIndex == 3,
@@ -325,10 +327,12 @@ class _HomePageState extends State<HomePage> {
                       if (state.isUserFirstLogin!) {
                         context.go(APP_PAGE.addUserName.toPath,
                             extra: state.user!.userName);
+
+                        showLoginSuccessSnackBar();
                       }
-                      if (state.isNotiFy!) {
-                        context.pop();
-                        context.pop();
+                      if (!(state.isUserFirstLogin!) && state.isNotiFy!) {
+                        // context.pop();
+                        // context.pop();
                         showLoginSuccessSnackBar();
                         context.go(APP_PAGE.forYou.toPath);
                       }
@@ -343,10 +347,17 @@ class _HomePageState extends State<HomePage> {
                         context: context,
                         builder: (context) => WillPopScope(
                           onWillPop: () async => false,
-                          child: const Dialog(
-                            elevation: 0,
-                            backgroundColor: Colors.transparent,
-                            child: Center(child: CircularProgressIndicator()),
+                          child: BlocListener<AuthBloc, AuthState>(
+                            listener: (context, state) {
+                              if (state.status == AuthStatus.authenticated) {
+                                context.pop();
+                              }
+                            },
+                            child: const Dialog(
+                              elevation: 0,
+                              backgroundColor: Colors.transparent,
+                              child: Center(child: CircularProgressIndicator()),
+                            ),
                           ),
                         ),
                       );
