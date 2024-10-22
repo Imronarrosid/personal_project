@@ -13,6 +13,7 @@ abstract class  LocaleKeys {
   static const label_home = 'label_home';
   static const label_search = 'label_search';
   static const label_message = 'label_message';
+  static const label_messages = 'label_messages';
   static const label_profile = 'label_profile';
   static const label_60_second = 'label_60_second';
   static const label_flash = 'label_flash';
