@@ -9,6 +9,7 @@ import 'package:personal_project/domain/reporsitory/user_repository.dart';
 import 'package:personal_project/domain/services/app/app_service.dart';
 import 'package:personal_project/presentation/l10n/stings.g.dart';
 import 'package:personal_project/presentation/router/route_utils.dart';
+import 'package:personal_project/presentation/shared_components/container_with_max_width.dart';
 import 'package:personal_project/presentation/ui/edit_profile/cubit/edit_user_name_cubit.dart';
 import 'package:provider/provider.dart';
 
@@ -80,64 +81,67 @@ class _AddUserNamePageState extends State<AddUserNamePage> {
           onTap: () {
             FocusScope.of(context).unfocus();
           },
-          child: Scaffold(
-            appBar: AppBar(
-              title: Text(LocaleKeys.label_user_name.tr()),
-              actions: [
-                IconButton(
-                    onPressed: () async {
-                      await BlocProvider.of<EditUserNameCubit>(context)
-                          .editUserName(_textEditingController.text);
-                    },
-                    icon: const Icon(BootstrapIcons.check))
-              ],
-            ),
-            body: SizedBox(
-              width: MediaQuery.of(context).size.width,
-              child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: Dimens.DIMENS_12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Form(
-                      key: _globalKey,
-                      child: TextFormField(
-                        maxLength: 36,
-                        validator: _validator,
-                        controller: _textEditingController,
-                        buildCounter: (context,
-                                {required currentLength,
-                                required isFocused,
-                                required maxLength}) =>
-                            const SizedBox(
-                          width: 0,
-                          height: 0,
-                        ),
-                        onChanged: (value) async {
-                          debugPrint('qwerty $value');
-                          await BlocProvider.of<EditUserNameCubit>(context)
-                              .checkUserNameAvailability(value);
-                          _globalKey.currentState!.validate();
-                        },
-                        decoration: InputDecoration(suffix:
-                            BlocBuilder<EditUserNameCubit, EditUserNameState>(
-                          builder: (context, state) {
-                            if (state.status == EditUserNameStatus.loading) {
-                              return SizedBox(
-                                  width: Dimens.DIMENS_12,
-                                  height: Dimens.DIMENS_12,
-                                  child: const CircularProgressIndicator());
-                            }
-                            return const SizedBox(
-                              width: 0,
-                              height: 0,
-                            );
+          child: ContainerWidthMaxWidth(
+            maxWidth: 940,
+            child: Scaffold(
+              appBar: AppBar(
+                title: Text(LocaleKeys.label_user_name.tr()),
+                actions: [
+                  IconButton(
+                      onPressed: () async {
+                        await BlocProvider.of<EditUserNameCubit>(context)
+                            .editUserName(_textEditingController.text);
+                      },
+                      icon: const Icon(BootstrapIcons.check))
+                ],
+              ),
+              body: SizedBox(
+                width: MediaQuery.of(context).size.width,
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: Dimens.DIMENS_12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Form(
+                        key: _globalKey,
+                        child: TextFormField(
+                          maxLength: 36,
+                          validator: _validator,
+                          controller: _textEditingController,
+                          buildCounter: (context,
+                                  {required currentLength,
+                                  required isFocused,
+                                  required maxLength}) =>
+                              const SizedBox(
+                            width: 0,
+                            height: 0,
+                          ),
+                          onChanged: (value) async {
+                            debugPrint('qwerty $value');
+                            await BlocProvider.of<EditUserNameCubit>(context)
+                                .checkUserNameAvailability(value);
+                            _globalKey.currentState!.validate();
                           },
-                        )),
+                          decoration: InputDecoration(suffix:
+                              BlocBuilder<EditUserNameCubit, EditUserNameState>(
+                            builder: (context, state) {
+                              if (state.status == EditUserNameStatus.loading) {
+                                return SizedBox(
+                                    width: Dimens.DIMENS_12,
+                                    height: Dimens.DIMENS_12,
+                                    child: const CircularProgressIndicator());
+                              }
+                              return const SizedBox(
+                                width: 0,
+                                height: 0,
+                              );
+                            },
+                          )),
+                        ),
                       ),
-                    ),
-                    Text(LocaleKeys.message_create_user_name.tr()),
-                  ],
+                      Text(LocaleKeys.message_create_user_name.tr()),
+                    ],
+                  ),
                 ),
               ),
             ),
