@@ -35,6 +35,7 @@ import 'package:personal_project/domain/services/firebase/firebase_service.dart'
 import 'package:personal_project/presentation/l10n/stings.g.dart';
 import 'package:personal_project/presentation/router/app_router.dart';
 import 'package:personal_project/presentation/router/route_utils.dart';
+import 'package:personal_project/presentation/shared_components/expandable_text.dart';
 import 'package:personal_project/presentation/shared_components/keep_alive_page.dart';
 import 'package:personal_project/presentation/shared_components/not_authenticated_page.dart';
 import 'package:personal_project/presentation/ui/add_details/bloc/upload_bloc.dart';
@@ -354,6 +355,9 @@ class _ProfilePageMobileState extends State<ProfilePageMobile> {
                 height: Dimens.DIMENS_8,
               ),
               bioSectionView(uid: userData.id),
+              SizedBox(
+                height: Dimens.DIMENS_6,
+              ),
               gameFavView(userData.id),
               SizedBox(
                 height: Dimens.DIMENS_8,
@@ -562,8 +566,8 @@ class _ProfilePageMobileState extends State<ProfilePageMobile> {
                                   .createRoom(otherUser);
 
                               if (!mounted) return;
-                              context.push(
-                                APP_PAGE.message.toPath + APP_PAGE.chat.toPath,
+                              context.go(
+                                APP_PAGE.chat.toPath,
                                 extra: ChatData(
                                   room: room,
                                   userName: user.userName!,
@@ -869,8 +873,8 @@ class _ProfilePageMobileState extends State<ProfilePageMobile> {
                                 .createRoom(otherUser);
 
                             if (!mounted) return;
-                            context.push(
-                              APP_PAGE.message.toPath + APP_PAGE.chat.toPath,
+                            context.go(
+                              APP_PAGE.chat.toPath,
                               extra: ChatData(
                                 room: room,
                                 userName: user.userName!,
@@ -986,7 +990,7 @@ class _ProfilePageMobileState extends State<ProfilePageMobile> {
     if (!isToEditProfile && mounted) {
       isToEditProfile = true;
       context.go(
-        APP_PAGE.editProfile.toPath + '/akjfl',
+        APP_PAGE.menu.toPath + APP_PAGE.editProfile.toPath,
       );
     }
     isToEditProfile = false;
@@ -1112,7 +1116,7 @@ class _ProfilePageMobileState extends State<ProfilePageMobile> {
                                                     VisualDensity.compact,
                                                 label: Icon(
                                                   Icons.more_horiz,
-                                                  size: Dimens.DIMENS_20,
+                                                  size: Dimens.DIMENS_12,
                                                 ),
                                               ),
                                             )
@@ -1127,113 +1131,23 @@ class _ProfilePageMobileState extends State<ProfilePageMobile> {
     );
   }
 
-  BlocConsumer bioSectionView({required String uid}) {
+  FutureBuilder bioSectionView({required String uid}) {
     final repository = RepositoryProvider.of<UserRepository>(context);
-    return BlocConsumer<EditBioCubit, EditBioState>(
-      listener: (context, state) {
-        if (state.status == EditBioStatus.succes) {
-          userBio = state.bio!;
-        }
-      },
-      builder: (context, state) {
-        return FutureBuilder(
-            future: repository.getBio(uid),
-            builder: (context, snapshot) {
-              String? bio = snapshot.data;
-              if (snapshot.hasData) {
-                userBio = bio!;
-              }
-              if (!snapshot.hasData || userBio.isEmpty) {
-                return Container();
-              }
-              return BlocConsumer<EditBioCubit, EditBioState>(
-                listener: (context, state) {
-                  if (state.status == EditBioStatus.succes) {
-                    bio = state.bio;
-                  }
-                },
-                builder: (context, state) {
-                  return Padding(
-                    padding: EdgeInsets.symmetric(horizontal: Dimens.DIMENS_12),
-                    child: BlocBuilder<ProfileCubit, ProfileState>(
-                      buildWhen: (previous, current) {
-                        if (current is ShowLessGameFav) {
-                          return false;
-                        } else if (current is ShowMoreGameFav) {
-                          return false;
-                        }
-                        return true;
-                      },
-                      builder: (context, state) {
-                        int? maxLines = 5;
-                        if (state is ShowMoreBio) {
-                          maxLines = null;
-                        } else if (state is ShowLessBio) {
-                          maxLines = 5;
-                        }
-                        return LayoutBuilder(builder: (context, constraints) {
-                          String text = bio!;
-                          final textPainter = TextPainter(
-                            text: TextSpan(
-                              text: text,
-                              style: const TextStyle(
-                                  fontSize: 12, fontWeight: FontWeight.w400),
-                            ),
-                            textDirection: TextDirection.ltr,
-                          );
-                          textPainter.layout(maxWidth: double.infinity);
-                          final lines = (textPainter.size.height /
-                                  textPainter.preferredLineHeight)
-                              .ceil();
-
-                          debugPrint('text is overflow  ${lines > 5}');
-
-                          return Column(
-                            mainAxisSize: MainAxisSize.min,
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              SizedBox(
-                                width: MediaQuery.of(context).size.width,
-                                child: Text(
-                                  bio!,
-                                  overflow: TextOverflow.ellipsis,
-                                  maxLines: maxLines,
-                                  textAlign: TextAlign.left,
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w400,
-                                    color:
-                                        Theme.of(context).colorScheme.onSurface,
-                                  ),
-                                ),
-                              ),
-                              if (lines > 5)
-                                InkWell(
-                                  onTap: () =>
-                                      BlocProvider.of<ProfileCubit>(context)
-                                          .seeMoreBioHandle(),
-                                  child: Text(state is ShowLessBio ||
-                                          state is ProfileInitial
-                                      ? LocaleKeys.label_see_more.tr()
-                                      : LocaleKeys.label_see_less.tr()),
-                                )
-                              else
-                                Container(),
-                              SizedBox(
-                                height: Dimens.DIMENS_5,
-                              )
-                            ],
-                          );
-                        });
-                      },
-                    ),
-                  );
-                },
-              );
-            });
-      },
-    );
+    return FutureBuilder(
+        future: repository.getBio(uid),
+        builder: (context, snapshot) {
+          String? bio = snapshot.data;
+          if (snapshot.hasData) {
+            userBio = bio!;
+          }
+          if (!snapshot.hasData || userBio.isEmpty) {
+            return Container();
+          }
+          return Padding(
+            padding: EdgeInsets.only(left: Dimens.DIMENS_12),
+            child: ExpandableText(text: userBio),
+          );
+        });
   }
 
   /// username,photo ,follwers,folowing,likes
