@@ -17,6 +17,7 @@ import 'package:personal_project/domain/reporsitory/video_repository.dart';
 import 'package:personal_project/presentation/l10n/stings.g.dart';
 import 'package:personal_project/presentation/router/app_router.dart';
 import 'package:personal_project/presentation/router/route_utils.dart';
+import 'package:personal_project/presentation/shared_components/container_with_max_width.dart';
 import 'package:personal_project/presentation/ui/search/bloc/search_bloc.dart';
 import 'package:provider/provider.dart';
 
@@ -52,112 +53,132 @@ class _SearchPageState extends State<SearchPage> {
               onTap: () => FocusScope.of(context).unfocus(),
               child: FocusScope(
                 node: FocusScopeNode(),
-                child: Scaffold(
-                  resizeToAvoidBottomInset: false,
-                  appBar: AppBar(
-                      elevation: 0,
-                      toolbarHeight: 80,
-                      title: Container(
-                        decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.tertiary,
-                            borderRadius: BorderRadius.circular(10)),
-                        child: TextField(
-                          focusNode: _focusNode,
-                          controller: _textEditingController,
-                          onChanged: (query) {
-                            final searchBloc =
-                                BlocProvider.of<SearchBloc>(context);
-                            if (_debounce?.isActive ?? false)
-                              _debounce?.cancel();
-                            _debounce =
-                                Timer(const Duration(milliseconds: 500), () {
-                              // do something with query
-                              searchBloc.add(SearchEvent(query));
-                            });
-                          },
-                          decoration: InputDecoration(
-                            prefixIcon: const Icon(Icons.search),
-                            hintText: LocaleKeys.label_search.tr(),
-                            contentPadding: const EdgeInsets.all(5),
-                            suffixIcon: BlocBuilder<SearchBloc, SearchState>(
-                              builder: (context, state) {
-                                if (state.status == SearchStatus.initial) {
-                                  return const SizedBox(
-                                    width: 0,
-                                    height: 0,
-                                  );
-                                }
-                                return GestureDetector(
-                                    onTap: () {
-                                      _textEditingController.clear();
-                                      context
-                                          .read<SearchBloc>()
-                                          .add(const ResetSearchEvent());
-                                    },
-                                    child: const Icon(Icons.close));
-                              },
-                            ),
-                            suffixIconColor: COLOR_grey,
-                            border: OutlineInputBorder(
-                                borderSide: BorderSide.none,
+                child: ContainerWidthMaxWidth(
+                  maxWidth: 940,
+                  child: Scaffold(
+                      resizeToAvoidBottomInset: false,
+                      appBar: AppBar(
+                          elevation: 0,
+                          toolbarHeight: 80,
+                          title: Container(
+                            decoration: BoxDecoration(
+                                color: Theme.of(context).colorScheme.tertiary,
                                 borderRadius: BorderRadius.circular(10)),
-                          ),
-                        ),
-                      )),
-                  body: BlocBuilder<SearchBloc, SearchState>(
-                    builder: (context, state) {
-                      if (state.status == SearchStatus.loading) {
-                        return const Center(child: CircularProgressIndicator());
-                      }
-                      if (state.status == SearchStatus.noItemFound) {
-                        return Center(
-                            child: Text(LocaleKeys.message_not_found
-                                .tr(args: [_textEditingController.text])));
-                      }
-                      if (state.status == SearchStatus.success) {
-                        return ListView.builder(
-                            itemCount: state.results!.length,
-                            itemBuilder: (ctx, index) {
-                              final result = state.results![index];
-                              return ListTile(
-                                tileColor: Colors.transparent,
-                                onTap: () {
-                                  debugPrint('photo${result.photo}');
-                                  context.go(
-                                    '/@${result.userName!}',
-                                    extra: ProfilePayload(
-                                      user: result,
-                                      isForOtherUser: true,
-                                    ),
-                                  );
-                                  if (FocusManager.instance.primaryFocus !=
-                                      null) {
-                                    FocusManager.instance.primaryFocus!
-                                        .unfocus();
-                                  }
-                                  debugPrint('profile');
-                                },
-                                leading: CircleAvatar(
-                                  backgroundColor:
-                                      Theme.of(context).colorScheme.tertiary,
-                                  backgroundImage: CachedNetworkImageProvider(
-                                    result.photo!,
-                                  ),
+                            child: TextField(
+                              focusNode: _focusNode,
+                              controller: _textEditingController,
+                              onChanged: (query) {
+                                final searchBloc =
+                                    BlocProvider.of<SearchBloc>(context);
+                                if (_debounce?.isActive ?? false) {
+                                  _debounce?.cancel();
+                                }
+                                _debounce = Timer(
+                                    const Duration(milliseconds: 500), () {
+                                  // do something with query
+                                  searchBloc.add(SearchEvent(query));
+                                });
+                              },
+                              decoration: InputDecoration(
+                                prefixIcon: const Icon(Icons.search),
+                                hintText: LocaleKeys.label_search.tr(),
+                                contentPadding: const EdgeInsets.all(5),
+                                suffixIcon:
+                                    BlocBuilder<SearchBloc, SearchState>(
+                                  builder: (context, state) {
+                                    if (state.status == SearchStatus.initial) {
+                                      return const SizedBox(
+                                        width: 0,
+                                        height: 0,
+                                      );
+                                    }
+                                    return GestureDetector(
+                                        onTap: () {
+                                          _textEditingController.clear();
+                                          context
+                                              .read<SearchBloc>()
+                                              .add(const ResetSearchEvent());
+                                        },
+                                        child: const Icon(Icons.close));
+                                  },
                                 ),
-                                title: Text(result.name!),
-                                subtitle: Text(result.userName!),
-                              );
-                            });
-                      }
-                      return const InitWidget();
-                    },
-                  ),
+                                suffixIconColor: COLOR_grey,
+                                border: OutlineInputBorder(
+                                    borderSide: BorderSide.none,
+                                    borderRadius: BorderRadius.circular(10)),
+                              ),
+                            ),
+                          )),
+                      body: searchBody()),
                 ),
               ),
             ),
           );
         }),
       ),
+    );
+  }
+
+  BlocBuilder<SearchBloc, SearchState> searchBody() {
+    return BlocBuilder<SearchBloc, SearchState>(
+      builder: (context, state) {
+        if (state.status == SearchStatus.loading) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (state.status == SearchStatus.noItemFound) {
+          return Center(
+              child: Text(LocaleKeys.message_not_found
+                  .tr(args: [_textEditingController.text])));
+        }
+        if (state.status == SearchStatus.success) {
+          return ListView.builder(
+              itemCount: state.results!.length,
+              itemBuilder: (ctx, index) {
+                final result = state.results![index];
+                return ListTile(
+                  tileColor: Colors.transparent,
+                  onTap: () {
+                    debugPrint('photo${result.photo}');
+                    context.go(
+                      '/@${result.userName!}',
+                      extra: ProfilePayload(
+                        user: result,
+                        isForOtherUser: true,
+                      ),
+                    );
+                    if (FocusManager.instance.primaryFocus != null) {
+                      FocusManager.instance.primaryFocus!.unfocus();
+                    }
+                    debugPrint('profile');
+                  },
+                  leading: CircleAvatar(
+                    backgroundColor: Theme.of(context).colorScheme.tertiary,
+                    backgroundImage: CachedNetworkImageProvider(
+                      result.photo!,
+                    ),
+                  ),
+                  title: Text(result.name!),
+                  subtitle: Text(result.userName!),
+                );
+              });
+        }
+        return Center(
+          child: Opacity(
+            opacity: 0.5,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                const Icon(Icons.search_rounded,size: 40,),
+                const SizedBox(
+                  height: 8,
+                ),
+                Text(LocaleKeys.label_search.tr())
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }
