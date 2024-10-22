@@ -1,14 +1,18 @@
 {
-    "version": "0.2.0",
-    "configurations": [
-      {
-        "name": "Example",
-        "request": "launch",
-        "type": "dart",
-        "args": [
-          "--web-browser-flag",
-          "--enable-features=SharedArrayBuffer"
-        ]
-      }
-    ]
-  }
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Example",
+      "request": "launch",
+      "type": "dart",
+      "args": [
+        "--web-browser-flag",
+        "--enable-features=SharedArrayBuffer",
+        "--web-port",
+        "3000",
+        "--web-renderer",
+        "html"
+      ],
+    },
+  ]
+}
