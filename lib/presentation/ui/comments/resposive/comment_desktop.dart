@@ -518,8 +518,8 @@ class _DesktopCommentsViewState extends State<DesktopCommentsView> {
                           children: [
                             GestureDetector(
                               onTap: () {
-                                context.push(
-                                  APP_PAGE.profile.toPath,
+                                context.go(
+                                  '/@${data.userName}',
                                   extra: ProfilePayload(
                                     user: data,
                                     isForOtherUser: true,
@@ -938,8 +938,8 @@ class _DesktopCommentsViewState extends State<DesktopCommentsView> {
                             children: [
                               GestureDetector(
                                 onTap: () {
-                                  context.push(
-                                    APP_PAGE.profile.toPath,
+                                  context.go(
+                                    '/@${data.userName}',
                                     extra: ProfilePayload(
                                       user: data,
                                       isForOtherUser: true,
@@ -1350,8 +1350,8 @@ class _DesktopCommentsViewState extends State<DesktopCommentsView> {
   }
 
   void _onAvatarTap(BuildContext context, User data) {
-    context.push(
-      APP_PAGE.profile.toPath,
+    context.go(
+      '/@${data.userName}',
       extra: ProfilePayload(
         user: data,
         isForOtherUser: true,
