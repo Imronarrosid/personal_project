@@ -52,6 +52,7 @@ import 'package:provider/provider.dart';
 import 'package:solar_icons/solar_icons.dart';
 
 import '../../../router/app_router.dart';
+import '../../../shared_components/container_with_max_width.dart';
 
 class ProfilePageDesktop extends StatefulWidget {
   /// [userDaata] need to required if
@@ -125,7 +126,37 @@ class _ProfilePageDesktopState extends State<ProfilePageDesktop>
                 User? userData = snapshot.data;
                 if (snapshot.hasError) {
                   if (snapshot.error is TimeoutException) {
-                    Scaffold(
+                    ContainerWidthMaxWidth(
+                      maxWidth: 940,
+                      child: Scaffold(
+                          appBar: AppBar(
+                            leading: BackButton(
+                              onPressed: () {
+                                Provider.of<AppRouter>(context, listen: false)
+                                    .onBackButtonPressed(context);
+                              },
+                            ),
+                          ),
+                          body: Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                const Text('Request Timeout'),
+                                IconButton(
+                                  onPressed: () {
+                                    setState(() {});
+                                  },
+                                  icon: const Icon(SolarIconsOutline.refresh),
+                                )
+                              ],
+                            ),
+                          )),
+                    );
+                  }
+                  return ContainerWidthMaxWidth(
+                    maxWidth: 940,
+                    child: Scaffold(
                         appBar: AppBar(
                           leading: BackButton(
                             onPressed: () {
@@ -135,179 +166,158 @@ class _ProfilePageDesktopState extends State<ProfilePageDesktop>
                           ),
                         ),
                         body: Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              const Text('Request Timeout'),
-                              IconButton(
-                                onPressed: () {
-                                  setState(() {});
-                                },
-                                icon: const Icon(SolarIconsOutline.refresh),
-                              )
-                            ],
+                          child: Container(
+                            width: Dimens.DIMENS_105,
+                            height: Dimens.DIMENS_105,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onSurface
+                                    .withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(12)),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Text(
+                                  snapshot.error.toString(),
+                                  textAlign: TextAlign.center,
+                                ),
+                                SizedBox(height: Dimens.DIMENS_6),
+                                const Icon(SolarIconsOutline.sadCircle)
+                              ],
+                            ),
                           ),
-                        ));
-                  }
-                  return Scaffold(
-                      appBar: AppBar(
-                        leading: BackButton(
-                          onPressed: () {
-                            Provider.of<AppRouter>(context, listen: false)
-                                .onBackButtonPressed(context);
-                          },
-                        ),
-                      ),
-                      body: Center(
-                        child: Container(
-                          width: Dimens.DIMENS_105,
-                          height: Dimens.DIMENS_105,
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .onSurface
-                                  .withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(12)),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Text(
-                                snapshot.error.toString(),
-                                textAlign: TextAlign.center,
-                              ),
-                              SizedBox(height: Dimens.DIMENS_6),
-                              const Icon(SolarIconsOutline.sadCircle)
-                            ],
-                          ),
-                        ),
-                      ));
+                        )),
+                  );
                 }
 
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
                 }
                 debugPrint('userData ${userData!.userName}');
-                return Scaffold(
-                  appBar: AppBar(
-                    automaticallyImplyLeading: false,
-                    backgroundColor: Colors.transparent,
-                    surfaceTintColor: Colors.transparent,
-                    scrolledUnderElevation: 0,
-                    elevation: 0,
-                    title: Padding(
-                      padding: const EdgeInsets.all(20.0),
-                      child: Text(
-                        userData.name ?? LocaleKeys.title_profile.tr(),
-                        style: Theme.of(context).textTheme.titleLarge,
+                return ContainerWidthMaxWidth(
+                  maxWidth: 940,
+                  child: Scaffold(
+                    appBar: AppBar(
+                      automaticallyImplyLeading: false,
+                      backgroundColor: Colors.transparent,
+                      surfaceTintColor: Colors.transparent,
+                      scrolledUnderElevation: 0,
+                      elevation: 0,
+                      title: Padding(
+                        padding: const EdgeInsets.all(20.0),
+                        child: Text(
+                          userData.name ?? LocaleKeys.title_profile.tr(),
+                          style: Theme.of(context).textTheme.titleLarge,
+                        ),
                       ),
                     ),
-                  ),
-                  body: Padding(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: Dimens.DIMENS_34,
-                    ),
-                    child: GestureDetector(
-                      onTap: () {
-                        FocusScope.of(context).unfocus();
-                      },
-                      child: BlocBuilder<AuthBloc, AuthState>(
-                        builder: (context, authState) {
-                          debugPrint(authState.toString());
-
-                          // return Text(userData.userName!);
-
-                          return _profileBody(
-                              size, context, authState, authRepository,
-                              userData: userData!);
-
-                          // if (_isAuthenticated(authState)) {
-                          //   return FutureBuilder(
-                          //       future: userRepository
-                          //           .getUserData(widget.uid ?? authState.uid!),
-                          //       builder: (context, snapshot) {
-                          //         var data = snapshot.data;
-                          //         if (!snapshot.hasData) {
-                          //           return Scaffold(
-                          //             backgroundColor: COLOR_white_fff5f5f5,
-                          //             appBar: AppBar(
-                          //               backgroundColor: Colors.transparent,
-                          //               foregroundColor: COLOR_black_ff121212,
-                          //               elevation: 0,
-                          //               actions: [
-                          //                 (_isLogedUser(authState))
-                          //                     ? IconButton(
-                          //                         onPressed: () async {
-                          //                           if (isToMenu) {
-                          //                             isToMenu = false;
-                          //                             await context.push(
-                          //                               APP_PAGE.menu.toPath,
-                          //                             );
-                          //                           }
-                          //                           isToMenu = true;
-                          //                         },
-                          //                         icon: Icon(MdiIcons.menu))
-                          //                     : Container()
-                          //               ],
-                          //             ),
-                          //             body: Container(
-                          //                 width: size.width,
-                          //                 height: size.height,
-                          //                 color: COLOR_white_fff5f5f5,
-                          //                 alignment: Alignment.center,
-                          //                 child: const CircularProgressIndicator()),
-                          //           );
-                          //         }
-
-                          //         return Scaffold(
-                          //           backgroundColor: COLOR_white_fff5f5f5,
-                          //           appBar: AppBar(
-                          //             title: BlocBuilder<EditNameCubit, EditNameState>(
-                          //               builder: (context, state) {
-                          //                 if (state.status ==
-                          //                         EditNameStatus.nameEditSuccess &&
-                          //                     data!.uid ==
-                          //                         authRepository.currentUser!.uid) {
-                          //                   return Text(state.name!);
-                          //                 }
-                          //                 return Text(data!.name);
-                          //               },
-                          //             ),
-                          //             actions: [
-                          //               (_isLogedUser(authState))
-                          //                   ? IconButton(
-                          //                       onPressed: () async {
-                          //                         if (isToMenu) {
-                          //                           isToMenu = false;
-                          //                           await context.push(APP_PAGE.menu.toPath,
-                          //                               extra: data!.uid);
-                          //                         }
-                          //                         isToMenu = true;
-                          //                       },
-                          //                       icon: Icon(MdiIcons.menu))
-                          //                   : Container()
-                          //             ],
-                          //             backgroundColor: Colors.transparent,
-                          //             elevation: 0,
-                          //             foregroundColor: Colors.black,
-                          //           ),
-                          //           body: _profileBody(
-                          //               size, context, data, authState, authRepository),
-                          //         );
-                          //       });
-                          // }
-                          // return Scaffold(
-                          //     backgroundColor: COLOR_white_fff5f5f5,
-                          //     appBar: AppBar(
-                          //       backgroundColor: COLOR_white_fff5f5f5,
-                          //       foregroundColor: COLOR_black_ff121212,
-                          //       elevation: 0,
-                          //       title: Text(LocaleKeys.title_profile.tr()),
-                          //     ),
-                          //     body: const NotAuthenticatedPage());
+                    body: Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: Dimens.DIMENS_34,
+                      ),
+                      child: GestureDetector(
+                        onTap: () {
+                          FocusScope.of(context).unfocus();
                         },
+                        child: BlocBuilder<AuthBloc, AuthState>(
+                          builder: (context, authState) {
+                            debugPrint(authState.toString());
+
+                            // return Text(userData.userName!);
+
+                            return _profileBody(
+                                size, context, authState, authRepository,
+                                userData: userData!);
+
+                            // if (_isAuthenticated(authState)) {
+                            //   return FutureBuilder(
+                            //       future: userRepository
+                            //           .getUserData(widget.uid ?? authState.uid!),
+                            //       builder: (context, snapshot) {
+                            //         var data = snapshot.data;
+                            //         if (!snapshot.hasData) {
+                            //           return Scaffold(
+                            //             backgroundColor: COLOR_white_fff5f5f5,
+                            //             appBar: AppBar(
+                            //               backgroundColor: Colors.transparent,
+                            //               foregroundColor: COLOR_black_ff121212,
+                            //               elevation: 0,
+                            //               actions: [
+                            //                 (_isLogedUser(authState))
+                            //                     ? IconButton(
+                            //                         onPressed: () async {
+                            //                           if (isToMenu) {
+                            //                             isToMenu = false;
+                            //                             await context.push(
+                            //                               APP_PAGE.menu.toPath,
+                            //                             );
+                            //                           }
+                            //                           isToMenu = true;
+                            //                         },
+                            //                         icon: Icon(MdiIcons.menu))
+                            //                     : Container()
+                            //               ],
+                            //             ),
+                            //             body: Container(
+                            //                 width: size.width,
+                            //                 height: size.height,
+                            //                 color: COLOR_white_fff5f5f5,
+                            //                 alignment: Alignment.center,
+                            //                 child: const CircularProgressIndicator()),
+                            //           );
+                            //         }
+
+                            //         return Scaffold(
+                            //           backgroundColor: COLOR_white_fff5f5f5,
+                            //           appBar: AppBar(
+                            //             title: BlocBuilder<EditNameCubit, EditNameState>(
+                            //               builder: (context, state) {
+                            //                 if (state.status ==
+                            //                         EditNameStatus.nameEditSuccess &&
+                            //                     data!.uid ==
+                            //                         authRepository.currentUser!.uid) {
+                            //                   return Text(state.name!);
+                            //                 }
+                            //                 return Text(data!.name);
+                            //               },
+                            //             ),
+                            //             actions: [
+                            //               (_isLogedUser(authState))
+                            //                   ? IconButton(
+                            //                       onPressed: () async {
+                            //                         if (isToMenu) {
+                            //                           isToMenu = false;
+                            //                           await context.push(APP_PAGE.menu.toPath,
+                            //                               extra: data!.uid);
+                            //                         }
+                            //                         isToMenu = true;
+                            //                       },
+                            //                       icon: Icon(MdiIcons.menu))
+                            //                   : Container()
+                            //             ],
+                            //             backgroundColor: Colors.transparent,
+                            //             elevation: 0,
+                            //             foregroundColor: Colors.black,
+                            //           ),
+                            //           body: _profileBody(
+                            //               size, context, data, authState, authRepository),
+                            //         );
+                            //       });
+                            // }
+                            // return Scaffold(
+                            //     backgroundColor: COLOR_white_fff5f5f5,
+                            //     appBar: AppBar(
+                            //       backgroundColor: COLOR_white_fff5f5f5,
+                            //       foregroundColor: COLOR_black_ff121212,
+                            //       elevation: 0,
+                            //       title: Text(LocaleKeys.title_profile.tr()),
+                            //     ),
+                            //     body: const NotAuthenticatedPage());
+                          },
+                        ),
                       ),
                     ),
                   ),
@@ -630,7 +640,7 @@ class _ProfilePageDesktopState extends State<ProfilePageDesktop>
                                 .followButtonHandle(
                                     currentUserUid:
                                         authRepository.currentUser!.uid,
-                                    uid: widget.userDaata!.id,
+                                    uid: userData.id,
                                     stateFromDatabase: isFollowing!);
                           } else {
                             showAuthBottomSheetFunc(context);
@@ -685,7 +695,7 @@ class _ProfilePageDesktopState extends State<ProfilePageDesktop>
 
                 if (!context.mounted) return;
                 context.go(
-                  APP_PAGE.message.toPath + APP_PAGE.chat.toPath,
+                  '${APP_PAGE.message.toPath}/${user.userName}',
                   extra: ChatData(
                     room: room,
                     userName: user.userName!,
@@ -1449,8 +1459,8 @@ class VideoListView extends StatelessWidget {
                                       color: COLOR_black,
                                       child: GestureDetector(
                                         onTap: () {
-                                          context.push(
-                                            APP_PAGE.videoItem.toPath,
+                                          context.go(
+                                            '${APP_PAGE.videoItem.toPath}/${video.id}',
                                             extra: PlaySingleData(
                                               index: index,
                                               videoData: video,
