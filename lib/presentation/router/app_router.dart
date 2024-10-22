@@ -431,7 +431,9 @@ class AppRouter {
                 pageBuilder: (context, state) {
                   final PlaySingleData? extra = state.extra as PlaySingleData?;
                   return CustomTransitionPage(
-                    child: PlaySingleVideoPage(data: extra),
+                    child: PlaySingleVideoPage(
+                        key: ValueKey(state.pathParameters['postId']),
+                        data: extra),
                     transitionsBuilder:
                         (context, animation, secondaryAnimation, child) =>
                             SlideTransition(

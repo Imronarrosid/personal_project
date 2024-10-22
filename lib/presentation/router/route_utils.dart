@@ -80,7 +80,7 @@ extension AppPageExtension on APP_PAGE {
       case APP_PAGE.selectGame:
         return "/select-game";
       case APP_PAGE.videoItem:
-        return "/video-item";
+        return "/v";
       case APP_PAGE.cachesPage:
         return "/caches";
       case APP_PAGE.languagePage:
