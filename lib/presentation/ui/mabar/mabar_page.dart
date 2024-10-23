@@ -22,6 +22,7 @@ import 'package:personal_project/presentation/l10n/locale_code.dart';
 import 'package:personal_project/presentation/responsive/dimension.dart';
 import 'package:personal_project/presentation/router/app_router.dart';
 import 'package:personal_project/presentation/shared_components/chat_suggestion.dart';
+import 'package:personal_project/presentation/shared_components/container_with_max_width.dart';
 import 'package:personal_project/presentation/shared_components/not_authenticated_page.dart';
 import 'package:personal_project/utils/number_format.dart';
 import 'package:provider/provider.dart';
@@ -51,14 +52,14 @@ class _ChatViewState extends State<ChatView> with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
     repository.lisentJoinedRoom();
     repository.joinRoom();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (firebaseAuth.currentUser != null) {
-        showChatSugestion(
-          context,
-          onMessageTap: (msg) => _sendHandle(msg),
-        );
-      }
-    });
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
+    //   if (firebaseAuth.currentUser != null) {
+    //     showChatSugestion(
+    //       context,
+    //       onMessageTap: (msg) => _sendHandle(msg),
+    //     );
+    //   }
+    // });
     super.initState();
   }
 
@@ -108,32 +109,46 @@ class _ChatViewState extends State<ChatView> with WidgetsBindingObserver {
                         right: MediaQuery.of(context).size.width > mobileWidth
                             ? 8
                             : 0),
-                    child: Scaffold(
-                      //For pop button
-                      appBar: AppBar(
-                        shape: MediaQuery.of(context).size.width > mobileWidth
-                            ? const RoundedRectangleBorder(
-                                borderRadius: BorderRadius.vertical(
-                                  top: Radius.circular(12),
-                                ),
-                              )
-                            : null,
-                        leading: Icon(
-                          SolarIconsBold.gamepad,
-                          size: Dimens.DIMENS_28,
-                        ),
-                        toolbarHeight: 65,
-                        title: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text('Mabar'),
-                            StreamBuilder(
-                                stream: repository.joinedRoomStream,
-                                builder: (context, snapshot) {
-                                  int joinedCounts = snapshot.data ?? 0;
-                                  if (!snapshot.hasData) {
+                    child: ContainerWidthMaxWidth(
+                      maxWidth: 940,
+                      child: Scaffold(
+                        //For pop button
+                        appBar: AppBar(
+                          shape: MediaQuery.of(context).size.width > mobileWidth
+                              ? const RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.vertical(
+                                    top: Radius.circular(12),
+                                  ),
+                                )
+                              : null,
+                          leading: Icon(
+                            SolarIconsBold.usersGroupTwoRounded,
+                            size: Dimens.DIMENS_28,
+                          ),
+                          toolbarHeight: 65,
+                          title: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text('Lobby'),
+                              StreamBuilder(
+                                  stream: repository.joinedRoomStream,
+                                  builder: (context, snapshot) {
+                                    int joinedCounts = snapshot.data ?? 0;
+                                    if (!snapshot.hasData) {
+                                      return Text(
+                                        'Connecting...',
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .onSurface
+                                              .withOpacity(0.6),
+                                        ),
+                                      );
+                                    }
+
                                     return Text(
-                                      'Connecting...',
+                                      '${numberFormat(context.locale, joinedCounts)} users joined',
                                       style: TextStyle(
                                         fontSize: 14,
                                         color: Theme.of(context)
@@ -142,96 +157,87 @@ class _ChatViewState extends State<ChatView> with WidgetsBindingObserver {
                                             .withOpacity(0.6),
                                       ),
                                     );
-                                  }
-
-                                  return Text(
-                                    '${numberFormat(context.locale, joinedCounts)} users joined',
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .onSurface
-                                          .withOpacity(0.6),
-                                    ),
-                                  );
-                                })
-                          ],
+                                  })
+                            ],
+                          ),
+                          backgroundColor:
+                              Theme.of(context).colorScheme.tertiary,
                         ),
-                        backgroundColor: Theme.of(context).colorScheme.tertiary,
-                      ),
-                      body: StreamBuilder<List<types.Message>>(
-                        initialData: const [],
-                        stream: repository.messagesStream,
-                        builder: (context, snapshot) {
-                          debugPrint('mabar ${snapshot.data}');
-                          if (!snapshot.hasData) {
-                            return const Center(
-                                child: CircularProgressIndicator());
-                          }
-                          return Chat(
-                            // key: UniqueKey(),
-                            emptyState: Center(
-                              child: SizedBox(
-                                width: Dimens.DIMENS_250,
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(
-                                      SolarIconsBold.chatRound,
-                                      size: Dimens.DIMENS_60,
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .onSurface
-                                          .withOpacity(0.6),
-                                    ),
-                                    SizedBox(
-                                      height: Dimens.DIMENS_12,
-                                    ),
-                                    Text(
-                                      'Belum ada pesan',
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(
+                        body: StreamBuilder<List<types.Message>>(
+                          initialData: const [],
+                          stream: repository.messagesStream,
+                          builder: (context, snapshot) {
+                            debugPrint('mabar ${snapshot.data}');
+                            if (!snapshot.hasData) {
+                              return const Center(
+                                  child: CircularProgressIndicator());
+                            }
+                            return Chat(
+                              // key: UniqueKey(),
+                              emptyState: Center(
+                                child: SizedBox(
+                                  width: Dimens.DIMENS_250,
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        SolarIconsBold.chatRound,
+                                        size: Dimens.DIMENS_60,
                                         color: Theme.of(context)
                                             .colorScheme
                                             .onSurface
                                             .withOpacity(0.6),
                                       ),
-                                    )
-                                  ],
+                                      SizedBox(
+                                        height: Dimens.DIMENS_12,
+                                      ),
+                                      Text(
+                                        'Belum ada pesan',
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .onSurface
+                                              .withOpacity(0.6),
+                                        ),
+                                      )
+                                    ],
+                                  ),
                                 ),
                               ),
-                            ),
-                            dateLocale: context.locale.languageCode,
-                            theme: _chatTheme(context),
-                            avatarBuilder: _buildAvatar,
-                            l10n: _getL10n(context),
-                            showUserNames: true,
-                            nameBuilder: _buildName,
-                            showUserAvatars: true,
-                            textMessageOptions: TextMessageOptions(
-                              onLinkPressed: (p0) {
-                                Uri url = Uri.parse(p0);
-                                launchUrl(url);
-                              },
-                            ),
-                            // isAttachmentUploading: _isAttachmentUploading,
-                            messages: snapshot.data ?? [],
-                            hideBackgroundOnEmojiMessages: false,
-                            // onAttachmentPressed: _handleAtachmentPressed,
-                            // onMessageTap: _handleMessageTap,
-                            // onPreviewDataFetched: _handlePreviewDataFetched,
-                            onSendPressed: _handleSendPressed,
-                            user: types.User(
-                              id: FirebaseChatCore.instance.firebaseUser?.uid ??
-                                  '',
-                            ),
-                          );
-                        },
+                              dateLocale: context.locale.languageCode,
+                              theme: _chatTheme(context),
+                              avatarBuilder: _buildAvatar,
+                              l10n: _getL10n(context),
+                              showUserNames: true,
+                              nameBuilder: _buildName,
+                              showUserAvatars: true,
+                              textMessageOptions: TextMessageOptions(
+                                onLinkPressed: (p0) {
+                                  Uri url = Uri.parse(p0);
+                                  launchUrl(url);
+                                },
+                              ),
+                              // isAttachmentUploading: _isAttachmentUploading,
+                              messages: snapshot.data ?? [],
+                              hideBackgroundOnEmojiMessages: false,
+                              // onAttachmentPressed: _handleAtachmentPressed,
+                              // onMessageTap: _handleMessageTap,
+                              // onPreviewDataFetched: _handlePreviewDataFetched,
+                              onSendPressed: _handleSendPressed,
+                              user: types.User(
+                                id: FirebaseChatCore
+                                        .instance.firebaseUser?.uid ??
+                                    '',
+                              ),
+                            );
+                          },
+                        ),
                       ),
                     ),
                   );
                 } else {
-                  return NotAuthenticatedPage();
+                  return const NotAuthenticatedPage();
                 }
               },
             ),
@@ -393,6 +399,12 @@ class _ChatViewState extends State<ChatView> with WidgetsBindingObserver {
             flex: 3,
             child: TextFormField(
               controller: textEditingController,
+              maxLength: 1500,
+              buildCounter: (context,
+                      {required currentLength,
+                      required isFocused,
+                      required maxLength}) =>
+                  const Text(''),
             ),
           ),
           Expanded(

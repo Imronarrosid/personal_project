@@ -231,8 +231,8 @@ class AppRouter {
                 },
               ),
               GoRoute(
-                  path: APP_PAGE.mabarChat.toPath,
-                  name: APP_PAGE.mabarChat.toName,
+                  path: APP_PAGE.lobby.toPath,
+                  name: APP_PAGE.lobby.toName,
                   pageBuilder: (context, state) {
                     return const NoTransitionPage(child: ChatView());
                   }),
@@ -853,7 +853,7 @@ class AppRouter {
       _pageIndex = 3;
     } else if (routeName.contains(APP_PAGE.upload.toPath)) {
       _pageIndex = 4;
-    } else if (routeName.contains(APP_PAGE.mabarChat.toPath)) {
+    } else if (routeName.contains(APP_PAGE.lobby.toPath)) {
       _pageIndex = 5;
     }
   }

@@ -222,14 +222,15 @@ class _HomePageState extends State<HomePage> {
                           ),
                           SideBarItem(
                             leadingIcon: const Icon(
-                              SolarIconsOutline.gamepad,
+                              SolarIconsOutline.usersGroupTwoRounded,
                             ),
                             selectedIcon: const Icon(
-                              SolarIconsBold.gamepad,
+                              SolarIconsBold.usersGroupTwoRounded,
+                              size: 26,
                             ),
                             selected: widget.pageIndex == 5,
-                            title: 'Mabar',
-                            onTap: () => context.go(APP_PAGE.mabarChat.toPath),
+                            title: 'Lobby',
+                            onTap: () => context.go(APP_PAGE.lobby.toPath),
                           ),
                           SideBarItem(
                             leadingIcon: const Icon(
@@ -436,8 +437,8 @@ class _HomePageState extends State<HomePage> {
                                 activeIcon: Icon(
                                   SolarIconsBold.gamepad,
                                 ),
-                                label: "Mabar",
-                                tooltip: "Mabar",
+                                label: "Lobby",
+                                tooltip: "Lobby",
                               ),
                               BottomNavigationBarItem(
                                 icon: const Icon(
@@ -516,7 +517,7 @@ class _HomePageState extends State<HomePage> {
                                   context.go(APP_PAGE.forYou.toPath);
                                   break;
                                 case 1:
-                                  context.go(APP_PAGE.mabarChat.toPath);
+                                  context.go(APP_PAGE.lobby.toPath);
 
                                   break;
                                 case 3:
@@ -623,7 +624,7 @@ class _HomePageState extends State<HomePage> {
         GoRouter.of(context).routeInformationProvider.value.uri.path;
     if (routeName == APP_PAGE.forYou.toPath) {
       return 0;
-    } else if (routeName == APP_PAGE.mabarChat.toPath) {
+    } else if (routeName == APP_PAGE.lobby.toPath) {
       return 1;
     } else if (routeName.contains(APP_PAGE.message.toPath)) {
       return 3;

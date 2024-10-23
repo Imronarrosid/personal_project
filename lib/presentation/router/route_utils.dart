@@ -31,7 +31,7 @@ enum APP_PAGE {
   searchRoom,
   category,
   selectCover,
-  mabarChat,
+  lobby,
   following,
   followers,
 }
@@ -99,8 +99,8 @@ extension AppPageExtension on APP_PAGE {
         return "/category";
       case APP_PAGE.selectCover:
         return "/selec-cover";
-      case APP_PAGE.mabarChat:
-        return "/mabar";
+      case APP_PAGE.lobby:
+        return "/lobby";
       case APP_PAGE.following:
         return "/following";
       case APP_PAGE.followers:
@@ -172,7 +172,7 @@ extension AppPageExtension on APP_PAGE {
         return "CATEGORY";
       case APP_PAGE.selectCover:
         return "SC";
-      case APP_PAGE.mabarChat:
+      case APP_PAGE.lobby:
         return "MABAR";
       case APP_PAGE.following:
         return "FOLLOWING";
