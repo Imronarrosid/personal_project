@@ -17,6 +17,7 @@ import 'package:personal_project/domain/reporsitory/user_repository.dart';
 import 'package:personal_project/presentation/l10n/stings.g.dart';
 import 'package:personal_project/presentation/router/app_router.dart';
 import 'package:personal_project/presentation/router/route_utils.dart';
+import 'package:personal_project/presentation/shared_components/container_with_max_width.dart';
 import 'package:personal_project/presentation/ui/video_from_categories/bloc/vbc_bloc.dart';
 import 'package:provider/provider.dart';
 import 'package:solar_icons/solar_icons.dart';
@@ -67,128 +68,135 @@ class _VideoFromCategoriesState extends State<VideoFromCategories> {
                     return const Center(child: CircularProgressIndicator());
                   }
                   if (!isCategoryExist!) {
-                  return  Scaffold(
-                        appBar: AppBar(
-                          leading: BackButton(
-                            onPressed: () {
-                              Provider.of<AppRouter>(context, listen: false)
-                                  .onBackButtonPressed(context);
-                            },
-                          ),
-                        ),
-                        body: Center(
-                          child: Container(
-                            padding: const EdgeInsets.all(12),
-                            width: Dimens.DIMENS_120,
-                            height: Dimens.DIMENS_105,
-                            alignment: Alignment.center,
-                            decoration: BoxDecoration(
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .onSurface
-                                    .withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(12)),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                const Text(
-                                  "Page not found.",
-                                  textAlign: TextAlign.center,
-                                ),
-                                SizedBox(height: Dimens.DIMENS_6),
-                                const Icon(SolarIconsOutline.sadCircle)
-                              ],
-                            ),
-                          ),
-                        ));
-                  }
-                  return Scaffold(
-                    appBar: AppBar(
-                      leading: BackButton(
-                        onPressed: () {
-                          AppRouter appRouter =
-                              Provider.of<AppRouter>(context, listen: false);
-                          appRouter.onBackButtonPressed(context);
-                        },
-                      ),
-                      title: _buildTitle(),
-                    ),
-                    body: BlocBuilder<VbcBloc, VbcState>(
-                      builder: (context, state) {
-                        if (state.status == BlocStatus.loading ||
-                            repository.controller == null) {
-                          return const CircularProgressIndicator();
-                        }
-                        return PagedGridView<int, Video>(
-                            padding: EdgeInsets.only(top: Dimens.DIMENS_12),
-                            builderDelegate: PagedChildBuilderDelegate(
-                              itemBuilder: (_, item, index) {
-                                return AspectRatio(
-                                  aspectRatio: 16 / 9,
-                                  child: Container(
-                                    color: COLOR_black,
-                                    child: GestureDetector(
-                                      onTap: () {
-                                        String route = GoRouter.of(context)
-                                            .routeInformationProvider
-                                            .value
-                                            .uri
-                                            .path;
-                                        debugPrint("route $route");
-                                        context.go(
-                                          '${APP_PAGE.videoItem.toPath}/${item.id}',
-                                          extra: PlaySingleData(
-                                            index: index,
-                                            videoData: item,
-                                          ),
-                                        );
-                                      },
-                                      child: Stack(
-                                        alignment: Alignment.center,
-                                        children: [
-                                          CachedNetworkImage(
-                                              fit: BoxFit.cover,
-                                              imageUrl: item.thumnail),
-                                          Align(
-                                            alignment: Alignment.bottomLeft,
-                                            child: Padding(
-                                              padding:
-                                                  const EdgeInsets.all(8.0),
-                                              child: Row(
-                                                children: [
-                                                  Text(
-                                                    '${item.views.length} ',
-                                                    style: TextStyle(
-                                                        color:
-                                                            COLOR_white_fff5f5f5),
-                                                  ),
-                                                  Text(
-                                                    LocaleKeys.label_views.tr(),
-                                                    style: TextStyle(
-                                                        color:
-                                                            COLOR_white_fff5f5f5),
-                                                  )
-                                                ],
-                                              ),
-                                            ),
-                                          )
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                );
+                    return ContainerWidthMaxWidth(
+                      maxWidth: 940,
+                      child: Scaffold(
+                          appBar: AppBar(
+                            leading: BackButton(
+                              onPressed: () {
+                                Provider.of<AppRouter>(context, listen: false)
+                                    .onBackButtonPressed(context);
                               },
                             ),
-                            gridDelegate:
-                                const SliverGridDelegateWithFixedCrossAxisCount(
-                              childAspectRatio: 9 / 16,
-                              crossAxisCount: 3,
-                              mainAxisSpacing: 1,
-                              crossAxisSpacing: 1,
+                          ),
+                          body: Center(
+                            child: Container(
+                              padding: const EdgeInsets.all(12),
+                              width: Dimens.DIMENS_120,
+                              height: Dimens.DIMENS_105,
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurface
+                                      .withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(12)),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  const Text(
+                                    "Page not found.",
+                                    textAlign: TextAlign.center,
+                                  ),
+                                  SizedBox(height: Dimens.DIMENS_6),
+                                  const Icon(SolarIconsOutline.sadCircle)
+                                ],
+                              ),
                             ),
-                            pagingController: repository.controller!);
-                      },
+                          )),
+                    );
+                  }
+                  return ContainerWidthMaxWidth(
+                    maxWidth: 940,
+                    child: Scaffold(
+                      appBar: AppBar(
+                        leading: BackButton(
+                          onPressed: () {
+                            AppRouter appRouter =
+                                Provider.of<AppRouter>(context, listen: false);
+                            appRouter.onBackButtonPressed(context);
+                          },
+                        ),
+                        title: _buildTitle(),
+                      ),
+                      body: BlocBuilder<VbcBloc, VbcState>(
+                        builder: (context, state) {
+                          if (state.status == BlocStatus.loading ||
+                              repository.controller == null) {
+                            return const CircularProgressIndicator();
+                          }
+                          return PagedGridView<int, Video>(
+                              padding: EdgeInsets.only(top: Dimens.DIMENS_12),
+                              builderDelegate: PagedChildBuilderDelegate(
+                                itemBuilder: (_, item, index) {
+                                  return AspectRatio(
+                                    aspectRatio: 16 / 9,
+                                    child: Container(
+                                      color: COLOR_black,
+                                      child: GestureDetector(
+                                        onTap: () {
+                                          String route = GoRouter.of(context)
+                                              .routeInformationProvider
+                                              .value
+                                              .uri
+                                              .path;
+                                          debugPrint("route $route");
+                                          context.go(
+                                            '${APP_PAGE.videoItem.toPath}/${item.id}',
+                                            extra: PlaySingleData(
+                                              index: index,
+                                              videoData: item,
+                                            ),
+                                          );
+                                        },
+                                        child: Stack(
+                                          alignment: Alignment.center,
+                                          children: [
+                                            CachedNetworkImage(
+                                                fit: BoxFit.cover,
+                                                imageUrl: item.thumnail),
+                                            Align(
+                                              alignment: Alignment.bottomLeft,
+                                              child: Padding(
+                                                padding:
+                                                    const EdgeInsets.all(8.0),
+                                                child: Row(
+                                                  children: [
+                                                    Text(
+                                                      '${item.views.length} ',
+                                                      style: TextStyle(
+                                                          color:
+                                                              COLOR_white_fff5f5f5),
+                                                    ),
+                                                    Text(
+                                                      LocaleKeys.label_views
+                                                          .tr(),
+                                                      style: TextStyle(
+                                                          color:
+                                                              COLOR_white_fff5f5f5),
+                                                    )
+                                                  ],
+                                                ),
+                                              ),
+                                            )
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                              gridDelegate:
+                                  const SliverGridDelegateWithFixedCrossAxisCount(
+                                childAspectRatio: 9 / 16,
+                                crossAxisCount: 3,
+                                mainAxisSpacing: 1,
+                                crossAxisSpacing: 1,
+                              ),
+                              pagingController: repository.controller!);
+                        },
+                      ),
                     ),
                   );
                 }),

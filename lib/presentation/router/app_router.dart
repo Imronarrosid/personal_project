@@ -147,6 +147,7 @@ class AppRouter {
                   pageBuilder: (context, state) {
                     return MaterialPage(
                       child: VideoFromCategories(
+                        key: ValueKey(state.pathParameters['category']),
                         category: state.pathParameters['category'] ?? '',
                       ),
                     );
