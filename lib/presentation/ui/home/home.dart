@@ -289,8 +289,13 @@ class _HomePageState extends State<HomePage> {
                               ),
                             ),
                           ),
-                          Spacer(),
+                          const Spacer(),
                           SideBarItem(
+                            shape: const RoundedRectangleBorder(
+                              borderRadius: BorderRadius.vertical(
+                                bottom: Radius.circular(12),
+                              ),
+                            ),
                             leadingIcon: const Icon(
                               SolarIconsOutline.hamburgerMenu,
                             ),
@@ -527,8 +532,7 @@ class _HomePageState extends State<HomePage> {
                                         .getUserData(currentUser.uid)
                                         .then((value) => value.userName);
                                     if (!context.mounted) return;
-                                    context.go(
-                                        '${APP_PAGE.profile.toPath}/$userName');
+                                    context.go('/@$userName');
                                   }
                                   break;
                                 default:
@@ -641,6 +645,7 @@ class SideBarItem extends StatelessWidget {
     this.onTap,
     this.leadingIcon,
     this.selectedIcon,
+    this.shape,
   });
 
   final bool selected;
@@ -649,6 +654,7 @@ class SideBarItem extends StatelessWidget {
   final Icon? selectedIcon;
   final Color? selectedTitleColor;
   final TextStyle? titleTextStyle;
+  final ShapeBorder? shape;
   final void Function()? onTap;
 
   @override
@@ -656,6 +662,7 @@ class SideBarItem extends StatelessWidget {
     return Material(
       color: Colors.transparent,
       child: ListTile(
+        shape: shape,
         title: Text(title),
         titleTextStyle: titleTextStyle?.apply(color: selectedTitleColor) ??
             TextStyle(
