@@ -843,7 +843,7 @@ class AppRouter {
       _pageIndex = 0;
     } else if (APP_PAGE.search.toPath == routeName) {
       _pageIndex = 1;
-    } else if (routeName == APP_PAGE.message.toPath) {
+    } else if (routeName.contains(APP_PAGE.message.toPath)) {
       _pageIndex = 2;
     } else if (routeName == '/profile' ||
         (context.read<AuthRepository>().currentUserData != null &&
