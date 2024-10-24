@@ -240,7 +240,7 @@ class _HomePageState extends State<HomePage> {
                               SolarIconsBold.chatLine,
                             ),
                             selected: widget.pageIndex == 2,
-                            title: LocaleKeys.label_chat.tr(),
+                            title: LocaleKeys.label_message.tr(),
                             onTap: () => context.go(
                                 APP_PAGE.message.toPath + APP_PAGE.chat.toPath),
                           ),
@@ -248,7 +248,7 @@ class _HomePageState extends State<HomePage> {
                             selected: widget.pageIndex == 3,
                             leadingIcon: const Icon(SolarIconsOutline.user),
                             selectedIcon: const Icon(SolarIconsBold.user),
-                            title: LocaleKeys.label_account.tr(),
+                            title: LocaleKeys.label_profile.tr(),
                             onTap: () async {
                               var currentUser =
                                   context.read<AuthRepository>().currentUser;
