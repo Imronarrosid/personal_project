@@ -171,77 +171,49 @@ class _DesktopCommentsViewState extends State<DesktopCommentsView> {
                             child: ClipRRect(
                               borderRadius: BorderRadius.horizontal(
                                   right: Radius.circular(Dimens.DIMENS_10)),
-                              child: Column(
-                                children: [
-                                  Container(
-                                    height: 60,
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 12),
-                                    decoration: BoxDecoration(
-                                        border: Border(
-                                          bottom: BorderSide(
-                                            width: 0.6,
-                                            color: Theme.of(context)
-                                                .colorScheme
-                                                .onSurface
-                                                .withOpacity(0.15),
-                                          ),
-                                        ),
+                              child: Scaffold(
+                                appBar: AppBar(
+                                  backgroundColor:
+                                      Theme.of(context).colorScheme.tertiary,
+                                  title: Text(LocaleKeys.title_comments.tr()),
+                                  actions: [
+                                    Padding(
+                                      padding:
+                                          const EdgeInsets.only(right: 8.0),
+                                      child: IconButton(
+                                          onPressed: () {
+                                            BlocProvider.of<
+                                                        DesktopCommentsBloc>(
+                                                    context)
+                                                .add(CloseDesktopComments());
+                                          },
+                                          icon: const Icon(Icons.close)),
+                                    )
+                                  ],
+                                  bottom: PreferredSize(
+                                      preferredSize: const Size.fromHeight(0.1),
+                                      child: Divider(
+                                        height: 0.1,
                                         color: Theme.of(context)
                                             .colorScheme
-                                            .tertiary),
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Text(
-                                          LocaleKeys.title_comments.tr(),
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .titleLarge,
-                                        ),
-                                        IconButton(
-                                            onPressed: () {
-                                              BlocProvider.of<
-                                                          DesktopCommentsBloc>(
-                                                      context)
-                                                  .add(CloseDesktopComments());
-                                            },
-                                            icon: const Icon(Icons.close))
-                                      ],
-                                    ),
-                                  ),
-                                  Expanded(
-                                    child: Scaffold(
-                                      appBar: AppBar(
-                                        title: ListenableBuilder(
-                                            listenable: IsCanScrollNotification
-                                                .instance,
-                                            builder: (context, child) {
-                                              return Text(
-                                                  IsCanScrollNotification
-                                                      .instance.value
-                                                      .toString());
-                                            }),
-                                      ),
-                                      backgroundColor: Theme.of(context)
-                                          .colorScheme
-                                          .tertiary,
-                                      body: _commentPaging(),
-                                      // body: Container(
-                                      //   child:
-                                      //       // _commentsHeaders(context),
+                                            .onSurface
+                                            .withOpacity(0.2),
+                                      )),
+                                ),
+                                backgroundColor:
+                                    Theme.of(context).colorScheme.tertiary,
+                                body: _commentPaging(),
+                                // body: Container(
+                                //   child:
+                                //       // _commentsHeaders(context),
 
-                                      //       _buildCommentsList(context,
-                                      //           onRefresh: () {
-                                      //     return _refreshComments(context);
-                                      //   }),
-                                      // ),
-                                      bottomNavigationBar:
-                                          _buildCommnetsInput(context),
-                                    ),
-                                  ),
-                                ],
+                                //       _buildCommentsList(context,
+                                //           onRefresh: () {
+                                //     return _refreshComments(context);
+                                //   }),
+                                // ),
+                                bottomNavigationBar:
+                                    _buildCommnetsInput(context),
                               ),
                             ),
                           ),
@@ -261,7 +233,7 @@ class _DesktopCommentsViewState extends State<DesktopCommentsView> {
       decoration: BoxDecoration(
         border: Border(
           top: BorderSide(
-            color: COLOR_black_ff121212.withOpacity(0.4),
+            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.1),
           ),
         ),
       ),
@@ -350,7 +322,7 @@ class _DesktopCommentsViewState extends State<DesktopCommentsView> {
                     padding: EdgeInsets.symmetric(vertical: Dimens.DIMENS_6),
                     child: Container(
                       decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.tertiary,
+                          color: Theme.of(context).colorScheme.background,
                           borderRadius: BorderRadius.circular(10)),
                       child: BlocBuilder<AuthBloc, AuthState>(
                         builder: (context, state) {
@@ -380,6 +352,7 @@ class _DesktopCommentsViewState extends State<DesktopCommentsView> {
                                   hintStyle: const TextStyle(
                                       fontWeight: FontWeight.normal),
                                   border: OutlineInputBorder(
+                                      borderSide: BorderSide.none,
                                       borderRadius: BorderRadius.circular(10))),
                               textAlignVertical: TextAlignVertical.center,
                               keyboardType: TextInputType.multiline,
@@ -759,7 +732,7 @@ class _DesktopCommentsViewState extends State<DesktopCommentsView> {
                     );
                   },
                 ),
-                _streamReplies(postId, comment),
+                // _streamReplies(postId, comment),
                 _repliesFromLocal(comment.id!),
               ],
             ),
