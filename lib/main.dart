@@ -1,13 +1,7 @@
-import 'dart:io';
-
-import 'package:camera/camera.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:go_router/go_router.dart';
 import 'package:personal_project/config/theme.dart';
 import 'package:personal_project/data/repository/chat_repository.dart';
@@ -46,7 +40,7 @@ void main() async {
   );
   final SharedPreferences sharedPreferences =
       await SharedPreferences.getInstance();
-  await dotenv.load(fileName: ".env");
+  // await dotenv.load(fileName: ".env");
   // if (!kIsWeb) {
   //   SystemChrome.setPreferredOrientations([
   //     DeviceOrientation.portraitUp,
@@ -81,7 +75,6 @@ class _MyAppState extends State<MyApp> {
   // This widget is the root of your application.
   late AppService appService;
   late AuthService authService;
-  late List<CameraDescription> cameras;
 
   @override
   void initState() {
