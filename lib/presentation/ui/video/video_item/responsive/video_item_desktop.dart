@@ -1,12 +1,8 @@
-import 'package:bootstrap_icons/bootstrap_icons.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cached_video_player_plus/cached_video_player_plus.dart';
 import 'package:easy_localization/easy_localization.dart' as ezl;
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:go_router/go_router.dart';
@@ -16,7 +12,6 @@ import 'package:personal_project/constant/dimens.dart';
 import 'package:personal_project/data/repository/coment_repository.dart';
 import 'package:personal_project/data/repository/video_player_repository.dart';
 import 'package:personal_project/domain/model/category_model.dart';
-import 'package:personal_project/domain/model/profile_data_model.dart';
 import 'package:personal_project/domain/model/user.dart';
 import 'package:personal_project/domain/model/video_model.dart';
 import 'package:personal_project/domain/reporsitory/auth_reposotory.dart';
@@ -30,9 +25,7 @@ import 'package:personal_project/presentation/shared_components/menu_modal_botto
 import 'package:personal_project/presentation/ui/add_details/bloc/upload_bloc.dart';
 import 'package:personal_project/presentation/ui/auth/auth.dart';
 import 'package:personal_project/presentation/ui/comments/bloc/desktop_comments_bloc.dart';
-import 'package:personal_project/presentation/ui/comments/comments_page.dart';
 import 'package:personal_project/presentation/ui/comments/resposive/comment_desktop.dart';
-import 'package:personal_project/presentation/ui/home/cubit/home_cubit.dart';
 import 'package:personal_project/presentation/ui/profile/cubit/follow_cubit.dart';
 import 'package:personal_project/presentation/ui/video/list_video/bloc/video_player_bloc.dart';
 import 'package:personal_project/presentation/ui/video/list_video/cubit/captions_cubit.dart';
@@ -43,6 +36,7 @@ import 'package:solar_icons/solar_icons.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
 import '../../../../../data/repository/upload_repository.dart';
+import '../../../../../utils/debug_mode_print.dart';
 
 class VideoItemDesktop extends StatefulWidget {
   final int index;
@@ -72,10 +66,9 @@ class _VideoItemDesktopState extends State<VideoItemDesktop>
   bool isViewed = false;
   bool isActive = true;
   bool isBufferingIndicatorVisible = false;
-  bool _isCommentsShowed = false;
+  bool isCommentsShowed = false;
 
-  @override
-  void initState() {}
+  
 
   @override
   Widget build(BuildContext context) {
@@ -99,8 +92,8 @@ class _VideoItemDesktopState extends State<VideoItemDesktop>
       child: Builder(builder: (context) {
         return BlocListener<VideoPlayerBloc, VideoPlayerState>(
             listener: (context, state) {
-              debugPrint(state.toString());
-    
+              debugModePrint(state.toString());
+
               if (state.status == VideoPlayerStatus.initialized) {
                 if (isViewed == false) {
                   addListener(state: state, videoData: videoData);
@@ -115,11 +108,9 @@ class _VideoItemDesktopState extends State<VideoItemDesktop>
                     BlocProvider.of<VideoPlayerBloc>(context);
                 if (repo.controller != null) {
                   if (repo.controller!.value.isPlaying) {
-                    bloc.add(
-                        const VideoPlayerEvent(actions: VideoEvent.pause));
+                    bloc.add(const VideoPlayerEvent(actions: VideoEvent.pause));
                   } else {
-                    bloc.add(
-                        const VideoPlayerEvent(actions: VideoEvent.play));
+                    bloc.add(const VideoPlayerEvent(actions: VideoEvent.play));
                   }
                 }
               },
@@ -151,15 +142,14 @@ class _VideoItemDesktopState extends State<VideoItemDesktop>
                   return Container(
                     width: size.width,
                     height: size.height,
-                    color: Theme.of(context).colorScheme.background,
+                    color: Theme.of(context).colorScheme.surface,
                     padding: const EdgeInsets.all(8),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.end,
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        BlocBuilder<DesktopCommentsBloc,
-                            DesktopCommentsState>(
+                        BlocBuilder<DesktopCommentsBloc, DesktopCommentsState>(
                           builder: (context, state) {
                             return SafeArea(
                               child: ClipRRect(
@@ -192,8 +182,7 @@ class _VideoItemDesktopState extends State<VideoItemDesktop>
                           },
                         ),
                         _rightOveray(context, videoData, authRepository),
-                        BlocBuilder<DesktopCommentsBloc,
-                            DesktopCommentsState>(
+                        BlocBuilder<DesktopCommentsBloc, DesktopCommentsState>(
                           builder: (context, state) {
                             return SizedBox(
                               width:
@@ -202,7 +191,7 @@ class _VideoItemDesktopState extends State<VideoItemDesktop>
                                       : Dimens.DIMENS_50,
                               child:
                                   state.status == DesktopCommentsStatus.opened
-                                      ? Container(
+                                      ? SizedBox(
                                           width: 400,
                                           child: DesktopCommentsView(
                                             postId: state.postId!,
@@ -256,7 +245,7 @@ class _VideoItemDesktopState extends State<VideoItemDesktop>
                       .add(const VideoPlayerEvent(actions: VideoEvent.play));
                 },
                 child: Icon(
-                  BootstrapIcons.play_fill,
+                  SolarIconsBold.play,
                   size: state.status == VideoPlayerStatus.paused
                       ? Dimens.DIMENS_38
                       : Dimens.DIMENS_50,
@@ -305,9 +294,8 @@ class _VideoItemDesktopState extends State<VideoItemDesktop>
                       .add(const VideoPlayerEvent(actions: VideoEvent.dispose));
                 }
                 if (visiblePercentage > 30 && isActive) {
-                  debugPrint('ctrlll isnull ${repo.controller == null}');
                   if (repo.controller == null) {
-                    debugPrint('ctrlll ');
+                    debugModePrint('ctrlll ');
                     BlocProvider.of<VideoPlayerBloc>(context).add(
                         VideoPlayerEvent(
                             actions: VideoEvent.initialize,
@@ -321,8 +309,6 @@ class _VideoItemDesktopState extends State<VideoItemDesktop>
                   if (repo.controller != null && bottomPadding == 0.0) {
                     BlocProvider.of<VideoPlayerBloc>(context)
                         .add(const VideoPlayerEvent(actions: VideoEvent.play));
-                    debugPrint(
-                        'isready ${repo.controller!.value.isInitialized}');
                   }
                   // }
                 }
@@ -396,7 +382,7 @@ class _VideoItemDesktopState extends State<VideoItemDesktop>
                               ),
                             );
                           },
-                          icon: const Icon(BootstrapIcons.arrow_repeat)),
+                          icon: const Icon(SolarIconsOutline.refresh)),
                     ],
                   );
                 },
@@ -442,7 +428,7 @@ class _VideoItemDesktopState extends State<VideoItemDesktop>
                           },
                           builder: (context, state) {
                             if (state is VideoIsLiked) {
-                              debugPrint('likeCount${state.likeCount}');
+                              debugModePrint('likeCount${state.likeCount}');
                               return Text(
                                 numberFormat(context.locale, state.likeCount),
                                 style: TextStyle(
@@ -484,7 +470,7 @@ class _VideoItemDesktopState extends State<VideoItemDesktop>
                             child: Transform.flip(
                               flipX: true,
                               child: Icon(
-                                BootstrapIcons.chat_dots_fill,
+                                SolarIconsBold.chatRoundDots,
                                 color: COLOR_white_fff5f5f5,
                                 size: Dimens.DIMENS_28,
                               ),
@@ -509,7 +495,7 @@ class _VideoItemDesktopState extends State<VideoItemDesktop>
                         ),
                         GestureDetector(
                           onTap: () {
-                            debugPrint(
+                            debugModePrint(
                                 'lmnop${LocaleKeys.message_share_featur_not_ready.tr()}');
                             Fluttertoast.showToast(
                               msg: LocaleKeys.message_share_featur_not_ready
@@ -525,9 +511,9 @@ class _VideoItemDesktopState extends State<VideoItemDesktop>
                           child: Transform.flip(
                             flipX: true,
                             child: Icon(
-                              BootstrapIcons.reply_fill,
+                              SolarIconsBold.reply,
                               color: COLOR_white_fff5f5f5,
-                              size: Dimens.DIMENS_34,
+                              size: Dimens.DIMENS_30,
                             ),
                           ),
                         ),
@@ -641,7 +627,7 @@ class _VideoItemDesktopState extends State<VideoItemDesktop>
                           },
                           builder: (context, state) {
                             if (state is VideoIsLiked) {
-                              debugPrint('likeCount${state.likeCount}');
+                              debugModePrint('likeCount${state.likeCount}');
                               return Text(
                                 numberFormat(context.locale, state.likeCount),
                                 style: TextStyle(
@@ -684,15 +670,15 @@ class _VideoItemDesktopState extends State<VideoItemDesktop>
                               //   context,
                               //   postId: widget.videoData.id!,
                               // );
-                              debugPrint('isCommentShowed $_isCommentsShowed');
+                              debugModePrint('isCommentShowed $isCommentsShowed');
                               BlocProvider.of<DesktopCommentsBloc>(context)
                                   .add(CloseDesktopComments());
-                              debugPrint('CommentStatus ${state.status}');
+                              debugModePrint('CommentStatus ${state.status}');
                             },
                             child: Transform.flip(
                               flipX: true,
                               child: Icon(
-                                BootstrapIcons.chat_dots_fill,
+                                SolarIconsBold.chatRoundDots,
                                 color: COLOR_white_fff5f5f5,
                                 size: Dimens.DIMENS_28,
                               ),
@@ -717,7 +703,7 @@ class _VideoItemDesktopState extends State<VideoItemDesktop>
                         ),
                         GestureDetector(
                           onTap: () {
-                            debugPrint(
+                            debugModePrint(
                                 'lmnop${LocaleKeys.message_share_featur_not_ready.tr()}');
                             Fluttertoast.showToast(
                               msg: LocaleKeys.message_share_featur_not_ready
@@ -733,9 +719,9 @@ class _VideoItemDesktopState extends State<VideoItemDesktop>
                           child: Transform.flip(
                             flipX: true,
                             child: Icon(
-                              BootstrapIcons.reply_fill,
+                              SolarIconsBold.reply,
                               color: COLOR_white_fff5f5f5,
-                              size: Dimens.DIMENS_34,
+                              size: Dimens.DIMENS_30,
                             ),
                           ),
                         ),
@@ -785,7 +771,7 @@ class _VideoItemDesktopState extends State<VideoItemDesktop>
                             ),
                             child: (videoData.game == null)
                                 ? Icon(
-                                      Icons.movie_outlined,
+                                    Icons.movie_outlined,
                                     color: COLOR_white_fff5f5f5,
                                     size: Dimens.DIMENS_15,
                                   )
@@ -814,7 +800,7 @@ class _VideoItemDesktopState extends State<VideoItemDesktop>
     } else {
       return InkWell(
           overlayColor:
-              const MaterialStatePropertyAll<Color>(Colors.transparent),
+              const WidgetStatePropertyAll<Color>(Colors.transparent),
           onTap: () {
             final VideoPlayerRepository repo =
                 RepositoryProvider.of<VideoPlayerRepository>(context);
@@ -898,7 +884,7 @@ class _VideoItemDesktopState extends State<VideoItemDesktop>
                                   ));
                         },
                         leading: const Icon(
-                          BootstrapIcons.trash3,
+                          SolarIconsBold.trashBinTrash,
                           size: 20,
                         ),
                         title: Text(LocaleKeys.label_delete_video.tr()),
@@ -962,40 +948,40 @@ class _VideoItemDesktopState extends State<VideoItemDesktop>
 
   void addListener(
       {required VideoPlayerState state, required Video videoData}) {
-    state.controller!.addListener(() {
-      int duratio = state.controller!.value.duration.inSeconds;
-      double minDur = 3 / 10 * duratio;
-      if (mounted) {
-        final vBloc = BlocProvider.of<VideoPlayerBloc>(context);
+    // state.controller!.addListener(() {
+    //   int duratio = state.controller!.value.duration.inSeconds;
+    //   double minDur = 3 / 10 * duratio;
+    //   if (mounted) {
+    //     final vBloc = BlocProvider.of<VideoPlayerBloc>(context);
 
-        if (state.controller!.value.position.inSeconds > minDur.toInt() &&
-            !isViewed) {
-          RepositoryProvider.of<VideoRepository>(context)
-              .addViewsCount(videoData.id!);
-          debugPrint('add views');
-          isViewed = true;
-          // state.controller!.removeListener(() {});
-        }
-        if (state.controller!.value.isBuffering) {
-          isBufferingIndicatorVisible = true;
-          vBloc.add(
-            const VideoPlayerEvent(
-              actions: VideoEvent.showBufferingIndicator,
-            ),
-          );
-        } else {
-          if (state.controller!.value.isPlaying &&
-              isBufferingIndicatorVisible) {
-            vBloc.add(
-              const VideoPlayerEvent(
-                actions: VideoEvent.removeBufferingIndicator,
-              ),
-            );
-            isBufferingIndicatorVisible = false;
-          }
-        }
-      }
-    });
+    //     if (state.controller!.value.position.inSeconds > minDur.toInt() &&
+    //         !isViewed) {
+    //       RepositoryProvider.of<VideoRepository>(context)
+    //           .addViewsCount(videoData.id!);
+    //       debugModePrint('add views');
+    //       isViewed = true;
+    //       // state.controller!.removeListener(() {});
+    //     }
+    //     if (state.controller!.value.isBuffering) {
+    //       isBufferingIndicatorVisible = true;
+    //       vBloc.add(
+    //         const VideoPlayerEvent(
+    //           actions: VideoEvent.showBufferingIndicator,
+    //         ),
+    //       );
+    //     } else {
+    //       if (state.controller!.value.isPlaying &&
+    //           isBufferingIndicatorVisible) {
+    //         vBloc.add(
+    //           const VideoPlayerEvent(
+    //             actions: VideoEvent.removeBufferingIndicator,
+    //           ),
+    //         );
+    //         isBufferingIndicatorVisible = false;
+    //       }
+    //     }
+    //   }
+    // });
   }
 
   GestureDetector _buildLikeButton(BuildContext context, Video videoData) {
@@ -1028,25 +1014,25 @@ class _VideoItemDesktopState extends State<VideoItemDesktop>
           bool isLiked = videoData.likes.contains(uid);
           if (state is VideoIsLiked) {
             return Icon(
-              BootstrapIcons.heart_fill,
+              SolarIconsBold.heart,
               size: Dimens.DIMENS_34,
               color: Colors.red,
             );
           } else if (state is UnilkedVideo) {
             return Icon(
-              BootstrapIcons.heart_fill,
+              SolarIconsBold.heart,
               size: Dimens.DIMENS_34,
               color: COLOR_white_fff5f5f5,
             );
           }
           return isLiked
               ? Icon(
-                  BootstrapIcons.heart_fill,
+                  SolarIconsBold.heart,
                   size: Dimens.DIMENS_34,
                   color: Colors.red,
                 )
               : Icon(
-                  BootstrapIcons.heart_fill,
+                  SolarIconsBold.heart,
                   size: Dimens.DIMENS_34,
                   color: COLOR_white_fff5f5f5,
                 );
@@ -1107,7 +1093,7 @@ class _VideoItemDesktopState extends State<VideoItemDesktop>
               width: double.infinity,
               height: 3,
               child: VideoProgressIndicator(
-                state.controller!,
+                context.read<VideoPlayerRepository>().controller!,
                 padding: EdgeInsets.zero,
                 colors: VideoProgressColors(
                     bufferedColor: COLOR_white_fff5f5f5.withOpacity(0.3),
@@ -1335,7 +1321,7 @@ class _VideoItemDesktopState extends State<VideoItemDesktop>
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
                                 Icon(
-                                  BootstrapIcons.controller,
+                                  SolarIconsOutline.gamepad,
                                   color: COLOR_white_fff5f5f5,
                                   size: 16,
                                 ),
@@ -1383,7 +1369,7 @@ class LikeWidget extends StatelessWidget {
             opacity: state.isVisible ? 1.0 : 0.0,
             duration: const Duration(milliseconds: 300),
             child: Icon(
-              BootstrapIcons.heart_fill,
+              SolarIconsBold.heart,
               color: Colors.red,
               size: state.isVisible ? 80 : 50,
             ),
