@@ -1,10 +1,8 @@
-import 'package:bootstrap_icons/bootstrap_icons.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cached_video_player_plus/cached_video_player_plus.dart';
 import 'package:easy_localization/easy_localization.dart' as ezl;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:go_router/go_router.dart';
@@ -15,7 +13,6 @@ import 'package:personal_project/data/repository/coment_repository.dart';
 import 'package:personal_project/data/repository/upload_repository.dart';
 import 'package:personal_project/data/repository/video_player_repository.dart';
 import 'package:personal_project/domain/model/category_model.dart';
-import 'package:personal_project/domain/model/profile_data_model.dart';
 import 'package:personal_project/domain/model/user.dart';
 import 'package:personal_project/domain/model/video_model.dart';
 import 'package:personal_project/domain/reporsitory/auth_reposotory.dart';
@@ -34,9 +31,9 @@ import 'package:personal_project/presentation/ui/profile/cubit/follow_cubit.dart
 import 'package:personal_project/presentation/ui/video/list_video/bloc/video_player_bloc.dart';
 import 'package:personal_project/presentation/ui/video/list_video/cubit/captions_cubit.dart';
 import 'package:personal_project/presentation/ui/video/list_video/cubit/like_video_cubit.dart';
-import 'package:personal_project/presentation/ui/video/list_video/cubit/video_size_cubit.dart';
 import 'package:personal_project/presentation/ui/video/video_item/video_padding_notifier.dart';
 import 'package:personal_project/utils/number_format.dart';
+import 'package:solar_icons/solar_icons.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
 class VideoItemMobile extends StatefulWidget {
@@ -191,7 +188,7 @@ class _VideoItemMobileState extends State<VideoItemMobile> {
                       .add(const VideoPlayerEvent(actions: VideoEvent.play));
                 },
                 child: Icon(
-                  BootstrapIcons.play_fill,
+                  SolarIconsBold.play,
                   size: state.status == VideoPlayerStatus.paused
                       ? Dimens.DIMENS_38
                       : Dimens.DIMENS_50,
@@ -324,7 +321,7 @@ class _VideoItemMobileState extends State<VideoItemMobile> {
                             ),
                           );
                         },
-                        icon: const Icon(BootstrapIcons.arrow_repeat)),
+                        icon: const Icon(SolarIconsOutline.refresh)),
                   ],
                 );
               },
@@ -414,7 +411,7 @@ class _VideoItemMobileState extends State<VideoItemMobile> {
                       child: Transform.flip(
                         flipX: true,
                         child: Icon(
-                          BootstrapIcons.chat_dots_fill,
+                          SolarIconsBold.chatRoundDots,
                           color: COLOR_white_fff5f5f5,
                           size: Dimens.DIMENS_28,
                         ),
@@ -454,7 +451,7 @@ class _VideoItemMobileState extends State<VideoItemMobile> {
                     child: Transform.flip(
                       flipX: true,
                       child: Icon(
-                        BootstrapIcons.reply_fill,
+                        SolarIconsBold.reply,
                         color: COLOR_white_fff5f5f5,
                         size: Dimens.DIMENS_34,
                       ),
@@ -506,7 +503,7 @@ class _VideoItemMobileState extends State<VideoItemMobile> {
                       ),
                       child: (videoData.game == null)
                           ? Icon(
-                              BootstrapIcons.controller,
+                              SolarIconsBold.gamepad,
                               color: COLOR_white_fff5f5f5,
                               size: Dimens.DIMENS_15,
                             )
@@ -532,7 +529,7 @@ class _VideoItemMobileState extends State<VideoItemMobile> {
     } else {
       return InkWell(
           overlayColor:
-              const MaterialStatePropertyAll<Color>(Colors.transparent),
+              const WidgetStatePropertyAll<Color>(Colors.transparent),
           onTap: () {
             final VideoPlayerRepository repo =
                 RepositoryProvider.of<VideoPlayerRepository>(context);
@@ -616,7 +613,7 @@ class _VideoItemMobileState extends State<VideoItemMobile> {
                                   ));
                         },
                         leading: const Icon(
-                          BootstrapIcons.trash3,
+                          SolarIconsBold.trashBin2,
                           size: 20,
                         ),
                         title: Text(LocaleKeys.label_delete_video.tr()),
@@ -746,25 +743,25 @@ class _VideoItemMobileState extends State<VideoItemMobile> {
           bool isLiked = videoData.likes.contains(uid);
           if (state is VideoIsLiked) {
             return Icon(
-              BootstrapIcons.heart_fill,
+              SolarIconsBold.heart,
               size: Dimens.DIMENS_34,
               color: Colors.red,
             );
           } else if (state is UnilkedVideo) {
             return Icon(
-              BootstrapIcons.heart_fill,
+              SolarIconsBold.heart,
               size: Dimens.DIMENS_34,
               color: COLOR_white_fff5f5f5,
             );
           }
           return isLiked
               ? Icon(
-                  BootstrapIcons.heart_fill,
+                  SolarIconsBold.heart,
                   size: Dimens.DIMENS_34,
                   color: Colors.red,
                 )
               : Icon(
-                  BootstrapIcons.heart_fill,
+                  SolarIconsBold.heart,
                   size: Dimens.DIMENS_34,
                   color: COLOR_white_fff5f5f5,
                 );
@@ -803,7 +800,7 @@ class _VideoItemMobileState extends State<VideoItemMobile> {
     if (MediaQuery.of(context).size.width > mobileWidth) {
       BlocProvider.of<HomeCubit>(context).changePage(5, data: data);
     } else {
-      context.go('/profile/${data.userName}', extra: data);
+      context.go('/@${data.userName}', extra: data);
     }
   }
 
@@ -1055,7 +1052,7 @@ class _VideoItemMobileState extends State<VideoItemMobile> {
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
                                 Icon(
-                                  BootstrapIcons.controller,
+                                  SolarIconsBold.gamepad,
                                   color: COLOR_white_fff5f5f5,
                                   size: 16,
                                 ),
@@ -1103,7 +1100,7 @@ class LikeWidget extends StatelessWidget {
             opacity: state.isVisible ? 1.0 : 0.0,
             duration: const Duration(milliseconds: 300),
             child: Icon(
-              BootstrapIcons.heart_fill,
+              SolarIconsBold.heart,
               color: Colors.red,
               size: state.isVisible ? 80 : 50,
             ),
