@@ -3,12 +3,14 @@ import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:personal_project/domain/model/game_fav_modal.dart';
 import 'package:personal_project/domain/model/user.dart';
 import 'package:personal_project/domain/services/firebase/firebase_service.dart';
 import 'package:personal_project/domain/usecase/user_usecase_type.dart';
 import 'package:rxdart/rxdart.dart';
+
+import '../../utils/debug_mode_print.dart';
 
 class UserRepository implements UserUseCaseType {
   Stream<String> get uid {
@@ -156,7 +158,7 @@ class UserRepository implements UserUseCaseType {
 
       return following;
     } catch (e) {
-      debugPrint(e.toString());
+      debugModePrint(e.toString());
       return 0;
     }
   }
@@ -172,7 +174,7 @@ class UserRepository implements UserUseCaseType {
       followers = followerDoc.docs.length;
       return followers;
     } catch (e) {
-      debugPrint(e.toString());
+      debugModePrint(e.toString());
       return 0;
     }
   }
@@ -315,14 +317,14 @@ class UserRepository implements UserUseCaseType {
         bio = doc['bio'] ?? '';
       }
     } catch (e) {
-      debugPrint(e.toString());
+      debugModePrint(e.toString());
     }
     return bio;
   }
 
   Future<void> editName(String newName) async {
     try {
-      debugPrint(newName);
+      debugModePrint(newName);
       await firebaseFirestore
           .collection('users')
           .doc(firebaseAuth.currentUser!.uid)
@@ -334,7 +336,7 @@ class UserRepository implements UserUseCaseType {
 
   Future<void> editUserName(String newName) async {
     try {
-      debugPrint(newName);
+      debugModePrint(newName);
       await firebaseFirestore
           .collection('users')
           .doc(firebaseAuth.currentUser!.uid)
@@ -370,10 +372,9 @@ class UserRepository implements UserUseCaseType {
           .ref()
           .child('pofilePicts/${firebaseAuth.currentUser!.uid}')
           .child('profilePicts ${firebaseAuth.currentUser!.uid}');
-      UploadTask uploadTask = ref.putFile(imageFile);
+      await ref.putData(await imageFile.readAsBytes());
 
-      TaskSnapshot snapshot = await uploadTask;
-      String downloaUrl = await snapshot.ref.getDownloadURL();
+      String downloaUrl = await ref.getDownloadURL();
       await firebaseFirestore
           .collection('users')
           .doc(firebaseAuth.currentUser!.uid)
@@ -385,6 +386,30 @@ class UserRepository implements UserUseCaseType {
 
       imageFile.deleteSync(recursive: true);
     } catch (e) {
+      debugModePrint('upload $imageFile$e');
+      rethrow;
+    }
+  }
+
+  Future<void> editProfilePictWeb(Uint8List data) async {
+    try {
+      Reference ref = firebaseStorage
+          .ref()
+          .child('pofilePicts/${firebaseAuth.currentUser!.uid}')
+          .child('profilePicts ${firebaseAuth.currentUser!.uid}');
+      await ref.putData(data);
+
+      String downloaUrl = await ref.getDownloadURL();
+      await firebaseFirestore
+          .collection('users')
+          .doc(firebaseAuth.currentUser!.uid)
+          .update({'photoUrl': downloaUrl});
+      await firebaseFirestore
+          .collection('avatars')
+          .doc(firebaseAuth.currentUser!.uid)
+          .set({'avatar': downloaUrl});
+    } catch (e) {
+      debugModePrint('upload $data$e');
       rethrow;
     }
   }
@@ -427,7 +452,7 @@ class UserRepository implements UserUseCaseType {
   // Future<List<DocumentSnapshot>> _getAllGameDocuments(
   //     List<DocumentReference> documentReferences) async {
   //   List<DocumentSnapshot> documents = [];
-  //   debugPrint('getDocs');
+  //   debugModePrint('getDocs');
   //   try {
   //     for (DocumentReference reference in documentReferences) {
   //       DocumentSnapshot snapshot = await reference.get();
@@ -444,7 +469,7 @@ class UserRepository implements UserUseCaseType {
 
   Future<List<GameFav>> getSelectedGames(String uid) async {
     List<GameFav> gameFav = [];
-    debugPrint('gametes');
+    debugModePrint('gametes');
     try {
       DocumentSnapshot data = await firebaseFirestore
           .collection('users')
@@ -455,7 +480,7 @@ class UserRepository implements UserUseCaseType {
 
       List<dynamic> gv = data['titles'];
 
-      // debugPrint('games ${rfs.length}');
+      // debugModePrint('games ${rfs.length}');
       for (var element in gv) {
         var game = await firebaseFirestore
             .collection('gameFavorites')
@@ -464,13 +489,13 @@ class UserRepository implements UserUseCaseType {
         if (game.exists) {
           gameFav.add(GameFav.fromSnap(game));
 
-          debugPrint('gameFav$element');
+          debugModePrint('gameFav$element');
         } else {
           return [];
         }
       }
     } catch (e) {
-      debugPrint(e.toString());
+      debugModePrint(e.toString());
     }
 
     return gameFav;
@@ -487,7 +512,7 @@ class UserRepository implements UserUseCaseType {
       // avatar = snap['avatar'];
       // return avatar;
     } catch (e) {
-      debugPrint(e.toString());
+      debugModePrint(e.toString());
       return null;
     }
   }
@@ -508,7 +533,7 @@ class UserRepository implements UserUseCaseType {
       }
       return users;
     } catch (e) {
-      debugPrint(e.toString());
+      debugModePrint(e.toString());
       return [];
     }
   }
@@ -523,7 +548,7 @@ class UserRepository implements UserUseCaseType {
       avatar = snap['userName'];
       return avatar;
     } catch (e) {
-      debugPrint(e.toString());
+      debugModePrint(e.toString());
       return '';
     }
   }
