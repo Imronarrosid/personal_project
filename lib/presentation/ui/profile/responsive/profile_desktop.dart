@@ -42,6 +42,7 @@ import 'package:personal_project/utils/number_format.dart';
 import 'package:provider/provider.dart';
 import 'package:solar_icons/solar_icons.dart';
 
+import '../../../../utils/debug_mode_print.dart';
 import '../../../router/app_router.dart';
 import '../../../shared_components/container_with_max_width.dart';
 
@@ -81,7 +82,7 @@ class _ProfilePageDesktopState extends State<ProfilePageDesktop>
   @override
   Widget build(BuildContext context) {
     if (widget.userDaata != null) {}
-    debugPrint('refresh');
+    debugModePrint('refresh');
     Size size = MediaQuery.of(context).size;
     final authRepository = RepositoryProvider.of<AuthRepository>(context);
     final UserRepository userRepository =
@@ -102,7 +103,7 @@ class _ProfilePageDesktopState extends State<ProfilePageDesktop>
         builder: (context, state) {
           String path =
               GoRouter.of(context).routeInformationProvider.value.uri.path;
-          debugPrint(
+          debugModePrint(
               'url ${GoRouter.of(context).routeInformationProvider.value.uri.path}');
           if (path == '/profile/login') {
             return _notAuthenticatedView(context, authRepository);
@@ -112,7 +113,7 @@ class _ProfilePageDesktopState extends State<ProfilePageDesktop>
               stream: userRepository.userDataStreamByUsername(
                   GoRouterState.of(context).pathParameters['username']!),
               builder: (BuildContext context, AsyncSnapshot<User> snapshot) {
-                debugPrint(
+                debugModePrint(
                     'pathParams ${GoRouterState.of(context).pathParameters['username']!}');
                 User? userData = snapshot.data;
                 if (snapshot.hasError) {
@@ -187,7 +188,7 @@ class _ProfilePageDesktopState extends State<ProfilePageDesktop>
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
                 }
-                debugPrint('userData ${userData!.userName}');
+                debugModePrint('userData ${userData!.userName}');
                 return ContainerWidthMaxWidth(
                   maxWidth: 940,
                   child: Scaffold(
@@ -215,7 +216,7 @@ class _ProfilePageDesktopState extends State<ProfilePageDesktop>
                         },
                         child: BlocBuilder<AuthBloc, AuthState>(
                           builder: (context, authState) {
-                            debugPrint(authState.toString());
+                            debugModePrint(authState.toString());
 
                             // return Text(userData.userName!);
 
@@ -557,7 +558,7 @@ class _ProfilePageDesktopState extends State<ProfilePageDesktop>
 
                 return BlocBuilder<FollowCubit, FollowState>(
                   builder: (context, state) {
-                    debugPrint('follow state $state');
+                    debugModePrint('follow state $state');
                     if (state.status == BlocStatus.following) {
                       isFollowing = true;
                     } else if (state.status == BlocStatus.notFollowing) {
@@ -935,7 +936,7 @@ class _ProfilePageDesktopState extends State<ProfilePageDesktop>
     final repository = RepositoryProvider.of<UserRepository>(context);
     final authRepository = RepositoryProvider.of<AuthRepository>(context);
     final userRepository = RepositoryProvider.of<UserRepository>(context);
-    debugPrint("current user uid ${authRepository.currentUser?.uid}");
+    debugModePrint("current user uid ${authRepository.currentUser?.uid}");
     return SliverToBoxAdapter(
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
