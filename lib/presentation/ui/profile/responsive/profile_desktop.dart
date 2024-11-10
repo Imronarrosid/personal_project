@@ -1,14 +1,10 @@
 import 'dart:async';
-import 'dart:io';
 
-import 'package:bootstrap_icons/bootstrap_icons.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:easy_localization/easy_localization.dart' as localization;
 import 'package:extended_nested_scroll_view/extended_nested_scroll_view.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_firebase_chat_core/flutter_firebase_chat_core.dart';
 import 'package:go_router/go_router.dart';
@@ -18,15 +14,12 @@ import 'package:personal_project/constant/color.dart';
 import 'package:personal_project/constant/dimens.dart';
 import 'package:personal_project/data/repository/user_video_paging_repository.dart';
 import 'package:personal_project/domain/model/chat_data_models.dart';
-import 'package:personal_project/domain/model/following_n_followers_data_model.dart';
 import 'package:personal_project/domain/model/game_fav_modal.dart';
 import 'package:personal_project/domain/model/play_single_data.dart';
-import 'package:personal_project/domain/model/profile_data_model.dart';
 import 'package:personal_project/domain/model/user.dart';
 import 'package:personal_project/domain/model/video_model.dart';
 import 'package:personal_project/domain/reporsitory/auth_reposotory.dart';
 import 'package:personal_project/domain/reporsitory/user_repository.dart';
-import 'package:personal_project/domain/reporsitory/video_repository.dart';
 import 'package:personal_project/domain/services/firebase/firebase_service.dart';
 import 'package:personal_project/presentation/l10n/stings.g.dart';
 import 'package:personal_project/presentation/router/route_utils.dart';
@@ -37,11 +30,9 @@ import 'package:personal_project/presentation/ui/add_details/bloc/upload_bloc.da
 import 'package:personal_project/presentation/ui/auth/auth.dart';
 import 'package:personal_project/presentation/ui/auth/bloc/auth_bloc.dart';
 import 'package:personal_project/presentation/ui/edit_profile/cubit/edit_bio_cubit.dart';
-import 'package:personal_project/presentation/ui/edit_profile/cubit/edit_name_cubit.dart';
 import 'package:personal_project/presentation/ui/edit_profile/cubit/edit_user_name_cubit.dart';
 import 'package:personal_project/presentation/ui/edit_profile/cubit/game_fav_cubit.dart';
 import 'package:personal_project/presentation/ui/followings_n_followers/dialog/following_dialog.dart';
-import 'package:personal_project/presentation/ui/followings_n_followers/followings_n_followers.dart';
 import 'package:personal_project/presentation/ui/profile/bloc/user_video_paging_bloc.dart';
 import 'package:personal_project/presentation/ui/profile/cubit/follow_cubit.dart';
 import 'package:personal_project/presentation/ui/profile/cubit/profile_cubit.dart';
@@ -230,7 +221,7 @@ class _ProfilePageDesktopState extends State<ProfilePageDesktop>
 
                             return _profileBody(
                                 size, context, authState, authRepository,
-                                userData: userData!);
+                                userData: userData);
 
                             // if (_isAuthenticated(authState)) {
                             //   return FutureBuilder(
@@ -338,7 +329,7 @@ class _ProfilePageDesktopState extends State<ProfilePageDesktop>
           scrolledUnderElevation: 0,
           elevation: 0,
           title: Text(
-            LocaleKeys.title_profile.tr() + " desktop",
+            "${LocaleKeys.title_profile.tr()} desktop",
             style: Theme.of(context).textTheme.titleLarge,
 
             // return _buildTitle(title);
@@ -366,21 +357,6 @@ class _ProfilePageDesktopState extends State<ProfilePageDesktop>
         body: const NotAuthenticatedPage());
   }
 
-  BlocBuilder<EditNameCubit, EditNameState> _buildTitle(String? title) {
-    return BlocBuilder<EditNameCubit, EditNameState>(
-      builder: (context, state) {
-        if (state.status == EditNameStatus.nameEditSuccess &&
-            widget.userDaata == null) {
-          title = state.name;
-        }
-        return Text(
-          title ?? LocaleKeys.title_profile.tr(),
-          style: Theme.of(context).textTheme.titleLarge,
-        );
-      },
-    );
-  }
-
   RefreshIndicator _profileBody(
     Size size,
     BuildContext context,
@@ -388,8 +364,6 @@ class _ProfilePageDesktopState extends State<ProfilePageDesktop>
     AuthRepository authRepository, {
     required User userData,
   }) {
-    final ThemeData theme = Theme.of(context);
-    final userRepository = RepositoryProvider.of<UserRepository>(context);
     return RefreshIndicator(
       // notificationPredicate: (notification) {
       //   // with NestedScrollView local(depth == 2) OverscrollNotification are not sent
@@ -457,28 +431,26 @@ class _ProfilePageDesktopState extends State<ProfilePageDesktop>
     // ),
   }
 
-  Container tabBarView(User userData) {
-    return Container(
-      child: TabBarView(
-        controller: _tabController,
-        children: [
-          // Content for Tab 1
-          KeepAlivePage(
-            child: VideoListView(
-              uid: widget.userDaata?.id ?? userData.id,
-              from: From.user,
-            ),
+  TabBarView tabBarView(User userData) {
+    return TabBarView(
+      controller: _tabController,
+      children: [
+        // Content for Tab 1
+        KeepAlivePage(
+          child: VideoListView(
+            uid: widget.userDaata?.id ?? userData.id,
+            from: From.user,
           ),
+        ),
 
-          // Content for Tab 2
-          KeepAlivePage(
-            child: VideoListView(
-              uid: widget.userDaata?.id ?? userData.id,
-              from: From.likes,
-            ),
+        // Content for Tab 2
+        KeepAlivePage(
+          child: VideoListView(
+            uid: widget.userDaata?.id ?? userData.id,
+            from: From.likes,
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -493,10 +465,11 @@ class _ProfilePageDesktopState extends State<ProfilePageDesktop>
       ),
       bottom: TabBar(
         controller: _tabController,
-        overlayColor: MaterialStatePropertyAll<Color>(
+        overlayColor: WidgetStatePropertyAll<Color>(
             Theme.of(context).colorScheme.onSurface.withOpacity(0.12)),
         indicatorSize: TabBarIndicatorSize.label,
         indicatorWeight: 2,
+        dividerColor: Colors.transparent,
         labelColor: Theme.of(context).colorScheme.onSurface,
         indicator: BoxDecoration(
           border: Border(
@@ -522,7 +495,7 @@ class _ProfilePageDesktopState extends State<ProfilePageDesktop>
                 ),
                 Text(
                   LocaleKeys.title_video.tr().toUpperCase(),
-                  style: TextStyle(fontSize: 12),
+                  style: const TextStyle(fontSize: 12),
                 )
               ],
             ),
@@ -539,7 +512,7 @@ class _ProfilePageDesktopState extends State<ProfilePageDesktop>
                 ),
                 Text(
                   LocaleKeys.label_likes.tr().toUpperCase(),
-                  style: TextStyle(fontSize: 12),
+                  style: const TextStyle(fontSize: 12),
                 )
               ],
             ),
@@ -566,7 +539,7 @@ class _ProfilePageDesktopState extends State<ProfilePageDesktop>
                 bool? isFollowing = snapshot.data;
                 if (!snapshot.hasData) {
                   return Container(
-                    height: Dimens.DIMENS_32,
+                    height: Dimens.DIMENS_30,
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
                       color: theme.colorScheme.tertiary,
@@ -708,7 +681,7 @@ class _ProfilePageDesktopState extends State<ProfilePageDesktop>
               }
             },
             child: Container(
-              height: Dimens.DIMENS_32,
+              height: Dimens.DIMENS_30,
               alignment: Alignment.center,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(8),
@@ -758,7 +731,7 @@ class _ProfilePageDesktopState extends State<ProfilePageDesktop>
                 child: Text(
                   LocaleKeys.label_edit_profile.tr(),
                   textAlign: TextAlign.center,
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -776,9 +749,6 @@ class _ProfilePageDesktopState extends State<ProfilePageDesktop>
   bool _isShowMenuBtn(AuthRepository authRepository, AuthState authState) =>
       authRepository.currentUser?.uid == widget.userDaata?.id ||
       widget.userDaata == null;
-
-  bool _isAuthenticated(AuthState authState) =>
-      authState.status == AuthStatus.authenticated;
 
   Future<void> toEditProfile(BuildContext context) async {
     // User user = await futureUserData1!;
@@ -800,127 +770,125 @@ class _ProfilePageDesktopState extends State<ProfilePageDesktop>
     isToEditProfile = false;
   }
 
-  Theme gameFavView(String uid) {
+  SizedBox gameFavView(String uid) {
     UserRepository repository = RepositoryProvider.of<UserRepository>(context);
-    return Theme(
-      data: Theme.of(context).copyWith(
-        useMaterial3: false,
-      ),
-      child: SizedBox(
-        width: 400,
-        child: BlocConsumer<GameFavCubit, GameFavState>(
-          listener: (context, state) {
-            if (state.sattus == GameFavSattus.succes) {
-              gameFavs = state.gameFav!;
-            }
-          },
-          builder: (_, state) {
-            return FutureBuilder(
-                future: repository.getSelectedGames(uid),
-                builder: (context, AsyncSnapshot<List<GameFav>> snapshot) {
-                  List<GameFav>? games = snapshot.data;
+    return SizedBox(
+      width: 400,
+      child: BlocConsumer<GameFavCubit, GameFavState>(
+        listener: (context, state) {
+          if (state.sattus == GameFavSattus.succes) {
+            gameFavs = state.gameFav!;
+          }
+        },
+        builder: (_, state) {
+          return FutureBuilder(
+              future: repository.getSelectedGames(uid),
+              builder: (context, AsyncSnapshot<List<GameFav>> snapshot) {
+                List<GameFav>? games = snapshot.data;
 
-                  if (!snapshot.hasData) {
-                    return Container();
-                  }
-                  if (snapshot.hasData) {
-                    gameFavs = games!;
-                  }
-                  return BlocBuilder<ProfileCubit, ProfileState>(
-                    buildWhen: (previous, current) {
-                      if (current is ShowLessBio) {
-                        return false;
-                      } else if (current is ShowMoreBio) {
-                        return false;
-                      }
-                      return true;
-                    },
-                    builder: (_, state) {
-                      List<Widget> items = [
-                        ...List<Widget>.generate(
-                          games!.length,
-                          (index) => Chip(
-                            materialTapTargetSize:
-                                MaterialTapTargetSize.shrinkWrap,
-                            visualDensity: VisualDensity.compact,
-                            avatar: CircleAvatar(
-                              radius: 8,
-                              backgroundColor:
-                                  Theme.of(context).colorScheme.secondary,
-                              backgroundImage: CachedNetworkImageProvider(
-                                games[index].gameImage!,
-                              ),
-                            ),
-                            label: Text(
-                              games[index].gameTitle!,
-                              style: const TextStyle(fontSize: 12),
+                if (!snapshot.hasData) {
+                  return Container();
+                }
+                if (snapshot.hasData) {
+                  gameFavs = games!;
+                }
+                return BlocBuilder<ProfileCubit, ProfileState>(
+                  buildWhen: (previous, current) {
+                    if (current is ShowLessBio) {
+                      return false;
+                    } else if (current is ShowMoreBio) {
+                      return false;
+                    }
+                    return true;
+                  },
+                  builder: (_, state) {
+                    List<Widget> items = [
+                      ...List<Widget>.generate(
+                        games!.length,
+                        (index) => Chip(
+                          side: BorderSide.none,
+                          materialTapTargetSize:
+                              MaterialTapTargetSize.shrinkWrap,
+                          visualDensity: VisualDensity.compact,
+                          avatar: CircleAvatar(
+                            radius: 8,
+                            backgroundColor:
+                                Theme.of(context).colorScheme.secondary,
+                            backgroundImage: CachedNetworkImageProvider(
+                              games[index].gameImage!,
                             ),
                           ),
-                        ).toList(),
-                      ];
-                      if (state is ShowMoreGameFav) {
-                        return Wrap(
-                          spacing: 3,
-                          runSpacing: Dimens.DIMENS_3,
-                          children: [
-                            ...items,
-                            items.length > 3
-                                ? GestureDetector(
-                                    onTap: () {
-                                      BlocProvider.of<ProfileCubit>(context)
-                                          .seeMoreGameFavHandle();
-                                    },
-                                    child: Chip(
-                                      materialTapTargetSize:
-                                          MaterialTapTargetSize.shrinkWrap,
-                                      visualDensity: VisualDensity.compact,
-                                      label: Text(
-                                        LocaleKeys.label_see_less
-                                            .tr()
-                                            .replaceAll('.', ''),
-                                        style: const TextStyle(fontSize: 11),
-                                      ),
-                                    ),
-                                  )
-                                : Container()
-                          ],
-                        );
-                      }
+                          label: Text(
+                            games[index].gameTitle!,
+                            style: const TextStyle(fontSize: 12),
+                          ),
+                        ),
+                      ).toList(),
+                    ];
+                    if (state is ShowMoreGameFav) {
                       return Wrap(
-                          spacing: 3.0, // gap between adjacent chips
-                          runSpacing: Dimens.DIMENS_3,
-                          children: items.isEmpty
-                              ? []
-                              : items.length < 3
-                                  ? items
-                                  : [
-                                      ...items.getRange(0, 3).toList(),
-                                      items.length > 3
-                                          ? GestureDetector(
-                                              onTap: () {
-                                                BlocProvider.of<ProfileCubit>(
-                                                        context)
-                                                    .seeMoreGameFavHandle();
-                                              },
-                                              child: Chip(
-                                                materialTapTargetSize:
-                                                    MaterialTapTargetSize
-                                                        .shrinkWrap,
-                                                visualDensity:
-                                                    VisualDensity.compact,
-                                                label: Icon(
-                                                  Icons.more_horiz,
-                                                  size: Dimens.DIMENS_20,
-                                                ),
+                        spacing: 3,
+                        runSpacing: Dimens.DIMENS_3,
+                        children: [
+                          ...items,
+                          items.length > 3
+                              ? GestureDetector(
+                                  onTap: () {
+                                    BlocProvider.of<ProfileCubit>(context)
+                                        .seeMoreGameFavHandle();
+                                  },
+                                  child: Chip(
+                                    side: BorderSide.none,
+                                    materialTapTargetSize:
+                                        MaterialTapTargetSize.shrinkWrap,
+                                    visualDensity: VisualDensity.compact,
+                                    label: Text(
+                                      LocaleKeys.label_see_less
+                                          .tr()
+                                          .replaceAll('.', ''),
+                                      style: const TextStyle(fontSize: 11),
+                                    ),
+                                  ),
+                                )
+                              : Container()
+                        ],
+                      );
+                    }
+                    return Wrap(
+                        spacing: 3.0, // gap between adjacent chips
+                        runSpacing: Dimens.DIMENS_3,
+                        children: items.isEmpty
+                            ? []
+                            : items.length < 3
+                                ? items
+                                : [
+                                    ...items.getRange(0, 3).toList(),
+                                    items.length > 3
+                                        ? GestureDetector(
+                                            onTap: () {
+                                              BlocProvider.of<ProfileCubit>(
+                                                      context)
+                                                  .seeMoreGameFavHandle();
+                                            },
+                                            child: Chip(
+                                               side: BorderSide.none,
+                                              materialTapTargetSize:
+                                                  MaterialTapTargetSize
+                                                      .shrinkWrap,
+                                              visualDensity:
+                                                  VisualDensity.compact,
+                                              label: Icon(
+                                                Icons.more_horiz,
+                                                size: Dimens.DIMENS_20,
                                               ),
-                                            )
-                                          : Container()
-                                    ]);
-                    },
-                  );
-                });
-          },
-        ),
+                                            ),
+                                          )
+                                        : Container()
+                                  ]);
+                  },
+                );
+              });
+        },
       ),
     );
   }
@@ -951,79 +919,7 @@ class _ProfilePageDesktopState extends State<ProfilePageDesktop>
                   }
                 },
                 builder: (context, state) {
-                  return BlocBuilder<ProfileCubit, ProfileState>(
-                    buildWhen: (previous, current) {
-                      if (current is ShowLessGameFav) {
-                        return false;
-                      } else if (current is ShowMoreGameFav) {
-                        return false;
-                      }
-                      return true;
-                    },
-                    builder: (context, state) {
-                      int? maxLines = 5;
-                      if (state is ShowMoreBio) {
-                        maxLines = null;
-                      } else if (state is ShowLessBio) {
-                        maxLines = 5;
-                      }
-                      return ExpandableText(text: bio!);
-                      return LayoutBuilder(builder: (context, constraints) {
-                        String text = bio!;
-                        final textPainter = TextPainter(
-                          text: TextSpan(
-                            text: text,
-                            style: const TextStyle(
-                                fontSize: 14, fontWeight: FontWeight.w400),
-                          ),
-                          textDirection: TextDirection.ltr,
-                        );
-                        textPainter.layout(maxWidth: 300);
-                        final lines = (textPainter.size.height /
-                                textPainter.preferredLineHeight)
-                            .ceil();
-
-                        debugPrint('text is overflow  ${lines > 5}');
-
-                        return Column(
-                          mainAxisSize: MainAxisSize.min,
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              bio!,
-                              overflow: TextOverflow.ellipsis,
-                              maxLines: maxLines,
-                              textAlign: TextAlign.left,
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w400,
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .onSurface
-                                    .withOpacity(0.8),
-                              ),
-                            ),
-                            if (lines > 5)
-                              InkWell(
-                                onTap: () =>
-                                    BlocProvider.of<ProfileCubit>(context)
-                                        .seeMoreBioHandle(),
-                                child: Text(state is ShowLessBio ||
-                                        state is ProfileInitial
-                                    ? LocaleKeys.label_see_more.tr()
-                                    : LocaleKeys.label_see_less.tr()),
-                              )
-                            else
-                              Container(),
-                            SizedBox(
-                              height: Dimens.DIMENS_5,
-                            )
-                          ],
-                        );
-                      });
-                    },
-                  );
+                  return ExpandableText(text: bio!);
                 },
               );
             });
@@ -1214,7 +1110,7 @@ class _ProfilePageDesktopState extends State<ProfilePageDesktop>
               String followingCount = numberFormat(context.locale, following);
               return InkWell(
                 splashColor: Colors.transparent,
-                overlayColor: const MaterialStatePropertyAll<Color>(
+                overlayColor: const WidgetStatePropertyAll<Color>(
                   Colors.transparent,
                 ),
                 onTap: () {
@@ -1267,7 +1163,7 @@ class _ProfilePageDesktopState extends State<ProfilePageDesktop>
               String followerCount = numberFormat(context.locale, follwers!);
               return InkWell(
                 splashColor: Colors.transparent,
-                overlayColor: const MaterialStatePropertyAll<Color>(
+                overlayColor: const WidgetStatePropertyAll<Color>(
                   Colors.transparent,
                 ),
                 onTap: () {
@@ -1307,26 +1203,6 @@ class _ProfilePageDesktopState extends State<ProfilePageDesktop>
               );
             });
       },
-    );
-  }
-
-  void _showFollowDialog(
-    BuildContext context, {
-    required User userData,
-    required int initialIndex,
-  }) {
-    showDialog(
-      context: context,
-      builder: (context) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        child: SizedBox(
-          width: 800,
-          child: FollowingsNFollowers(
-            tab: initialIndex == 0 ? 'followers' : 'following',
-            userName: userData.userName!,
-          ),
-        ),
-      ),
     );
   }
 
