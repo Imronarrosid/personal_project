@@ -50,7 +50,7 @@ class AppTheme {
     ),
     tabBarTheme: TabBarTheme(
         unselectedLabelColor: Colors.white38,
-        overlayColor: MaterialStateProperty.all<Color>(Colors.black12)),
+        overlayColor: WidgetStateProperty.all<Color>(Colors.black12)),
     chipTheme: ChipThemeData(
       backgroundColor: COLOR_black_900,
       selectedColor: COLOR_white_fff5f5f5,
