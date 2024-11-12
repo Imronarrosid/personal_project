@@ -1,3 +1,4 @@
+import 'package:personal_project/presentation/ui/home/navbar_notifier/navbar_notifier.dart';
 import 'package:solar_icons/solar_icons.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -164,6 +165,10 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                   overlayColor:
                       const WidgetStatePropertyAll<Color>(Colors.transparent),
                   onTap: () {
+                    context.pop();
+                    context
+                        .read<NavbarNotifier>()
+                        .chnageNavbarState(NavbarState.show);
                     // _draggController.animateTo(0.0,
                     //     duration: const Duration(milliseconds: 200),
                     //     curve: Curves.easeInOut);
@@ -327,7 +332,8 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                                     state.status == AuthStatus.authenticated,
                                 contentPadding: EdgeInsets.symmetric(
                                     horizontal: Dimens.DIMENS_12),
-                                hintText: '${LocaleKeys.message_add_comments.tr()}...',
+                                hintText:
+                                    '${LocaleKeys.message_add_comments.tr()}...',
                                 hintStyle: TextStyle(
                                     fontWeight: FontWeight.normal,
                                     color: Theme.of(context)
@@ -401,7 +407,7 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                                       _isForReply = false;
                                     }
                                     _textEditingController.clear();
-                                    FocusScope.of(context).unfocus();
+                                    _focusNode.unfocus();
                                   }
                                   debugPrint('plane');
                                 }
@@ -1195,6 +1201,9 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
               //       curve: Curves.easeInOut);
               // }
               context.pop();
+              context
+                  .read<NavbarNotifier>()
+                  .chnageNavbarState(NavbarState.show);
             },
             icon: const Icon(Icons.close_rounded)),
       ],
