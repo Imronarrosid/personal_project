@@ -1,4 +1,4 @@
-import 'package:bootstrap_icons/bootstrap_icons.dart';
+import 'package:solar_icons/solar_icons.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -11,7 +11,6 @@ import 'package:personal_project/data/repository/coment_repository.dart';
 import 'package:personal_project/data/repository/coments_paging_repository.dart';
 import 'package:personal_project/data/repository/replies_repository.dart';
 import 'package:personal_project/domain/model/comment_model.dart';
-import 'package:personal_project/domain/model/profile_data_model.dart';
 import 'package:personal_project/domain/model/reply_models.dart';
 import 'package:personal_project/domain/model/user.dart';
 import 'package:personal_project/domain/reporsitory/auth_reposotory.dart';
@@ -27,9 +26,12 @@ import 'package:personal_project/presentation/ui/comments/cubit/like_comment_cub
 import 'package:personal_project/presentation/ui/video/list_video/cubit/video_size_cubit.dart';
 import 'package:personal_project/presentation/ui/video/video_item/video_padding_notifier.dart';
 import 'package:personal_project/utils/number_format.dart';
+import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as tago;
 
+import '../../../utils/debug_mode_print.dart';
 import 'cubit/replies_cubit.dart';
+import 'local_comments_notifier.dart';
 
 showCommentsBottomSheet(
   BuildContext context, {
@@ -39,7 +41,7 @@ showCommentsBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       elevation: 0,
-      enableDrag: false,
+      enableDrag: true,
       builder: (_) {
         return CommentBottomSheet(
           postId: postId,
@@ -60,10 +62,11 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
   final TextEditingController _textEditingController = TextEditingController();
 
   final List<Comment> _newCommentItems = [];
-  final GlobalKey<ScaffoldState> _globalKey = GlobalKey<ScaffoldState>();
-  final _draggableController = DraggableScrollableController();
+  late final DraggableScrollableController _draggController;
 
   final FocusNode _focusNode = FocusNode();
+
+  final double hearthSize = 16;
 
   bool _isForReply = false;
   bool _isCanPop = true;
@@ -76,13 +79,16 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
 
   @override
   void initState() {
-    _draggableController.addListener(() {
-      debugPrint('height ${_draggableController.size.toString()}');
-      double size =
-          ((MediaQuery.of(context).size.height * _draggableController.size) -
-              85);
-      VideoPaddingNOtifire.instance.setBottomPdding(bottomSheetHeight: size);
-    });
+    _draggController = DraggableScrollableController();
+
+    // _draggableController.addListener(() {
+    //   debugModePrint('siAttached ${_draggableController.isAttached}');
+    //   debugPrint('height ${_draggableController.size.toString()}');
+    //   double size =
+    //       ((MediaQuery.of(context).size.height * _draggableController.size) -
+    //           85);
+    //   VideoPaddingNOtifire.instance.setBottomPdding(bottomSheetHeight: size);
+    // });
     super.initState();
   }
 
@@ -97,124 +103,114 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
           create: (context) => ComentsPagingRepository(),
         ),
       ],
-      child: MultiBlocProvider(
-        providers: [
-          BlocProvider(
-            create: (context) =>
-                CommentBloc(RepositoryProvider.of<CommentRepository>(context)),
-          ),
-          BlocProvider(
-            create: (context) => CommentsPagingBloc(
-                RepositoryProvider.of<ComentsPagingRepository>(context))
-              ..add(InitCommentsPagingEvent(postId: widget.postId)),
-          ),
-        ],
-        child: MultiBlocListener(
-          listeners: [
-            BlocListener<CommentBloc, CommentState>(
-              listener: (context, state) {
-                if (state.status == CommentStatus.succes) {
-                  Comment commentToMove = state.comment!;
-                  _newCommentItems.add(commentToMove);
-                }
-
-                if (state.status == CommentStatus.startReply) {
-                  _isForReply = true;
-                } else if (state.status == CommentStatus.replyAdded) {
-                  _isForReply = false;
-                }
-              },
+      child: ChangeNotifierProvider(
+        create: (context) => LocalCommentsNotifier(),
+        child: MultiBlocProvider(
+          providers: [
+            BlocProvider(
+              create: (context) => CommentBloc(
+                  RepositoryProvider.of<CommentRepository>(context)),
             ),
-            BlocListener<VideoSizeCubit, VideoSizeState>(
-              listener: (_, state) {
-                if (state is VideoSizeChanged) {
-                  if (state.size < 0.13 && _isCanPop) {
-                    // context.pop();
-                    // ignore: prefer_const_constructors
-                    _draggableController.animateTo(0.0,
-                        duration: const Duration(milliseconds: 200),
-                        curve: Curves.easeInOut);
-                    _isCanPop = false;
-                    debugPrint('pop');
-                  }
-                }
-              },
+            BlocProvider(
+              create: (context) => CommentsPagingBloc(
+                  RepositoryProvider.of<ComentsPagingRepository>(context))
+                ..add(InitCommentsPagingEvent(postId: widget.postId)),
             ),
           ],
-          child: Stack(
-            children: [
-              InkWell(
-                splashFactory: NoSplash.splashFactory,
-                splashColor: Colors.transparent,
-                overlayColor:
-                    const MaterialStatePropertyAll<Color>(Colors.transparent),
-                onTap: () {
-                  _draggableController.animateTo(0.0,
-                      duration: const Duration(milliseconds: 200),
-                      curve: Curves.easeInOut);
-                },
-                child: SizedBox(
-                  width: MediaQuery.of(context).size.width,
-                  height: MediaQuery.of(context).size.height,
-                ),
-              ),
-              GestureDetector(
-                onTap: () {
-                  FocusScope.of(context).unfocus();
-                },
-                child: DraggableScrollableSheet(
-                  initialChildSize:
-                      0.7, // Initial height as a fraction of the screen height
-                  maxChildSize: 0.7, // Maximum height when fully expanded
-                  minChildSize: 0.1, // Minimum height when collapsed,
-                  snap: true,
+          child: MultiBlocListener(
+            listeners: [
+              BlocListener<CommentBloc, CommentState>(
+                listener: (context, state) {
+                  if (state.status == CommentStatus.succes) {
+                    final LocalCommentsNotifier notifier =
+                        context.read<LocalCommentsNotifier>();
+                    Comment commentToMove = state.comment!;
 
-                  snapSizes: const <double>[0.7],
-                  controller: _draggableController,
-                  builder: (BuildContext context,
-                      ScrollController scrollController) {
-                    //To prevent comments list overlaped by header.
-                    scrollController.addListener(() {
-                      debugPrint('offset: //${scrollController.offset}');
-                      if (scrollController.offset > 0) {
-                        scrollController.jumpTo(0.0);
-                      }
-                    });
-
-                    return Scaffold(
-                      backgroundColor: Colors.transparent,
-                      key: _globalKey,
-                      body: Container(
-                        height: MediaQuery.of(context).size.height,
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.background,
-                          borderRadius: const BorderRadius.only(
-                            topLeft: Radius.circular(10),
-                            topRight: Radius.circular(10),
-                          ),
-                        ),
-                        child: Column(
-                          children: [
-                            Expanded(
-                              child: CustomScrollView(
-                                controller: scrollController,
-                                slivers: <Widget>[
-                                  _commentsHeaders(context),
-                                  _buildCommentsList(context, onRefresh: () {
-                                    return _refreshComments(context);
-                                  }),
-                                ],
-                              ),
-                            ),
-                            _buildCommnetsInput(context)
-                          ],
-                        ),
-                      ),
+                    notifier.addLocalComments(
+                      commentToMove,
+                      commentRepository:
+                          context.read<ComentsPagingRepository>(),
                     );
-                  },
-                ),
+                  }
+
+                  if (state.status == CommentStatus.startReply) {
+                    _isForReply = true;
+                  } else if (state.status == CommentStatus.replyAdded) {
+                    _isForReply = false;
+                  }
+                },
+              ),
+              BlocListener<VideoSizeCubit, VideoSizeState>(
+                listener: (_, state) {
+                  if (state is VideoSizeChanged) {
+                    if (state.size < 0.13 && _isCanPop) {
+                      // context.pop();
+                      // ignore: prefer_const_constructors
+                      // _draggableController.animateTo(0.0,
+                      //     duration: const Duration(milliseconds: 200),
+                      //     curve: Curves.easeInOut);
+                      _isCanPop = false;
+                      debugPrint('pop');
+                    }
+                  }
+                },
               ),
             ],
+            child: Stack(
+              children: [
+                InkWell(
+                  splashFactory: NoSplash.splashFactory,
+                  splashColor: Colors.transparent,
+                  overlayColor:
+                      const WidgetStatePropertyAll<Color>(Colors.transparent),
+                  onTap: () {
+                    // _draggController.animateTo(0.0,
+                    //     duration: const Duration(milliseconds: 200),
+                    //     curve: Curves.easeInOut);
+                  },
+                  child: SizedBox(
+                    width: MediaQuery.of(context).size.width,
+                    height: MediaQuery.of(context).size.height,
+                  ),
+                ),
+                GestureDetector(
+                  onTap: () {
+                    _focusNode.unfocus();
+                  },
+                  child: StatefulBuilder(builder: (context, setState) {
+                    return DraggableScrollableSheet(
+                      controller: _draggController
+                        ..addListener(
+                          () {
+                            debugModePrint('draggg');
+                          },
+                        ),
+                      expand: true,
+                      initialChildSize:
+                          0.7, // Initial height as a fraction of the screen height
+                      maxChildSize: 0.7, // Maximum height when fully expanded
+                      minChildSize: 0.1, // Minimum height when collapsed,
+                      snap: true,
+
+                      snapSizes: const <double>[0.7],
+                      builder: (BuildContext context,
+                          ScrollController scrollController) {
+                        debugModePrint(
+                            'isAttached${_draggController.isAttached}');
+
+                        return Scaffold(
+                          backgroundColor: Colors.transparent,
+                          appBar: _commentsHeaders(context, _draggController),
+                          // key: _globalKey,
+                          body: _commentPaging(),
+                          bottomNavigationBar: _buildCommnetsInput(context),
+                        );
+                      },
+                    );
+                  }),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -223,219 +219,209 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
 
   Widget _buildCommnetsInput(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(50),
-      ),
-      child: Container(
-        padding: EdgeInsets.symmetric(
-          vertical: Dimens.DIMENS_6,
-        ),
-        decoration:
-            BoxDecoration(color: Theme.of(context).colorScheme.tertiary),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            BlocConsumer<CommentBloc, CommentState>(
-              listener: (_, state) {
-                if (state.status == CommentStatus.startReply) {
-                  _repliedUserName = state.repliedUsername;
-                }
-              },
-              buildWhen: (previous, current) {
-                if (current.status == CommentStatus.startReply ||
-                    current.status == CommentStatus.initial ||
-                    current.status == CommentStatus.replyAdded) {
-                  return true;
-                }
-                return false;
-              },
-              builder: (_, state) {
-                return Padding(
-                  padding: EdgeInsets.only(
-                    left: Dimens.DIMENS_8,
-                  ),
-                  child: Visibility(
-                      visible: state.status == CommentStatus.startReply ||
-                          state.status == CommentStatus.typing ||
-                          state.status == CommentStatus.open,
-                      child: Row(
-                        children: [
-                          Text(
-                            '${LocaleKeys.label_reply_to.tr()} ',
-                            style: TextStyle(
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .onSurface
-                                  .withOpacity(0.6),
-                              fontWeight: FontWeight.w300,
-                            ),
-                          ),
-                          Text(' $_repliedUserName'),
-                          SizedBox(
-                            width: Dimens.DIMENS_8,
-                          ),
-                          InkWell(
-                            onTap: () {
-                              BlocProvider.of<CommentBloc>(context).add(
-                                UnfocusForm(),
-                              );
-                              _isForReply = false;
-                              FocusScope.of(context).unfocus();
-                            },
-                            child: Text(
-                              LocaleKeys.label_cancel.tr(),
-                              style: TextStyle(
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .onSurface
-                                    .withOpacity(
-                                      0.6,
-                                    ),
-                              ),
-                            ),
-                          )
-                        ],
-                      )),
-                );
-              },
-            ),
-            Row(
-              children: [
-                SizedBox(
-                  width: Dimens.DIMENS_8,
+      padding: EdgeInsets.only(
+          top: Dimens.DIMENS_6,
+          bottom: Dimens.DIMENS_6 + MediaQuery.of(context).viewInsets.bottom),
+      decoration: BoxDecoration(color: Theme.of(context).colorScheme.tertiary),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          BlocConsumer<CommentBloc, CommentState>(
+            listener: (_, state) {
+              if (state.status == CommentStatus.startReply) {
+                _repliedUserName = state.repliedUsername;
+              }
+            },
+            buildWhen: (previous, current) {
+              if (current.status == CommentStatus.startReply ||
+                  current.status == CommentStatus.initial ||
+                  current.status == CommentStatus.replyAdded) {
+                return true;
+              }
+              return false;
+            },
+            builder: (context, state) {
+              return Padding(
+                padding: EdgeInsets.only(
+                  left: Dimens.DIMENS_8,
                 ),
-                Expanded(
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(vertical: Dimens.DIMENS_6),
-                    child: Container(
-                      decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.tertiary,
-                          borderRadius: BorderRadius.circular(50)),
-                      child: BlocBuilder<AuthBloc, AuthState>(
-                        builder: (context, state) {
-                          return GestureDetector(
-                            onTap: () {
-                              final isAuthenticated =
-                                  RepositoryProvider.of<AuthRepository>(context)
-                                          .currentUser !=
-                                      null;
-                              if (isAuthenticated) {
-                                BlocProvider.of<CommentBloc>(context)
-                                    .add(TapCommentForm());
+                child: Visibility(
+                  visible: state.status == CommentStatus.startReply ||
+                      state.status == CommentStatus.typing ||
+                      state.status == CommentStatus.open,
+                  child: Row(
+                    children: [
+                      Text(
+                        '${LocaleKeys.label_reply_to.tr()} ',
+                        style: TextStyle(
+                          color: Theme.of(context)
+                              .colorScheme
+                              .onSurface
+                              .withOpacity(0.6),
+                          fontWeight: FontWeight.w300,
+                        ),
+                      ),
+                      Text(' $_repliedUserName'),
+                      SizedBox(
+                        width: Dimens.DIMENS_8,
+                      ),
+                      InkWell(
+                        onTap: () {
+                          BlocProvider.of<CommentBloc>(context).add(
+                            UnfocusForm(),
+                          );
+                          _isForReply = false;
+                          _focusNode.unfocus();
+                        },
+                        child: Text(
+                          LocaleKeys.label_cancel.tr(),
+                          style: TextStyle(
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onSurface
+                                .withOpacity(
+                                  0.6,
+                                ),
+                          ),
+                        ),
+                      )
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+          Row(
+            children: [
+              SizedBox(
+                width: Dimens.DIMENS_8,
+              ),
+              Expanded(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(vertical: Dimens.DIMENS_6),
+                  child: Container(
+                    decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.surface,
+                        borderRadius: BorderRadius.circular(10)),
+                    child: BlocBuilder<AuthBloc, AuthState>(
+                      builder: (context, state) {
+                        return GestureDetector(
+                          onTap: () {
+                            final isAuthenticated =
+                                RepositoryProvider.of<AuthRepository>(context)
+                                        .currentUser !=
+                                    null;
+                            if (isAuthenticated) {
+                              BlocProvider.of<CommentBloc>(context)
+                                  .add(TapCommentForm());
+                            } else {
+                              showAuthBottomSheetFunc(context);
+                            }
+                          },
+                          child: TextField(
+                            focusNode: _focusNode,
+                            controller: _textEditingController,
+                            decoration: InputDecoration(
+                                enabled:
+                                    state.status == AuthStatus.authenticated,
+                                contentPadding: EdgeInsets.symmetric(
+                                    horizontal: Dimens.DIMENS_12),
+                                hintText: '${LocaleKeys.message_add_comments.tr()}...',
+                                hintStyle: TextStyle(
+                                    fontWeight: FontWeight.normal,
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurface
+                                        .withOpacity(0.3)),
+                                border: OutlineInputBorder(
+                                    borderSide: BorderSide.none,
+                                    borderRadius: BorderRadius.circular(10))),
+                            textAlignVertical: TextAlignVertical.center,
+                            keyboardType: TextInputType.multiline,
+                            minLines: 1,
+                            maxLines: 3,
+                            onChanged: (text) {
+                              final CommentBloc commentsBloc =
+                                  BlocProvider.of<CommentBloc>(context);
+                              if (text.endsWith('\n')) {
+                                // Handle the Enter key press
+
+                                // You can add your custom logic here
+                              }
+                              if (text.isNotEmpty) {
+                                commentsBloc.add(InputComments());
                               } else {
-                                showAuthBottomSheetFunc(context);
+                                commentsBloc.add(TapCommentForm());
                               }
                             },
-                            child: Container(
-                              decoration: BoxDecoration(
-                                  color:
-                                      Theme.of(context).colorScheme.background,
-                                  borderRadius: BorderRadius.circular(50)),
-                              child: TextField(
-                                focusNode: _focusNode,
-                                controller: _textEditingController,
-                                decoration: InputDecoration(
-                                    enabled: state.status ==
-                                        AuthStatus.authenticated,
-                                    contentPadding: EdgeInsets.symmetric(
-                                        horizontal: Dimens.DIMENS_12),
-                                    hintText:
-                                        LocaleKeys.message_add_comments.tr(),
-                                    hintStyle: const TextStyle(
-                                        fontWeight: FontWeight.normal),
-                                    border: OutlineInputBorder(
-                                        borderSide: BorderSide.none,
-                                        borderRadius:
-                                            BorderRadius.circular(50))),
-                                textAlignVertical: TextAlignVertical.center,
-                                keyboardType: TextInputType.multiline,
-                                minLines: 1,
-                                maxLines: 3,
-                                onChanged: (text) {
-                                  final CommentBloc commentsBloc =
-                                      BlocProvider.of<CommentBloc>(context);
-                                  if (text.endsWith('\n')) {
-                                    // Handle the Enter key press
-
-                                    // You can add your custom logic here
-                                  }
-                                  if (text.isNotEmpty) {
-                                    commentsBloc.add(InputComments());
-                                  } else {
-                                    commentsBloc.add(TapCommentForm());
-                                  }
-                                },
-                                onSubmitted: (_) {
-                                  debugPrint('Submit');
-                                },
-                              ),
-                            ),
-                          );
-                        },
-                      ),
+                            onSubmitted: (_) {
+                              debugPrint('Submit');
+                            },
+                          ),
+                        );
+                      },
                     ),
                   ),
                 ),
-                SizedBox(
-                  width: Dimens.DIMENS_5,
-                ),
-                BlocBuilder<CommentBloc, CommentState>(
-                  builder: (context, state) {
-                    if (state.status == CommentStatus.open ||
-                        state.status == CommentStatus.typing) {
-                      return ClipRRect(
-                        borderRadius: BorderRadius.circular(50),
-                        child: Material(
-                          color: Colors.transparent,
-                          child: IconButton(
-                            style: IconButton.styleFrom(
-                                backgroundColor: Colors.transparent),
-                            splashRadius: Dimens.DIMENS_70,
-                            onPressed: state.status == CommentStatus.typing &&
-                                    _textEditingController.text.isNotEmpty
-                                ? () {
-                                    if (_textEditingController
-                                        .text.isNotEmpty) {
-                                      if (!_isForReply) {
-                                        BlocProvider.of<CommentBloc>(context)
-                                            .add(
-                                          PostCommentEvent(
-                                              postId: widget.postId,
-                                              comment:
-                                                  _textEditingController.text),
-                                        );
-                                      } else {
-                                        _selectedRepliescubit!.addReplies(
-                                          postId: widget.postId,
-                                          reply: _textEditingController.text,
-                                          commentId: _selectedCommentId!,
-                                          repliedUid: _repliedUid!,
-                                        );
-                                        _isForReply = false;
-                                      }
-                                      _textEditingController.clear();
-                                      FocusScope.of(context).unfocus();
+              ),
+              SizedBox(
+                width: Dimens.DIMENS_5,
+              ),
+              BlocBuilder<CommentBloc, CommentState>(
+                builder: (context, state) {
+                  if (state.status == CommentStatus.open ||
+                      state.status == CommentStatus.typing) {
+                    return ClipRRect(
+                      borderRadius: BorderRadius.circular(50),
+                      child: Material(
+                        color: Colors.transparent,
+                        child: IconButton(
+                          style: IconButton.styleFrom(
+                              backgroundColor: Colors.transparent),
+                          splashRadius: Dimens.DIMENS_70,
+                          onPressed: state.status == CommentStatus.typing &&
+                                  _textEditingController.text.isNotEmpty
+                              ? () {
+                                  if (_textEditingController.text.isNotEmpty) {
+                                    if (!_isForReply) {
+                                      BlocProvider.of<CommentBloc>(context).add(
+                                        PostCommentEvent(
+                                            postId: widget.postId,
+                                            comment:
+                                                _textEditingController.text),
+                                      );
+                                    } else {
+                                      _selectedRepliescubit!.addReplies(
+                                        postId: widget.postId,
+                                        reply: _textEditingController.text,
+                                        commentId: _selectedCommentId!,
+                                        repliedUid: _repliedUid!,
+                                      );
+                                      _isForReply = false;
                                     }
-                                    debugPrint('plane');
+                                    _textEditingController.clear();
+                                    FocusScope.of(context).unfocus();
                                   }
-                                : null,
-                            icon: const Icon(
-                              BootstrapIcons.send,
-                            ),
+                                  debugPrint('plane');
+                                }
+                              : null,
+                          icon: const Icon(
+                            Icons.send,
                           ),
                         ),
-                      );
-                    }
-                    return Container();
-                  },
-                ),
-                SizedBox(
-                  width: Dimens.DIMENS_8,
-                ),
-              ],
-            ),
-          ],
-        ),
+                      ),
+                    );
+                  }
+                  return Container();
+                },
+              ),
+              SizedBox(
+                width: Dimens.DIMENS_8,
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -622,13 +608,15 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                                     LikeCommentState>(
                                   builder: (context, state) {
                                     if (state is CommentLiked) {
-                                      return const Icon(
-                                        Icons.favorite,
+                                      return Icon(
+                                        SolarIconsBold.heart,
+                                        size: hearthSize,
                                         color: Colors.red,
                                       );
                                     } else if (state is UnilkedComment) {
                                       return Icon(
-                                        Icons.favorite_border_outlined,
+                                        SolarIconsOutline.heart,
+                                        size: hearthSize,
                                         color: Theme.of(context)
                                             .colorScheme
                                             .onSurface
@@ -636,12 +624,14 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                                       );
                                     }
                                     return comment.likes.contains(userUid)
-                                        ? const Icon(
-                                            Icons.favorite,
+                                        ? Icon(
+                                            SolarIconsBold.heart,
+                                            size: hearthSize,
                                             color: Colors.red,
                                           )
                                         : Icon(
-                                            Icons.favorite_border_outlined,
+                                            SolarIconsOutline.heart,
+                                            size: hearthSize,
                                             color: Theme.of(context)
                                                 .colorScheme
                                                 .onSurface
@@ -806,7 +796,8 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
       },
       builder: (context, state) {
         debugPrint('streamrply ${state.toString()}');
-        if (state.isLastReply ?? false) {
+        if ((state.isLastReply ?? false) &&
+            state.status == RepliesStatus.loadReplies) {
           return StreamBuilder(
               stream: RepositoryProvider.of<RepliesRepository>(context)
                   .repliesStream(postId: postId, commentId: comment.id!),
@@ -1050,13 +1041,15 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                                       LikeCommentState>(
                                     builder: (context, state) {
                                       if (state is ReplyLiked) {
-                                        return const Icon(
-                                          Icons.favorite,
+                                        return Icon(
+                                          SolarIconsBold.heart,
+                                          size: hearthSize,
                                           color: Colors.red,
                                         );
                                       } else if (state is UnilkedReply) {
                                         return Icon(
-                                          Icons.favorite_border_outlined,
+                                          SolarIconsOutline.heart,
+                                          size: hearthSize,
                                           color: Theme.of(context)
                                               .colorScheme
                                               .onSurface
@@ -1064,12 +1057,14 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                                         );
                                       }
                                       return reply.likes.contains(userUid)
-                                          ? const Icon(
-                                              Icons.favorite,
+                                          ? Icon(
+                                              SolarIconsBold.heart,
+                                              size: hearthSize,
                                               color: Colors.red,
                                             )
                                           : Icon(
-                                              Icons.favorite_border_outlined,
+                                              SolarIconsOutline.heart,
+                                              size: hearthSize,
                                               color: Theme.of(context)
                                                   .colorScheme
                                                   .onSurface
@@ -1112,65 +1107,6 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
     );
   }
 
-  ListTile _placeHolder(BuildContext context) {
-    return ListTile(
-      isThreeLine: true,
-      visualDensity: VisualDensity.compact,
-      minLeadingWidth: Dimens.DIMENS_28,
-      tileColor: Colors.transparent,
-      contentPadding: EdgeInsets.only(
-        right: Dimens.DIMENS_24,
-      ),
-      leading: CircleAvatar(
-        backgroundColor:
-            Theme.of(context).colorScheme.onSurface.withOpacity(0.4),
-        radius: Dimens.DIMENS_15,
-      ),
-      title: Container(
-        height: Dimens.DIMENS_12,
-        margin: EdgeInsets.only(
-          right: Dimens.DIMENS_50,
-          bottom: Dimens.DIMENS_6,
-        ),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(8),
-          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4),
-        ),
-      ),
-      subtitle: Container(
-        height: Dimens.DIMENS_24,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(8),
-          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4),
-        ),
-      ),
-    );
-  }
-
-  SliverFillRemaining _buildCommentsList(
-    BuildContext context, {
-    required Future<void> Function() onRefresh,
-  }) {
-    return SliverFillRemaining(
-      child: RefreshIndicator(
-        onRefresh: onRefresh,
-        child: SizedBox(
-          height: MediaQuery.of(context).size.height,
-          child: SingleChildScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            child: Column(
-              children: [
-                _commentFromLocal(),
-                // _commentStream(context),
-                _commentPaging(),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
   BlocBuilder<CommentsPagingBloc, CommentsPagingState> _commentPaging() {
     return BlocBuilder<CommentsPagingBloc, CommentsPagingState>(
       buildWhen: (previous, current) {
@@ -1181,41 +1117,55 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
       },
       builder: (context, state) {
         if (state is CommentsPagingInitialized) {
-          return PagedListView<int, Comment>(
-            pagingController: state.controller!,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            builderDelegate:
-                PagedChildBuilderDelegate(noItemsFoundIndicatorBuilder: (_) {
-              ///Because new comment is not in this paging widget
-              ///if [_newCommentItems] is not empty but the paging widget
-              ///is empty ,this emty state widget will removed
-              return BlocBuilder<CommentBloc, CommentState>(
-                builder: (context, state) {
-                  return _newCommentItems.isNotEmpty
-                      ? Container()
-                      : Padding(
-                          padding: EdgeInsets.only(top: Dimens.DIMENS_50),
-                          child: Center(
-                            child: Text(
-                              LocaleKeys.message_no_comment_yet.tr(),
-                              style: Theme.of(context).textTheme.titleMedium,
-                            ),
-                          ),
-                        );
-                },
-              );
-            }, itemBuilder: (
-              context,
-              item,
-              index,
-            ) {
-              return _commentItem(
-                context,
-                comment: item,
-                postId: widget.postId,
-              );
-            }),
+          return Container(
+            color: Theme.of(context).colorScheme.surface,
+            child: Consumer<LocalCommentsNotifier>(
+              builder: (context, value, child) => ListenableBuilder(
+                  listenable: value,
+                  builder: (context, child) {
+                    return RefreshIndicator(
+                      onRefresh: () async => _refreshComments(context),
+                      child: PagedListView<int, Comment>(
+                        pagingController: state.controller!,
+                        builderDelegate: PagedChildBuilderDelegate(
+                            noItemsFoundIndicatorBuilder: (_) {
+                          ///Because new comment is not in this paging widget
+                          ///if [_newCommentItems] is not empty but the paging widget
+                          ///is empty ,this emty state widget will removed
+                          return BlocBuilder<CommentBloc, CommentState>(
+                            builder: (context, state) {
+                              return _newCommentItems.isNotEmpty
+                                  ? Container()
+                                  : Padding(
+                                      padding: EdgeInsets.only(
+                                          top: Dimens.DIMENS_50),
+                                      child: Center(
+                                        child: Text(
+                                          LocaleKeys.message_no_comment_yet
+                                              .tr(),
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .titleMedium,
+                                        ),
+                                      ),
+                                    );
+                            },
+                          );
+                        }, itemBuilder: (
+                          context,
+                          item,
+                          index,
+                        ) {
+                          return _commentItem(
+                            context,
+                            comment: item,
+                            postId: widget.postId,
+                          );
+                        }),
+                      ),
+                    );
+                  }),
+            ),
           );
         }
         return Container();
@@ -1223,54 +1173,28 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
     );
   }
 
-  StreamBuilder<List<Comment>> _commentStream(BuildContext context) {
-    return StreamBuilder(
-        stream: RepositoryProvider.of<CommentRepository>(context)
-            .commmentsStream(postId: widget.postId),
-        builder: (context, snapshot) {
-          List<Comment>? comments = snapshot.data;
-
-          if (!snapshot.hasData || snapshot.hasError) {
-            return Container();
-          }
-          if (snapshot.hasData) {
-            // _newCommentItems.clear();
-            context.read<CommentBloc>().add(RemoveLocaleCommentEvent());
-          }
-          return ListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              reverse: true,
-              itemCount: comments!.length,
-              itemBuilder: (_, index) {
-                Comment comment = comments[index];
-                return _commentItem(context,
-                    postId: widget.postId, comment: comment);
-              });
-        });
-  }
-
-  SliverAppBar _commentsHeaders(BuildContext context) {
-    return SliverAppBar(
+  AppBar _commentsHeaders(
+      BuildContext context, DraggableScrollableController draggableController) {
+    return AppBar(
       title: Text(LocaleKeys.title_comments.tr()),
-      floating: false,
-      pinned: true,
       elevation: 0.2,
       scrolledUnderElevation: 1,
+      backgroundColor: Theme.of(context).colorScheme.tertiary,
       shadowColor: COLOR_white_fff5f5f5,
-      forceElevated: true,
       leading: Container(),
       leadingWidth: Dimens.DIMENS_3,
       actions: [
         IconButton(
             onPressed: () {
-              BlocProvider.of<VideoSizeCubit>(context).changeVideoSize(0);
-              // context.pop();
-              _draggableController.animateTo(0.1,
-                  duration: const Duration(
-                    milliseconds: 200,
-                  ),
-                  curve: Curves.easeInOut);
+              // BlocProvider.of<VideoSizeCubit>(context).changeVideoSize(0);
+              // if (_draggController.isAttached) {
+              //   draggableController.animateTo(0.1,
+              //       duration: const Duration(
+              //         milliseconds: 200,
+              //       ),
+              //       curve: Curves.easeInOut);
+              // }
+              context.pop();
             },
             icon: const Icon(Icons.close_rounded)),
       ],
@@ -1287,26 +1211,6 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
           height: 1,
         ),
       ),
-    );
-  }
-
-  BlocBuilder<CommentBloc, CommentState> _commentFromLocal() {
-    return BlocBuilder<CommentBloc, CommentState>(
-      builder: (_, state) {
-        return ListView.builder(
-          reverse: true,
-          shrinkWrap: true,
-          itemCount: _newCommentItems.length,
-          physics: const NeverScrollableScrollPhysics(),
-          itemBuilder: ((context, index) {
-            return _commentItem(
-              context,
-              comment: _newCommentItems[index],
-              postId: widget.postId,
-            );
-          }),
-        );
-      },
     );
   }
 
@@ -1358,7 +1262,8 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
       VideoPaddingNOtifire.instance.setBottomPdding(bottomSheetHeight: 0);
     }
     _textEditingController.dispose();
-    _draggableController.dispose();
+    // _draggableController.dispose();
+    _focusNode.dispose();
     super.dispose();
   }
 }
