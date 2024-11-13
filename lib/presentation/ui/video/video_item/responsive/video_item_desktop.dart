@@ -4,7 +4,6 @@ import 'package:easy_localization/easy_localization.dart' as ezl;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:go_router/go_router.dart';
 import 'package:personal_project/config/bloc_status_enum.dart';
 import 'package:personal_project/constant/color.dart';
@@ -37,6 +36,7 @@ import 'package:visibility_detector/visibility_detector.dart';
 
 import '../../../../../data/repository/upload_repository.dart';
 import '../../../../../utils/debug_mode_print.dart';
+import '../../../../shared_components/flutter_toast_func.dart';
 
 class VideoItemDesktop extends StatefulWidget {
   final int index;
@@ -67,8 +67,6 @@ class _VideoItemDesktopState extends State<VideoItemDesktop>
   bool isActive = true;
   bool isBufferingIndicatorVisible = false;
   bool isCommentsShowed = false;
-
-  
 
   @override
   Widget build(BuildContext context) {
@@ -497,16 +495,8 @@ class _VideoItemDesktopState extends State<VideoItemDesktop>
                           onTap: () {
                             debugModePrint(
                                 'lmnop${LocaleKeys.message_share_featur_not_ready.tr()}');
-                            Fluttertoast.showToast(
-                              msg: LocaleKeys.message_share_featur_not_ready
-                                  .tr(),
-                              toastLength: Toast.LENGTH_SHORT,
-                              gravity: ToastGravity.TOP,
-                              timeInSecForIosWeb: 1,
-                              backgroundColor: COLOR_black_ff121212,
-                              textColor: Colors.white,
-                              fontSize: 16.0,
-                            );
+                            showFlutterToast(
+                                msg: LocaleKeys.message_share_featur_not_ready);
                           },
                           child: Transform.flip(
                             flipX: true,
@@ -547,8 +537,7 @@ class _VideoItemDesktopState extends State<VideoItemDesktop>
                                 ),
                               );
                             } else {
-                              Fluttertoast.showToast(
-                                  gravity: ToastGravity.TOP,
+                              showFlutterToast(
                                   msg: LocaleKeys.message_no_game.tr());
                             }
                           },
@@ -670,7 +659,8 @@ class _VideoItemDesktopState extends State<VideoItemDesktop>
                               //   context,
                               //   postId: widget.videoData.id!,
                               // );
-                              debugModePrint('isCommentShowed $isCommentsShowed');
+                              debugModePrint(
+                                  'isCommentShowed $isCommentsShowed');
                               BlocProvider.of<DesktopCommentsBloc>(context)
                                   .add(CloseDesktopComments());
                               debugModePrint('CommentStatus ${state.status}');
@@ -705,15 +695,9 @@ class _VideoItemDesktopState extends State<VideoItemDesktop>
                           onTap: () {
                             debugModePrint(
                                 'lmnop${LocaleKeys.message_share_featur_not_ready.tr()}');
-                            Fluttertoast.showToast(
+                            showFlutterToast(
                               msg: LocaleKeys.message_share_featur_not_ready
                                   .tr(),
-                              toastLength: Toast.LENGTH_SHORT,
-                              gravity: ToastGravity.TOP,
-                              timeInSecForIosWeb: 1,
-                              backgroundColor: COLOR_black_ff121212,
-                              textColor: Colors.white,
-                              fontSize: 16.0,
                             );
                           },
                           child: Transform.flip(
@@ -755,8 +739,7 @@ class _VideoItemDesktopState extends State<VideoItemDesktop>
                                 ),
                               );
                             } else {
-                              Fluttertoast.showToast(
-                                  gravity: ToastGravity.TOP,
+                              showFlutterToast(
                                   msg: LocaleKeys.message_no_game.tr());
                             }
                           },
@@ -799,8 +782,7 @@ class _VideoItemDesktopState extends State<VideoItemDesktop>
       );
     } else {
       return InkWell(
-          overlayColor:
-              const WidgetStatePropertyAll<Color>(Colors.transparent),
+          overlayColor: const WidgetStatePropertyAll<Color>(Colors.transparent),
           onTap: () {
             final VideoPlayerRepository repo =
                 RepositoryProvider.of<VideoPlayerRepository>(context);
