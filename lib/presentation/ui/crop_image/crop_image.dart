@@ -3,9 +3,10 @@ import 'dart:io';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:image_cropper/image_cropper.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:personal_project/presentation/l10n/stings.g.dart';
 
-Future<File?> cropImage(
+Future<XFile?> cropImage(
   BuildContext context, {
   required File? pickedFile,
 }) async {
@@ -16,11 +17,11 @@ Future<File?> cropImage(
       sourcePath: pickedFile!.path,
       compressFormat: ImageCompressFormat.jpg,
       compressQuality: 100,
-      aspectRatioPresets: [CropAspectRatioPreset.square],
+      aspectRatio: const CropAspectRatio(ratioX: 4, ratioY: 4),
       uiSettings: [
         AndroidUiSettings(
             toolbarTitle: LocaleKeys.title_crop.tr(),
-            toolbarColor: Theme.of(context).colorScheme.background,
+            toolbarColor: Theme.of(context).colorScheme.surface,
             toolbarWidgetColor: Theme.of(context).colorScheme.onSurface,
             initAspectRatio: CropAspectRatioPreset.square,
             hideBottomControls: true,
@@ -32,21 +33,17 @@ Future<File?> cropImage(
         ),
         WebUiSettings(
           context: context,
-          presentStyle: CropperPresentStyle.page,
-          boundary: const CroppieBoundary(
+          presentStyle: WebPresentStyle.page,
+          size: const CropperSize(
             width: 520,
             height: 520,
           ),
-          viewPort:
-              const CroppieViewPort(width: 480, height: 480, type: 'square'),
-          enableExif: true,
-          enableZoom: true,
-          showZoomer: true,
+          viewwMode: WebViewMode.mode_2,
         ),
       ],
     );
 
-    return File(croppedFile!.path);
+    return XFile(croppedFile!.path);
   } catch (e) {
     return null;
   }
