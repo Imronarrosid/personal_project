@@ -29,20 +29,22 @@ import 'package:personal_project/presentation/ui/video/video_item/video_padding_
 import 'package:personal_project/utils/number_format.dart';
 import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as tago;
+import 'package:visibility_detector/visibility_detector.dart';
 
 import '../../../utils/debug_mode_print.dart';
 import 'cubit/replies_cubit.dart';
 import 'local_comments_notifier.dart';
 
-showCommentsBottomSheet(
+Future showCommentsBottomSheet(
   BuildContext context, {
   required String postId,
 }) {
-  return showBottomSheet(
+  return showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       elevation: 0,
       enableDrag: true,
+      isScrollControlled: true,
       builder: (_) {
         return CommentBottomSheet(
           postId: postId,
@@ -71,7 +73,7 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
 
   bool _isForReply = false;
   bool _isCanPop = true;
-
+  bool onBackButtonPressed = false;
   String? _selectedCommentId;
   String? _repliedUid;
   String? _repliedUserName;
@@ -165,10 +167,8 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                   overlayColor:
                       const WidgetStatePropertyAll<Color>(Colors.transparent),
                   onTap: () {
+                    onBackButtonPressed = true;
                     context.pop();
-                    context
-                        .read<NavbarNotifier>()
-                        .chnageNavbarState(NavbarState.show);
                     // _draggController.animateTo(0.0,
                     //     duration: const Duration(milliseconds: 200),
                     //     curve: Curves.easeInOut);
@@ -183,34 +183,53 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                     _focusNode.unfocus();
                   },
                   child: StatefulBuilder(builder: (context, setState) {
-                    return DraggableScrollableSheet(
-                      controller: _draggController
-                        ..addListener(
-                          () {
-                            debugModePrint('draggg');
+                    return VisibilityDetector(
+                      key: ValueKey(widget.postId),
+                      onVisibilityChanged: (info) {
+                        if (info.visibleFraction == 1 && !onBackButtonPressed) {
+                          NavbarNotifier notifier =
+                              context.read<NavbarNotifier>();
+                          notifier.chnageNavbarState(NavbarState.hidden);
+                        }
+                      },
+                      child: BackButtonListener(
+                        onBackButtonPressed: () async {
+                          onBackButtonPressed = true;
+                          context.pop();
+                          return true;
+                        },
+                        child: DraggableScrollableSheet(
+                          controller: _draggController
+                            ..addListener(
+                              () {
+                                debugModePrint('draggg');
+                              },
+                            ),
+                          expand: true,
+                          initialChildSize:
+                              0.7, // Initial height as a fraction of the screen height
+                          maxChildSize:
+                              0.7, // Maximum height when fully expanded
+                          minChildSize: 0.1, // Minimum height when collapsed,
+                          snap: true,
+
+                          snapSizes: const <double>[0.7],
+                          builder: (BuildContext context,
+                              ScrollController scrollController) {
+                            debugModePrint(
+                                'isAttached${_draggController.isAttached}');
+
+                            return Scaffold(
+                              backgroundColor: Colors.transparent,
+                              appBar:
+                                  _commentsHeaders(context, _draggController),
+                              // key: _globalKey,
+                              body: _commentPaging(),
+                              bottomNavigationBar: _buildCommnetsInput(context),
+                            );
                           },
                         ),
-                      expand: true,
-                      initialChildSize:
-                          0.7, // Initial height as a fraction of the screen height
-                      maxChildSize: 0.7, // Maximum height when fully expanded
-                      minChildSize: 0.1, // Minimum height when collapsed,
-                      snap: true,
-
-                      snapSizes: const <double>[0.7],
-                      builder: (BuildContext context,
-                          ScrollController scrollController) {
-                        debugModePrint(
-                            'isAttached${_draggController.isAttached}');
-
-                        return Scaffold(
-                          backgroundColor: Colors.transparent,
-                          appBar: _commentsHeaders(context, _draggController),
-                          // key: _globalKey,
-                          body: _commentPaging(),
-                          bottomNavigationBar: _buildCommnetsInput(context),
-                        );
-                      },
+                      ),
                     );
                   }),
                 ),
@@ -492,7 +511,7 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                         tileColor: Colors.transparent,
                         leading: GestureDetector(
                           onTap: () {
-                            _onAvatarTap(context, data);
+                            _toProfile(context, data);
                           },
                           child: CircleAvatar(
                             radius: Dimens.DIMENS_15,
@@ -511,11 +530,7 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                           // mainAxisSize: MainAxisSize.min,
                           children: [
                             GestureDetector(
-                              onTap: () {
-                                context.go(
-                                  '/u${APP_PAGE.profile.toPath}/${data.id}',
-                                );
-                              },
+                              onTap: () => _toProfile(context, data),
                               child: Text(
                                 '@${data.userName!}',
                                 style: const TextStyle(
@@ -913,7 +928,7 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                           ),
                           leading: GestureDetector(
                             onTap: () {
-                              _onAvatarTap(context, data);
+                              _toProfile(context, data);
                             },
                             child: CircleAvatar(
                               radius: Dimens.DIMENS_10,
@@ -932,11 +947,7 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                             // mainAxisSize: MainAxisSize.min,
                             children: [
                               GestureDetector(
-                                onTap: () {
-                                  context.go(
-                                    '/u${APP_PAGE.profile.toPath}/${data.id}',
-                                  );
-                                },
+                                onTap: () => _toProfile(context, data),
                                 child: Text(
                                   '@${data.userName!}',
                                   style: const TextStyle(
@@ -1200,10 +1211,8 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
               //       ),
               //       curve: Curves.easeInOut);
               // }
+              onBackButtonPressed = true;
               context.pop();
-              context
-                  .read<NavbarNotifier>()
-                  .chnageNavbarState(NavbarState.show);
             },
             icon: const Icon(Icons.close_rounded)),
       ],
@@ -1259,9 +1268,11 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
     });
   }
 
-  void _onAvatarTap(BuildContext context, User data) {
-    context.go(
-      '/u${APP_PAGE.profile.toPath}/${data.id}',
+  void _toProfile(BuildContext context, User data) {
+    context.read<NavbarNotifier>().chnageNavbarState(NavbarState.show);
+
+    GoRouter.of(context).go(
+      '${APP_PAGE.home.toPath}@${data.userName}',
     );
   }
 
