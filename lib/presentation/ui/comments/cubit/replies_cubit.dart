@@ -2,7 +2,6 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
 import 'package:personal_project/data/repository/replies_repository.dart';
-import 'package:personal_project/domain/model/comment_model.dart';
 import 'package:personal_project/domain/model/reply_models.dart';
 
 part 'replies_state.dart';
@@ -55,7 +54,7 @@ class RepliesCubit extends Cubit<RepliesState> {
     ));
 
     await repository.getListRepliesDocs(
-        postId: postId, limit: 3, commentId: commentId);
+        postId: postId, limit: 8, commentId: commentId);
 
     if (repository.replies.isNotEmpty) {
       emit(RepliesState(
