@@ -1,9 +1,10 @@
 import 'package:bloc/bloc.dart';
 import 'package:cached_video_player_plus/cached_video_player_plus.dart';
 import 'package:equatable/equatable.dart';
-import 'package:flutter/material.dart';
 import 'package:personal_project/data/repository/video_player_repository.dart';
 import 'package:personal_project/domain/reporsitory/video_repository.dart';
+
+import '../../../../../utils/debug_mode_print.dart';
 
 part 'video_player_event.dart';
 part 'video_player_state.dart';
@@ -15,7 +16,7 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
   }) : super(const VideoPlayerInitial()) {
     CachedVideoPlayerPlusController? controller;
     on<VideoPlayerEvent>((event, emit) async {
-      debugPrint('init v player event');
+      debugModePrint('init v player event');
       if (event.actions == VideoEvent.initialize) {
         await _initVideoPlayer(controller, event, emit);
       } else if (event.actions == VideoEvent.play) {
@@ -23,7 +24,8 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
       } else if (event.actions == VideoEvent.pause) {
         _pauseVideo(videoPlayerRepository.controller, emit);
       } else if (event.actions == VideoEvent.delete) {
-        await videoRepository.deleteVideo(event.postId!, event.videoUrl!, event.thumnailUrl!);
+        await videoRepository.deleteVideo(
+            event.postId!, event.videoUrl!, event.thumnailUrl!);
         emit(const VideoPlayerState(status: VideoPlayerStatus.videoDeleted));
       } else if (event.actions == VideoEvent.showBufferingIndicator) {
         emit(
@@ -47,30 +49,39 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
     });
   }
 
-  void _playVideo(CachedVideoPlayerPlusController? controller, Emitter<VideoPlayerState> emit) {
+  void _playVideo(CachedVideoPlayerPlusController? controller,
+      Emitter<VideoPlayerState> emit) {
     controller!.play();
     emit(const VideoPlayerState(status: VideoPlayerStatus.playing));
   }
 
-  void _pauseVideo(CachedVideoPlayerPlusController? controller, Emitter<VideoPlayerState> emit) {
+  void _pauseVideo(CachedVideoPlayerPlusController? controller,
+      Emitter<VideoPlayerState> emit) {
     controller!.pause();
     // emit(VideoPaused(opacity: 1, size: Dimens.DIMENS_50));
     emit(const VideoPlayerState(status: VideoPlayerStatus.paused));
   }
 
-  Future<void> _initVideoPlayer(CachedVideoPlayerPlusController? controller, VideoPlayerEvent event,
-      Emitter<VideoPlayerState> emit) async {
+  Future<void> _initVideoPlayer(CachedVideoPlayerPlusController? controller,
+      VideoPlayerEvent event, Emitter<VideoPlayerState> emit) async {
     try {
       emit(const VideoPlayerInitial());
       controller = await videoPlayerRepository.initVideoPlayer(event.videoUrl!);
-      emit(VideoPlayerState(controller: controller, status: VideoPlayerStatus.initialized));
+      emit(VideoPlayerState(
+          controller: controller, status: VideoPlayerStatus.initialized));
       videoPlayerRepository.controller!.setLooping(true);
-      videoPlayerRepository.controller!.play();
+
+      var cachedVideoPlayerPlusController = videoPlayerRepository.controller!;
+      if (cachedVideoPlayerPlusController.value.isInitialized &&
+          !cachedVideoPlayerPlusController.value.isPlaying) {
+        videoPlayerRepository.controller!.play();
+      }
 
       // }
     } catch (e) {
-      emit(VideoPlayerState(status: VideoPlayerStatus.error, error: e.toString()));
-      debugPrint(e.toString());
+      emit(VideoPlayerState(
+          status: VideoPlayerStatus.error, error: e.toString()));
+      debugModePrint(e.toString());
     }
   }
 
@@ -81,7 +92,7 @@ class VideoPlayerBloc extends Bloc<VideoPlayerEvent, VideoPlayerState> {
   Future<void> close() {
     if (videoPlayerRepository.controller != null) {
       videoPlayerRepository.controller?.dispose();
-      debugPrint('dispose video player bloc');
+      debugModePrint('dispose video player bloc');
     }
     return super.close();
   }
