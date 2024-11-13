@@ -6,7 +6,6 @@ import 'dart:io';
 
 import 'package:bootstrap_icons/bootstrap_icons.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dropzone/flutter_dropzone.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -30,12 +29,13 @@ import 'package:get_thumbnail_video/index.dart';
 import 'package:path/path.dart' as path;
 import 'package:universal_html/html.dart' as html;
 import 'package:path_provider/path_provider.dart';
-import 'package:personal_project/utils/get_thumbnails.dart';
 import 'package:solar_icons/solar_icons.dart';
 import 'package:video_editor_2/domain/entities/file_format.dart';
 import 'package:video_editor_2/video_editor.dart';
 import 'package:get_thumbnail_video/video_thumbnail.dart';
 import 'package:visibility_detector/visibility_detector.dart';
+
+import '../../../../utils/debug_mode_print.dart';
 
 class VideoEditorDesktop extends StatefulWidget {
   const VideoEditorDesktop({super.key, required this.file});
@@ -53,6 +53,7 @@ class _VideoEditorDesktopState extends State<VideoEditorDesktop> {
   XFile? videoFile;
 
   late final VideoEditorController _controller;
+  // ignore: unused_field
   late DropzoneViewController _dropZoneController;
 
   DropStatus _dropStatus = DropStatus.created;
@@ -69,7 +70,9 @@ class _VideoEditorDesktopState extends State<VideoEditorDesktop> {
       );
       _controller.initialize().then((_) => setState(() {})).catchError((error) {
         // handle minumum duration bigger than video duration error
-        Navigator.pop(context);
+        if (mounted) {
+          context.pop();
+        }
       }, test: (e) => e is VideoMinDurationError);
     }
   }
@@ -102,7 +105,7 @@ class _VideoEditorDesktopState extends State<VideoEditorDesktop> {
       bool isMoreThan12MB = 12 < fileSize;
       bool under30secButMoreThan5MB =
           (_controller.video.value.duration.inSeconds < 30 && fileSize > 5);
-      debugPrint('video size $fileSize');
+      debugModePrint('video size $fileSize');
       final coverFile = await VideoThumbnail.thumbnailFile(
         imageFormat: ImageFormat.JPEG,
         thumbnailPath: kIsWeb ? null : (await getTemporaryDirectory()).path,
@@ -125,7 +128,7 @@ class _VideoEditorDesktopState extends State<VideoEditorDesktop> {
           onStatistics: (stats) => _exportingProgress.value =
               stats.getProgress(_controller.trimmedDuration.inMilliseconds),
         );
-        debugPrint('video size ${_fileMBSize(await video.readAsBytes())}');
+        debugModePrint('video size ${_fileMBSize(await video.readAsBytes())}');
         if (mounted) {
           context.go(
             APP_PAGE.upload.toPath + APP_PAGE.addDetails.toPath,
@@ -142,7 +145,7 @@ class _VideoEditorDesktopState extends State<VideoEditorDesktop> {
       }
       _isExporting.value = false;
     } catch (e) {
-      debugPrint('error ${e.toString()}');
+      debugModePrint('error ${e.toString()}');
       _showErrorSnackBar("Error on export video :(");
     }
   }
@@ -173,7 +176,7 @@ class _VideoEditorDesktopState extends State<VideoEditorDesktop> {
   Widget build(BuildContext context) {
     return PopScope(
       canPop: false,
-      onPopInvoked: (bool canPop) async {
+      onPopInvokedWithResult: (bool canPop, _) async {
         _removeFile();
         _controller.video.pause();
       },
@@ -421,10 +424,10 @@ class _VideoEditorDesktopState extends State<VideoEditorDesktop> {
                 operation: DragOperation.all,
                 onCreated: (DropzoneViewController ctrl) =>
                     _dropZoneController = ctrl,
-                onLoaded: () => print('Zone loaded'),
-                onError: (String? ev) => print('Error: $ev'),
+                onLoaded: () => debugModePrint('Zone loaded'),
+                onError: (String? ev) => debugModePrint('Error: $ev'),
                 onHover: () {
-                  print('Zone hovered');
+                  debugModePrint('Zone hovered');
                   setState(() {
                     _dropStatus = DropStatus.hover;
                   });
@@ -432,7 +435,8 @@ class _VideoEditorDesktopState extends State<VideoEditorDesktop> {
                 onDrop: (ev) async {
                   XFile xFile =
                       XFile(html.Url.createObjectUrl(ev), mimeType: '.mp4');
-                  print('Drop: ${(ev as html.File).name} ${xFile.name}');
+                  debugModePrint(
+                      'Drop: ${(ev as html.File).name} ${xFile.name}');
                   if (ev.name.contains('.mp4')) {
                     videoFile = xFile;
                     _controller = VideoEditorController.file(
@@ -445,7 +449,9 @@ class _VideoEditorDesktopState extends State<VideoEditorDesktop> {
                         .then((_) => setState(() {}))
                         .catchError((error) {
                       // handle minumum duration bigger than video duration error
-                      Navigator.pop(context);
+                      if (context.mounted) {
+                        context.pop();
+                      }
                     }, test: (e) => e is VideoMinDurationError);
                   } else {
                     setState(() {
@@ -462,7 +468,7 @@ class _VideoEditorDesktopState extends State<VideoEditorDesktop> {
                   }
                 },
                 onLeave: () => setState(() {
-                  print('Zone left');
+                  debugModePrint('Zone left');
                   _dropStatus = DropStatus.left;
                 }),
               ),
@@ -501,7 +507,7 @@ class _VideoEditorDesktopState extends State<VideoEditorDesktop> {
                               borderRadius: BorderRadius.circular(6)),
                           child: Text('Chose from computer')),
                       onTap: () async {
-                        debugPrint('chose video');
+                        debugModePrint('chose video');
                         videoFile = await pickVideoFromGalery();
                         if (videoFile != null) {
                           _controller = VideoEditorController.file(
@@ -541,7 +547,7 @@ class _VideoEditorDesktopState extends State<VideoEditorDesktop> {
                     BoxDecoration(borderRadius: BorderRadius.circular(6)),
                 child: Text('Chose from computer')),
             onTap: () async {
-              debugPrint('chose video');
+              debugModePrint('chose video');
               videoFile = await pickVideoFromGalery();
               if (videoFile != null) {
                 _controller = VideoEditorController.file(
@@ -773,11 +779,11 @@ class _VideoEditorDesktopState extends State<VideoEditorDesktop> {
       isFiltersEnabled: isFiltersEnabled,
     );
 
-    debugPrint('run export video command : [$execute]');
+    debugModePrint('run export video command : [$execute]');
 
     if (kIsWeb) {
-      debugPrint('f fweb');
-      debugPrint('f fweb ${inputPath}');
+      debugModePrint('f fweb');
+      debugModePrint('f fweb ${inputPath}');
 
       return const FFmpegExport().executeFFmpegWeb(
         execute: execute,
@@ -788,7 +794,7 @@ class _VideoEditorDesktopState extends State<VideoEditorDesktop> {
         onStatistics: onStatistics,
       );
     } else {
-      debugPrint('f fio');
+      debugModePrint('f fio');
 
       return const FFmpegExport().executeFFmpegIO(
         execute: execute,
@@ -830,10 +836,10 @@ class _VideoEditorDesktopState extends State<VideoEditorDesktop> {
       isFiltersEnabled: isFiltersEnabled,
     );
 
-    debugPrint('VideoEditor - run export cover command : [$execute]');
+    debugModePrint('VideoEditor - run export cover command : [$execute]');
 
     if (kIsWeb) {
-      debugPrint('f fweb');
+      debugModePrint('f fweb');
       return const FFmpegExport().executeFFmpegWeb(
         execute: execute,
         inputData: await coverFile.readAsBytes(),
@@ -842,7 +848,7 @@ class _VideoEditorDesktopState extends State<VideoEditorDesktop> {
         outputMimeType: outputFormat.mimeType,
       );
     } else {
-      debugPrint('ffwio');
+      debugModePrint('ffwio');
 
       return const FFmpegExport().executeFFmpegIO(
         execute: execute,
@@ -913,14 +919,16 @@ class FFmpegExport {
     String? outputMimeType,
     void Function(FFmpegStatistics)? onStatistics,
   }) async {
-    debugPrint('ffweb');
+    debugModePrint('ffweb');
     FFmpeg? ffmpeg;
     final logs = <String>[];
     try {
+      var corePath =
+          'https://unpkg.com/@ffmpeg/core@0.11.0/dist/ffmpeg-core.js';
       ffmpeg = createFFmpeg(
         CreateFFmpegParam(
           log: true,
-          corePath: 'https://unpkg.com/@ffmpeg/core@0.11.0/dist/ffmpeg-core.js',
+          corePath: corePath,
         ),
       );
       ffmpeg.setLogger((LoggerParam logger) {
@@ -940,7 +948,7 @@ class FFmpegExport {
       await ffmpeg.runCommand(execute);
 
       final data = ffmpeg.readFile(outputPath);
-      debugPrint('Xfile data' + data.toString());
+      debugModePrint('Xfile data$data');
       return XFile.fromData(data, mimeType: outputMimeType);
     } catch (e, s) {
       Error.throwWithStackTrace(
