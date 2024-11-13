@@ -31,6 +31,8 @@ import 'package:provider/provider.dart';
 import 'package:solar_icons/solar_icons.dart';
 import 'package:timeago/timeago.dart' as tago;
 
+import '../../../../utils/debug_mode_print.dart';
+
 class DesktopCommentsView extends StatefulWidget {
   final String postId;
 
@@ -62,7 +64,7 @@ class _DesktopCommentsViewState extends State<DesktopCommentsView> {
   @override
   void initState() {
     _draggableController.addListener(() {
-      debugPrint('height ${_draggableController.size.toString()}');
+      debugModePrint('height ${_draggableController.size.toString()}');
 
       BlocProvider.of<VideoSizeCubit>(context)
           .changeVideoSize(_draggableController.size);
@@ -131,7 +133,7 @@ class _DesktopCommentsViewState extends State<DesktopCommentsView> {
                                 duration: const Duration(milliseconds: 200),
                                 curve: Curves.easeInOut);
                             _isCanPop = false;
-                            debugPrint('pop');
+                            debugModePrint('pop');
                           }
                         }
                       },
@@ -343,9 +345,14 @@ class _DesktopCommentsViewState extends State<DesktopCommentsView> {
                                   contentPadding: EdgeInsets.symmetric(
                                       horizontal: Dimens.DIMENS_12),
                                   hintText:
-                                      LocaleKeys.message_add_comments.tr(),
-                                  hintStyle: const TextStyle(
-                                      fontWeight: FontWeight.normal),
+                                      '${LocaleKeys.message_add_comments.tr()}...',
+                                  hintStyle: TextStyle(
+                                    fontWeight: FontWeight.normal,
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurface
+                                        .withOpacity(0.3),
+                                  ),
                                   border: OutlineInputBorder(
                                       borderSide: BorderSide.none,
                                       borderRadius: BorderRadius.circular(10))),
@@ -353,6 +360,12 @@ class _DesktopCommentsViewState extends State<DesktopCommentsView> {
                               keyboardType: TextInputType.multiline,
                               minLines: 1,
                               maxLines: 3,
+                              maxLength: 1200,
+                              buildCounter: (context,
+                                      {required currentLength,
+                                      required isFocused,
+                                      required maxLength}) =>
+                                  const SizedBox(width: 0, height: 0),
                               onChanged: (text) {
                                 final CommentBloc commentsBloc =
                                     BlocProvider.of<CommentBloc>(context);
@@ -368,7 +381,7 @@ class _DesktopCommentsViewState extends State<DesktopCommentsView> {
                                 }
                               },
                               onSubmitted: (_) {
-                                debugPrint('Submit');
+                                debugModePrint('Submit');
                               },
                             ),
                           );
@@ -417,7 +430,7 @@ class _DesktopCommentsViewState extends State<DesktopCommentsView> {
                                       _textEditingController.clear();
                                       FocusScope.of(context).unfocus();
                                     }
-                                    debugPrint('plane');
+                                    debugModePrint('plane');
                                   }
                                 : null,
                             icon: const Icon(
@@ -472,7 +485,7 @@ class _DesktopCommentsViewState extends State<DesktopCommentsView> {
         ],
         child: BlocListener<RepliesCubit, RepliesState>(
           listener: (context, state) {
-            debugPrint('replies ${state.status}');
+            debugModePrint('replies ${state.status}');
             if (state.status == RepliesStatus.replyadded) {
               context.read<CommentBloc>().add(UnfocusForm());
             }
@@ -1020,12 +1033,14 @@ class _DesktopCommentsViewState extends State<DesktopCommentsView> {
                                     builder: (context, state) {
                                       if (state is ReplyLiked) {
                                         return const Icon(
-                                          Icons.favorite,
+                                          SolarIconsBold.heart,
+                                          size: 16,
                                           color: Colors.red,
                                         );
                                       } else if (state is UnilkedReply) {
                                         return Icon(
-                                          Icons.favorite_border_outlined,
+                                          SolarIconsOutline.heart,
+                                          size: 16,
                                           color: Theme.of(context)
                                               .colorScheme
                                               .onSurface
@@ -1034,11 +1049,13 @@ class _DesktopCommentsViewState extends State<DesktopCommentsView> {
                                       }
                                       return reply.likes.contains(userUid)
                                           ? const Icon(
-                                              Icons.favorite,
+                                              SolarIconsBold.heart,
+                                              size: 16,
                                               color: Colors.red,
                                             )
                                           : Icon(
-                                              Icons.favorite_border_outlined,
+                                              SolarIconsOutline.heart,
+                                              size: 16,
                                               color: Theme.of(context)
                                                   .colorScheme
                                                   .onSurface
