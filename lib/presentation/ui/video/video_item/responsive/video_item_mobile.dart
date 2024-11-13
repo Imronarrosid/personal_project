@@ -27,6 +27,7 @@ import 'package:personal_project/presentation/ui/add_details/bloc/upload_bloc.da
 import 'package:personal_project/presentation/ui/auth/auth.dart';
 import 'package:personal_project/presentation/ui/comments/comments_page.dart';
 import 'package:personal_project/presentation/ui/home/cubit/home_cubit.dart';
+import 'package:personal_project/presentation/ui/home/navbar_notifier/navbar_notifier.dart';
 import 'package:personal_project/presentation/ui/profile/cubit/follow_cubit.dart';
 import 'package:personal_project/presentation/ui/video/list_video/bloc/video_player_bloc.dart';
 import 'package:personal_project/presentation/ui/video/list_video/cubit/captions_cubit.dart';
@@ -398,15 +399,23 @@ class _VideoItemMobileState extends State<VideoItemMobile> {
                   RepositoryProvider(
                     create: (context) => CommentRepository(),
                     child: GestureDetector(
-                      onTap: () {
-                        VideoPaddingNOtifire.instance.setBottomPdding(
-                            bottomSheetHeight:
-                                ((MediaQuery.of(context).size.height * 0.7) -
-                                    85));
-                        showCommentsBottomSheet(
+                      onTap: () async {
+                        // VideoPaddingNOtifire.instance.setBottomPdding(
+                        //     bottomSheetHeight:
+                        //         ((MediaQuery.of(context).size.height * 0.7) -
+                        //             85));
+                        context
+                            .read<NavbarNotifier>()
+                            .chnageNavbarState(NavbarState.hidden);
+                        await showCommentsBottomSheet(
                           context,
                           postId: widget.videoData.id!,
                         );
+                        if (context.mounted) {
+                          context
+                              .read<NavbarNotifier>()
+                              .chnageNavbarState(NavbarState.show);
+                        }
                       },
                       child: Transform.flip(
                         flipX: true,
@@ -528,8 +537,7 @@ class _VideoItemMobileState extends State<VideoItemMobile> {
       );
     } else {
       return InkWell(
-          overlayColor:
-              const WidgetStatePropertyAll<Color>(Colors.transparent),
+          overlayColor: const WidgetStatePropertyAll<Color>(Colors.transparent),
           onTap: () {
             final VideoPlayerRepository repo =
                 RepositoryProvider.of<VideoPlayerRepository>(context);
