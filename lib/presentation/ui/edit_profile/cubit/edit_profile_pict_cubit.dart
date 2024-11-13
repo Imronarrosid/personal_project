@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
@@ -14,6 +15,17 @@ class EditProfilePictCubit extends Cubit<EditProfilePictState> {
     try {
       emit(const EditProfilePictState(status: EditProfilePicStatus.loading));
       await _repository.editProfilePict(imageFile);
+      emit(const EditProfilePictState(
+        status: EditProfilePicStatus.success,
+      ));
+    } catch (e) {
+      emit(const EditProfilePictState(status: EditProfilePicStatus.error));
+    }
+  }
+  Future<void> editProfilePictWeb(Uint8List imageFile) async {
+    try {
+      emit(const EditProfilePictState(status: EditProfilePicStatus.loading));
+      await _repository.editProfilePictWeb(imageFile);
       emit(const EditProfilePictState(
         status: EditProfilePicStatus.success,
       ));

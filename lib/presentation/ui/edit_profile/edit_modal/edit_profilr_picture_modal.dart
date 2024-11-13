@@ -17,14 +17,20 @@ showEditPPModal(BuildContext context) async {
     XFile? file =
         await picker.pickImage(source: ImageSource.gallery, imageQuality: 15);
     if (context.mounted && file != null) {
-      File? cropedFile = await cropImage(
+      XFile? cropedFile = await cropImage(
         context,
         pickedFile: File(file.path),
       );
       if (context.mounted && cropedFile != null) {
-        BlocProvider.of<EditProfilePictCubit>(context).editProfilePict(
-          File(cropedFile.path),
-        );
+        if (kIsWeb) {
+          BlocProvider.of<EditProfilePictCubit>(context).editProfilePictWeb(
+            await cropedFile.readAsBytes(),
+          );
+        } else {
+          BlocProvider.of<EditProfilePictCubit>(context).editProfilePict(
+            File(cropedFile.path),
+          );
+        }
       }
     }
   } else {
@@ -77,7 +83,7 @@ showEditPPModal(BuildContext context) async {
                             await picker.pickImage(source: ImageSource.camera);
                         if (context.mounted && file != null) {
                           // context.push(APP_PAGE.cropImage.toPath, extra: file);
-                          File? cropedFile = await cropImage(
+                          XFile? cropedFile = await cropImage(
                             context,
                             pickedFile: File(file.path),
                           );
@@ -105,7 +111,7 @@ showEditPPModal(BuildContext context) async {
                         XFile? file = await picker.pickImage(
                             source: ImageSource.gallery, imageQuality: 15);
                         if (context.mounted && file != null) {
-                          File? cropedFile = await cropImage(
+                          XFile? cropedFile = await cropImage(
                             context,
                             pickedFile: File(file.path),
                           );
