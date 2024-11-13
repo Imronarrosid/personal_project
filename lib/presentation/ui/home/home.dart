@@ -24,6 +24,7 @@ import 'package:personal_project/presentation/ui/add_details/bloc/upload_bloc.da
 import 'package:personal_project/presentation/ui/add_user_name/add_user_name_page.dart';
 import 'package:personal_project/presentation/ui/auth/bloc/auth_bloc.dart';
 import 'package:personal_project/presentation/ui/home/cubit/home_cubit.dart';
+import 'package:personal_project/presentation/ui/home/navbar_notifier/navbar_notifier.dart';
 import 'package:personal_project/presentation/ui/mabar/mabar_page.dart';
 import 'package:personal_project/presentation/ui/message/message.dart';
 import 'package:personal_project/presentation/ui/profile/profile.dart';
@@ -374,200 +375,184 @@ class _HomePageState extends State<HomePage> {
             ),
           ],
         ),
-        bottomNavigationBar: _isRemoveNavBar()
-            ? const SizedBox(
-                width: 0,
-                height: 0,
-              )
-            : ResponsiveLayout(
-                desktopBody: const SizedBox(
+        bottomNavigationBar:
+            Consumer<NavbarNotifier>(builder: (context, notifier, child) {
+          return (_isRemoveNavBar() ||
+                  notifier.navbarState == NavbarState.hidden)
+              ? const SizedBox(
                   width: 0,
                   height: 0,
-                ),
-                mobileBody: Transform.translate(
-                  offset: Offset(
-                      0,
-                      (MediaQuery.of(context).viewInsets.bottom > 0) ||
-                              GoRouter.of(context)
-                                  .routeInformationProvider
-                                  .value
-                                  .uri
-                                  .path
-                                  .contains('upload')
-                          ? 60
-                          : 0),
-                  child: BlocBuilder<HomeCubit, HomeState>(
-                    builder: (_, state) {
-                      debugPrint(
-                          'adfjasjdfl ${GoRouter.of(context).routeInformationProvider.value.uri.path} ${GoRouter.of(context).routeInformationProvider.value.uri.path.contains('/upload')}');
-                      return Theme(
-                        data: ThemeData(useMaterial3: false),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            border: Border(
-                              top: BorderSide(
-                                  color: Theme.of(context).colorScheme.tertiary,
-                                  width: 0.2),
-                            ),
-                          ),
-                          child: BottomNavigationBar(
-                            elevation: 2,
-                            unselectedItemColor:
-                                COLOR_white_fff5f5f5.withOpacity(0.6),
-                            selectedItemColor: COLOR_white_fff5f5f5,
-                            type: BottomNavigationBarType.fixed,
-                            selectedFontSize: 12,
-                            unselectedFontSize: 12,
-                            backgroundColor: COLOR_black_ff121212,
-                            showSelectedLabels: false,
-                            showUnselectedLabels: false,
-                            items: [
-                              BottomNavigationBarItem(
-                                icon: const Icon(SolarIconsOutline.home),
-                                activeIcon: const Icon(
-                                  SolarIconsBold.home,
-                                ),
-                                label: LocaleKeys.label_home.tr(),
-                                tooltip: LocaleKeys.label_home.tr(),
-                              ),
-                              const BottomNavigationBarItem(
-                                icon: Icon(
-                                  SolarIconsOutline.gamepad,
-                                ),
-                                activeIcon: Icon(
-                                  SolarIconsBold.gamepad,
-                                ),
-                                label: "Lobby",
-                                tooltip: "Lobby",
-                              ),
-                              BottomNavigationBarItem(
-                                icon: const Icon(
-                                  SolarIconsBold.addSquare,
-                                  size: 28,
-                                ),
-                                label: '',
-                                tooltip: LocaleKeys.title_upload.tr(),
-                              ),
-                              BottomNavigationBarItem(
-                                icon: const Icon(SolarIconsOutline.chatLine),
-                                activeIcon: const Icon(SolarIconsBold.chatLine),
-                                label: LocaleKeys.label_chat.tr(),
-                                tooltip: LocaleKeys.label_chat.tr(),
-                              ),
-                              BottomNavigationBarItem(
-                                icon: BlocBuilder<AuthBloc, AuthState>(
-                                  builder: (_, authState) {
-                                    if (authState.status ==
-                                        AuthStatus.authenticated) {
-                                      AuthRepository authRepository =
-                                          RepositoryProvider.of<AuthRepository>(
-                                              context);
-                                      return StreamBuilder(
-                                          stream: userRepository.getAvatar(
-                                              authRepository.currentUser!.uid),
-                                          builder: (_, snapshot) {
-                                            String? avatar = snapshot.data;
-                                            if (!snapshot.hasData ||
-                                                snapshot.hasError) {
-                                              return const Icon(
-                                                  SolarIconsBold.user);
-                                            }
-                                            return Container(
-                                              padding: EdgeInsets.all(
-                                                  Dimens.DIMENS_1),
-                                              decoration: BoxDecoration(
-                                                border: Border.all(
-                                                  color: _getIndex() == 4
-                                                      ? Theme.of(context)
-                                                          .colorScheme
-                                                          .primary
-                                                      : Colors.transparent,
-                                                ),
-                                                borderRadius:
-                                                    BorderRadius.circular(50),
-                                              ),
-                                              child: CircleAvatar(
-                                                radius: Dimens.DIMENS_11,
-                                                backgroundColor:
-                                                    Theme.of(context)
-                                                        .colorScheme
-                                                        .tertiary,
-                                                backgroundImage:
-                                                    CachedNetworkImageProvider(
-                                                  avatar!,
-                                                ),
-                                              ),
-                                            );
-                                          });
-                                    }
-                                    return const Icon(SolarIconsOutline.user);
-                                  },
-                                ),
-                                label: LocaleKeys.label_profile.tr(),
-                                tooltip: LocaleKeys.label_profile.tr(),
-                              ),
-                            ],
-                            currentIndex: _getIndex(),
-                            onTap: (value) async {
-                              var currentUser =
-                                  context.read<AuthRepository>().currentUser;
-
-                              switch (value) {
-                                case 0:
-                                  context.go(APP_PAGE.forYou.toPath);
-                                  break;
-                                case 1:
-                                  context.go(APP_PAGE.lobby.toPath);
-
-                                  break;
-                                case 3:
-                                  context.go(APP_PAGE.message.toPath);
-                                  break;
-                                case 4:
-                                  if (currentUser == null) {
-                                    context
-                                        .go('${APP_PAGE.profile.toPath}/login');
-                                  } else {
-                                    String? userName = await context
-                                        .read<AuthRepository>()
-                                        .getUserData(currentUser.uid)
-                                        .then((value) => value.userName);
-                                    if (!context.mounted) return;
-                                    context.go('/@$userName');
-                                  }
-                                  break;
-                                default:
-                              }
-                              if (value == 2) {
-                                // Navigator.push(context, MaterialPageRoute(builder: (context)=>UploadPage()));
-                                // BlocProvider.of<CameraBloc>(context).add(const OpenRearCameraEvent());
-                                // await availableCameras().then((value) => context
-                                //     .push(APP_PAGE.upload.toPath, extra: value));
-                                showUploadModal(context);
-                              } else {
-                                // setState(() {
-                                //   selectedindex = value;
-                                // });
-                                BlocProvider.of<HomeCubit>(context)
-                                    .changePage(value);
-                                if (value == 0) {
-                                  if (isTriggerReset) {
-                                    BlocProvider.of<HomeCubit>(context)
-                                        .triggerReset(value);
-                                  }
-                                  isTriggerReset = true;
-                                } else {
-                                  isTriggerReset = false;
-                                }
-                              }
-                            },
-                          ),
+                )
+              : BlocBuilder<HomeCubit, HomeState>(
+                builder: (_, state) {
+                  debugPrint(
+                      'adfjasjdfl ${GoRouter.of(context).routeInformationProvider.value.uri.path} ${GoRouter.of(context).routeInformationProvider.value.uri.path.contains('/upload')}');
+                  return Theme(
+                    data: ThemeData(useMaterial3: false),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        border: Border(
+                          top: BorderSide(
+                              color: Theme.of(context).colorScheme.tertiary,
+                              width: 0.2),
                         ),
-                      );
-                    },
-                  ),
-                ),
-              ),
+                      ),
+                      child: BottomNavigationBar(
+                        elevation: 2,
+                        unselectedItemColor:
+                            COLOR_white_fff5f5f5.withOpacity(0.6),
+                        selectedItemColor: COLOR_white_fff5f5f5,
+                        type: BottomNavigationBarType.fixed,
+                        selectedFontSize: 12,
+                        unselectedFontSize: 12,
+                        backgroundColor: COLOR_black_ff121212,
+                        showSelectedLabels: false,
+                        showUnselectedLabels: false,
+                        items: [
+                          BottomNavigationBarItem(
+                            icon: const Icon(SolarIconsOutline.home),
+                            activeIcon: const Icon(
+                              SolarIconsBold.home,
+                            ),
+                            label: LocaleKeys.label_home.tr(),
+                            tooltip: LocaleKeys.label_home.tr(),
+                          ),
+                          const BottomNavigationBarItem(
+                            icon: Icon(
+                              SolarIconsOutline.gamepad,
+                            ),
+                            activeIcon: Icon(
+                              SolarIconsBold.gamepad,
+                            ),
+                            label: "Lobby",
+                            tooltip: "Lobby",
+                          ),
+                          BottomNavigationBarItem(
+                            icon: const Icon(
+                              SolarIconsBold.addSquare,
+                              size: 28,
+                            ),
+                            label: '',
+                            tooltip: LocaleKeys.title_upload.tr(),
+                          ),
+                          BottomNavigationBarItem(
+                            icon: const Icon(SolarIconsOutline.chatLine),
+                            activeIcon: const Icon(SolarIconsBold.chatLine),
+                            label: LocaleKeys.label_chat.tr(),
+                            tooltip: LocaleKeys.label_chat.tr(),
+                          ),
+                          BottomNavigationBarItem(
+                            icon: BlocBuilder<AuthBloc, AuthState>(
+                              builder: (_, authState) {
+                                if (authState.status ==
+                                    AuthStatus.authenticated) {
+                                  AuthRepository authRepository =
+                                      RepositoryProvider.of<AuthRepository>(
+                                          context);
+                                  return StreamBuilder(
+                                      stream: userRepository.getAvatar(
+                                          authRepository.currentUser!.uid),
+                                      builder: (_, snapshot) {
+                                        String? avatar = snapshot.data;
+                                        if (!snapshot.hasData ||
+                                            snapshot.hasError) {
+                                          return const Icon(
+                                              SolarIconsBold.user);
+                                        }
+                                        return Container(
+                                          padding: EdgeInsets.all(
+                                              Dimens.DIMENS_1),
+                                          decoration: BoxDecoration(
+                                            border: Border.all(
+                                              color: _getIndex() == 4
+                                                  ? Theme.of(context)
+                                                      .colorScheme
+                                                      .primary
+                                                  : Colors.transparent,
+                                            ),
+                                            borderRadius:
+                                                BorderRadius.circular(50),
+                                          ),
+                                          child: CircleAvatar(
+                                            radius: Dimens.DIMENS_11,
+                                            backgroundColor:
+                                                Theme.of(context)
+                                                    .colorScheme
+                                                    .tertiary,
+                                            backgroundImage:
+                                                CachedNetworkImageProvider(
+                                              avatar!,
+                                            ),
+                                          ),
+                                        );
+                                      });
+                                }
+                                return const Icon(SolarIconsOutline.user);
+                              },
+                            ),
+                            label: LocaleKeys.label_profile.tr(),
+                            tooltip: LocaleKeys.label_profile.tr(),
+                          ),
+                        ],
+                        currentIndex: _getIndex(),
+                        onTap: (value) async {
+                          var currentUser =
+                              context.read<AuthRepository>().currentUser;
+              
+                          switch (value) {
+                            case 0:
+                              context.go(APP_PAGE.forYou.toPath);
+                              break;
+                            case 1:
+                              context.go(APP_PAGE.lobby.toPath);
+              
+                              break;
+                            case 3:
+                              context.go(APP_PAGE.message.toPath);
+                              break;
+                            case 4:
+                              if (currentUser == null) {
+                                context.go(APP_PAGE.profile.toPath);
+                              } else {
+                                String? userName = await context
+                                    .read<AuthRepository>()
+                                    .getUserData(currentUser.uid)
+                                    .then((value) => value.userName);
+                                if (!context.mounted) return;
+                                context.go('/@$userName');
+                              }
+                              break;
+                            default:
+                          }
+                          if (value == 2) {
+                            // Navigator.push(context, MaterialPageRoute(builder: (context)=>UploadPage()));
+                            // BlocProvider.of<CameraBloc>(context).add(const OpenRearCameraEvent());
+                            // await availableCameras().then((value) => context
+                            //     .push(APP_PAGE.upload.toPath, extra: value));
+                            showUploadModal(context);
+                          } else {
+                            // setState(() {
+                            //   selectedindex = value;
+                            // });
+                            BlocProvider.of<HomeCubit>(context)
+                                .changePage(value);
+                            if (value == 0) {
+                              if (isTriggerReset) {
+                                BlocProvider.of<HomeCubit>(context)
+                                    .triggerReset(value);
+                              }
+                              isTriggerReset = true;
+                            } else {
+                              isTriggerReset = false;
+                            }
+                          }
+                        },
+                      ),
+                    ),
+                  );
+                },
+              );
+        }),
       ),
     );
   }
