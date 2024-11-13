@@ -503,9 +503,9 @@ class _VideoItemState extends State<VideoItem> {
                           //         game: videoData.game!,
                           //         captions: videoData.caption,
                           //         profileImg: data!.photo!));
-                           context.go(
-                          '${APP_PAGE.category.toPath}/${videoData.category}',
-                        );
+                          context.go(
+                            '${APP_PAGE.category.toPath}/${videoData.category}',
+                          );
                         } else {
                           Fluttertoast.showToast(
                               gravity: ToastGravity.TOP,
@@ -1035,8 +1035,8 @@ class _VideoItemState extends State<VideoItem> {
                           //   ),
                           // );
                           context.go(
-                          '${APP_PAGE.category.toPath}/${videoData.category}',
-                        );
+                            '${APP_PAGE.category.toPath}/${videoData.category}',
+                          );
                         },
                         child: SizedBox(
                           width: Dimens.DIMENS_150,
