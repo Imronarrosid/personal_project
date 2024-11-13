@@ -1,6 +1,3 @@
-import 'package:flutter/animation.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
 
 import 'dart:math';
@@ -26,6 +23,7 @@ import 'package:provider/provider.dart';
 import 'package:solar_icons/solar_icons.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../utils/debug_mode_print.dart';
 import '../auth/bloc/auth_bloc.dart';
 
 class ChatView extends StatefulWidget {
@@ -167,7 +165,7 @@ class _ChatViewState extends State<ChatView> with WidgetsBindingObserver {
                             initialData: const [],
                             stream: repository.messagesStream,
                             builder: (context, snapshot) {
-                              debugPrint('mabar ${snapshot.data}');
+                              debugModePrint('mabar ${snapshot.data}');
                               if (!snapshot.hasData) {
                                 return const Center(
                                     child: CircularProgressIndicator());
