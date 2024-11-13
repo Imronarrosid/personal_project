@@ -145,11 +145,14 @@ class CommentRepository {
         //   'commentCount': (doc.data() as dynamic)['commentCount'] + 1,
         // });
 
-        DocumentReference documentReference = firebaseFirestore.collection('videos').doc(postId);
+        DocumentReference documentReference =
+            firebaseFirestore.collection('videos').doc(postId);
         firebaseFirestore.runTransaction((transaction) {
           return transaction.get(documentReference).then((value) {
-            int currentCount = (value.data() as Map<String, dynamic>)['commentCount'];
-            transaction.update(documentReference, {'commentCount': currentCount + 1});
+            int currentCount =
+                (value.data() as Map<String, dynamic>)['commentCount'];
+            transaction
+                .update(documentReference, {'commentCount': currentCount + 1});
           });
         });
       }
@@ -208,20 +211,28 @@ class CommentRepository {
           .collection('replies')
           .doc(replyId)
           .set(replyToStore);
-      DocumentReference documentReference = firebaseFirestore.collection('videos').doc(postId);
+      DocumentReference documentReference =
+          firebaseFirestore.collection('videos').doc(postId);
       firebaseFirestore.runTransaction((transaction) {
         return transaction.get(documentReference).then((value) {
-          int currentCount = (value.data() as Map<String, dynamic>)['commentCount'];
-          transaction.update(documentReference, {'commentCount': currentCount + 1});
+          int currentCount =
+              (value.data() as Map<String, dynamic>)['commentCount'];
+          transaction
+              .update(documentReference, {'commentCount': currentCount + 1});
         });
       });
-      DocumentReference replyReference =
-          firebaseFirestore.collection('videos').doc(postId).collection('comments').doc(commentId);
+      DocumentReference replyReference = firebaseFirestore
+          .collection('videos')
+          .doc(postId)
+          .collection('comments')
+          .doc(commentId);
       firebaseFirestore.runTransaction((transaction) {
         return transaction.get(replyReference).then((value) {
           debugPrint(Comment.fromSnap(value).toString());
-          int currentRepliesCount = (value.data() as Map<String, dynamic>)['repliesCount'];
-          transaction.update(replyReference, {'repliesCount': currentRepliesCount + 1});
+          int currentRepliesCount =
+              (value.data() as Map<String, dynamic>)['repliesCount'];
+          transaction.update(
+              replyReference, {'repliesCount': currentRepliesCount + 1});
         });
       });
       return replyForLocal;
@@ -242,78 +253,63 @@ class CommentRepository {
         .get();
 
     if ((doc.data()! as dynamic)['likes'].contains(uid)) {
-      firebaseFirestore.collection('videos').doc(postId).collection('comments').doc(id).update({
+      firebaseFirestore
+          .collection('videos')
+          .doc(postId)
+          .collection('comments')
+          .doc(id)
+          .update({
         'likes': FieldValue.arrayRemove([uid]),
       });
     } else {
-      firebaseFirestore.collection('videos').doc(postId).collection('comments').doc(id).update({
+      firebaseFirestore
+          .collection('videos')
+          .doc(postId)
+          .collection('comments')
+          .doc(id)
+          .update({
         'likes': FieldValue.arrayUnion([uid]),
       });
     }
-    DocumentReference documentReference =
-        firebaseFirestore.collection('videos').doc(postId).collection('comments').doc(id);
+    DocumentReference documentReference = firebaseFirestore
+        .collection('videos')
+        .doc(postId)
+        .collection('comments')
+        .doc(id);
     firebaseFirestore.runTransaction((transaction) {
       return transaction.get(documentReference).then((value) {
         if ((value.data() as Map<String, dynamic>).containsKey('likesCount')) {
-          int currentCount = (value.data() as Map<String, dynamic>)['likesCount'];
+          int currentCount =
+              (value.data() as Map<String, dynamic>)['likesCount'];
           if ((doc.data()! as dynamic)['likes'].contains(uid)) {
-            transaction.update(documentReference, {'likesCount': currentCount - 1});
+            transaction
+                .update(documentReference, {'likesCount': currentCount - 1});
           } else {
-            transaction.update(documentReference, {'likesCount': currentCount + 1});
+            transaction
+                .update(documentReference, {'likesCount': currentCount + 1});
           }
         } else {
-          final List<dynamic> likes = (value.data() as Map<String, dynamic>)['likes'];
+          final List<dynamic> likes =
+              (value.data() as Map<String, dynamic>)['likes'];
           int currentCount = likes.length;
           Comment comment = Comment.fromSnap(value);
           if ((doc.data()! as dynamic)['likes'].contains(uid)) {
-            transaction
-                .set(documentReference, {...comment.toJson(), 'likesCount': currentCount - 1});
+            transaction.set(documentReference,
+                {...comment.toJson(), 'likesCount': currentCount - 1});
           } else {
-            transaction
-                .set(documentReference, {...comment.toJson(), 'likesCount': currentCount + 1});
+            transaction.set(documentReference,
+                {...comment.toJson(), 'likesCount': currentCount + 1});
           }
         }
       });
     });
   }
 
-  Future<void> likeReply({required String id, postId, required String replyId}) async {
+  Future<void> likeReply(
+      {required String id, postId, required String replyId}) async {
     try {
       var uid = firebaseAuth.currentUser!.uid;
-      debugPrint(postId + ' ' + id + ' ' + replyId);
-      DocumentSnapshot doc = await firebaseFirestore
-          .collection('videos')
-          .doc(postId)
-          .collection('comments')
-          .doc(id)
-          .collection('replies')
-          .doc(replyId)
-          .get();
-      debugPrint('isreply exist ${doc.exists}');
 
-      if ((doc.data()! as dynamic)['likes'].contains(uid)) {
-        firebaseFirestore
-            .collection('videos')
-            .doc(postId)
-            .collection('comments')
-            .doc(id)
-            .collection('replies')
-            .doc(replyId)
-            .update({
-          'likes': FieldValue.arrayRemove([uid]),
-        });
-      } else {
-        firebaseFirestore
-            .collection('videos')
-            .doc(postId)
-            .collection('comments')
-            .doc(id)
-            .collection('replies')
-            .doc(replyId)
-            .update({
-          'likes': FieldValue.arrayUnion([uid]),
-        });
-      }
       DocumentReference documentReference = firebaseFirestore
           .collection('videos')
           .doc(postId)
@@ -323,23 +319,38 @@ class CommentRepository {
           .doc(replyId);
       firebaseFirestore.runTransaction((transaction) {
         return transaction.get(documentReference).then((value) {
-          if ((value.data() as Map<String, dynamic>).containsKey('likesCount')) {
-            int currentCount = (value.data() as Map<String, dynamic>)['likesCount'];
-            if ((doc.data()! as dynamic)['likes'].contains(uid)) {
-              transaction.update(documentReference, {'likesCount': currentCount - 1});
+          if ((value.data() as Map<String, dynamic>)
+              .containsKey('likesCount')) {
+            int currentCount =
+                (value.data() as Map<String, dynamic>)['likesCount'];
+            if ((value.data()! as dynamic)['likes'].contains(uid)) {
+              transaction.update(documentReference, {
+                'likesCount': currentCount - 1,
+                'likes': FieldValue.arrayRemove([uid])
+              });
             } else {
-              transaction.update(documentReference, {'likesCount': currentCount + 1});
+              transaction.update(documentReference, {
+                'likesCount': currentCount + 1,
+                'likes': FieldValue.arrayUnion([uid])
+              });
             }
           } else {
-            final List<dynamic> likes = (value.data() as Map<String, dynamic>)['likes'];
+            final List<dynamic> likes =
+                (value.data() as Map<String, dynamic>)['likes'];
             int currentCount = likes.length;
             Comment comment = Comment.fromSnap(value);
-            if ((doc.data()! as dynamic)['likes'].contains(uid)) {
-              transaction
-                  .set(documentReference, {...comment.toJson(), 'likesCount': currentCount - 1});
+            if ((value.data()! as dynamic)['likes'].contains(uid)) {
+              transaction.set(documentReference, {
+                ...comment.toJson(),
+                'likesCount': currentCount - 1,
+                'likes': FieldValue.arrayRemove([uid])
+              });
             } else {
-              transaction
-                  .set(documentReference, {...comment.toJson(), 'likesCount': currentCount + 1});
+              transaction.set(documentReference, {
+                ...comment.toJson(),
+                'likesCount': currentCount + 1,
+                'likes': FieldValue.arrayUnion([uid])
+              });
             }
           }
         });
@@ -350,7 +361,8 @@ class CommentRepository {
   }
 
   Future<User> getVideoOwnerData(String uid) async {
-    DocumentSnapshot docs = await firebaseFirestore.collection('users').doc(uid).get();
+    DocumentSnapshot docs =
+        await firebaseFirestore.collection('users').doc(uid).get();
 
     return User.fromSnap(docs);
   }
