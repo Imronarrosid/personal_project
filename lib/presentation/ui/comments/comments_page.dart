@@ -366,7 +366,7 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                             keyboardType: TextInputType.multiline,
                             minLines: 1,
                             maxLines: 3,
-                            maxLength: 1500,
+                            maxLength: 600,
                             buildCounter: (context,
                                     {required currentLength,
                                     required isFocused,
