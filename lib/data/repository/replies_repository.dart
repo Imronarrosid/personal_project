@@ -6,7 +6,6 @@ import 'package:personal_project/domain/model/comment_model.dart';
 import 'package:personal_project/domain/model/reply_models.dart';
 import 'package:personal_project/domain/services/firebase/firebase_service.dart';
 import 'package:personal_project/domain/services/uuid_generator.dart';
-import 'package:personal_project/presentation/ui/comments/replies.dart';
 import 'package:rxdart/rxdart.dart';
 
 class RepliesRepository {
