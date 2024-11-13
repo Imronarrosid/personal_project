@@ -366,6 +366,12 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                             keyboardType: TextInputType.multiline,
                             minLines: 1,
                             maxLines: 3,
+                            maxLength: 1500,
+                            buildCounter: (context,
+                                    {required currentLength,
+                                    required isFocused,
+                                    required maxLength}) =>
+                                const SizedBox(width: 0, height: 0),
                             onChanged: (text) {
                               final CommentBloc commentsBloc =
                                   BlocProvider.of<CommentBloc>(context);
