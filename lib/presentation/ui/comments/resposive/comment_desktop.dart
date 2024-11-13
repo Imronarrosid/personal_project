@@ -360,7 +360,7 @@ class _DesktopCommentsViewState extends State<DesktopCommentsView> {
                               keyboardType: TextInputType.multiline,
                               minLines: 1,
                               maxLines: 3,
-                              maxLength: 1200,
+                              maxLength: 600,
                               buildCounter: (context,
                                       {required currentLength,
                                       required isFocused,
