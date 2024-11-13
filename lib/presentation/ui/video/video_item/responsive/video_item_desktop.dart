@@ -496,7 +496,8 @@ class _VideoItemDesktopState extends State<VideoItemDesktop>
                             debugModePrint(
                                 'lmnop${LocaleKeys.message_share_featur_not_ready.tr()}');
                             showFlutterToast(
-                                msg: LocaleKeys.message_share_featur_not_ready);
+                                msg: LocaleKeys.message_share_featur_not_ready
+                                    .tr());
                           },
                           child: Transform.flip(
                             flipX: true,
