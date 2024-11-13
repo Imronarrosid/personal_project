@@ -12,13 +12,15 @@ import 'package:personal_project/data/repository/paging_repository.dart';
 import 'package:personal_project/domain/model/video_model.dart';
 import 'package:personal_project/domain/reporsitory/auth_reposotory.dart';
 import 'package:personal_project/presentation/l10n/stings.g.dart';
-import 'package:personal_project/presentation/shared_components/keep_alive_page.dart';
 import 'package:personal_project/presentation/shared_components/video_player_item.dart';
 import 'package:personal_project/presentation/ui/auth/auth.dart';
 import 'package:personal_project/presentation/ui/auth/bloc/auth_bloc.dart';
 import 'package:personal_project/presentation/ui/home/cubit/home_cubit.dart';
 import 'package:personal_project/presentation/ui/video/list_video/bloc/paging_bloc.dart';
+import 'package:personal_project/presentation/ui/video/list_video/is_can_scroll_notification.dart';
 import 'package:visibility_detector/visibility_detector.dart';
+
+import '../../../../utils/debug_mode_print.dart';
 
 class ListVideo extends StatefulWidget {
   final VideoFrom from;
@@ -38,7 +40,7 @@ class _ListVideoState extends State<ListVideo> {
 
   @override
   Widget build(BuildContext context) {
-    debugPrint('REbuild');
+    debugModePrint('REbuild');
     final AuthRepository authRepository =
         RepositoryProvider.of<AuthRepository>(context);
 
@@ -46,16 +48,16 @@ class _ListVideoState extends State<ListVideo> {
       listenWhen: (previous, current) => true,
       listener: (context, state) {
         if (state.isTriggerReset && (_controller.page ?? 0.0) > 0.0) {
-          debugPrint('1234');
+          debugModePrint('1234');
           _controller.animateToPage(0,
               duration: const Duration(milliseconds: 300),
               curve: Curves.bounceIn);
         }
       },
       child: VisibilityDetector(
-        key: UniqueKey(),
+        key: const ValueKey('listvideo'),
         onVisibilityChanged: (info) {
-          if (info.visibleFraction > 0) {
+          if (info.visibleFraction > 50) {
             _focusNode.requestFocus();
           }
         },
@@ -98,18 +100,18 @@ class _ListVideoState extends State<ListVideo> {
                           },
                         );
                       },
-                      child: WillPopScope(
-                        onWillPop: () async {
+                      child: BackButtonListener(
+                        onBackButtonPressed: () async {
                           _controller.animateToPage(0,
                               duration: const Duration(milliseconds: 300),
                               curve: Curves.bounceIn);
-                          return false;
+                          return true;
                         },
                         child: KeyboardListener(
-                          focusNode: _focusNode..requestFocus(),
+                          focusNode: _focusNode,
                           autofocus: true,
                           onKeyEvent: (KeyEvent keyEvent) {
-                            debugPrint('index ${_controller.page}');
+                            debugModePrint('index ${_controller.page}');
                             if (keyEvent.logicalKey ==
                                 LogicalKeyboardKey.arrowDown) {
                               _controller.nextPage(
@@ -126,102 +128,11 @@ class _ListVideoState extends State<ListVideo> {
                               }
                             }
                           },
-                          child: PagedPageView<int, Video>(
-                            pagingController: state.controller!,
-                            pageController: _controller,
-                            scrollDirection: Axis.vertical,
-                            physics: const BouncingScrollPhysics(),
-                            builderDelegate: PagedChildBuilderDelegate<Video>(
-                                itemBuilder: (context, item, index) {
-                                  return VideoPlayerItem(
-                                    index: index,
-                                    item: item,
-                                    url: item.videoUrl,
-                                    auto: true,
-                                  );
-                                },
-                                noItemsFoundIndicatorBuilder: (_) {
-                                  return BlocBuilder<AuthBloc, AuthState>(
-                                    builder: (context, state) {
-                                      if (widget.from == VideoFrom.following &&
-                                          authRepository.currentUser != null) {
-                                        return Container(
-                                          width: 400,
-                                          alignment: Alignment.center,
-                                          child: Text(LocaleKeys
-                                              .label_no_video_from_following
-                                              .tr()),
-                                        );
-                                      } else if (widget.from ==
-                                              VideoFrom.following &&
-                                          authRepository.currentUser == null) {
-                                        return Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            SizedBox(
-                                              width: Dimens.DIMENS_250,
-                                              child: Text(
-                                                LocaleKeys
-                                                    .message_log_in_and_follow
-                                                    .tr(),
-                                                textAlign: TextAlign.center,
-                                              ),
-                                            ),
-                                            SizedBox(
-                                              height: Dimens.DIMENS_16,
-                                            ),
-                                            ElevatedButton(
-                                              onPressed: () {
-                                                showAuthBottomSheetFunc(
-                                                    context);
-                                              },
-                                              child: Text(
-                                                LocaleKeys.label_login.tr(),
-                                              ),
-                                            ),
-                                          ],
-                                        );
-                                      }
-
-                                      return Center(
-                                        child: Text(
-                                          LocaleKeys.message_no_post.tr(),
-                                        ),
-                                      );
-                                    },
-                                  );
-                                },
-                                newPageProgressIndicatorBuilder: (_) =>
-                                    const Center(
-                                        child: CircularProgressIndicator()),
-                                newPageErrorIndicatorBuilder: (_) => Text(
-                                    'eror ${state.controller?.error.toString()}'),
-                                firstPageErrorIndicatorBuilder: (_) {
-                                  return Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Text(state.controller!.error.toString()),
-                                      IconButton(
-                                          onPressed: () {
-                                            final PagingRepository
-                                                pagingRepository =
-                                                RepositoryProvider.of<
-                                                    PagingRepository>(context);
-
-                                            pagingRepository.refreshPaging();
-                                          },
-                                          icon: const Icon(
-                                              BootstrapIcons.arrow_clockwise))
-                                    ],
-                                  );
-                                },
-                                noMoreItemsIndicatorBuilder: (_) => Center(
-                                        child: Text(
-                                      LocaleKeys.message_no_new_video.tr(),
-                                      style: TextStyle(
-                                          color: COLOR_white_fff5f5f5),
-                                    ))),
+                          child: ListenableBuilder(
+                            listenable: IsCanScrollNotification.instance,
+                            builder: (context, child) {
+                              return _pageView(state, authRepository, context);
+                            },
                           ),
                         ),
                       ),
@@ -234,6 +145,97 @@ class _ListVideoState extends State<ListVideo> {
           ),
         ),
       ),
+    );
+  }
+
+  PagedPageView<int, Video> _pageView(PagingControllerState state,
+      AuthRepository authRepository, BuildContext context) {
+    return PagedPageView<int, Video>(
+      pagingController: state.controller!,
+      pageController: _controller,
+      scrollDirection: Axis.vertical,
+      physics: IsCanScrollNotification.instance.value
+          ? const AlwaysScrollableScrollPhysics()
+          : const NeverScrollableScrollPhysics(),
+      builderDelegate: PagedChildBuilderDelegate<Video>(
+          itemBuilder: (context, item, index) {
+            return VideoPlayerItem(
+              index: index,
+              item: item,
+              url: item.videoUrl,
+              auto: true,
+            );
+          },
+          noItemsFoundIndicatorBuilder: (_) {
+            return BlocBuilder<AuthBloc, AuthState>(
+              builder: (context, state) {
+                if (widget.from == VideoFrom.following &&
+                    authRepository.currentUser != null) {
+                  return Container(
+                    width: 400,
+                    alignment: Alignment.center,
+                    child: Text(LocaleKeys.label_no_video_from_following.tr()),
+                  );
+                } else if (widget.from == VideoFrom.following &&
+                    authRepository.currentUser == null) {
+                  return Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SizedBox(
+                        width: Dimens.DIMENS_250,
+                        child: Text(
+                          LocaleKeys.message_log_in_and_follow.tr(),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                      SizedBox(
+                        height: Dimens.DIMENS_16,
+                      ),
+                      ElevatedButton(
+                        onPressed: () {
+                          showAuthBottomSheetFunc(context);
+                        },
+                        child: Text(
+                          LocaleKeys.label_login.tr(),
+                        ),
+                      ),
+                    ],
+                  );
+                }
+
+                return Center(
+                  child: Text(
+                    LocaleKeys.message_no_post.tr(),
+                  ),
+                );
+              },
+            );
+          },
+          newPageProgressIndicatorBuilder: (_) =>
+              const Center(child: CircularProgressIndicator()),
+          newPageErrorIndicatorBuilder: (_) =>
+              Text('eror ${state.controller?.error.toString()}'),
+          firstPageErrorIndicatorBuilder: (_) {
+            return Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(state.controller!.error.toString()),
+                IconButton(
+                    onPressed: () {
+                      final PagingRepository pagingRepository =
+                          RepositoryProvider.of<PagingRepository>(context);
+
+                      pagingRepository.refreshPaging();
+                    },
+                    icon: const Icon(BootstrapIcons.arrow_clockwise))
+              ],
+            );
+          },
+          noMoreItemsIndicatorBuilder: (_) => Center(
+                  child: Text(
+                LocaleKeys.message_no_new_video.tr(),
+                style: TextStyle(color: COLOR_white_fff5f5f5),
+              ))),
     );
   }
 }
