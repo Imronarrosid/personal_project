@@ -23,6 +23,7 @@ import 'package:personal_project/presentation/ui/edit_profile/cubit/edit_profile
 import 'package:personal_project/presentation/ui/edit_profile/cubit/edit_user_name_cubit.dart';
 import 'package:personal_project/presentation/ui/edit_profile/cubit/game_fav_cubit.dart';
 import 'package:personal_project/presentation/ui/home/cubit/home_cubit.dart';
+import 'package:personal_project/presentation/ui/home/navbar_notifier/navbar_notifier.dart';
 import 'package:personal_project/presentation/ui/language/cubit/language_cubit.dart';
 import 'package:personal_project/presentation/ui/select_cover/cubit/select_cover_cubit.dart';
 import 'package:personal_project/presentation/ui/upload/bloc/camera_bloc.dart';
@@ -119,81 +120,84 @@ class _MyAppState extends State<MyApp> {
               create: (context) => ChatRepository(),
             )
           ],
-          child: MultiBlocProvider(
-            providers: [
-              BlocProvider(
-                create: (context) => HomeCubit(),
-              ),
-              BlocProvider<CameraBloc>(
-                create: (context) => CameraBloc(),
-              ),
-              BlocProvider(
-                create: (context) => VideoPreviewBloc(),
-              ),
-              BlocProvider(
-                create: (context) {
-                  final AuthRepository repo =
-                      RepositoryProvider.of<AuthRepository>(context);
-
-                  return AuthBloc(repo);
-                },
-              ),
-              BlocProvider(
-                create: (context) => UploadBloc(
-                  RepositoryProvider.of<VideoRepository>(context),
+          child: ChangeNotifierProvider(
+            create: (context) => NavbarNotifier(),
+            child: MultiBlocProvider(
+              providers: [
+                BlocProvider(
+                  create: (context) => HomeCubit(),
                 ),
-              ),
-              BlocProvider(
-                create: (context) {
+                BlocProvider<CameraBloc>(
+                  create: (context) => CameraBloc(),
+                ),
+                BlocProvider(
+                  create: (context) => VideoPreviewBloc(),
+                ),
+                BlocProvider(
+                  create: (context) {
+                    final AuthRepository repo =
+                        RepositoryProvider.of<AuthRepository>(context);
+
+                    return AuthBloc(repo);
+                  },
+                ),
+                BlocProvider(
+                  create: (context) => UploadBloc(
+                    RepositoryProvider.of<VideoRepository>(context),
+                  ),
+                ),
+                BlocProvider(
+                  create: (context) {
+                    final UserRepository userRepository =
+                        RepositoryProvider.of<UserRepository>(context);
+                    return EditNameCubit(userRepository);
+                  },
+                ),
+                BlocProvider(create: (context) {
+                  final UserRepository repository =
+                      RepositoryProvider.of<UserRepository>(context);
+                  return EditBioCubit(repository);
+                }),
+                BlocProvider(create: (context) {
                   final UserRepository userRepository =
                       RepositoryProvider.of<UserRepository>(context);
-                  return EditNameCubit(userRepository);
-                },
-              ),
-              BlocProvider(create: (context) {
-                final UserRepository repository =
-                    RepositoryProvider.of<UserRepository>(context);
-                return EditBioCubit(repository);
-              }),
-              BlocProvider(create: (context) {
-                final UserRepository userRepository =
-                    RepositoryProvider.of<UserRepository>(context);
-                return EditUserNameCubit(userRepository);
-              }),
-              BlocProvider(create: (context) {
-                final UserRepository userRepository =
-                    RepositoryProvider.of<UserRepository>(context);
-                return EditProfilePictCubit(userRepository);
-              }),
-              BlocProvider(
-                create: (context) {
+                  return EditUserNameCubit(userRepository);
+                }),
+                BlocProvider(create: (context) {
                   final UserRepository userRepository =
                       RepositoryProvider.of<UserRepository>(context);
-                  return GameFavCubit(userRepository);
-                },
-                child: Container(),
+                  return EditProfilePictCubit(userRepository);
+                }),
+                BlocProvider(
+                  create: (context) {
+                    final UserRepository userRepository =
+                        RepositoryProvider.of<UserRepository>(context);
+                    return GameFavCubit(userRepository);
+                  },
+                  child: Container(),
+                ),
+                BlocProvider(create: (_) => LanguageCubit()),
+                BlocProvider(
+                  create: (context) => SelectGameCubit(),
+                ),
+                BlocProvider(
+                  create: (_) => SelectCoverCubit(),
+                ),
+                BlocProvider(
+                  create: (_) => VideoSizeCubit(),
+                )
+              ],
+              child: MaterialApp.router(
+                debugShowCheckedModeBanner: false,
+                theme: AppTheme.darkTheme,
+                locale: context.locale,
+                supportedLocales: context.supportedLocales,
+                localizationsDelegates: context.localizationDelegates,
+                title: "Gamepiun",
+                routeInformationProvider: goRouter.routeInformationProvider,
+                routeInformationParser: goRouter.routeInformationParser,
+                routerDelegate: goRouter.routerDelegate,
               ),
-              BlocProvider(create: (_) => LanguageCubit()),
-              BlocProvider(
-                create: (context) => SelectGameCubit(),
-              ),
-              BlocProvider(
-                create: (_) => SelectCoverCubit(),
-              ),
-              BlocProvider(
-                create: (_) => VideoSizeCubit(),
-              )
-            ],
-            child: MaterialApp.router(
-              debugShowCheckedModeBanner: false,
-              theme: AppTheme.darkTheme,
-              locale: context.locale,
-              supportedLocales: context.supportedLocales,
-              localizationsDelegates: context.localizationDelegates,
-              title: "Gamepiun",
-              routeInformationProvider: goRouter.routeInformationProvider,
-              routeInformationParser: goRouter.routeInformationParser,
-              routerDelegate: goRouter.routerDelegate,
             ),
           ),
         );
