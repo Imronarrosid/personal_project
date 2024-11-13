@@ -54,7 +54,8 @@ class RepliesCubit extends Cubit<RepliesState> {
       status: RepliesStatus.loading,
     ));
 
-    await repository.getListRepliesDocs(postId: postId, limit: 3, commentId: commentId);
+    await repository.getListRepliesDocs(
+        postId: postId, limit: 3, commentId: commentId);
 
     if (repository.replies.isNotEmpty) {
       emit(RepliesState(
@@ -72,6 +73,7 @@ class RepliesCubit extends Cubit<RepliesState> {
   }
 
   void hideReplies() {
+    repository.clearReplies();
     emit(
       const RepliesState(
         status: RepliesStatus.initial,
