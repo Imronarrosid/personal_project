@@ -37,6 +37,8 @@ import 'package:personal_project/utils/number_format.dart';
 import 'package:solar_icons/solar_icons.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
+import '../../../../../utils/debug_mode_print.dart';
+
 class VideoItemMobile extends StatefulWidget {
   final int index;
   final Video videoData;
@@ -83,7 +85,7 @@ class _VideoItemMobileState extends State<VideoItemMobile> {
       child: Builder(builder: (context) {
         return BlocListener<VideoPlayerBloc, VideoPlayerState>(
             listener: (context, state) {
-              debugPrint(state.toString());
+              debugModePrint(state.toString());
 
               if (state.status == VideoPlayerStatus.initialized) {
                 if (isViewed == false) {
@@ -211,7 +213,7 @@ class _VideoItemMobileState extends State<VideoItemMobile> {
       listenable: VideoPaddingNOtifire.instance,
       builder: (context, child) {
         double bottomPadding = VideoPaddingNOtifire.instance.bottomPadding;
-        debugPrint('bottompadding $bottomPadding');
+        debugModePrint('bottompadding $bottomPadding');
         return Container(
           width: size.width,
           height: size.height,
@@ -232,9 +234,9 @@ class _VideoItemMobileState extends State<VideoItemMobile> {
                     .add(const VideoPlayerEvent(actions: VideoEvent.dispose));
               }
               if (visiblePercentage > 30 && isActive) {
-                debugPrint('ctrlll isnull ${repo.controller == null}');
+                debugModePrint('ctrlll isnull ${repo.controller == null}');
                 if (repo.controller == null) {
-                  debugPrint('ctrlll ');
+                  debugModePrint('ctrlll ');
                   BlocProvider.of<VideoPlayerBloc>(context).add(
                       VideoPlayerEvent(
                           actions: VideoEvent.initialize,
@@ -248,7 +250,8 @@ class _VideoItemMobileState extends State<VideoItemMobile> {
                 if (repo.controller != null && bottomPadding == 0.0) {
                   BlocProvider.of<VideoPlayerBloc>(context)
                       .add(const VideoPlayerEvent(actions: VideoEvent.play));
-                  debugPrint('isready ${repo.controller!.value.isInitialized}');
+                  debugModePrint(
+                      'isready ${repo.controller!.value.isInitialized}');
                 }
                 // }
               }
@@ -364,7 +367,7 @@ class _VideoItemMobileState extends State<VideoItemMobile> {
                     },
                     builder: (context, state) {
                       if (state is VideoIsLiked) {
-                        debugPrint('likeCount${state.likeCount}');
+                        debugModePrint('likeCount${state.likeCount}');
                         return Text(
                           numberFormat(context.locale, state.likeCount),
                           style: TextStyle(
@@ -445,7 +448,7 @@ class _VideoItemMobileState extends State<VideoItemMobile> {
                   ),
                   GestureDetector(
                     onTap: () {
-                      debugPrint(
+                      debugModePrint(
                           'lmnop${LocaleKeys.message_share_featur_not_ready.tr()}');
                       Fluttertoast.showToast(
                         msg: LocaleKeys.message_share_featur_not_ready.tr(),
@@ -695,7 +698,7 @@ class _VideoItemMobileState extends State<VideoItemMobile> {
             !isViewed) {
           RepositoryProvider.of<VideoRepository>(context)
               .addViewsCount(videoData.id!);
-          debugPrint('add views');
+          debugModePrint('add views');
           isViewed = true;
           // state.controller!.removeListener(() {});
         }
@@ -1047,7 +1050,7 @@ class _VideoItemMobileState extends State<VideoItemMobile> {
                           //   ),
                           // );
                           context.go(
-                            APP_PAGE.category.toPath,
+                            '${APP_PAGE.category.toPath}/${videoData.category}',
                             extra: VideoCategory(
                               gameFav: videoData.game,
                             ),
