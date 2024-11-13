@@ -57,7 +57,7 @@ class _ListVideoState extends State<ListVideo> {
       child: VisibilityDetector(
         key: const ValueKey('listvideo'),
         onVisibilityChanged: (info) {
-          if (info.visibleFraction > 50) {
+          if (info.visibleFraction > 0.5) {
             _focusNode.requestFocus();
           }
         },
