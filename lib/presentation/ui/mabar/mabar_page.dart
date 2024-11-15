@@ -75,7 +75,7 @@ class _ChatViewState extends State<ChatView> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    debugPrint('botttomins ${MediaQuery.of(context).viewInsets.bottom}');
+    debugModePrint('botttomins ${MediaQuery.of(context).viewInsets.bottom}');
     return test();
   }
 
@@ -224,6 +224,11 @@ class _ChatViewState extends State<ChatView> with WidgetsBindingObserver {
                                 // onMessageTap: _handleMessageTap,
                                 // onPreviewDataFetched: _handlePreviewDataFetched,
                                 onSendPressed: _handleSendPressed,
+                                inputOptions: const InputOptions(
+                                  maxLength: 4000,
+                                  sendButtonVisibilityMode:
+                                      SendButtonVisibilityMode.always,
+                                ),
                                 user: types.User(
                                   id: FirebaseChatCore
                                           .instance.firebaseUser?.uid ??
@@ -305,7 +310,7 @@ class _ChatViewState extends State<ChatView> with WidgetsBindingObserver {
       inputMargin: EdgeInsets.symmetric(
           horizontal: Dimens.DIMENS_12, vertical: Dimens.DIMENS_8),
       inputBorderRadius: BorderRadius.circular(8),
-      backgroundColor: Theme.of(context).colorScheme.background,
+      backgroundColor: Theme.of(context).colorScheme.surface,
     );
   }
 
@@ -340,11 +345,6 @@ class _ChatViewState extends State<ChatView> with WidgetsBindingObserver {
     repository.sendMabarMessage(message, '001');
   }
 
-  void _sendHandle(String message) {
-    repository.sendMabarMessage(types.PartialText(text: message), '001');
-    context.pop();
-  }
-
   Widget _buildAvatar(types.User author) {
     final UserRepository repo = RepositoryProvider.of<UserRepository>(context);
     return StreamBuilder(
@@ -366,7 +366,7 @@ class _ChatViewState extends State<ChatView> with WidgetsBindingObserver {
                 context.go(
                   '/@${author.firstName}',
                 );
-                debugPrint('author ${author.firstName}');
+                debugModePrint('author ${author.firstName}');
               },
               child: Container(
                 width: Dimens.DIMENS_38,
@@ -442,7 +442,7 @@ class ChatThemplateItem extends StatelessWidget {
         onTap: () => onTap(msg),
         child: Container(
           width: Dimens.DIMENS_250,
-          padding: EdgeInsets.all(12),
+          padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
               color: Colors.transparent,
               borderRadius: BorderRadius.circular(8)),
