@@ -4,7 +4,6 @@ import 'package:bootstrap_icons/bootstrap_icons.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -15,14 +14,11 @@ import 'package:flutter_firebase_chat_core/flutter_firebase_chat_core.dart';
 import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
-import 'package:mime/mime.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:personal_project/constant/dimens.dart';
 import 'package:personal_project/data/repository/chat_repository.dart';
 import 'package:personal_project/domain/model/chat_data_models.dart';
-import 'package:personal_project/domain/model/user.dart' as models;
-import 'package:personal_project/domain/model/profile_data_model.dart';
 import 'package:personal_project/domain/reporsitory/auth_reposotory.dart';
 import 'package:personal_project/domain/reporsitory/user_repository.dart';
 import 'package:personal_project/presentation/l10n/locale_code.dart';
@@ -33,6 +29,7 @@ import 'package:provider/provider.dart';
 import 'package:universal_html/html.dart' as html;
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../utils/debug_mode_print.dart';
 import '../../router/app_router.dart';
 
 class ChatPage extends StatefulWidget {
@@ -62,7 +59,7 @@ class _ChatPageState extends State<ChatPage> {
   void _handleAtachmentPressed() {
     showModalBottomSheet<void>(
       context: context,
-      backgroundColor: Theme.of(context).colorScheme.background,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       elevation: 0,
       builder: (BuildContext context) => SafeArea(
         child: Padding(
@@ -70,7 +67,7 @@ class _ChatPageState extends State<ChatPage> {
           child: Container(
             padding: EdgeInsets.all(Dimens.DIMENS_12),
             decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.background,
+                color: Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.circular(10)),
             height: 230,
             child: Column(
@@ -217,7 +214,7 @@ class _ChatPageState extends State<ChatPage> {
             chatData!.room.id,
           );
         } else {
-          final uri = await repo.uploadImage(file!, name: name);
+          final uri = await repo.uploadImage(file, name: name);
 
           final message = types.PartialImage(
             height: image.height.toDouble(),
@@ -242,7 +239,7 @@ class _ChatPageState extends State<ChatPage> {
   void _handleMessageTap(BuildContext _, types.Message message) async {
     if (message is types.FileMessage) {
       var localPath = message.uri;
-      debugPrint('urii ${message.uri}');
+      debugModePrint('urii ${message.uri}');
       if (message.uri.startsWith('http')) {
         try {
           if (!kIsWeb) {
@@ -273,7 +270,7 @@ class _ChatPageState extends State<ChatPage> {
         }
       }
       if (kIsWeb) {
-        html.AnchorElement anchorElement = html.AnchorElement(href: message.uri)
+      html.AnchorElement(href: message.uri)
           ..setAttribute('download', message.name)
           ..click();
       }
@@ -394,7 +391,7 @@ class _ChatPageState extends State<ChatPage> {
                   return ListenableBuilder(
                       listenable: listChatNotifier,
                       builder: (context, child) {
-                        debugPrint('Reach limit ${listChatNotifier.limit}');
+                        debugModePrint('Reach limit ${listChatNotifier.limit}');
                         return StreamBuilder<List<types.Message>>(
                           stream: FirebaseChatCore.instance.messages(
                               snapshot.data!,
@@ -404,13 +401,14 @@ class _ChatPageState extends State<ChatPage> {
                               return const Center(
                                   child: CircularProgressIndicator());
                             }
-                            debugPrint('Reach lenght ${snapshot.data!.length}');
+                            debugModePrint(
+                                'Reach lenght ${snapshot.data!.length}');
                             return Chat(
                               onEndReached: () async {
                                 if (snapshot.connectionState !=
                                     ConnectionState.waiting) {
                                   listChatNotifier.onEndReached();
-                                  debugPrint('Reach end');
+                                  debugModePrint('Reach end');
                                 }
                               },
                               isLastPage: listChatNotifier.limit >
@@ -427,6 +425,11 @@ class _ChatPageState extends State<ChatPage> {
                                   Uri url = Uri.parse(p0);
                                   launchUrl(url);
                                 },
+                              ),
+                              inputOptions: const InputOptions(
+                                maxLength: 4000,
+                                sendButtonVisibilityMode:
+                                    SendButtonVisibilityMode.always,
                               ),
                               isAttachmentUploading: _isAttachmentUploading,
                               messages: snapshot.data ?? [],
@@ -495,7 +498,7 @@ class _ChatPageState extends State<ChatPage> {
       inputMargin: EdgeInsets.symmetric(
           horizontal: Dimens.DIMENS_6, vertical: Dimens.DIMENS_5),
       inputBorderRadius: BorderRadius.circular(50),
-      backgroundColor: Theme.of(context).colorScheme.background,
+      backgroundColor: Theme.of(context).colorScheme.surface,
     );
   }
 
@@ -521,7 +524,7 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   Widget _buildAvatar(types.User author) {
-    final UserRepository repo = RepositoryProvider.of<UserRepository>(context);
+    RepositoryProvider.of<UserRepository>(context);
     if (chatData!.room.type == types.RoomType.direct) {
       return Material(
         borderRadius: BorderRadius.circular(50),
