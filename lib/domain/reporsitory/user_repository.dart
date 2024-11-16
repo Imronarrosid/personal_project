@@ -328,7 +328,11 @@ class UserRepository implements UserUseCaseType {
       await firebaseFirestore
           .collection('users')
           .doc(firebaseAuth.currentUser!.uid)
-          .update({'name': newName, 'updatedAt': FieldValue.serverTimestamp()});
+          .update({
+        'name': newName,
+        'nameUpdatedAt': FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
     } catch (e) {
       rethrow;
     }
@@ -342,7 +346,8 @@ class UserRepository implements UserUseCaseType {
           .doc(firebaseAuth.currentUser!.uid)
           .update({
         'userName': newName,
-        'userNameUpdatedAt': FieldValue.serverTimestamp()
+        'userNameUpdatedAt': FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp()
       });
       await firebaseFirestore
           .collection('userNames')
