@@ -10,7 +10,6 @@ import 'package:personal_project/presentation/responsive/dimension.dart';
 import 'package:personal_project/presentation/ui/edit_profile/cubit/edit_name_cubit.dart';
 import 'package:personal_project/utils/edit_name_check.dart';
 import 'package:personal_project/utils/is_same_day.dart';
-import 'package:solar_icons/solar_icons.dart';
 
 import '../../../../utils/debug_mode_print.dart';
 
