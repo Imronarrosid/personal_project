@@ -12,19 +12,21 @@ enum Role { admin, agent, moderator, user }
 /// {@endtemplate}
 class User extends Equatable {
   /// {@macro user}
-  const User(
-      {this.createdAt,
-      this.userNameUpdatedAt,
-      required this.id,
-      this.email,
-      this.name,
-      this.userName,
-      this.photo,
-      this.role,
-      this.nameUpdatedAt,
-      this.metadata,
-      this.searchKey,
-      this.lastSeen});
+  const User({
+    this.createdAt,
+    this.userNameUpdatedAt,
+    required this.id,
+    this.email,
+    this.name,
+    this.userName,
+    this.photo,
+    this.role,
+    this.nameUpdatedAt,
+    this.metadata,
+    this.searchKey,
+    this.lastSeen,
+    this.updatedAt,
+  });
 
   /// Created user timestamp, in ms.
   final Timestamp? createdAt;
@@ -50,6 +52,8 @@ class User extends Equatable {
 
   final String? searchKey;
 
+  final Timestamp? updatedAt;
+
   /// Additional custom metadata or attributes related to the user.
   final fauth.UserMetadata? metadata;
 
@@ -74,36 +78,42 @@ class User extends Equatable {
         "uid": id,
         "createdAt": createdAt,
         "lastSeen": lastSeen,
-        "updatedAt": nameUpdatedAt,
-        "searchKey": searchKey
+        "nameUpdatedAt": nameUpdatedAt,
+        "searchKey": searchKey,
+        "updatedAt": updatedAt,
       };
   static User fromSnap(DocumentSnapshot snapshot) {
     var snap = snapshot.data() as Map<String, dynamic>;
     return User(
-        name: snap['name'],
-        userName: snap['userName'],
-        photo: snap['photoUrl'],
-        email: snap['email'],
-        id: snap['uid'],
-        createdAt: snap['createdAt'],
-        nameUpdatedAt: snap['nameUpdatedAt'],
-        searchKey: snap['searchKey'],
-        lastSeen: snap['lastSeen'],
-        userNameUpdatedAt: snap['userNameUpdatedAt']);
+      name: snap['name'],
+      userName: snap['userName'],
+      photo: snap['photoUrl'],
+      email: snap['email'],
+      id: snap['uid'],
+      createdAt: snap['createdAt'],
+      nameUpdatedAt: snap['nameUpdatedAt'],
+      searchKey: snap['searchKey'],
+      lastSeen: snap['lastSeen'],
+      userNameUpdatedAt: snap['userNameUpdatedAt'],
+      updatedAt: snap['updatedAt'],
+    );
   }
+
   static User fromMap(Map<String, dynamic> snapshot) {
     var snap = snapshot;
     return User(
-        name: snap['name'],
-        userName: snap['userName'],
-        photo: snap['photoUrl'],
-        email: snap['email'],
-        id: snap['uid'],
-        createdAt: snap['createdAt'],
-        nameUpdatedAt: snap['nameUpdatedAt'],
-        searchKey: snap['searchKey'],
-        lastSeen: snap['lastSeen'],
-        userNameUpdatedAt: snap['userNameUpdatedAt']);
+      name: snap['name'],
+      userName: snap['userName'],
+      photo: snap['photoUrl'],
+      email: snap['email'],
+      id: snap['uid'],
+      createdAt: snap['createdAt'],
+      nameUpdatedAt: snap['nameUpdatedAt'],
+      searchKey: snap['searchKey'],
+      lastSeen: snap['lastSeen'],
+      userNameUpdatedAt: snap['userNameUpdatedAt'],
+      updatedAt: snap['updatedAt'],
+    );
   }
 
   @override
@@ -117,5 +127,8 @@ class User extends Equatable {
         createdAt,
         lastSeen,
         searchKey,
+        nameUpdatedAt,
+        userNameUpdatedAt,
+        updatedAt,
       ];
 }
