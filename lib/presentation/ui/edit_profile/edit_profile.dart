@@ -14,7 +14,6 @@ import 'package:personal_project/domain/reporsitory/auth_reposotory.dart';
 import 'package:personal_project/domain/reporsitory/user_repository.dart';
 import 'package:personal_project/presentation/l10n/stings.g.dart';
 import 'package:personal_project/presentation/responsive/dimension.dart';
-import 'package:personal_project/presentation/router/route_utils.dart';
 import 'package:personal_project/presentation/shared_components/handel_back_button.dart';
 import 'package:personal_project/presentation/ui/edit_profile/cubit/edit_bio_cubit.dart';
 import 'package:personal_project/presentation/ui/edit_profile/cubit/edit_profile_pict_cubit.dart';
@@ -120,6 +119,10 @@ class _EditProfileState extends State<EditProfile> {
                                   alignment: Alignment.center,
                                   child: CircleAvatar(
                                     radius: Dimens.DIMENS_42,
+                                    foregroundColor:
+                                        Theme.of(context).colorScheme.tertiary,
+                                    backgroundColor:
+                                        Theme.of(context).colorScheme.tertiary,
                                   ),
                                 );
                               }
@@ -127,7 +130,11 @@ class _EditProfileState extends State<EditProfile> {
                                 alignment: Alignment.center,
                                 child: CircleAvatar(
                                   radius: Dimens.DIMENS_42,
-                                  backgroundImage:
+                                  foregroundColor:
+                                      Theme.of(context).colorScheme.tertiary,
+                                  backgroundColor:
+                                      Theme.of(context).colorScheme.tertiary,
+                                  foregroundImage:
                                       CachedNetworkImageProvider(avatar!),
                                   child: Align(
                                     alignment: Alignment.center,
