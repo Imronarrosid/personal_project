@@ -34,6 +34,10 @@ class EditUserNameCubit extends Cubit<EditUserNameState> {
     }
   }
 
+  void resetState() {
+    emit(const EditUserNameState(status: EditUserNameStatus.initial));
+  }
+
   Future<void> checkUserNameAvailability(String username) async {
     emit(const EditUserNameState(status: EditUserNameStatus.loading));
     try {
