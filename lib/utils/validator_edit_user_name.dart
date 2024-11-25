@@ -4,7 +4,7 @@ import 'get_ntp_time.dart';
 
 Future<bool> isCanEditUserName(Timestamp timestamp) async {
   // Get the current time
-  DateTime now = await fetchTime();
+  DateTime now = DateTime.now();
 
   // Convert Firestore timestamp to DateTime
   DateTime timestampDateTime = timestamp.toDate();
