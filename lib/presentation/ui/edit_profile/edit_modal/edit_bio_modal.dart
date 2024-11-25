@@ -13,8 +13,21 @@ void showEditBioMpdal(BuildContext context, {required String bio}) {
     showDialog(
       context: context,
       builder: (context) => Dialog(
-        child:
-            SizedBox(width: 400, child: BioModalView(controller: controller)),
+        child: SizedBox(
+          width: 400,
+          height: 300,
+          child: Stack(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: BioModalView(
+                  controller: controller,
+                ),
+              ),
+              _closeButton(context)
+            ],
+          ),
+        ),
       ),
     );
   } else {
@@ -29,20 +42,40 @@ void showEditBioMpdal(BuildContext context, {required String bio}) {
                 bottom: MediaQuery.of(context).viewInsets.bottom),
             child: Padding(
               padding: const EdgeInsets.all(8.0),
-              child: BioModalView(controller: controller),
+              child: BioModalView(
+                controller: controller,
+                showDragHandle: true,
+              ),
             ),
           );
         });
   }
 }
 
+Padding _closeButton(BuildContext context) {
+  return Padding(
+    padding: const EdgeInsets.all(8.0),
+    child: Align(
+      alignment: Alignment.topRight,
+      child: IconButton(
+        onPressed: () => context.pop(),
+        icon: const Icon(
+          Icons.close_rounded,
+        ),
+      ),
+    ),
+  );
+}
+
 class BioModalView extends StatelessWidget {
   const BioModalView({
     super.key,
     required this.controller,
+    this.showDragHandle = false,
   });
 
   final TextEditingController controller;
+  final bool showDragHandle;
 
   @override
   Widget build(BuildContext context) {
@@ -50,19 +83,23 @@ class BioModalView extends StatelessWidget {
       height: 300,
       padding: EdgeInsets.all(Dimens.DIMENS_12),
       decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.background,
+          color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(10)),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Align(
-          alignment: Alignment.center,
-          child: Container(
-            width: Dimens.DIMENS_50,
-            height: Dimens.DIMENS_5,
-            decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.tertiary,
-                borderRadius: BorderRadius.circular(50)),
-          ),
-        ),
+        Builder(builder: (context) {
+          return !showDragHandle
+              ? const SizedBox.shrink()
+              : Align(
+                  alignment: Alignment.center,
+                  child: Container(
+                    width: Dimens.DIMENS_50,
+                    height: Dimens.DIMENS_5,
+                    decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.tertiary,
+                        borderRadius: BorderRadius.circular(50)),
+                  ),
+                );
+        }),
         SizedBox(
           height: Dimens.DIMENS_6,
         ),
@@ -83,9 +120,7 @@ class BioModalView extends StatelessWidget {
               border:
                   OutlineInputBorder(borderRadius: BorderRadius.circular(10))),
         ),
-        SizedBox(
-          height: Dimens.DIMENS_18,
-        ),
+        const Spacer(),
         Material(
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
