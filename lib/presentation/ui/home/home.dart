@@ -39,13 +39,40 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   bool isTriggerReset = true;
   late final SidebarXController _sidebarXController;
 
   @override
   void initState() {
+    WidgetsBinding.instance.addObserver(this);
+    WidgetsBinding.instance.addPostFrameCallback(
+      (timeStamp) {
+        context.read<UserRepository>().onUserOnline();
+      },
+    );
+    AppLifecycleListener();
     super.initState();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    debugModePrint('status ${state.name}');
+    if (state == AppLifecycleState.paused) {
+      // App is moving to the background
+      debugModePrint('App paused: Save data or cleanup tasks.');
+      // _handleAppClose();
+      context.read<UserRepository>().onUserOffline();
+    } else if (state == AppLifecycleState.detached ||
+        state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.hidden) {
+      // App is about to close
+      debugModePrint('App detached: Final cleanup.');
+      context.read<UserRepository>().onUserOffline();
+      // _handleAppClose();
+    } else if (state == AppLifecycleState.resumed) {
+      context.read<UserRepository>().onUserOnline();
+    }
   }
 
   void _sidebarXListener() async {

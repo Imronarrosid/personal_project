@@ -1,25 +1,42 @@
 import 'dart:io';
-import 'dart:typed_data';
 
+import 'package:chatview/chatview.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
 import 'package:personal_project/domain/model/user.dart';
 import 'package:personal_project/domain/services/firebase/firebase_service.dart';
 import 'package:personal_project/domain/services/uuid_generator.dart';
+import 'package:personal_project/utils/chat_util.dart';
+import 'package:personal_project/utils/debug_mode_print.dart';
+import 'package:uuid/uuid.dart';
 
 import '../../domain/model/chat_data_models.dart';
+import '../../domain/model/chat_payload_model.dart';
+import '../../domain/model/room_model.dart';
+import '../../utils/update_user_last_seen.dart';
 
 class ChatRepository {
   List<String> _followingUidList = [];
 
   final List<DocumentSnapshot> _docs = [];
+  final List<DocumentSnapshot> _chatDocs = [];
+  final List<String> _messageIdFromStream = [];
+
+  final List<Message> _messages = [];
 
   static ChatData? _chatData;
 
   ChatData? get chatData => _chatData;
 
   set setChatData(ChatData? chatData) => _chatData = chatData;
+  static ChatPayload? _chatPayload;
+
+  ChatPayload? get chatPayload => _chatPayload;
+
+  List<Message> get messagesLists => _messages;
+
+  set setChatPayload(ChatPayload? chatData) => _chatPayload = chatData;
 
   void clearPreviouseData() {
     _docs.clear();
@@ -185,5 +202,725 @@ class ChatRepository {
       debugPrint(e.toString());
       return '';
     }
+  }
+
+  Future<void> onOpenChat({required Room room}) async {
+    final DocumentReference ref =
+        firebaseFirestore.collection('rooms').doc(room.id);
+
+    final UnreadedTotal otherUnreaded = room.unreadedTotal!.firstWhere(
+      (element) {
+        return element.uid != firebaseAuth.currentUser!.uid;
+      },
+    );
+    final UnreadedTotal userUnreaded = room.unreadedTotal!.firstWhere(
+      (element) {
+        return element.uid == firebaseAuth.currentUser!.uid;
+      },
+    );
+
+    firebaseFirestore.runTransaction(
+      (transaction) async {
+        final message = await _getLastMessage(room);
+        transaction.update(ref, {
+          'unreadedTotal': [
+            {
+              'uid': otherUnreaded.uid,
+              'total': otherUnreaded.total,
+              'lastReadedAt': otherUnreaded.lastReadedAt,
+            },
+            {
+              'uid': userUnreaded.uid,
+              'total': 0,
+              'lastReadedAt': message.createdAt,
+            }
+          ]
+        });
+      },
+    );
+  }
+
+  /// Creates a direct chat for 2 people. Add [metadata] for any additional
+  /// custom data.
+  Future<Room> createRoom(
+    User otherUser, {
+    Map<String, dynamic>? metadata,
+  }) async {
+    final fu = firebaseAuth.currentUser;
+
+    if (fu == null) return Future.error('User does not exist');
+
+    // Sort two user ids array to always have the same array for both users,
+    // this will make it easy to find the room if exist and make one read only.
+    final userIds = [fu.uid, otherUser.id]..sort();
+
+    final roomQuery = await firebaseFirestore
+        .collection('rooms')
+        .where('type', isEqualTo: RoomType.direct.toShortString())
+        .where('userIds', isEqualTo: userIds)
+        .limit(1)
+        .get();
+
+    // Check if room already exist.
+    if (roomQuery.docs.isNotEmpty) {
+      final room = (await processRoomsQuery(
+        fu,
+        firebaseFirestore,
+        roomQuery,
+        'users',
+      ))
+          .first;
+
+      return room;
+    }
+
+    // To support old chats created without sorted array,
+    // try to check the room by reversing user ids array.
+    final oldRoomQuery = await firebaseFirestore
+        .collection('rooms')
+        .where('type', isEqualTo: RoomType.direct.toShortString())
+        .where('userIds', isEqualTo: userIds.reversed.toList())
+        .limit(1)
+        .get();
+
+    // Check if room already exist.
+    if (oldRoomQuery.docs.isNotEmpty) {
+      final room = (await processRoomsQuery(
+        fu,
+        firebaseFirestore,
+        oldRoomQuery,
+        'users',
+      ))
+          .first;
+
+      return room;
+    }
+
+    final currentUser = await fetchUser(
+      firebaseFirestore,
+      fu.uid,
+      'users',
+    );
+
+    final users = [User.fromMap(currentUser), otherUser];
+
+    // Create new room with sorted user ids array.
+    final room = await firebaseFirestore.collection('rooms').add({
+      'createdAt': FieldValue.serverTimestamp(),
+      'imageUrl': null,
+      'metadata': metadata,
+      'name': null,
+      'type': RoomType.direct.toShortString(),
+      'updatedAt': FieldValue.serverTimestamp(),
+      'userIds': userIds,
+      'userRoles': null,
+    });
+
+    return Room(
+      id: room.id,
+      metadata: metadata,
+      type: RoomType.direct,
+      users: users,
+    );
+  }
+
+  /// Returns a stream of changes in a room from Firebase.
+  Stream<Room> room(String roomId) {
+    final fu = firebaseAuth.currentUser;
+
+    if (fu == null) return const Stream.empty();
+
+    return firebaseFirestore
+        .collection('rooms')
+        .doc(roomId)
+        .snapshots()
+        .asyncMap(
+          (doc) => processRoomDocument(
+            doc,
+            fu,
+            firebaseFirestore,
+            'users',
+          ),
+        );
+  }
+
+  Future<void> sendMessage(Message message, String roomId) async {
+    try {
+      if (firebaseAuth.currentUser == null) return;
+      String messageId = uuid.v6();
+      final messageMap = message.toJson();
+      messageMap['id'] = messageId;
+      messageMap['sentBy'] = firebaseAuth.currentUser!.uid;
+      messageMap['createdAt'] = FieldValue.serverTimestamp();
+      messageMap['updatedAt'] = FieldValue.serverTimestamp();
+      messageMap['message_type'] = message.messageType.name;
+      messageMap['reply_message'] = message.replyMessage
+          .copyWith(
+            voiceMessageDuration: message.replyMessage.voiceMessageDuration ??
+                const Duration(microseconds: 0),
+          )
+          .toJson();
+
+      messageMap['status'] =
+          messageMap['message_type'] == MessageType.image.name
+              ? MessageStatus.pending.name
+              : MessageStatus.delivered.name;
+
+      debugModePrint('message $messageMap');
+      await firebaseFirestore
+          .collection('rooms/$roomId/messages')
+          .doc(messageId)
+          .set(messageMap);
+
+      if (messageMap['message_type'] == MessageType.image.name) {
+        messageMap['message'] =
+            await uploadImage(File(messageMap['message']), name: Uuid().v6());
+        messageMap['status'] = MessageStatus.pending.name;
+        messageMap['updatedAt'] = FieldValue.serverTimestamp();
+        await firebaseFirestore
+            .collection('rooms/$roomId/messages')
+            .doc(messageId)
+            .update(messageMap);
+      }
+
+      DocumentReference ref = firebaseFirestore.collection('rooms').doc(roomId);
+      firebaseFirestore.runTransaction(
+        (transaction) async {
+          await transaction.get(ref).then(
+            (value) {
+              final roomMap = value.data() as Map<String, dynamic>;
+
+              roomMap['users'] =
+                  ((value.data() as Map<String, dynamic>)['userIds'] as List)
+                      .map((e) => {'uid': e})
+                      .toList();
+              roomMap['createdAt'] =
+                  roomMap['createdAt']?.millisecondsSinceEpoch;
+              roomMap['updatedAt'] =
+                  roomMap['updatedAt']?.millisecondsSinceEpoch;
+              final Room room = Room.fromJson(roomMap);
+              final UnreadedTotal otherUnreaded =
+                  room.unreadedTotal!.firstWhere(
+                (element) {
+                  return element.uid != firebaseAuth.currentUser!.uid;
+                },
+              );
+              final UnreadedTotal userUnreaded = room.unreadedTotal!.firstWhere(
+                (element) {
+                  return element.uid == firebaseAuth.currentUser!.uid;
+                },
+              );
+
+              transaction.update(ref, {
+                'updatedAt': FieldValue.serverTimestamp(),
+                'unreadedTotal': [
+                  {
+                    'uid': otherUnreaded.uid,
+                    'total': otherUnreaded.total + 1,
+                    // 'messageIds': FieldValue.arrayUnion(['fasdf']),
+                    'lastReadedAt': otherUnreaded.lastReadedAt,
+                  },
+                  {
+                    'uid': firebaseAuth.currentUser!.uid,
+                    'total': userUnreaded.total,
+                    // 'messageIds': userUnreaded.messageIds,
+                    'lastReadedAt': otherUnreaded.lastReadedAt,
+                  }
+                ]
+              });
+            },
+          );
+        },
+      );
+      updateUserLastSeen();
+    } catch (e) {
+      debugModePrint('sendMessage $e');
+    }
+  }
+
+  Stream<List<Message>> messages(
+    Room room, {
+    List<Object?>? endAt,
+    List<Object?>? endBefore,
+    int? limit,
+    List<Object?>? startAfter,
+    List<Object?>? startAt,
+  }) {
+    var query = firebaseFirestore
+        .collection('rooms/${room.id}/messages')
+        .orderBy('createdAt', descending: true);
+
+    if (endAt != null) {
+      query = query.endAt(endAt);
+    }
+
+    if (endBefore != null) {
+      query = query.endBefore(endBefore);
+    }
+
+    if (limit != null) {
+      query = query.limit(limit);
+    }
+
+    if (startAfter != null) {
+      query = query.startAfter(startAfter);
+    }
+
+    if (startAt != null) {
+      query = query.startAt(startAt);
+    }
+
+    updateUserLastSeen();
+
+    return query.snapshots().map((snapshot) {
+      final List<Message> list = snapshot.docs.fold<List<Message>>(
+        [],
+        (previousValue, doc) {
+          final data = doc.data();
+          final author = room.users.firstWhere(
+            (u) => u.id == (data['authorId'] ?? data['sentBy']),
+            orElse: () => User(id: data['authorId'] as String),
+          );
+          final otherUser = room.users.firstWhere(
+            (u) => u.id != (data['authorId'] ?? data['sentBy']),
+            orElse: () => User(id: data['authorId'] as String),
+          );
+
+          data['sentBy'] = author.id;
+          data['createdAt'] = data['createdAt'] == null
+              ? DateTime.now()
+              : DateTime.fromMillisecondsSinceEpoch(
+                  data['createdAt']?.millisecondsSinceEpoch);
+          data['updatedAt'] = data['updatedAt'] == null
+              ? DateTime.now()
+              : DateTime.fromMillisecondsSinceEpoch(
+                  data['updatedAt']?.millisecondsSinceEpoch);
+          data['id'] = doc.id;
+          data['message_type'] = data['type'] ?? data['message_type'];
+          if (data['type'] == MessageType.text.name ||
+              data['message_type'] == MessageType.text.name) {
+            data['message'] = data['text'] ?? data['message'];
+          }
+          if (data['message_type'] == MessageType.image.name) {
+            data['message'] = data['uri'] ?? data['message'];
+          }
+
+          if (data['message_type'] == MessageType.voice.name &&
+              kDebugMode &&
+              kIsWeb) {
+            data['message'] = 'Web doesn\'t support voice message yet.';
+            data['message_type'] = MessageType.text.name;
+          }
+
+          bool sendingImageToStorage = !doc.metadata.hasPendingWrites &&
+              data['message_type'] == MessageType.image.name &&
+              data['status'] == MessageStatus.pending.name;
+
+          final authorUnreaded = room.unreadedTotal!.firstWhere(
+            (element) => element.uid == author.id,
+          );
+          final otherUserUnreaded = room.unreadedTotal!.firstWhere(
+            (element) => element.uid == otherUser.id,
+          );
+
+          bool readedByAuthor = data['sentBy'] == otherUser.id &&
+              DateTime.fromMillisecondsSinceEpoch(
+                      authorUnreaded.lastReadedAt.millisecondsSinceEpoch + 1)
+                  .isAfter(
+                DateTime.fromMillisecondsSinceEpoch(
+                    data['createdAt']?.millisecondsSinceEpoch),
+              );
+
+          bool readedByOhterUser = data['sentBy'] == author.id &&
+              DateTime.fromMillisecondsSinceEpoch(
+                      otherUserUnreaded.lastReadedAt.millisecondsSinceEpoch + 1)
+                  .isAfter(
+                DateTime.fromMillisecondsSinceEpoch(
+                    data['createdAt']?.millisecondsSinceEpoch),
+              );
+
+          if (doc.metadata.hasPendingWrites) {
+            data['status'] = MessageStatus.pending.name;
+          } else if (sendingImageToStorage) {
+            data['status'] = MessageStatus.pending.name;
+          } else if (readedByAuthor || readedByOhterUser) {
+            data['status'] = MessageStatus.read.name;
+          }
+          // else {
+          //   data['status'] = MessageStatus.delivered.name;
+          // }
+
+          return [...previousValue, Message.fromJson(data)];
+        },
+      );
+      // if (list.isNotEmpty) {
+      //   for (var message in list) {
+      //     if (message.sentBy != firebaseAuth.currentUser!.uid &&
+      //         message.status.name == MessageStatus.delivered.name) {
+      //       updateChat(roomId: room.id, messageId: message.id);
+      //     }
+      //   }
+      // }
+
+      if (list.length > 2) {
+        _messages.clear();
+      }
+      list.removeWhere(
+        (element) {
+          return element.messageType == MessageType.image &&
+              element.status == MessageStatus.pending &&
+              element.sentBy != firebaseAuth.currentUser!.uid;
+        },
+      );
+      _messages.addAll(list.reversed.toList());
+      return list.reversed.toList();
+    });
+  }
+
+  Future<List<Message>> getMessages(
+    Room room, {
+    List<Object?>? endAt,
+    List<Object?>? endBefore,
+    int? limit,
+    List<Object?>? startAfter,
+    List<Object?>? startAt,
+  }) {
+    var query = firebaseFirestore
+        .collection('rooms/${room.id}/messages')
+        .orderBy('createdAt', descending: false);
+
+    if (endAt != null) {
+      query = query.endAt(endAt);
+    }
+
+    if (endBefore != null) {
+      query = query.endBefore(endBefore);
+    }
+
+    if (limit != null) {
+      query = query.limit(limit);
+    }
+
+    if (startAfter != null) {
+      query = query.startAfter(startAfter);
+    }
+
+    if (startAt != null) {
+      query = query.startAt(startAt);
+    }
+
+    return query.get().then((snapshot) {
+      _chatDocs.addAll(snapshot.docs);
+      return snapshot.docs.fold<List<Message>>(
+        [],
+        (previousValue, doc) {
+          final data = doc.data();
+          final author = room.users.firstWhere(
+            (u) => u.id == (data['authorId'] ?? data['sentBy']),
+            orElse: () => User(id: data['authorId'] as String),
+          );
+
+          data['sentBy'] = author.id;
+          data['createdAt'] = DateTime.fromMillisecondsSinceEpoch(
+              data['createdAt']?.millisecondsSinceEpoch);
+
+          data['id'] = data['id'] ?? doc.id;
+          data['updatedAt'] = data['updatedAt'] == null
+              ? DateTime.now()
+              : DateTime.fromMillisecondsSinceEpoch(
+                  data['updatedAt']?.millisecondsSinceEpoch);
+          data['message_type'] = data['type'] ?? data['message_type'];
+          if (data['type'] == MessageType.text.name ||
+              data['message_type'] == MessageType.text.name) {
+            data['message'] = data['text'] ?? data['message'];
+          }
+          if (data['message_type'] == MessageType.image.name) {
+            data['message'] = data['uri'] ?? data['message'];
+          }
+          return [...previousValue, Message.fromJson(data)];
+        },
+      );
+    });
+  }
+
+  Stream<List<Room>> rooms({bool orderByUpdatedAt = false}) {
+    final fu = firebaseAuth.currentUser;
+    try {
+      if (fu == null) return const Stream.empty();
+
+      final collection = orderByUpdatedAt
+          ? firebaseFirestore
+              .collection('rooms')
+              .where('userIds', arrayContains: fu.uid)
+              .orderBy('updatedAt', descending: true)
+          : firebaseFirestore
+              .collection('rooms')
+              .where('userIds', arrayContains: fu.uid);
+
+      return collection.snapshots().asyncMap(
+            (query) => processRoomsQuery(fu, firebaseFirestore, query, 'users'),
+          );
+    } catch (e) {
+      debugModePrint('rooms $e');
+      return Stream.empty();
+    }
+  }
+
+  Stream<List<Message>> getLastMessages(Room room) {
+    final query = firebaseFirestore
+        .collection('rooms/${room.id}/messages')
+        .orderBy('createdAt', descending: true);
+
+    updateUserLastSeen();
+
+    return query.limit(1).snapshots().map(
+          (snapshot) => snapshot.docs.fold<List<Message>>(
+            [],
+            (previousValue, doc) {
+              final data = doc.data();
+
+              data['id'] = data['id'] ?? doc.id;
+              data['createdAt'] = data['createdAt'] == null
+                  ? DateTime.now()
+                  : DateTime.fromMillisecondsSinceEpoch(
+                      data['createdAt']?.millisecondsSinceEpoch);
+
+              // data['updatedAt'] = data['updatedAt'] ?? DateTime.now();
+              data['message_type'] = data['type'] ?? data['message_type'];
+              if (data['type'] == MessageType.text.name ||
+                  data['message_type'] == MessageType.text.name) {
+                data['message'] = data['text'] ?? data['message'];
+              }
+              if (data['message_type'] == MessageType.image.name) {
+                data['message'] = data['uri'] ?? data['message'];
+              }
+              return [...previousValue, Message.fromJson(data)];
+            },
+          ),
+        );
+  }
+
+  Future<Message> _getLastMessage(Room room) async {
+    final query = firebaseFirestore.collection('rooms/${room.id}/messages');
+
+    updateUserLastSeen();
+
+    final String uid = room.users
+        .firstWhere((element) => element.id != firebaseAuth.currentUser!.uid)
+        .id;
+
+    final result = await query
+        .where(
+          'sentBy',
+          isEqualTo: uid,
+        ) // Filter by authorId
+        .orderBy('createdAt', descending: true)
+        .get();
+
+    final data = result.docs.first.data();
+
+    data['id'] = data['id'] ?? result.docs.first.id;
+    data['createdAt'] = data['createdAt'] == null
+        ? DateTime.now()
+        : DateTime.fromMillisecondsSinceEpoch(
+            data['createdAt']?.millisecondsSinceEpoch);
+
+    return Message.fromJson(data);
+  }
+
+  Future<void> updateChat(
+      {required Room room, required Message message}) async {
+    firebaseFirestore
+        .collection('rooms')
+        .doc(room.id)
+        .collection('messages')
+        .doc(message.id)
+        .update({
+      'status': MessageStatus.read.name,
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+
+    DocumentReference ref = firebaseFirestore.collection('rooms').doc(room.id);
+    DocumentReference unreadedRef = firebaseFirestore
+        .collection('rooms')
+        .doc(room.id)
+        .collection('status')
+        .doc();
+    firebaseFirestore.runTransaction(
+      (transaction) async {
+        await transaction.get(ref).then(
+          (value) {
+            final roomMap = value.data() as Map<String, dynamic>;
+
+            roomMap['users'] =
+                ((value.data() as Map<String, dynamic>)['userIds'] as List)
+                    .map((e) => {'uid': e})
+                    .toList();
+            roomMap['createdAt'] = roomMap['createdAt']?.millisecondsSinceEpoch;
+            roomMap['updatedAt'] = roomMap['updatedAt']?.millisecondsSinceEpoch;
+            final Room room = Room.fromJson(roomMap);
+
+            final UnreadedTotal otherUnreaded = room.unreadedTotal!.firstWhere(
+              (element) {
+                return element.uid != firebaseAuth.currentUser!.uid;
+              },
+            );
+            final UnreadedTotal userUnreaded = room.unreadedTotal!.firstWhere(
+              (element) {
+                return element.uid == firebaseAuth.currentUser!.uid;
+              },
+            );
+            transaction.update(ref, {
+              'id': value.id,
+              'updatedAt': FieldValue.serverTimestamp(),
+              'unreadedTotal': [
+                {
+                  'uid': otherUnreaded.uid,
+                  'total': otherUnreaded.total,
+                  'lastReadedAt': otherUnreaded.lastReadedAt,
+                },
+                {
+                  'uid': firebaseAuth.currentUser!.uid,
+                  'total': 0,
+                  'lastReadedAt': _messages.last.createdAt,
+                }
+              ]
+            });
+          },
+        );
+      },
+    );
+  }
+
+  Future<void> setReactions({
+    required String roomId,
+    required Message message,
+    required String reaction,
+  }) async {
+    DocumentReference ref = firebaseFirestore
+        .collection('rooms')
+        .doc(roomId)
+        .collection('messages')
+        .doc(message.id);
+
+    updateUserLastSeen();
+
+    firebaseFirestore.runTransaction(
+      (transaction) {
+        return transaction.get(ref).then(
+          (value) {
+            final Message messageObj =
+                Message.fromJson(value.data() as Map<String, dynamic>);
+            final List<String> reactedUseerIds =
+                messageObj.reaction.reactedUserIds;
+            var reactions = messageObj.reaction.reactions;
+
+            int userIndex = reactedUseerIds.indexOf(message.sentBy);
+            if (reactedUseerIds.contains(firebaseAuth.currentUser!.uid)) {
+              reactedUseerIds.remove(firebaseAuth.currentUser!.uid);
+              reactions.removeAt(userIndex);
+            }
+            transaction.update(ref, {
+              'id': value.id,
+              'updatedAt': FieldValue.serverTimestamp(),
+              'reaction': {
+                'reactedUserIds':
+                    FieldValue.arrayUnion([firebaseAuth.currentUser!.uid]),
+                'reactions': [...reactions, reaction],
+              }
+            });
+          },
+        );
+      },
+    );
+  }
+
+  Future<void> doubleTapReactions({
+    required String roomId,
+    required Message message,
+    required String reaction,
+  }) async {
+    DocumentReference ref = firebaseFirestore
+        .collection('rooms')
+        .doc(roomId)
+        .collection('messages')
+        .doc(message.id);
+    firebaseFirestore.runTransaction(
+      (transaction) {
+        return transaction.get(ref).then(
+          (value) {
+            final Message messageObj =
+                Message.fromJson(value.data() as Map<String, dynamic>);
+            final List<String> reactedUseerIds =
+                messageObj.reaction.reactedUserIds;
+            var reactions = messageObj.reaction.reactions;
+
+            int userIndex =
+                reactedUseerIds.indexOf(firebaseAuth.currentUser!.uid);
+            if (reactedUseerIds.contains(firebaseAuth.currentUser!.uid)) {
+              reactedUseerIds.remove(firebaseAuth.currentUser!.uid);
+              reactions.removeAt(userIndex);
+              transaction.update(ref, {
+                'id': value.id,
+                'updatedAt': FieldValue.serverTimestamp(),
+                'reaction': {
+                  'reactedUserIds':
+                      FieldValue.arrayRemove([firebaseAuth.currentUser!.uid]),
+                  'reactions': reactions,
+                }
+              });
+            } else {
+              transaction.update(ref, {
+                'id': value.id,
+                'updatedAt': FieldValue.serverTimestamp(),
+                'reaction': {
+                  'reactedUserIds':
+                      FieldValue.arrayUnion([firebaseAuth.currentUser!.uid]),
+                  'reactions': [...reactions, reaction],
+                }
+              });
+            }
+          },
+        );
+      },
+    );
+  }
+
+  Future<void> removeReactions({
+    required String roomId,
+    required Message message,
+  }) async {
+    DocumentReference ref = firebaseFirestore
+        .collection('rooms')
+        .doc(roomId)
+        .collection('messages')
+        .doc(message.id);
+    firebaseFirestore.runTransaction(
+      (transaction) {
+        return transaction.get(ref).then(
+          (value) {
+            String currentUserUid = firebaseAuth.currentUser!.uid;
+            final Message messageObj =
+                Message.fromJson(value.data() as Map<String, dynamic>);
+            final List<String> reactedUseerIds =
+                messageObj.reaction.reactedUserIds;
+            var reactions = messageObj.reaction.reactions;
+
+            int userIndex = reactedUseerIds.indexOf(currentUserUid);
+
+            reactedUseerIds.remove(currentUserUid);
+            reactions.removeAt(userIndex);
+            transaction.update(ref, {
+              'id': value.id,
+              'updatedAt': FieldValue.serverTimestamp(),
+              'reaction': {
+                'reactedUserIds': FieldValue.arrayRemove([currentUserUid]),
+                'reactions': reactions,
+              }
+            });
+          },
+        );
+      },
+    );
   }
 }

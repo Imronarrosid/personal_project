@@ -27,6 +27,62 @@ class UserRepository implements UserUseCaseType {
     return User.fromSnap(user);
   }
 
+  Stream<User> currentUserSream() {
+    return firebaseFirestore
+        .collection('users')
+        .doc(firebaseAuth.currentUser!.uid)
+        .snapshots()
+        .map(
+          (event) => User.fromSnap(event),
+        );
+  }
+
+  Stream<User> otherUserSream(String uid) {
+    return firebaseFirestore.collection('users').doc(uid).snapshots().map(
+          (event) => User.fromSnap(event),
+        );
+  }
+
+  Future<void> onUserOnline() async {
+    return await firebaseFirestore
+        .collection('users')
+        .doc(firebaseAuth.currentUser!.uid)
+        .update({
+      'lastSeen': FieldValue.serverTimestamp(),
+      'isOnline': true,
+    });
+  }
+
+  Future<void> onUserOffline() async {
+    return await firebaseFirestore
+        .collection('users')
+        .doc(firebaseAuth.currentUser!.uid)
+        .update({
+      'lastSeen': FieldValue.serverTimestamp(),
+      'isOnline': false,
+    });
+  }
+
+  Future<void> setTypingIndicator(bool status) async {
+    DocumentReference ref = firebaseFirestore
+        .collection('users')
+        .doc(firebaseAuth.currentUser!.uid);
+    firebaseFirestore.runTransaction(
+      (transaction) {
+        return transaction.get(ref).then(
+          (value) {
+            transaction.update(ref, {
+              'isTyping': status,
+              'lastTyping': FieldValue.serverTimestamp(),
+            });
+          },
+        );
+      },
+    );
+    // return await firebaseFirestore
+    //     .collection('users')
+    //     .doc(firebaseAuth.currentUser!.uid)
+  }
   // @override
   // Future<UserData> getUserData(String uid) async {
   //   var myVideos = await firebaseFirestore

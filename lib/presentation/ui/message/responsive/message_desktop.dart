@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:bootstrap_icons/bootstrap_icons.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:chatview/chatview.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -27,6 +28,8 @@ import 'package:personal_project/presentation/theme/user_profile_theme.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../data/repository/chat_repository.dart';
+import '../../../../domain/model/chat_payload_model.dart';
+import '../../../../domain/model/room_model.dart';
 import '../../../responsive/dimension.dart';
 import '../../auth/bloc/auth_bloc.dart';
 import '../../search_room/bloc/search_room_bloc.dart';
@@ -83,12 +86,12 @@ class _MessageDesktopState extends State<MessageDesktop> {
   }
 
   Widget _buildAvatar(
-    types.Room room, {
+    Room room, {
     required models.User user,
   }) {
     var color = Colors.transparent;
 
-    if (room.type == types.RoomType.direct) {
+    if (room.type == RoomType.direct) {
       try {
         final otherUser = room.users.firstWhere(
           (u) => u.id != _user!.uid,
@@ -258,8 +261,9 @@ class _MessageDesktopState extends State<MessageDesktop> {
                                       EdgeInsets.only(left: Dimens.DIMENS_12),
                                   child: Text(LocaleKeys.label_messages.tr()),
                                 ),
-                                StreamBuilder<List<types.Room>>(
-                                  stream: FirebaseChatCore.instance.rooms(),
+                                StreamBuilder<List<Room>>(
+                                  stream:
+                                      context.read<ChatRepository>().rooms(),
                                   builder: (context, snapshot) {
                                     if (!snapshot.hasData) {
                                       return Container(
@@ -306,6 +310,58 @@ class _MessageDesktopState extends State<MessageDesktop> {
                 }
               },
             ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Padding _searchBar(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Container(
+        decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.tertiary,
+            borderRadius: BorderRadius.circular(50)),
+        child: TextField(
+          controller: _textEditingController,
+          onChanged: (query) {
+            final searchBloc = BlocProvider.of<SearchRoomBloc>(context);
+            if (_debounce?.isActive ?? false) _debounce?.cancel();
+            _debounce = Timer(const Duration(milliseconds: 500), () {
+              // do something with query
+              searchBloc.add(SearchRoom(query));
+            });
+          },
+          decoration: InputDecoration(
+            prefixIcon: const Padding(
+              padding: EdgeInsets.only(left: 8.0, top: 0.3),
+              child: Icon(Icons.search_rounded),
+            ),
+            hintText: LocaleKeys.label_search.tr(),
+            contentPadding: const EdgeInsets.all(5),
+            suffixIcon: BlocBuilder<SearchRoomBloc, SearchRoomState>(
+              builder: (context, state) {
+                if (state.status == SearchRoomStatus.initial) {
+                  return const SizedBox(
+                    width: 0,
+                    height: 0,
+                  );
+                }
+                return GestureDetector(
+                  onTap: () {
+                    _textEditingController.clear();
+
+                    context.read<SearchRoomBloc>().add(const InitSearchRoom());
+                  },
+                  child: const Icon(BootstrapIcons.x),
+                );
+              },
+            ),
+            suffixIconColor: COLOR_grey,
+            border: OutlineInputBorder(
+                borderSide: BorderSide.none,
+                borderRadius: BorderRadius.circular(500)),
           ),
         ),
       ),
@@ -443,17 +499,31 @@ class _MessageDesktopState extends State<MessageDesktop> {
                       if (!mounted) return;
 
                       final room =
-                          await FirebaseChatCore.instance.createRoom(otherUser);
+                          await context.read<ChatRepository>().createRoom(user);
 
                       if (!context.mounted) return;
-                      context.go(
-                        '${APP_PAGE.message.toPath}/${user.userName}',
-                        extra: ChatData(
-                            room: room,
-                            userName: user.userName!,
-                            avatar: user.photo!,
-                            name: user.name),
+                      context.read<ChatRepository>().setChatPayload =
+                          ChatPayload(
+                        room: await context
+                            .read<ChatRepository>()
+                            .createRoom(user),
+                        userName: user.userName!,
+                        avatar: user.photo!,
+                        name: user.name,
                       );
+                      if (!context.mounted) return;
+                      context.go(
+                        '/dm/${user.userName}',
+                        // '${APP_PAGE.message.toPath}/${data.userName}',
+                      );
+                      // context.go(
+                      //   '${APP_PAGE.message.toPath}/${user.userName}',
+                      //   extra: ChatPayload(
+                      //       room: room,
+                      //       userName: user.userName!,
+                      //       avatar: user.photo!,
+                      //       name: user.name),
+                      // );
                     },
                     child: Container(
                       width: Dimens.DIMENS_85,
@@ -534,57 +604,7 @@ class _MessageDesktopState extends State<MessageDesktop> {
     );
   }
 
-  Container _searchBar(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.tertiary,
-          borderRadius: BorderRadius.circular(50)),
-      child: TextField(
-        focusNode: _serchFocus,
-        controller: _textEditingController,
-        onChanged: (query) {
-          final searchBloc = BlocProvider.of<SearchRoomBloc>(context);
-          if (_debounce?.isActive ?? false) _debounce?.cancel();
-          _debounce = Timer(const Duration(milliseconds: 500), () {
-            // do something with query
-            searchBloc.add(SearchRoom(query));
-          });
-        },
-        decoration: InputDecoration(
-          prefixIcon: const Padding(
-            padding: EdgeInsets.only(left: 8.0, top: 0.3),
-            child: Icon(Icons.search_rounded),
-          ),
-          hintText: LocaleKeys.label_search.tr(),
-          contentPadding: const EdgeInsets.all(5),
-          suffixIcon: BlocBuilder<SearchRoomBloc, SearchRoomState>(
-            builder: (context, state) {
-              if (state.status == SearchRoomStatus.initial) {
-                return const SizedBox(
-                  width: 0,
-                  height: 0,
-                );
-              }
-              return GestureDetector(
-                onTap: () {
-                  _textEditingController.clear();
-
-                  context.read<SearchRoomBloc>().add(const InitSearchRoom());
-                },
-                child: const Icon(BootstrapIcons.x),
-              );
-            },
-          ),
-          suffixIconColor: COLOR_grey,
-          border: OutlineInputBorder(
-              borderSide: BorderSide.none,
-              borderRadius: BorderRadius.circular(500)),
-        ),
-      ),
-    );
-  }
-
-  FutureBuilder<models.User> _buildRoom(types.Room room) {
+  FutureBuilder<models.User> _buildRoom(Room room) {
     return FutureBuilder(
         future: _getOtherUsersData(room),
         builder: (context, AsyncSnapshot<models.User> snapshot) {
@@ -592,15 +612,15 @@ class _MessageDesktopState extends State<MessageDesktop> {
           if (!snapshot.hasData) {
             return Container();
           }
-          return StreamBuilder<List<types.Message>>(
+          return StreamBuilder<List<Message>>(
               initialData: const [],
-              stream: FirebaseChatCore.instance.getLastMessages(room),
-              builder: (context, AsyncSnapshot<List<types.Message>> snapshot) {
+              stream: context.read<ChatRepository>().getLastMessages(room),
+              builder: (context, AsyncSnapshot<List<Message>> snapshot) {
                 final UserRepository userRepository =
                     RepositoryProvider.of<UserRepository>(context);
 
-                List<types.Message>? messages = snapshot.data;
-                types.Message? message;
+                List<Message>? messages = snapshot.data;
+                Message? message;
                 if (snapshot.hasData && messages!.isNotEmpty) {
                   message = messages.first;
                 }
@@ -615,15 +635,14 @@ class _MessageDesktopState extends State<MessageDesktop> {
                 }
                 return ListTile(
                   tileColor: Colors.transparent,
-                  selected: isSelected(context, data),
-                  selectedTileColor:
-                      Theme.of(context).colorScheme.primary.withOpacity(0.11),
-                  onTap: () {
+                  onTap: () async {
                     context.go(
                       '${APP_PAGE.message.toPath}/${data.userName}',
-                      extra: ChatData(
-                        room: room,
-                        userName: data!.userName!,
+                      extra: ChatPayload(
+                        room: await context
+                            .read<ChatRepository>()
+                            .createRoom(data),
+                        userName: data.userName!,
                         avatar: data.photo!,
                         name: data.name,
                       ),
@@ -638,15 +657,13 @@ class _MessageDesktopState extends State<MessageDesktop> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(room.name!.isNotEmpty
-                            ? room.name ?? ''
-                            : data.userName!),
+                        Text(data.userName!),
                         _messageCreated(message, context)
                       ],
                     ),
                   ),
                   subtitle: FutureBuilder<String>(
-                    future: userRepository.getUserNameOnly(message!.author.id),
+                    future: userRepository.getUserNameOnly(message!.sentBy),
                     builder: (context, snapshot) {
                       if (!snapshot.hasData) {
                         return Container();
@@ -654,7 +671,13 @@ class _MessageDesktopState extends State<MessageDesktop> {
                       if (messages!.isEmpty) {
                         return Container();
                       }
-                      return _buildMessage(snapshot, message!, room.type!);
+                      return Row(
+                        children: [
+                          _buildMessage(snapshot, message!, room.type!),
+                          const Spacer(),
+                          _unreadedTotal(room)
+                        ],
+                      );
                     },
                   ),
                 );
@@ -662,61 +685,77 @@ class _MessageDesktopState extends State<MessageDesktop> {
         });
   }
 
-  bool isSelected(BuildContext context, models.User? data) {
-    if (GoRouter.of(context).routeInformationProvider.value.uri.path ==
-        APP_PAGE.message.toPath + APP_PAGE.chat.toPath) {
-      debugPrint('chstttt1');
-      return false;
-    }
-    return data!.userName ==
-        GoRouterState.of(context).pathParameters['username'];
+  Widget _unreadedTotal(Room room) {
+    final int total = (room.unreadedTotal!.firstWhere(
+        (element) => element.uid == firebaseAuth.currentUser!.uid)).total;
+    return total > 0
+        ? Container(
+            width: 16,
+            height: 16,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(50),
+                color: Theme.of(context).colorScheme.primary),
+            child: Text(
+              total > 99 ? '99+' : total.toString(),
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.surface,
+                fontWeight: FontWeight.w100,
+                fontSize: 8,
+              ),
+            ),
+          )
+        : const SizedBox.shrink();
   }
 
-  Text _messageCreated(types.Message? message, BuildContext context) {
-    return _isSameDay(
-            message?.createdAt ?? DateTime.now().millisecondsSinceEpoch)
+  Text _messageCreated(Message? message, BuildContext context) {
+    return _isSameDay(message?.createdAt.millisecondsSinceEpoch ??
+            DateTime.now().millisecondsSinceEpoch)
         ? Text(
             DateFormat('HH:mm').format(DateTime.fromMillisecondsSinceEpoch(
-                message?.createdAt ?? DateTime.now().millisecondsSinceEpoch)),
-            style:
-                Theme.of(context).textTheme.bodySmall!.apply(color: COLOR_grey),
+                message?.createdAt.millisecondsSinceEpoch ??
+                    DateTime.now().millisecondsSinceEpoch)),
+            style: Theme.of(context)
+                .textTheme
+                .bodySmall!
+                .apply(color: Theme.of(context).colorScheme.primary),
           )
         : Text(
             DateFormat('EEE,MM/yy').format(
               DateTime.fromMillisecondsSinceEpoch(
-                  message!.createdAt ?? DateTime.now().millisecondsSinceEpoch),
+                  message?.createdAt.millisecondsSinceEpoch ??
+                      DateTime.now().millisecondsSinceEpoch),
             ),
-            style: Theme.of(context).textTheme.bodySmall!.apply(
-                color:
-                    Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
+            style: Theme.of(context)
+                .textTheme
+                .bodySmall!
+                .apply(color: Theme.of(context).colorScheme.primary),
           );
   }
 
-  Text _buildMessage(AsyncSnapshot<String> snapshot, types.Message message,
-      types.RoomType roomType) {
+  Text _buildMessage(
+      AsyncSnapshot<String> snapshot, Message message, RoomType roomType) {
     String currentUser =
         RepositoryProvider.of<AuthRepository>(context).currentUser!.uid;
-    if (message.author.id == currentUser) {
+    if (message.sentBy == currentUser) {
       return Text(
-        '${LocaleKeys.label_you.tr()}: ${_getMessage(message.type, message: message)}',
-        maxLines: 1,
+        '${LocaleKeys.label_you.tr()}: ${_getMessage(message.messageType, message: message)}',
         overflow: TextOverflow.ellipsis,
         style: TextStyle(
           color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
         ),
       );
-    } else if (roomType == types.RoomType.group) {
+    } else if (roomType == RoomType.group) {
       return Text(
-        '${snapshot.data!}: ${_getMessage(message.type, message: message)}',
+        '${snapshot.data!}: ${_getMessage(message.messageType, message: message)}',
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
         style: TextStyle(
             color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
       );
     }
-    return Text(' ${_getMessage(message.type, message: message)}',
+    return Text(' ${_getMessage(message.messageType, message: message)}',
         overflow: TextOverflow.ellipsis,
-        maxLines: 1,
         style: TextStyle(
           color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
         ));
@@ -727,28 +766,20 @@ class _MessageDesktopState extends State<MessageDesktop> {
         DateTime.now().day;
   }
 
-  String _getMessage(types.MessageType type, {required types.Message message}) {
+  String _getMessage(MessageType type, {required Message message}) {
     switch (type) {
-      case types.MessageType.audio:
+      case MessageType.voice:
         return LocaleKeys.message_audio_message.tr();
-      case types.MessageType.custom:
+      case MessageType.custom:
         return LocaleKeys.message_custom_message.tr();
-      case types.MessageType.file:
-        return LocaleKeys.message_send_file.tr();
-      case types.MessageType.image:
+      case MessageType.image:
         return LocaleKeys.message_send_image.tr();
-      case types.MessageType.system:
-        return LocaleKeys.message_system_message.tr();
-      case types.MessageType.text:
-        return types.TextMessage.fromJson(message.toJson()).text;
-      case types.MessageType.unsupported:
-        return LocaleKeys.message_unsupported_message.tr();
-      case types.MessageType.video:
-        return LocaleKeys.message_send_video.tr();
+      case MessageType.text:
+        return Message.fromJson(message.toJson()).message;
     }
   }
 
-  Future<models.User> _getOtherUsersData(types.Room room) async {
+  Future<models.User> _getOtherUsersData(Room room) async {
     try {
       String currentUser =
           RepositoryProvider.of<AuthRepository>(context).currentUser!.uid;

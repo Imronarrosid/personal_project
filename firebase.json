@@ -1,22 +1,83 @@
 {
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "personal-project-4e389",
+          "appId": "1:225501447717:android:fcf1fc21481b92c0a721cc",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "personal-project-4e389",
+          "configurations": {
+            "android": "1:225501447717:android:fcf1fc21481b92c0a721cc",
+            "ios": "1:225501447717:ios:12a73f3141304240a721cc",
+            "macos": "1:225501447717:ios:12a73f3141304240a721cc",
+            "web": "1:225501447717:web:024666cba2d352f9a721cc",
+            "windows": "1:225501447717:web:cf0413d293da5b15a721cc"
+          }
+        }
+      }
+    }
+  },
   "hosting": {
     "public": "build/web",
-    "headers": [ {
-      "source": "*",
-      "headers": [ {
-        "key": "Cross-Origin-Resource-Policy",
-        "value": "cross-origin"
-      }, {
-        "key": "Access-Control-Allow-Origin",
-        "value": "*"
-      }, {
-        "key": "Cross-Origin-Embedder-Policy",
-        "value": "require-corp"
-      }, {
-        "key": "Cross-Origin-Opener-Policy",
-        "value": "same-origin"
-      } ]
-    } ],
+    "headers": [
+      {
+        "source": "/foryou/**",
+        "headers": [
+          {
+            "key": "Cross-Origin-Resource-Policy",
+            "value": "cross-origin"
+          },
+          {
+            "key": "Access-Control-Allow-Origin",
+            "value": "*"
+          }
+        ]
+      },
+      {
+        "source": "/**/*.mp4",
+        "headers": [
+          {
+            "key": "Cross-Origin-Resource-Policy",
+            "value": "cross-origin"
+          },
+          {
+            "key": "Access-Control-Allow-Origin",
+            "value": "*"
+          }
+        ]
+      },
+      {
+        "source": "**",
+        "headers": [
+          {
+            "key": "Cross-Origin-Embedder-Policy",
+            "value": "require-corp"
+          },
+          {
+            "key": "Cross-Origin-Opener-Policy",
+            "value": "same-origin"
+          }
+        ]
+      },
+      {
+        "source": "/upload/**",
+        "headers": [
+          {
+            "key": "Cross-Origin-Embedder-Policy",
+            "value": "require-corp"
+          },
+          {
+            "key": "Cross-Origin-Opener-Policy",
+            "value": "same-origin"
+          }
+        ]
+      }
+    ],
     "ignore": [
       "firebase.json",
       "**/.*",

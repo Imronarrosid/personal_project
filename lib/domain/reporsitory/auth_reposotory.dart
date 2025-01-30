@@ -11,6 +11,8 @@ import 'package:personal_project/domain/services/firebase/firebase_service.dart'
 import 'package:personal_project/domain/usecase/auth_usecase_type.dart';
 import 'package:personal_project/utils/generate_string.dart';
 
+import '../../utils/update_user_last_seen.dart';
+
 class LogInWithGoogleFailure implements Exception {
   /// {@macro log_in_with_google_failure}
   const LogInWithGoogleFailure([
@@ -115,6 +117,7 @@ class AuthRepository implements AuthUseCaseType {
       if (docs.exists) {
         currentUserData = User.fromSnap(docs);
       }
+      updateUserLastSeen();
     }
   }
 
@@ -173,6 +176,7 @@ class AuthRepository implements AuthUseCaseType {
       });
       await _storeUserName(userName);
       await _storeAvatar(user.photo!);
+      updateUserLastSeen();
     } else {
       _isUserFirstLogin.complete(false);
     }

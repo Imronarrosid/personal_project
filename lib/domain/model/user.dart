@@ -26,6 +26,9 @@ class User extends Equatable {
     this.searchKey,
     this.lastSeen,
     this.updatedAt,
+    this.isTyping,
+    this.isOnline,
+    this.lastTyping,
   });
 
   /// Created user timestamp, in ms.
@@ -62,6 +65,10 @@ class User extends Equatable {
 
   final Timestamp? userNameUpdatedAt;
 
+  final bool? isTyping;
+  final bool? isOnline;
+  final Timestamp? lastTyping;
+
   /// Empty user which represents an unauthenticated user.
   static const empty = User(id: '');
 
@@ -81,6 +88,9 @@ class User extends Equatable {
         "nameUpdatedAt": nameUpdatedAt,
         "searchKey": searchKey,
         "updatedAt": updatedAt,
+        "isTyping": isTyping,
+        "lastTyping": lastTyping,
+        "isOnline": isOnline,
       };
   static User fromSnap(DocumentSnapshot snapshot) {
     var snap = snapshot.data() as Map<String, dynamic>;
@@ -96,23 +106,30 @@ class User extends Equatable {
       lastSeen: snap['lastSeen'],
       userNameUpdatedAt: snap['userNameUpdatedAt'],
       updatedAt: snap['updatedAt'],
+      isTyping: snap['isTyping'],
+      lastTyping: snap['lastTyping'],
+      isOnline: snap['isOnline'],
     );
   }
 
-  static User fromMap(Map<String, dynamic> snapshot) {
-    var snap = snapshot;
+  static User fromMap(Map<String, dynamic> map) {
     return User(
-      name: snap['name'],
-      userName: snap['userName'],
-      photo: snap['photoUrl'],
-      email: snap['email'],
-      id: snap['uid'],
-      createdAt: snap['createdAt'],
-      nameUpdatedAt: snap['nameUpdatedAt'],
-      searchKey: snap['searchKey'],
-      lastSeen: snap['lastSeen'],
-      userNameUpdatedAt: snap['userNameUpdatedAt'],
-      updatedAt: snap['updatedAt'],
+      name: map['name'],
+      userName: map['userName'],
+      photo: map['photoUrl'],
+      email: map['email'],
+      id: map['uid'],
+      createdAt:map['createdAt']!=null? Timestamp.fromMillisecondsSinceEpoch(map['createdAt']):null,
+      nameUpdatedAt: map['nameUpdatedAt'],
+      searchKey: map['searchKey'],
+      lastSeen: map['lastSeen'] != null
+          ? Timestamp.fromMillisecondsSinceEpoch(map['lastSeen'])
+          : null,
+      userNameUpdatedAt: map['userNameUpdatedAt'],
+      updatedAt: Timestamp.fromMillisecondsSinceEpoch(map['updatedAt'] ?? 0),
+      isTyping: map['isTyping']??false,
+      lastTyping: map['lastTyping'],
+      isOnline: map['isOnline']??false,
     );
   }
 
@@ -130,5 +147,7 @@ class User extends Equatable {
         nameUpdatedAt,
         userNameUpdatedAt,
         updatedAt,
+        isTyping,
+        lastTyping,
       ];
 }

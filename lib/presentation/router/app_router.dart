@@ -13,6 +13,7 @@ import 'package:personal_project/data/repository/vide_from_categories.dart';
 import 'package:personal_project/domain/model/add_details_model.dart';
 import 'package:personal_project/domain/model/category_model.dart';
 import 'package:personal_project/domain/model/chat_data_models.dart';
+import 'package:personal_project/domain/model/chat_payload_model.dart';
 import 'package:personal_project/domain/model/following_n_followers_data_model.dart';
 import 'package:personal_project/domain/model/game_fav_modal.dart';
 import 'package:personal_project/domain/model/play_single_data.dart';
@@ -61,6 +62,10 @@ import 'package:personal_project/presentation/ui/video_preview/video_previe_page
 import 'package:solar_icons/solar_icons.dart';
 
 import '../shared_components/keep_alive_page.dart';
+import '../ui/chat/chat.dart';
+import '../ui/chat/chat_test/chat_test.dart';
+import '../ui/edit_profile/cubit/edit_user_name_cubit.dart';
+import '../ui/home/navbar_notifier/navbar_notifier.dart';
 import '../ui/message/responsive/message_desktop.dart';
 
 class AppRouter {
@@ -167,9 +172,17 @@ class AppRouter {
                       key: state.pageKey,
                       child: KeepAlivePage(
                         key: state.pageKey,
-                        child: ProfilePage(
-                          key: state.pageKey,
-                          userName: usrename!,
+                        child:
+                            BlocBuilder<EditUserNameCubit, EditUserNameState>(
+                          builder: (context, editUserNameState) {
+                            return ProfilePage(
+                              key: state.pageKey,
+                              userName: editUserNameState.status ==
+                                      EditUserNameStatus.success
+                                  ? editUserNameState.newUserName!
+                                  : usrename!,
+                            );
+                          },
                         ),
                       ),
                       transitionsBuilder:
@@ -234,8 +247,33 @@ class AppRouter {
                   path: APP_PAGE.lobby.toPath,
                   name: APP_PAGE.lobby.toName,
                   pageBuilder: (context, state) {
-                    return const NoTransitionPage(child: ChatView());
+                    return const NoTransitionPage(child: ChatTest());
                   }),
+              GoRoute(
+                path: '/dm/:username',
+                onExit: (context, state) async {
+                  context
+                      .read<NavbarNotifier>()
+                      .chnageNavbarState(NavbarState.show);
+
+                  context.read<ChatRepository>().setChatPayload = null;
+                  context.read<ChatRepository>().messagesLists.clear();
+                  return true;
+                },
+                pageBuilder: (context, state) {
+                  final ChatPayload? data = state.extra as ChatPayload? ??
+                      context.read<ChatRepository>().chatPayload;
+                  if (data != null) {
+                    context.read<ChatRepository>().setChatPayload = data;
+                  }
+                  return MaterialPage(
+                    child: ChatScreen(
+                      data: data!,
+                      key: ValueKey(state.pathParameters['username']),
+                    ),
+                  );
+                },
+              ),
               GoRoute(
                 path: APP_PAGE.upload.toPath,
                 builder: (_, __) {
@@ -337,41 +375,40 @@ class AppRouter {
                       tab: 'followers',
                     );
                   }),
-              GoRoute(
-                path: APP_PAGE.chat.toPath,
-                redirect: (context, state) {
-                  final ChatData? data = state.extra as ChatData?;
-                  if (data == null) {
-                    return APP_PAGE.message.toPath;
-                  }
-                  return null;
-                },
-                pageBuilder: (context, state) {
-                  final ChatData? data = state.extra as ChatData?;
-                  return CustomTransitionPage(
-                    child: ChatPage(data: data!),
-                    transitionsBuilder:
-                        (context, animation, secondaryAnimation, child) =>
-                            SlideTransition(
-                                position: animation.drive(
-                                  Tween<Offset>(
-                                    begin: const Offset(0.75, 0),
-                                    end: Offset.zero,
-                                  ).chain(
-                                    CurveTween(curve: Curves.ease),
-                                  ),
-                                ),
-                                child: child),
-                  );
-                },
-                builder: (context, state) {
-                  final ChatData data = state.extra as ChatData;
-                  return ChatPage(
-                    data: data,
-                  );
-                },
-              ),
-              _messageRoute(),
+              // GoRoute(
+              //   path: APP_PAGE.chat.toPath,
+              //   redirect: (context, state) {
+              //     final ChatData? data = state.extra as ChatData?;
+              //     if (data == null) {
+              //       return APP_PAGE.message.toPath;
+              //     }
+              //     return null;
+              //   },
+              //   pageBuilder: (context, state) {
+              //     final ChatData? data = state.extra as ChatData?;
+              //     return CustomTransitionPage(
+              //       child: ChatPage(data: data!),
+              //       transitionsBuilder:
+              //           (context, animation, secondaryAnimation, child) =>
+              //               SlideTransition(
+              //                   position: animation.drive(
+              //                     Tween<Offset>(
+              //                       begin: const Offset(0.75, 0),
+              //                       end: Offset.zero,
+              //                     ).chain(
+              //                       CurveTween(curve: Curves.ease),
+              //                     ),
+              //                   ),
+              //                   child: child),
+              //     );
+              //   },
+              //   builder: (context, state) {
+              //     final ChatData data = state.extra as ChatData;
+              //     return ChatPage(
+              //       data: data,
+              //     );
+              //   },
+              // ),
               GoRoute(
                 path: APP_PAGE.cropImage.toPath,
                 name: APP_PAGE.cropImage.toName,
@@ -712,9 +749,20 @@ class AppRouter {
                 ),
               ),
             ]),
+            StatefulShellBranch(routes: [
+              _messageRoute(),
+            ]),
+            StatefulShellBranch(
+                navigatorKey: GlobalKey<NavigatorState>(),
+                routes: [
+                  GoRoute(
+                    path: '/dummy',
+                    builder: (context, state) => Container(),
+                  ),
+                ]),
           ],
           // errorBuilder: (context, state) => ErrorPage(error: state.error.toString()),
-        )
+        ),
       ]);
 
   GoRoute _messageRoute() {
@@ -777,26 +825,26 @@ class AppRouter {
                 GoRoute(
                   path: ':username',
                   redirect: (context, state) {
-                    final ChatData? data = state.extra as ChatData?;
+                    final ChatPayload? data = state.extra as ChatPayload?;
                     if (data == null &&
-                        context.read<ChatRepository>().chatData == null) {
+                        context.read<ChatRepository>().chatPayload == null) {
                       return APP_PAGE.message.toPath + APP_PAGE.chat.toPath;
                     }
                     return null;
                   },
-                  onExit: (context) async {
-                    context.read<ChatRepository>().setChatData = null;
+                  onExit: (context, state) async {
+                    context.read<ChatRepository>().setChatPayload = null;
 
                     return true;
                   },
                   pageBuilder: (context, state) {
-                    final ChatData? data = state.extra as ChatData?;
+                    final ChatPayload? data = state.extra as ChatPayload?;
                     if (data != null) {
-                      context.read<ChatRepository>().setChatData = data;
+                      context.read<ChatRepository>().setChatPayload = data;
                     }
                     return CustomTransitionPage(
-                      child: ChatPage(
-                        data: context.read<ChatRepository>().chatData!,
+                      child: ChatScreen(
+                        data: context.read<ChatRepository>().chatPayload!,
                         key: ValueKey(state.pathParameters['username']),
                       ),
                       transitionsBuilder:

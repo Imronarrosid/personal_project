@@ -33,6 +33,8 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_strategy/url_strategy.dart';
 
+import 'utils/debug_mode_print.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await EasyLocalization.ensureInitialized();
@@ -72,7 +74,7 @@ class MyApp extends StatefulWidget {
   State<MyApp> createState() => _MyAppState();
 }
 
-class _MyAppState extends State<MyApp> {
+class _MyAppState extends State<MyApp> with WidgetsBindingObserver{
   // This widget is the root of your application.
   late AppService appService;
   late AuthService authService;
@@ -82,9 +84,30 @@ class _MyAppState extends State<MyApp> {
     appService = AppService(widget.sharedPreferences);
     authService = AuthService();
     onStartUp();
+    WidgetsBinding.instance.addPostFrameCallback(
+      (timeStamp) {
+        // context.read<UserRepository>().onUserOnline();
+      },
+    );
     super.initState();
   }
-
+ @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    debugModePrint( 'status ${state.name}');
+    if (state == AppLifecycleState.paused) {
+      // App is moving to the background
+      debugModePrint('App paused: Save data or cleanup tasks.');
+      // _handleAppClose();
+      // context.read<UserRepository>().onUserOffline();
+    } else if (state == AppLifecycleState.detached) {
+      // App is about to close
+      debugModePrint('App detached: Final cleanup.');
+      // context.read<UserRepository>().onUserOffline();
+      // _handleAppClose();
+    } else if (state == AppLifecycleState.resumed) {
+      // context.read<UserRepository>().onUserOnline();
+    }
+  }
   void onStartUp() async {
     await appService.onAppStart();
     debugPrint('onboard:${appService.onboarding}');
