@@ -266,7 +266,7 @@ class AppRouter {
                   if (data != null) {
                     context.read<ChatRepository>().setChatPayload = data;
                   }
-                  return MaterialPage(
+                  return NoTransitionPage(
                     child: ChatScreen(
                       data: data!,
                       key: ValueKey(state.pathParameters['username']),
