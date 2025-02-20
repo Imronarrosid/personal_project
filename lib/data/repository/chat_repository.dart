@@ -14,6 +14,7 @@ import 'package:uuid/uuid.dart';
 import '../../domain/model/chat_data_models.dart';
 import '../../domain/model/chat_payload_model.dart';
 import '../../domain/model/room_model.dart';
+import '../../utils/audio_utils.dart';
 import '../../utils/update_user_last_seen.dart';
 
 class ChatRepository {
@@ -33,6 +34,7 @@ class ChatRepository {
   static ChatPayload? _chatPayload;
 
   ChatPayload? get chatPayload => _chatPayload;
+  List<DocumentSnapshot>? get chatDoc => _chatDocs;
 
   List<Message> get messagesLists => _messages;
 
@@ -180,6 +182,20 @@ class ChatRepository {
     try {
       final Reference reference = firebaseStorage
           .ref('chat_images/${firebaseAuth.currentUser!.uid}')
+          .child('[${DateTime.timestamp()}]$name');
+      await reference.putFile(file);
+      final uri = await reference.getDownloadURL();
+      return uri;
+    } catch (e) {
+      debugPrint(e.toString());
+      return '';
+    }
+  }
+
+  Future<String> uploadVoice(File file, {required String name}) async {
+    try {
+      final Reference reference = firebaseStorage
+          .ref('chat_voice/${firebaseAuth.currentUser!.uid}')
           .child('[${DateTime.timestamp()}]$name');
       await reference.putFile(file);
       final uri = await reference.getDownloadURL();
@@ -362,10 +378,17 @@ class ChatRepository {
           .toJson();
 
       messageMap['status'] =
-          messageMap['message_type'] == MessageType.image.name
+          messageMap['message_type'] == MessageType.image.name ||
+                  messageMap['message_type'] == MessageType.voice.name
               ? MessageStatus.pending.name
               : MessageStatus.delivered.name;
 
+      if (messageMap['message_type'] == MessageType.voice.name) {
+        messageMap['voice_message_duration'] = Duration(
+                milliseconds:
+                    await AudioUtils.getAudioDuration(message.message) ?? 0)
+            .inMicroseconds;
+      }
       debugModePrint('message $messageMap');
       await firebaseFirestore
           .collection('rooms/$roomId/messages')
@@ -375,8 +398,20 @@ class ChatRepository {
       if (messageMap['message_type'] == MessageType.image.name) {
         messageMap['message'] =
             await uploadImage(File(messageMap['message']), name: Uuid().v6());
-        messageMap['status'] = MessageStatus.pending.name;
+        messageMap['status'] = MessageStatus.delivered.name;
         messageMap['updatedAt'] = FieldValue.serverTimestamp();
+        await firebaseFirestore
+            .collection('rooms/$roomId/messages')
+            .doc(messageId)
+            .update(messageMap);
+      }
+
+      if (messageMap['message_type'] == MessageType.voice.name) {
+        messageMap['message'] =
+            await uploadVoice(File(messageMap['message']), name: Uuid().v6());
+        messageMap['status'] = MessageStatus.delivered.name;
+        messageMap['updatedAt'] = FieldValue.serverTimestamp();
+
         await firebaseFirestore
             .collection('rooms/$roomId/messages')
             .doc(messageId)
@@ -473,6 +508,131 @@ class ChatRepository {
     updateUserLastSeen();
 
     return query.snapshots().map((snapshot) {
+      return snapshot.docs.fold<List<Message>>(
+        [],
+        (previousValue, doc) {
+          final data = doc.data();
+          final author = room.users.firstWhere(
+            (u) => u.id == (data['authorId'] ?? data['sentBy']),
+            orElse: () => User(id: data['authorId'] as String),
+          );
+          final otherUser = room.users.firstWhere(
+            (u) => u.id != (data['authorId'] ?? data['sentBy']),
+            orElse: () => User(id: data['authorId'] as String),
+          );
+
+          if (data['status'] == MessageStatus.pending.name &&
+              data['sentBy'] != firebaseAuth.currentUser!.uid) {
+            debugModePrint('skip pending message');
+            return [
+              ...previousValue,
+            ];
+          }
+
+          data['sentBy'] = author.id;
+          data['createdAt'] = data['createdAt'] == null
+              ? DateTime.now()
+              : DateTime.fromMillisecondsSinceEpoch(
+                  data['createdAt']?.millisecondsSinceEpoch);
+          data['updatedAt'] = data['updatedAt'] == null
+              ? DateTime.now()
+              : DateTime.fromMillisecondsSinceEpoch(
+                  data['updatedAt']?.millisecondsSinceEpoch);
+          data['id'] = doc.id;
+          data['message_type'] = data['type'] ?? data['message_type'];
+          if (data['type'] == MessageType.text.name ||
+              data['message_type'] == MessageType.text.name) {
+            data['message'] = data['text'] ?? data['message'];
+          }
+          if (data['message_type'] == MessageType.image.name) {
+            data['message'] = data['uri'] ?? data['message'];
+          }
+
+          if (data['message_type'] == MessageType.voice.name &&
+              kDebugMode &&
+              kIsWeb) {
+            data['message'] = 'Web doesn\'t support voice message yet.';
+            data['message_type'] = MessageType.text.name;
+          }
+
+          final authorUnreaded = room.unreadedTotal!.firstWhere(
+            (element) => element.uid == author.id,
+          );
+          final otherUserUnreaded = room.unreadedTotal!.firstWhere(
+            (element) => element.uid == otherUser.id,
+          );
+
+          bool readedByAuthor = data['sentBy'] == otherUser.id &&
+              DateTime.fromMillisecondsSinceEpoch(
+                      authorUnreaded.lastReadedAt.millisecondsSinceEpoch + 1)
+                  .isAfter(
+                DateTime.fromMillisecondsSinceEpoch(
+                    data['createdAt']?.millisecondsSinceEpoch),
+              );
+
+          bool readedByOhterUser = data['sentBy'] == author.id &&
+              DateTime.fromMillisecondsSinceEpoch(
+                      otherUserUnreaded.lastReadedAt.millisecondsSinceEpoch + 1)
+                  .isAfter(
+                DateTime.fromMillisecondsSinceEpoch(
+                    data['createdAt']?.millisecondsSinceEpoch),
+              );
+
+          if (doc.metadata.hasPendingWrites) {
+            data['status'] = MessageStatus.pending.name;
+          } else if (readedByAuthor || readedByOhterUser) {
+            data['status'] = MessageStatus.read.name;
+          }
+
+          return [...previousValue, Message.fromJson(data)];
+        },
+      );
+      // if (list.isNotEmpty) {
+      //   for (var message in list) {
+      //     if (message.sentBy != firebaseAuth.currentUser!.uid &&
+      //         message.status.name == MessageStatus.delivered.name) {
+      //       updateChat(roomId: room.id, messageId: message.id);
+      //     }
+      //   }
+      // }
+    });
+  }
+
+  Future<List<Message>> initialMessages(
+    Room room, {
+    List<Object?>? endAt,
+    List<Object?>? endBefore,
+    int? limit,
+    List<Object?>? startAfter,
+    List<Object?>? startAt,
+  }) async {
+    var query = firebaseFirestore
+        .collection('rooms/${room.id}/messages')
+        .orderBy('createdAt', descending: true);
+
+    if (endAt != null) {
+      query = query.endAt(endAt);
+    }
+
+    if (endBefore != null) {
+      query = query.endBefore(endBefore);
+    }
+
+    if (limit != null) {
+      query = query.limit(limit);
+    }
+
+    if (startAfter != null) {
+      query = query.startAfter(startAfter);
+    }
+
+    if (startAt != null) {
+      query = query.startAt(startAt);
+    }
+
+    updateUserLastSeen();
+
+    return query.get().then((snapshot) {
       final List<Message> list = snapshot.docs.fold<List<Message>>(
         [],
         (previousValue, doc) {
@@ -809,14 +969,20 @@ class ChatRepository {
       (transaction) {
         return transaction.get(ref).then(
           (value) {
-            final Message messageObj =
-                Message.fromJson(value.data() as Map<String, dynamic>);
+            var msgMap = value.data() as Map<String, dynamic>;
+            msgMap['createdAt'] = DateTime.fromMillisecondsSinceEpoch(
+                msgMap['createdAt']?.millisecondsSinceEpoch);
+            msgMap['updatedAt'] = DateTime.fromMillisecondsSinceEpoch(
+                msgMap['updatedAt']?.millisecondsSinceEpoch);
+
+            final Message messageObj = Message.fromJson(msgMap);
             final List<String> reactedUseerIds =
                 messageObj.reaction.reactedUserIds;
             var reactions = messageObj.reaction.reactions;
 
             int userIndex = reactedUseerIds.indexOf(message.sentBy);
-            if (reactedUseerIds.contains(firebaseAuth.currentUser!.uid)) {
+            if (reactedUseerIds.contains(firebaseAuth.currentUser!.uid) &&
+                userIndex != -1) {
               reactedUseerIds.remove(firebaseAuth.currentUser!.uid);
               reactions.removeAt(userIndex);
             }
@@ -849,8 +1015,12 @@ class ChatRepository {
       (transaction) {
         return transaction.get(ref).then(
           (value) {
-            final Message messageObj =
-                Message.fromJson(value.data() as Map<String, dynamic>);
+            var msgMap = value.data() as Map<String, dynamic>;
+            msgMap['createdAt'] = DateTime.fromMillisecondsSinceEpoch(
+                msgMap['createdAt']?.millisecondsSinceEpoch);
+            msgMap['updatedAt'] = DateTime.fromMillisecondsSinceEpoch(
+                msgMap['updatedAt']?.millisecondsSinceEpoch);
+            final Message messageObj = Message.fromJson(msgMap);
             final List<String> reactedUseerIds =
                 messageObj.reaction.reactedUserIds;
             var reactions = messageObj.reaction.reactions;
