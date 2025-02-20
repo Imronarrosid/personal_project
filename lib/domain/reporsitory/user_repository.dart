@@ -44,13 +44,15 @@ class UserRepository implements UserUseCaseType {
   }
 
   Future<void> onUserOnline() async {
-    return await firebaseFirestore
-        .collection('users')
-        .doc(firebaseAuth.currentUser!.uid)
-        .update({
-      'lastSeen': FieldValue.serverTimestamp(),
-      'isOnline': true,
-    });
+    if (firebaseAuth.currentUser != null) {
+      return await firebaseFirestore
+          .collection('users')
+          .doc(firebaseAuth.currentUser!.uid)
+          .update({
+        'lastSeen': FieldValue.serverTimestamp(),
+        'isOnline': true,
+      });
+    }
   }
 
   Future<void> onUserOffline() async {
