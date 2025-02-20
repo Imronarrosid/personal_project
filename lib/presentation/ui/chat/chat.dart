@@ -18,9 +18,11 @@ import 'package:personal_project/presentation/router/app_router.dart';
 import 'package:personal_project/presentation/ui/home/navbar_notifier/navbar_notifier.dart';
 import 'package:personal_project/utils/debug_mode_print.dart';
 import 'package:solar_icons/solar_icons.dart';
+import 'package:timeago/timeago.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../../domain/model/chat_payload_model.dart';
+import '../../../domain/model/room_model.dart';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({
@@ -41,6 +43,9 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   final int _limitIncrement = 20; // Load 20 more messages each time
   late final ValueNotifier<int> _limitNotifier;
   double? chatScaffoldWidth;
+
+  final List<StreamSubscription> streams = [];
+
   @override
   void initState() {
     _onOpenChat();
@@ -81,6 +86,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
         }
       },
     );
+    listenNewMessage(widget.data.room);
     super.initState();
   }
 
@@ -92,25 +98,157 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
     _chatController!.setTypingIndicator = !_chatController!.showTypingIndicator;
   }
 
-  void receiveMessage() async {
-    _chatController!.addMessage(
-      Message(
-        id: DateTime.now().toString(),
-        message: 'I will schedule the meeting.',
-        createdAt: DateTime.now(),
-        sentBy: widget.data.room.users.firstWhere(
-          (element) {
-            return element.id != firebaseAuth.currentUser!.uid;
-          },
-        ).id,
-      ),
+  void loadMoreMessage({
+    required Room room,
+    int? limit,
+  }) async {
+    context.read<ChatRepository>().messages(
+        limit: _currentLimit,
+        room,
+        startAfter: [
+          _chatController!.initialMessageList.first.createdAt
+        ]).listen(
+      (event) {
+        _chatController!.setIsLoadMore = true;
+        debugModePrint('isloadmore ${_chatController!.isLoadMore}');
+        _chatController!.loadMoreData(event.reversed.toList());
+        debugModePrint('isloadmore ${_chatController!.isLoadMore}');
+        // final
+        // Set<String> existingIds =
+        //     _chatController!.initialMessageList.map((m) => m.id).toSet();
+        // for (var element in event) {
+
+        //   if (!existingIds.contains(element.id)) {
+        //     _chatController!.addMessage(element);
+        //   }
+        // }
+        Set<String> newMesageIds = event.map((message) => message.id).toSet();
+
+        List<Message> commonMessages = _chatController!.initialMessageList
+            .where((message) => newMesageIds.contains(message.id))
+            .toList();
+
+        _compareMessages(commonMessages, event);
+      },
     );
-    await Future.delayed(const Duration(milliseconds: 500));
-    _chatController!.addReplySuggestions([
-      const SuggestionItemData(text: 'Thanks.'),
-      const SuggestionItemData(text: 'Thank you very much.'),
-      const SuggestionItemData(text: 'Great.')
-    ]);
+
+    _currentLimit += _limitIncrement;
+  }
+
+  void listenNewMessage(Room room) async {
+    final List<Message> initialMessages = await context
+        .read<ChatRepository>()
+        .initialMessages(room, limit: _limitIncrement);
+
+    _chatController!.initialMessageList = initialMessages;
+    if (!mounted) return;
+    context.read<ChatRepository>().messages(
+      room,
+      endAt: [initialMessages.first.createdAt],
+    ).listen(
+      (event) {
+        Set<String> existingIds =
+            _chatController!.initialMessageList.map((m) => m.id).toSet();
+        for (var element in event) {
+          if (!existingIds.contains(element.id)) {
+            _chatController!.addMessage(element);
+          }
+        }
+        Set<String> newMesageIds = event.map((message) => message.id).toSet();
+
+        List<Message> commonMessages = _chatController!.initialMessageList
+            .where((message) => newMesageIds.contains(message.id))
+            .toList();
+
+        _compareMessages(commonMessages, event);
+      },
+    );
+  }
+
+  void _compareMessages(
+      List<Message> previousMessages, List<Message> newMessages) {
+    for (var newMessage in newMessages) {
+      var previousMessage =
+          previousMessages.firstWhere((message) => message.id == newMessage.id);
+
+      if (previousMessage.id.isNotEmpty) {
+        if (!listEquals(newMessage.reaction.reactions,
+            previousMessage.reaction.reactions)) {
+          print('Reaction update detected for message ${newMessage.createdAt}');
+          // Add your action here for reaction update
+
+          List<String> oldData = previousMessage.reaction.reactedUserIds;
+
+          // New data list
+          List<String> newData = newMessage.reaction.reactedUserIds;
+
+          // Find added items
+          List<String> addedItems =
+              newData.where((item) => !oldData.contains(item)).toList();
+
+          // Find removed items
+          List<String> removedItems =
+              oldData.where((item) => !newData.contains(item)).toList();
+
+          // Find common items (potentially modified if you have more complex data)
+          List<String> commonItems =
+              newData.where((item) => oldData.contains(item)).toList();
+
+          // Perform actions based on changes
+          if (addedItems.isNotEmpty) {
+            debugModePrint('Added items: $addedItems');
+            // Perform action for added items
+            _chatController!.setReaction(
+                emoji: newMessage.reaction.reactions[newMessage
+                    .reaction.reactedUserIds
+                    .indexOf(addedItems.first)],
+                messageId: newMessage.id,
+                userId: addedItems.first);
+          }
+
+          if (removedItems.isNotEmpty) {
+            debugModePrint('Removed items: $removedItems');
+            _chatController!.setReaction(
+                emoji: previousMessage.reaction.reactions[previousMessage
+                    .reaction.reactedUserIds
+                    .indexOf(removedItems.first)],
+                messageId: previousMessage.id,
+                userId: removedItems.first);
+            // Perform action for removed items
+          }
+
+          if (commonItems.isNotEmpty) {
+            debugModePrint('Common items: $commonItems');
+            // Perform action for common items (e.g., check for modifications)
+            for (var element in commonItems) {
+              final int index =
+                  newMessage.reaction.reactedUserIds.indexOf(element);
+              final int oIndex =
+                  previousMessage.reaction.reactedUserIds.indexOf(element);
+              if (newMessage.reaction.reactions[index] !=
+                  previousMessage.reaction.reactions[oIndex]) {
+                _chatController!.setReaction(
+                    emoji: newMessage.reaction.reactions[index],
+                    messageId: newMessage.id,
+                    userId: element);
+              }
+            }
+          }
+        } else {
+          print('New message detected: ${newMessage.createdAt}');
+          // Add your action here for new message
+        }
+        if (newMessage.status.name != previousMessage.status.name) {
+          _chatController!.initialMessageList.firstWhere(
+            (element) {
+              return element.id == newMessage.id;
+            },
+          ).setStatus = newMessage.status;
+          print('Receipt update detected for message ${newMessage.id}');
+          // Add your action here for receipt update
+        }
+      }
+    }
   }
 
   @override
@@ -134,361 +272,333 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
       chatScaffoldWidth = box.size.width;
       debugModePrint('Chat Scaffold width: $chatScaffoldWidth');
     });
-    return Scaffold(
-      body: ValueListenableBuilder(
-          valueListenable: _limitNotifier,
-          builder: (context, value, child) {
-            final ChatRepository chatRepository =
-                RepositoryProvider.of<ChatRepository>(context);
-            return StreamBuilder(
-                initialData: chatRepository.messagesLists,
-                stream: chatRepository.messages(widget.data.room, limit: value),
-                builder: (context, snapshot) {
-                  if (!snapshot.hasData &&
-                      chatRepository.messagesLists.isEmpty) {
-                    return const CircularProgressIndicator();
-                  }
-                  List<Message> messages = chatRepository.messagesLists;
+    return Scaffold(body: Builder(builder: (context) {
+      final ChatRepository chatRepository =
+          RepositoryProvider.of<ChatRepository>(context);
+      return ChatView(
+        loadingWidget: Container(
+          padding: EdgeInsets.all(Dimens.DIMENS_3),
+          height: 26,
+          child: const Center(
+            child: CircularProgressIndicator(),
+          ),
+        ),
+        loadMoreData: () async {
+          debugModePrint('load more $_currentLimit');
+          loadMoreMessage(room: widget.data.room); // await isNextPageLoading;
+        },
+        chatController: _chatController!,
+        onSendTap: _onSendTap,
+        featureActiveConfig: const FeatureActiveConfig(
+          lastSeenAgoBuilderVisibility: false,
+          receiptsBuilderVisibility: true,
+          enableScrollToBottomButton: true,
+          enablePagination: true,
+        ),
+        scrollToBottomButtonConfig: ScrollToBottomButtonConfig(
+          backgroundColor: colorScheme.tertiary,
+          icon: Icon(
+            Icons.keyboard_arrow_down_rounded,
+            color: colorScheme.onSurface,
+            weight: 10,
+            size: 30,
+          ),
+        ),
+        chatViewState: ChatViewState.hasMessages,
+        chatViewStateConfig: ChatViewStateConfiguration(
+          noMessageWidgetConfig: ChatViewStateWidgetConfiguration(
+              title: LocaleKeys.message_no_message.tr()),
+          loadingWidgetConfig: ChatViewStateWidgetConfiguration(
+            loadingIndicatorColor: colorScheme.primary,
+          ),
+          onReloadButtonTap: () {},
+        ),
+        typeIndicatorConfig: TypeIndicatorConfiguration(
+          flashingCircleBrightColor: colorScheme.primary.withOpacity(0.4),
+          flashingCircleDarkColor: colorScheme.primary,
+        ),
+        appBar: StreamBuilder<User>(
+            stream: context
+                .read<UserRepository>()
+                .otherUserSream(_chatController!.otherUsers.first.id),
+            builder: (context, snapshot) {
+              return ChatViewAppBar(
+                leading: BackButton(
+                  onPressed: () =>
+                      context.read<AppRouter>().onBackButtonPressed(context),
+                ),
+                elevation: 0.3,
+                backGroundColor: colorScheme.surface,
+                profilePicture: widget.data.avatar,
+                backArrowColor: colorScheme.surface,
+                chatTitle: widget.data.userName,
+                chatTitleTextStyle: TextStyle(
+                  color: colorScheme.onSurface,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                  letterSpacing: 0.25,
+                ),
+                userStatus: getLastSeen(snapshot),
+                userStatusTextStyle: const TextStyle(color: Colors.grey),
+              );
+            }),
+        chatBackgroundConfig: ChatBackgroundConfiguration(
+          // sortEnable: true,
 
-                  if (snapshot.connectionState != ConnectionState.waiting ||
-                      snapshot.connectionState != ConnectionState.active) {
-                    if (_chatController!.initialMessageList.isNotEmpty) {
-                      _chatController!.initialMessageList.clear();
-                    }
-                    if (!npCompletter.isCompleted && snapshot.hasData) {
-                      npCompletter.complete(true);
-                      npCompletter = Completer<bool>();
-                      isNextPageLoading = npCompletter.future;
-                    }
-                    _chatController!.initialMessageList.addAll(messages);
+          width: chatScaffoldWidth,
+          groupedListOrder: GroupedListOrder.asc,
+          messageTimeIconColor: colorScheme.onSurface,
+          messageTimeTextStyle: TextStyle(
+            color: colorScheme.onSurface,
+          ),
+          defaultGroupSeparatorConfig: DefaultGroupSeparatorConfiguration(
+            textStyle: TextStyle(
+              color: colorScheme.onSurface,
+              fontSize: 17,
+            ),
+          ),
+          backgroundColor: colorScheme.surface,
+        ),
+        sendMessageConfig: SendMessageConfiguration(
+          imagePickerIconsConfig: ImagePickerIconsConfiguration(
+            cameraIconColor: colorScheme.onSurface,
+            galleryIconColor: colorScheme.onSurface,
+          ),
+          replyMessageColor: colorScheme.onSurface.withOpacity(0.6),
+          defaultSendButtonColor: colorScheme.onSurface,
+          replyDialogColor: colorScheme.surface,
+          replyTitleColor: colorScheme.onSurface,
+          textFieldBackgroundColor: colorScheme.tertiary,
+          closeIconColor: colorScheme.onSurface,
+          textFieldConfig: TextFieldConfiguration(
+            onMessageTyping: (status) {
+              /// Do with status
+              debugPrint(status.toString());
+              context.read<UserRepository>().setTypingIndicator(
+                  status == TypeWriterStatus.typing ? true : false);
+            },
+            compositionThresholdTime: const Duration(seconds: 1),
+            textStyle: TextStyle(color: colorScheme.onSurface),
+          ),
+          micIconColor: colorScheme.onSurface,
+          voiceRecordingConfiguration: VoiceRecordingConfiguration(
+            backgroundColor: colorScheme.primary,
+            recorderIconColor: colorScheme.onSurface,
+            decoration: BoxDecoration(borderRadius: BorderRadius.circular(50)),
+            waveStyle: WaveStyle(
+              backgroundColor: colorScheme.primary,
+              showMiddleLine: false,
+              waveColor: colorScheme.onSurface,
+              extendWaveform: true,
+            ),
+          ),
+        ),
+        chatBubbleConfig: ChatBubbleConfiguration(
+          onDoubleTap: (message) {
+            chatRepository.doubleTapReactions(
+                roomId: widget.data.room.id,
+                message: message,
+                reaction: "\u{1F44D}");
+          },
+          outgoingChatBubbleConfig: ChatBubble(
+            linkPreviewConfig: LinkPreviewConfiguration(
+              proxyUrl: !kIsWeb ? null : "https://proxy.corsfix.com/?",
+              backgroundColor: colorScheme.surface.withOpacity(0.2),
+              titleStyle: TextStyle(color: colorScheme.onSurface),
+              bodyStyle: TextStyle(
+                color: colorScheme.onSurface.withOpacity(0.7),
+              ),
+            ),
+            receiptsWidgetConfig: ReceiptsWidgetConfig(
+                receiptsBuilder: (status) {
+                  if (status == MessageStatus.pending) {
+                    return Padding(
+                      padding: const EdgeInsets.only(right: 6.0),
+                      child: Icon(
+                        SolarIconsOutline.clockCircle,
+                        size: 14,
+                      ),
+                    );
+                  } else if (status == MessageStatus.delivered) {
+                    return Padding(
+                      padding: const EdgeInsets.only(right: 6.0),
+                      child: Icon(
+                        size: 16,
+                        SolarIconsOutline.chatRead,
+                      ),
+                    );
+                  } else if (status == MessageStatus.read) {
+                    return Padding(
+                      padding: const EdgeInsets.only(right: 6.0),
+                      child: Icon(
+                        SolarIconsOutline.chatRead,
+                        color: Colors.blue,
+                        size: 16,
+                      ),
+                    );
                   }
-                  // debugModePrint('chat offset ${_scrollController.offset}');
-
-                  return ChatView(
-                    loadingWidget: Container(
-                      padding: EdgeInsets.all(Dimens.DIMENS_3),
-                      height: 26,
-                      child: const Center(
-                        child: CircularProgressIndicator(),
-                      ),
-                    ),
-                    isLastPage: _chatController!.initialMessageList.length <
-                        _currentLimit,
-                    loadMoreData: () async {
-                      _currentLimit += _limitIncrement;
-                      _limitNotifier.value = _currentLimit;
-                      debugModePrint('load more $_currentLimit');
-                      await isNextPageLoading;
-                    },
-                    chatController: _chatController!,
-                    onSendTap: _onSendTap,
-                    featureActiveConfig: const FeatureActiveConfig(
-                      lastSeenAgoBuilderVisibility: false,
-                      receiptsBuilderVisibility: true,
-                      enableScrollToBottomButton: true,
-                      enablePagination: true,
-                    ),
-                    scrollToBottomButtonConfig: ScrollToBottomButtonConfig(
-                      backgroundColor: colorScheme.tertiary,
-                      icon: Icon(
-                        Icons.keyboard_arrow_down_rounded,
-                        color: colorScheme.onSurface,
-                        weight: 10,
-                        size: 30,
-                      ),
-                    ),
-                    chatViewState: messages.isNotEmpty
-                        ? ChatViewState.hasMessages
-                        : ChatViewState.loading,
-                    chatViewStateConfig: ChatViewStateConfiguration(
-                      noMessageWidgetConfig: ChatViewStateWidgetConfiguration(
-                          title: LocaleKeys.message_no_message.tr()),
-                      loadingWidgetConfig: ChatViewStateWidgetConfiguration(
-                        loadingIndicatorColor: colorScheme.primary,
-                      ),
-                      onReloadButtonTap: () {},
-                    ),
-                    typeIndicatorConfig: TypeIndicatorConfiguration(
-                      flashingCircleBrightColor:
-                          colorScheme.primary.withOpacity(0.4),
-                      flashingCircleDarkColor: colorScheme.primary,
-                    ),
-                    appBar: StreamBuilder<User>(
-                        stream: context.read<UserRepository>().otherUserSream(
-                            _chatController!.otherUsers.first.id),
-                        builder: (context, snapshot) {
-                          return ChatViewAppBar(
-                            leading: BackButton(
-                              onPressed: () => context
-                                  .read<AppRouter>()
-                                  .onBackButtonPressed(context),
-                            ),
-                            elevation: 0.3,
-                            backGroundColor: colorScheme.surface,
-                            profilePicture: widget.data.avatar,
-                            backArrowColor: colorScheme.surface,
-                            chatTitle: widget.data.userName,
-                            chatTitleTextStyle: TextStyle(
-                              color: colorScheme.onSurface,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 18,
-                              letterSpacing: 0.25,
-                            ),
-                            userStatus: getLastSeen(snapshot),
-                            userStatusTextStyle:
-                                const TextStyle(color: Colors.grey),
-                          );
-                        }),
-                    chatBackgroundConfig: ChatBackgroundConfiguration(
-                      loadingWidget: SizedBox(
-                          height: MediaQuery.of(context).size.height,
-                          child: Center(child: CircularProgressIndicator())),
-                      width: chatScaffoldWidth,
-                      groupedListOrder: GroupedListOrder.desc,
-                      messageTimeIconColor: colorScheme.onSurface,
-                      messageTimeTextStyle: TextStyle(
-                        color: colorScheme.onSurface,
-                      ),
-                      defaultGroupSeparatorConfig:
-                          DefaultGroupSeparatorConfiguration(
-                        textStyle: TextStyle(
-                          color: colorScheme.onSurface,
-                          fontSize: 17,
-                        ),
-                      ),
-                      backgroundColor: colorScheme.surface,
-                    ),
-                    sendMessageConfig: SendMessageConfiguration(
-                      imagePickerIconsConfig: ImagePickerIconsConfiguration(
-                        cameraIconColor: colorScheme.onSurface,
-                        galleryIconColor: colorScheme.onSurface,
-                      ),
-                      replyMessageColor: colorScheme.onSurface.withOpacity(0.6),
-                      defaultSendButtonColor: colorScheme.onSurface,
-                      replyDialogColor: colorScheme.surface,
-                      replyTitleColor: colorScheme.onSurface,
-                      textFieldBackgroundColor: colorScheme.tertiary,
-                      closeIconColor: colorScheme.onSurface,
-                      textFieldConfig: TextFieldConfiguration(
-                        onMessageTyping: (status) {
-                          /// Do with status
-                          debugPrint(status.toString());
-                          context.read<UserRepository>().setTypingIndicator(
-                              status == TypeWriterStatus.typing ? true : false);
-                        },
-                        compositionThresholdTime: const Duration(seconds: 1),
-                        textStyle: TextStyle(color: colorScheme.onSurface),
-                      ),
-                      micIconColor: colorScheme.onSurface,
-                      voiceRecordingConfiguration: VoiceRecordingConfiguration(
-                        backgroundColor: colorScheme.primary,
-                        recorderIconColor: colorScheme.onSurface,
-                        decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(50)),
-                        waveStyle: WaveStyle(
-                          backgroundColor: colorScheme.primary,
-                          showMiddleLine: false,
-                          waveColor: colorScheme.onSurface,
-                          extendWaveform: true,
-                        ),
-                      ),
-                    ),
-                    chatBubbleConfig: ChatBubbleConfiguration(
-                      onDoubleTap: (message) {
-                        chatRepository.doubleTapReactions(
-                            roomId: widget.data.room.id,
-                            message: message,
-                            reaction: "\u{1F44D}");
-                      },
-                      outgoingChatBubbleConfig: ChatBubble(
-                        linkPreviewConfig: LinkPreviewConfiguration(
-                          proxyUrl:
-                              !kIsWeb ? null : "https://proxy.corsfix.com/?",
-                          backgroundColor: colorScheme.surface.withOpacity(0.2),
-                          titleStyle: TextStyle(color: colorScheme.onSurface),
-                          bodyStyle: TextStyle(
-                            color: colorScheme.onSurface.withOpacity(0.7),
-                          ),
-                        ),
-                        receiptsWidgetConfig: ReceiptsWidgetConfig(
-                            receiptsBuilder: (status) {
-                              if (status == MessageStatus.pending) {
-                                return Padding(
-                                  padding: const EdgeInsets.only(right: 6.0),
-                                  child: Icon(
-                                    SolarIconsOutline.clockCircle,
-                                    size: 14,
-                                  ),
-                                );
-                              } else if (status == MessageStatus.delivered) {
-                                return Padding(
-                                  padding: const EdgeInsets.only(right: 6.0),
-                                  child: Icon(
-                                    size: 16,
-                                    SolarIconsOutline.chatRead,
-                                  ),
-                                );
-                              } else if (status == MessageStatus.read) {
-                                return Padding(
-                                  padding: const EdgeInsets.only(right: 6.0),
-                                  child: Icon(
-                                    SolarIconsOutline.chatRead,
-                                    color: Colors.blue,
-                                    size: 16,
-                                  ),
-                                );
-                              }
-                              return SizedBox.shrink();
-                            },
-                            showReceiptsIn: ShowReceiptsIn.all),
-                        color: colorScheme.primary,
-                      ),
-                      inComingChatBubbleConfig: ChatBubble(
-                        linkPreviewConfig: LinkPreviewConfiguration(
-                          proxyUrl:
-                              !kIsWeb ? null : "https://proxy.corsfix.com/?",
-                          linkStyle: TextStyle(
-                            color: Colors.blue,
-                            decoration: TextDecoration.underline,
-                            decorationColor: Colors.blue,
-                          ),
-                          backgroundColor: colorScheme.surface.withOpacity(0.2),
-                          bodyStyle: TextStyle(
-                            color: colorScheme.onSurface.withOpacity(0.7),
-                          ),
-                          titleStyle: TextStyle(color: colorScheme.onSurface),
-                        ),
-                        textStyle: TextStyle(color: colorScheme.onSurface),
-                        onMessageRead: (message) {
-                          /// send your message reciepts to the other
-                          if (message.createdAt.isAfter(widget
-                              .data.room.unreadedTotal!
-                              .firstWhere((element) =>
-                                  element.uid == firebaseAuth.currentUser!.uid)
-                              .lastReadedAt
-                              .toDate())) {
-                            chatRepository.updateChat(
-                              message: message,
-                              room: widget.data.room,
-                            );
-                            debugPrint('Message Read');
-                          }
-                        },
-                        senderNameTextStyle:
-                            TextStyle(color: colorScheme.onSurface),
-                        color: colorScheme.tertiary,
-                      ),
-                    ),
-                    replyPopupConfig: ReplyPopupConfiguration(
-                      replyPopupBuilder: (message, sentByCurrentUser) =>
-                          const SizedBox.shrink(),
-                      backgroundColor: colorScheme.tertiary,
-                      buttonTextStyle: TextStyle(color: colorScheme.onSurface),
-                      topBorderColor: colorScheme.tertiary,
-                    ),
-                    reactionPopupConfig: ReactionPopupConfiguration(
-                      overrideUserReactionCallback: true,
-                      userReactionCallback: (message, emoji) {
-                        chatRepository.setReactions(
-                            roomId: widget.data.room.id,
-                            message: message,
-                            reaction: emoji);
-                      },
-                      shadow: BoxShadow(
-                        color: colorScheme.tertiary,
-                        blurRadius: 20,
-                      ),
-                      backgroundColor: colorScheme.tertiary,
-                    ),
-                    messageConfig: MessageConfiguration(
-                      messageReactionConfig: MessageReactionConfiguration(
-                        backgroundColor: colorScheme.tertiary,
-                        borderColor: colorScheme.surface,
-                        reactedUserCountTextStyle:
-                            TextStyle(color: colorScheme.onSurface),
-                        reactionCountTextStyle:
-                            TextStyle(color: colorScheme.onSurface),
-                        reactionsBottomSheetConfig:
-                            ReactionsBottomSheetConfiguration(
-                          removeReactedCurrentUserCallback:
-                              (reactedUser, message) {
-                            if (reactedUser.id ==
-                                _chatController!.currentUser.id) {
-                              chatRepository.removeReactions(
-                                roomId: widget.data.room.id,
-                                message: message,
-                              );
-                            }
-                          },
-                          backgroundColor: colorScheme.surface,
-                          reactedUserTextStyle: TextStyle(
-                            color: colorScheme.onSurface,
-                          ),
-                          reactionWidgetDecoration: BoxDecoration(
-                            color: colorScheme.tertiary,
-                            boxShadow: [
-                              BoxShadow(
-                                color: colorScheme.tertiary,
-                                offset: const Offset(0, 20),
-                                blurRadius: 40,
-                              )
-                            ],
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                      ),
-                      imageMessageConfig: ImageMessageConfiguration(
-                        margin: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 15),
-                        shareIconConfig: ShareIconConfiguration(
-                          defaultIconBackgroundColor: colorScheme.tertiary,
-                          defaultIconColor: colorScheme.onSurface,
-                        ),
-                      ),
-                    ),
-                    profileCircleConfig: ProfileCircleConfiguration(
-                      profileImageUrl: widget.data.avatar,
-                    ),
-                    repliedMessageConfig: RepliedMessageConfiguration(
-                      backgroundColor: colorScheme.primary.withOpacity(0.5),
-                      verticalBarColor: colorScheme.primary,
-                      repliedMsgAutoScrollConfig: RepliedMsgAutoScrollConfig(
-                        enableHighlightRepliedMsg: true,
-                        highlightColor: colorScheme.primary,
-                        highlightScale: 1.1,
-                      ),
-                      textStyle: TextStyle(
-                        color: colorScheme.onSurface,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 0.25,
-                      ),
-                      replyTitleTextStyle:
-                          TextStyle(color: colorScheme.onSurface),
-                    ),
-                    swipeToReplyConfig: SwipeToReplyConfiguration(
-                        replyIconBackgroundColor: colorScheme.surface,
-                        replyIconColor: colorScheme.primary,
-                        replyIconProgressRingColor: colorScheme.primary),
-                    replySuggestionsConfig: ReplySuggestionsConfig(
-                      itemConfig: SuggestionItemConfig(
-                        decoration: BoxDecoration(
-                          color: colorScheme.surface,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            color: colorScheme.tertiary,
-                          ),
-                        ),
-                        textStyle: TextStyle(
-                          color: isDarkTheme ? Colors.white : Colors.black,
-                        ),
-                      ),
-                      onTap: (item) => _onSendTap(
-                          item.text, const ReplyMessage(), MessageType.text),
-                    ),
+                  return SizedBox.shrink();
+                },
+                showReceiptsIn: ShowReceiptsIn.all),
+            color: colorScheme.primary,
+          ),
+          inComingChatBubbleConfig: ChatBubble(
+            linkPreviewConfig: LinkPreviewConfiguration(
+              proxyUrl: !kIsWeb ? null : "https://proxy.corsfix.com/?",
+              linkStyle: TextStyle(
+                color: Colors.blue,
+                decoration: TextDecoration.underline,
+                decorationColor: Colors.blue,
+              ),
+              backgroundColor: colorScheme.surface.withOpacity(0.2),
+              bodyStyle: TextStyle(
+                color: colorScheme.onSurface.withOpacity(0.7),
+              ),
+              titleStyle: TextStyle(color: colorScheme.onSurface),
+            ),
+            textStyle: TextStyle(color: colorScheme.onSurface),
+            onMessageRead: (message) {
+              /// send your message reciepts to the other
+              if (message.createdAt.isAfter(widget.data.room.unreadedTotal!
+                  .firstWhere(
+                      (element) => element.uid == firebaseAuth.currentUser!.uid)
+                  .lastReadedAt
+                  .toDate())) {
+                chatRepository.updateChat(
+                  message: message,
+                  room: widget.data.room,
+                );
+                debugPrint('Message Read');
+              }
+            },
+            senderNameTextStyle: TextStyle(color: colorScheme.onSurface),
+            color: colorScheme.tertiary,
+          ),
+        ),
+        replyPopupConfig: ReplyPopupConfiguration(
+          replyPopupBuilder: (message, sentByCurrentUser) =>
+              const SizedBox.shrink(),
+          backgroundColor: colorScheme.tertiary,
+          buttonTextStyle: TextStyle(color: colorScheme.onSurface),
+          topBorderColor: colorScheme.tertiary,
+        ),
+        reactionPopupConfig: ReactionPopupConfiguration(
+          overrideUserReactionCallback: true,
+          userReactionCallback: (message, emoji) {
+            chatRepository.setReactions(
+                roomId: widget.data.room.id, message: message, reaction: emoji);
+          },
+          shadow: BoxShadow(
+            color: colorScheme.tertiary,
+            blurRadius: 20,
+          ),
+          backgroundColor: colorScheme.tertiary,
+        ),
+        messageConfig: MessageConfiguration(
+          voiceMessageConfig: VoiceMessageConfiguration(
+            unDownoadedWaveColor: colorScheme.onSurface.withValues(
+              alpha: 0.5,
+            ),
+            bgProgressColor: Colors.transparent,
+            downloadIcon: Icon(
+              SolarIconsOutline.downloadMinimalistic,
+              color: colorScheme.onSurface,
+              shadows: [
+                BoxShadow(
+                    color: colorScheme.onSurface,
+                    blurRadius: 20,
+                    spreadRadius: 20)
+              ],
+              size: 20,
+            ),
+            voiceIcon: Icon(
+              SolarIconsOutline.microphone3,
+              color: colorScheme.onSurface,
+            ),
+            playIcon: Icon(
+              SolarIconsOutline.play,
+              color: colorScheme.onSurface,
+            ),
+          ),
+          messageReactionConfig: MessageReactionConfiguration(
+            backgroundColor: colorScheme.tertiary,
+            borderColor: colorScheme.surface,
+            reactedUserCountTextStyle: TextStyle(color: colorScheme.onSurface),
+            reactionCountTextStyle: TextStyle(color: colorScheme.onSurface),
+            reactionsBottomSheetConfig: ReactionsBottomSheetConfiguration(
+              removeReactedCurrentUserCallback: (reactedUser, message) {
+                if (reactedUser.id == _chatController!.currentUser.id) {
+                  chatRepository.removeReactions(
+                    roomId: widget.data.room.id,
+                    message: message,
                   );
-                });
-          }),
-    );
+                }
+              },
+              backgroundColor: colorScheme.surface,
+              reactedUserTextStyle: TextStyle(
+                color: colorScheme.onSurface,
+              ),
+              reactionWidgetDecoration: BoxDecoration(
+                color: colorScheme.tertiary,
+                boxShadow: [
+                  BoxShadow(
+                    color: colorScheme.tertiary,
+                    offset: const Offset(0, 20),
+                    blurRadius: 40,
+                  )
+                ],
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+          ),
+          imageMessageConfig: ImageMessageConfiguration(
+            margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 15),
+            shareIconConfig: ShareIconConfiguration(
+              defaultIconBackgroundColor: colorScheme.tertiary,
+              defaultIconColor: colorScheme.onSurface,
+            ),
+          ),
+        ),
+        profileCircleConfig: ProfileCircleConfiguration(
+          profileImageUrl: widget.data.avatar,
+        ),
+        repliedMessageConfig: RepliedMessageConfiguration(
+          backgroundColor: colorScheme.primary.withOpacity(0.5),
+          verticalBarColor: colorScheme.primary,
+          repliedMsgAutoScrollConfig: RepliedMsgAutoScrollConfig(
+            enableHighlightRepliedMsg: true,
+            highlightColor: colorScheme.primary,
+            highlightScale: 1.1,
+          ),
+          textStyle: TextStyle(
+            color: colorScheme.onSurface,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 0.25,
+          ),
+          replyTitleTextStyle: TextStyle(color: colorScheme.onSurface),
+        ),
+        swipeToReplyConfig: SwipeToReplyConfiguration(
+            replyIconBackgroundColor: colorScheme.surface,
+            replyIconColor: colorScheme.primary,
+            replyIconProgressRingColor: colorScheme.primary),
+        replySuggestionsConfig: ReplySuggestionsConfig(
+          itemConfig: SuggestionItemConfig(
+            decoration: BoxDecoration(
+              color: colorScheme.surface,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: colorScheme.tertiary,
+              ),
+            ),
+            textStyle: TextStyle(
+              color: isDarkTheme ? Colors.white : Colors.black,
+            ),
+          ),
+          onTap: (item) =>
+              _onSendTap(item.text, const ReplyMessage(), MessageType.text),
+        ),
+      );
+    }));
   }
 
   String getLastSeen(AsyncSnapshot<User> snapshot) {
