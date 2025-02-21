@@ -4,6 +4,7 @@ import 'package:chatview/chatview.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
+import 'package:personal_project/data/source/local/local_data.dart';
 import 'package:personal_project/domain/model/user.dart';
 import 'package:personal_project/domain/services/firebase/firebase_service.dart';
 import 'package:personal_project/domain/services/uuid_generator.dart';
@@ -385,9 +386,9 @@ class ChatRepository {
 
       if (messageMap['message_type'] == MessageType.voice.name) {
         messageMap['voice_message_duration'] = Duration(
-                milliseconds:
-                    await AudioUtils.getAudioDuration(message.message) ?? 0)
-            .inMicroseconds;
+          milliseconds: await AudioUtils.getAudioDuration(message.message) ?? 0,
+        ).inMicroseconds;
+        LocalData.instance.storeAudioPath(id: messageId, path: message.message);
       }
       debugModePrint('message $messageMap');
       await firebaseFirestore
@@ -554,6 +555,14 @@ class ChatRepository {
             data['message'] = 'Web doesn\'t support voice message yet.';
             data['message_type'] = MessageType.text.name;
           }
+          if (data['message_type'] == MessageType.voice.name &&
+              data['sentBy'] == firebaseAuth.currentUser!.uid) {
+            String? path = LocalData.instance.getAudioPath(data['id']);
+
+            if (path != null && File(path).existsSync()) {
+              data['message'] = path;
+            }
+          }
 
           final authorUnreaded = room.unreadedTotal!.firstWhere(
             (element) => element.uid == author.id,
@@ -672,9 +681,14 @@ class ChatRepository {
             data['message_type'] = MessageType.text.name;
           }
 
-          bool sendingImageToStorage = !doc.metadata.hasPendingWrites &&
-              data['message_type'] == MessageType.image.name &&
-              data['status'] == MessageStatus.pending.name;
+          if (data['message_type'] == MessageType.voice.name &&
+              data['sentBy'] == firebaseAuth.currentUser!.uid) {
+            String? path = LocalData.instance.getAudioPath(data['id']);
+
+            if (path != null && File(path).existsSync()) {
+              data['message'] = path;
+            }
+          }
 
           final authorUnreaded = room.unreadedTotal!.firstWhere(
             (element) => element.uid == author.id,
@@ -700,8 +714,6 @@ class ChatRepository {
               );
 
           if (doc.metadata.hasPendingWrites) {
-            data['status'] = MessageStatus.pending.name;
-          } else if (sendingImageToStorage) {
             data['status'] = MessageStatus.pending.name;
           } else if (readedByAuthor || readedByOhterUser) {
             data['status'] = MessageStatus.read.name;
