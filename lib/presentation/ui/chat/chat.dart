@@ -495,31 +495,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
           backgroundColor: colorScheme.tertiary,
         ),
         messageConfig: MessageConfiguration(
-          voiceMessageConfig: VoiceMessageConfiguration(
-            unDownoadedWaveColor: colorScheme.onSurface.withValues(
-              alpha: 0.5,
-            ),
-            bgProgressColor: Colors.transparent,
-            downloadIcon: Icon(
-              SolarIconsOutline.downloadMinimalistic,
-              color: colorScheme.onSurface,
-              shadows: [
-                BoxShadow(
-                    color: colorScheme.onSurface,
-                    blurRadius: 20,
-                    spreadRadius: 20)
-              ],
-              size: 20,
-            ),
-            voiceIcon: Icon(
-              SolarIconsOutline.microphone3,
-              color: colorScheme.onSurface,
-            ),
-            playIcon: Icon(
-              SolarIconsOutline.play,
-              color: colorScheme.onSurface,
-            ),
-          ),
+          voiceMessageConfig: _voiceMessageConfiguration(colorScheme),
           messageReactionConfig: MessageReactionConfiguration(
             backgroundColor: colorScheme.tertiary,
             borderColor: colorScheme.surface,
@@ -599,6 +575,38 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
         ),
       );
     }));
+  }
+
+  VoiceMessageConfiguration _voiceMessageConfiguration(
+      ColorScheme colorScheme) {
+    return VoiceMessageConfiguration(
+      unDownoadedWaveColor: colorScheme.onSurface.withValues(
+        alpha: 0.5,
+      ),
+      bgProgressColor: Colors.transparent,
+      downloadIcon: Container(
+        padding: EdgeInsets.only(top: 7.0, left: 8.0, right: 8.0, bottom: 9.0),
+        decoration: BoxDecoration(
+          color: colorScheme.onSurface.withValues(alpha: 0.2),
+          borderRadius: BorderRadius.circular(50),
+        ),
+        child: Icon(
+          SolarIconsOutline.downloadMinimalistic,
+          color: colorScheme.onSurface,
+          size: 20,
+        ),
+      ),
+      voiceIcon: Icon(
+        SolarIconsOutline.microphone3,
+        color: colorScheme.onSurface,
+        size: 20,
+      ),
+      playIcon: Icon(
+        SolarIconsBold.play,
+        color: colorScheme.onSurface,
+        size: 16,
+      ),
+    );
   }
 
   String getLastSeen(AsyncSnapshot<User> snapshot) {
