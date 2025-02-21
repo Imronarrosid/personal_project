@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:personal_project/config/theme.dart';
 import 'package:personal_project/data/repository/chat_repository.dart';
 import 'package:personal_project/data/repository/file_repository.dart';
+import 'package:personal_project/data/source/local/local_data.dart';
 import 'package:personal_project/domain/reporsitory/auth_reposotory.dart';
 import 'package:personal_project/domain/reporsitory/user_repository.dart';
 import 'package:personal_project/domain/reporsitory/video_repository.dart';
@@ -50,6 +51,7 @@ void main() async {
   //     DeviceOrientation.portraitDown,
   //   ]);
   // }
+  LocalData.init(sharedPreferences);
   setPathUrlStrategy();
 
   GoRouter.optionURLReflectsImperativeAPIs = true;
@@ -74,7 +76,7 @@ class MyApp extends StatefulWidget {
   State<MyApp> createState() => _MyAppState();
 }
 
-class _MyAppState extends State<MyApp> with WidgetsBindingObserver{
+class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   // This widget is the root of your application.
   late AppService appService;
   late AuthService authService;
@@ -91,9 +93,10 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver{
     );
     super.initState();
   }
- @override
+
+  @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    debugModePrint( 'status ${state.name}');
+    debugModePrint('status ${state.name}');
     if (state == AppLifecycleState.paused) {
       // App is moving to the background
       debugModePrint('App paused: Save data or cleanup tasks.');
@@ -108,6 +111,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver{
       // context.read<UserRepository>().onUserOnline();
     }
   }
+
   void onStartUp() async {
     await appService.onAppStart();
     debugPrint('onboard:${appService.onboarding}');
