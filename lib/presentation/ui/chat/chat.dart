@@ -319,6 +319,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
           enableScrollToBottomButton: true,
           enablePagination: true,
         ),
+      
         scrollToBottomButtonConfig: ScrollToBottomButtonConfig(
           backgroundColor: colorScheme.tertiary,
           icon: Icon(
@@ -569,6 +570,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
             ),
           ),
           imageMessageConfig: ImageMessageConfiguration(
+            hideShareIcon: true,
             imageProviderBuilder: (
                 {required conditional, required imageHeaders, required uri}) {
               if (uri.startsWith('http')) {
@@ -583,6 +585,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
             },
             margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 15),
             shareIconConfig: ShareIconConfiguration(
+              
               onPressed: (message) {
                 debugPrint('Share Image $message');
               },
