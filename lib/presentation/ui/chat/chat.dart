@@ -569,31 +569,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
               ),
             ),
           ),
-          imageMessageConfig: ImageMessageConfiguration(
-            hideShareIcon: true,
-            imageProviderBuilder: (
-                {required conditional, required imageHeaders, required uri}) {
-              if (uri.startsWith('http')) {
-                return CachedNetworkImageProvider(
-                  uri,
-                  headers: imageHeaders,
-                );
-              }
-              return FileImage(
-                File(uri),
-              );
-            },
-            margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 15),
-            shareIconConfig: ShareIconConfiguration(
-              
-              onPressed: (message) {
-                debugPrint('Share Image $message');
-              },
-              // icon: SizedBox.shrink(),
-              defaultIconBackgroundColor: colorScheme.tertiary,
-              defaultIconColor: colorScheme.onSurface,
-            ),
-          ),
+          imageMessageConfig: _imageMessageConfiguration(colorScheme),
         ),
         profileCircleConfig: ProfileCircleConfiguration(
           profileImageUrl: widget.data.avatar,
@@ -639,6 +615,34 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
         ),
       );
     }));
+  }
+
+  ImageMessageConfiguration _imageMessageConfiguration(ColorScheme colorScheme) {
+    return ImageMessageConfiguration(
+          hideShareIcon: true,
+          imageProviderBuilder: (
+              {required conditional, required imageHeaders, required uri}) {
+            if (uri.startsWith('http')) {
+              return CachedNetworkImageProvider(
+                uri,
+                headers: imageHeaders,
+              );
+            }
+            return FileImage(
+              File(uri),
+            );
+          },
+          margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 15),
+          shareIconConfig: ShareIconConfiguration(
+            
+            onPressed: (message) {
+              debugPrint('Share Image $message');
+            },
+            // icon: SizedBox.shrink(),
+            defaultIconBackgroundColor: colorScheme.tertiary,
+            defaultIconColor: colorScheme.onSurface,
+          ),
+        );
   }
 
   VoiceMessageConfiguration _voiceMessageConfiguration(
