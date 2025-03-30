@@ -703,7 +703,7 @@ class _MessagePageState extends State<MessagePage> {
       case MessageType.image:
         return LocaleKeys.message_send_image.tr();
       case MessageType.text:
-        return Message.fromJson(message.toJson()).message;
+        return Message.fromJson(message.toJson()).text;
     }
   }
 

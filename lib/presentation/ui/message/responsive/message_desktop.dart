@@ -775,7 +775,7 @@ class _MessageDesktopState extends State<MessageDesktop> {
       case MessageType.image:
         return LocaleKeys.message_send_image.tr();
       case MessageType.text:
-        return Message.fromJson(message.toJson()).message;
+        return Message.fromJson(message.toJson()).text;
     }
   }
 

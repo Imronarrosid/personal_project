@@ -4,6 +4,7 @@ import 'package:chatview/chatview.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
+import 'package:personal_project/constant/constants.dart';
 import 'package:personal_project/data/source/local/local_data.dart';
 import 'package:personal_project/domain/model/user.dart';
 import 'package:personal_project/domain/services/firebase/firebase_service.dart';
@@ -384,11 +385,17 @@ class ChatRepository {
               ? MessageStatus.pending.name
               : MessageStatus.delivered.name;
 
+      if (message.messageType.isText) {
+        messageMap[TEXT] = message.text;
+      }
+
       if (messageMap['message_type'] == MessageType.voice.name) {
         messageMap['voice_message_duration'] = Duration(
-          milliseconds: await AudioUtils.getAudioDuration(message.message) ?? 0,
+          milliseconds:
+              await AudioUtils.getAudioDuration(message.mediaPath) ?? 0,
         ).inMicroseconds;
-        LocalData.instance.storeAudioPath(id: messageId, path: message.message);
+        LocalData.instance
+            .storeAudioPath(id: messageId, path: message.mediaPath);
       }
       debugModePrint('message $messageMap');
       await firebaseFirestore
@@ -397,8 +404,8 @@ class ChatRepository {
           .set(messageMap);
 
       if (messageMap['message_type'] == MessageType.image.name) {
-        messageMap['message'] =
-            await uploadImage(File(messageMap['message']), name: Uuid().v6());
+        messageMap[MEDIA_PATH] =
+            await uploadImage(File(messageMap[MEDIA_PATH]), name: Uuid().v6());
         messageMap['status'] = MessageStatus.delivered.name;
         messageMap['updatedAt'] = FieldValue.serverTimestamp();
         await firebaseFirestore
@@ -408,8 +415,8 @@ class ChatRepository {
       }
 
       if (messageMap['message_type'] == MessageType.voice.name) {
-        messageMap['message'] =
-            await uploadVoice(File(messageMap['message']), name: Uuid().v6());
+        messageMap[MEDIA_PATH] =
+            await uploadVoice(File(messageMap[MEDIA_PATH]), name: Uuid().v6());
         messageMap['status'] = MessageStatus.delivered.name;
         messageMap['updatedAt'] = FieldValue.serverTimestamp();
 
@@ -543,16 +550,18 @@ class ChatRepository {
           data['message_type'] = data['type'] ?? data['message_type'];
           if (data['type'] == MessageType.text.name ||
               data['message_type'] == MessageType.text.name) {
-            data['message'] = data['text'] ?? data['message'];
+            data[TEXT] = data[TEXT];
           }
           if (data['message_type'] == MessageType.image.name) {
-            data['message'] = data['uri'] ?? data['message'];
+            data[MEDIA_PATH] =
+                data['uri'] ?? data[MEDIA_PATH] ?? data['message'];
+            data[TEXT] = data['caption'] ?? data[TEXT];
           }
 
           if (data['message_type'] == MessageType.voice.name &&
               kDebugMode &&
               kIsWeb) {
-            data['message'] = 'Web doesn\'t support voice message yet.';
+            data[TEXT] = 'Web doesn\'t support voice message yet.';
             data['message_type'] = MessageType.text.name;
           }
           if (data['message_type'] == MessageType.voice.name &&
@@ -560,7 +569,7 @@ class ChatRepository {
             String? path = LocalData.instance.getAudioPath(data['id']);
 
             if (path != null && File(path).existsSync()) {
-              data['message'] = path;
+              data[MEDIA_PATH] = path;
             }
           }
 
@@ -607,6 +616,37 @@ class ChatRepository {
     });
   }
 
+  Future<List<PreviewImage>> getMoreImages(
+      {required Room room, required Object startAfter}) async {
+    try {
+      return await firebaseFirestore
+          .collection('rooms/${room.id}/messages')
+          .where('message_type', isEqualTo: MessageType.image.name)
+          .orderBy('createdAt', descending: true)
+          .startAfter([startAfter])
+          .limit(10)
+          .get()
+          .then(
+            (value) =>
+                value.docs.fold<List<PreviewImage>>([], (previousValue, doc) {
+              final data = doc.data();
+
+              return [
+                ...previousValue,
+                PreviewImage(
+                  id: doc.id,
+                  uri: data[MEDIA_PATH] ?? data['message'],
+                  createdAt: data['createdAt'].millisecondsSinceEpoch,
+                ),
+              ];
+            }),
+          );
+    } catch (e) {
+      debugModePrint(e.toString());
+      return [];
+    }
+  }
+
   Future<List<Message>> initialMessages(
     Room room, {
     List<Object?>? endAt,
@@ -641,7 +681,7 @@ class ChatRepository {
 
     updateUserLastSeen();
 
-    return query.get().then((snapshot) {
+    return await query.get().then((snapshot) {
       final List<Message> list = snapshot.docs.fold<List<Message>>(
         [],
         (previousValue, doc) {
@@ -668,25 +708,26 @@ class ChatRepository {
           data['message_type'] = data['type'] ?? data['message_type'];
           if (data['type'] == MessageType.text.name ||
               data['message_type'] == MessageType.text.name) {
-            data['message'] = data['text'] ?? data['message'];
+            data[TEXT] = data[TEXT];
           }
           if (data['message_type'] == MessageType.image.name) {
-            data['message'] = data['uri'] ?? data['message'];
+            data[MEDIA_PATH] =
+                data['uri'] ?? data[MEDIA_PATH] ?? data['message'];
+            data[TEXT] = data['caption'] ?? data[TEXT];
           }
 
           if (data['message_type'] == MessageType.voice.name &&
               kDebugMode &&
               kIsWeb) {
-            data['message'] = 'Web doesn\'t support voice message yet.';
+            data[TEXT] = 'Web doesn\'t support voice message yet.';
             data['message_type'] = MessageType.text.name;
           }
-
           if (data['message_type'] == MessageType.voice.name &&
               data['sentBy'] == firebaseAuth.currentUser!.uid) {
             String? path = LocalData.instance.getAudioPath(data['id']);
 
             if (path != null && File(path).existsSync()) {
-              data['message'] = path;
+              data[MEDIA_PATH] = path;
             }
           }
 

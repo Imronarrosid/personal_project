@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chatview/chatview.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -17,6 +19,7 @@ import 'package:personal_project/presentation/responsive/dimension.dart';
 import 'package:personal_project/presentation/router/app_router.dart';
 import 'package:personal_project/presentation/ui/home/navbar_notifier/navbar_notifier.dart';
 import 'package:personal_project/utils/debug_mode_print.dart';
+import 'package:personal_project/utils/time_ago_formatter.dart';
 import 'package:solar_icons/solar_icons.dart';
 import 'package:timeago/timeago.dart';
 import 'package:uuid/uuid.dart';
@@ -140,7 +143,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
         .read<ChatRepository>()
         .initialMessages(room, limit: _limitIncrement);
 
-    _chatController!.initialMessageList = initialMessages;
+    _chatController!.loadMoreData(initialMessages);
     if (!mounted) return;
     context.read<ChatRepository>().messages(
       room,
@@ -283,9 +286,30 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
             child: CircularProgressIndicator(),
           ),
         ),
+        imageProviderBuilder: (
+            {required conditional, required imageHeaders, required uri}) {
+          if (uri.startsWith('http')) {
+            return CachedNetworkImageProvider(
+              uri,
+              headers: imageHeaders,
+            );
+          }
+          return FileImage(
+            File(uri),
+          );
+        },
         loadMoreData: () async {
           debugModePrint('load more $_currentLimit');
           loadMoreMessage(room: widget.data.room); // await isNextPageLoading;
+        },
+        loadMoreImages: () async {
+          final List<PreviewImage> images = await chatRepository.getMoreImages(
+            room: widget.data.room,
+            startAfter: Timestamp.fromMillisecondsSinceEpoch(
+              _chatController!.imageList.first.createdAt,
+            ),
+          );
+          _chatController!.loadMoreImages(images);
         },
         chatController: _chatController!,
         onSendTap: _onSendTap,
@@ -340,6 +364,20 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                 ),
                 userStatus: getLastSeen(snapshot),
                 userStatusTextStyle: const TextStyle(color: Colors.grey),
+                imageProviderBuilder: (
+                    {required conditional,
+                    required imageHeaders,
+                    required uri}) {
+                  if (uri.startsWith('http')) {
+                    return CachedNetworkImageProvider(
+                      uri,
+                      headers: imageHeaders,
+                    );
+                  }
+                  return FileImage(
+                    File(uri),
+                  );
+                },
               );
             }),
         chatBackgroundConfig: ChatBackgroundConfiguration(
@@ -359,17 +397,20 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
           ),
           backgroundColor: colorScheme.surface,
         ),
+        mediaPreviewConfig: MediaPreviewConfig(
+          defaultSendButtonColor: colorScheme.primary,
+        ),
         sendMessageConfig: SendMessageConfiguration(
           imagePickerIconsConfig: ImagePickerIconsConfiguration(
             cameraIconColor: colorScheme.onSurface,
             galleryIconColor: colorScheme.onSurface,
           ),
-          replyMessageColor: colorScheme.onSurface.withOpacity(0.6),
+          // replyMessageColor: colorScheme.onSurface.withOpacity(0.6),
           defaultSendButtonColor: colorScheme.onSurface,
-          replyDialogColor: colorScheme.surface,
-          replyTitleColor: colorScheme.onSurface,
+          // replyDialogColor: colorScheme.surface,
+          // replyTitleColor: colorScheme.onSurface,
           textFieldBackgroundColor: colorScheme.tertiary,
-          closeIconColor: colorScheme.onSurface,
+          // closeIconColor: colorScheme.onSurface,
           textFieldConfig: TextFieldConfiguration(
             onMessageTyping: (status) {
               /// Do with status
@@ -380,7 +421,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
             compositionThresholdTime: const Duration(seconds: 1),
             textStyle: TextStyle(color: colorScheme.onSurface),
           ),
-          micIconColor: colorScheme.onSurface,
+          // micIconColor: colorScheme.onSurface,
           voiceRecordingConfiguration: VoiceRecordingConfiguration(
             backgroundColor: colorScheme.primary,
             recorderIconColor: colorScheme.onSurface,
@@ -528,8 +569,24 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
             ),
           ),
           imageMessageConfig: ImageMessageConfiguration(
+            imageProviderBuilder: (
+                {required conditional, required imageHeaders, required uri}) {
+              if (uri.startsWith('http')) {
+                return CachedNetworkImageProvider(
+                  uri,
+                  headers: imageHeaders,
+                );
+              }
+              return FileImage(
+                File(uri),
+              );
+            },
             margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 15),
             shareIconConfig: ShareIconConfiguration(
+              onPressed: (message) {
+                debugPrint('Share Image $message');
+              },
+              // icon: SizedBox.shrink(),
               defaultIconBackgroundColor: colorScheme.tertiary,
               defaultIconColor: colorScheme.onSurface,
             ),
@@ -570,8 +627,12 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
               color: isDarkTheme ? Colors.white : Colors.black,
             ),
           ),
-          onTap: (item) =>
-              _onSendTap(item.text, const ReplyMessage(), MessageType.text),
+          onTap: (item) => _onSendTap(
+            mediaPath: '',
+            text: item.text,
+            replyMessage: const ReplyMessage(),
+            messageType: MessageType.text,
+          ),
         ),
       );
     }));
@@ -613,41 +674,35 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
     if (!snapshot.hasData) {
       return '';
     }
-    int minute = DateTime.now()
-        .difference(DateTime.fromMillisecondsSinceEpoch(
-            snapshot.data!.lastSeen!.millisecondsSinceEpoch))
-        .inMinutes;
 
-    double clock = minute / 60;
-    double day = clock / 24;
-
-    if (!snapshot.data!.isOnline! || snapshot.data!.isOnline! && minute > 10) {
-      if (minute < 1) {
-        return 'dilihat 1 menit yang lalu';
-      } else if (minute < 60) {
-        return 'dilihat $minute menit yang lalu';
-      } else if (minute >= 60) {
-        return 'dilihat ${clock.round()} jam yg lalu';
-      } else if (clock > 24) {
-        return 'dilihat $day hari yg lalu';
-      }
-      return 'dilihat $day hari yg lalu';
-    } else {
+    if (snapshot.data!.isOnline! &&
+        !snapshot.data!.lastSeen!.toDate().isBefore(DateTime.now())) {
       return 'online';
     }
+
+    return TimeAgoFormatter.lastSeenFormat(
+      DateTime.fromMillisecondsSinceEpoch(
+        snapshot.data!.lastSeen!.millisecondsSinceEpoch,
+      ),
+      locale: context.locale.toString(),
+    );
   }
 
   void _onSendTap(
-    String message,
-    ReplyMessage replyMessage,
-    MessageType messageType,
-  ) async {
+      // String message,
+      // ReplyMessage replyMessage,
+      // MessageType messageType,
+      {required String mediaPath,
+      required MessageType messageType,
+      required ReplyMessage replyMessage,
+      required String text}) async {
     final ChatRepository repo = RepositoryProvider.of<ChatRepository>(context);
 
     repo.sendMessage(
       Message(
         createdAt: DateTime.now(),
-        message: message,
+        mediaPath: mediaPath,
+        text: text,
         sentBy: _chatController!.currentUser.id,
         replyMessage: replyMessage,
         messageType: messageType,
