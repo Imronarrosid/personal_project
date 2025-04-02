@@ -57,11 +57,14 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
       initialMessageList: [],
       scrollController: ScrollController(),
       currentUser: ChatUser(
+        imageType: ImageType.network,
         id: firebaseAuth.currentUser!.uid,
         name: context.read<AuthRepository>().currentUserData?.userName ?? '',
       ),
       otherUsers: [
         ChatUser(
+        profilePhoto: widget.data.avatar,
+        imageType: ImageType.network,
           id: widget.data.room.users.firstWhere(
             (element) {
               return element.id != firebaseAuth.currentUser!.uid;
@@ -318,6 +321,8 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
           receiptsBuilderVisibility: true,
           enableScrollToBottomButton: true,
           enablePagination: true,
+          enableOtherUserProfileAvatar: true,
+          enableOtherUserName: false
         ),
       
         scrollToBottomButtonConfig: ScrollToBottomButtonConfig(
@@ -401,40 +406,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
         mediaPreviewConfig: MediaPreviewConfig(
           defaultSendButtonColor: colorScheme.primary,
         ),
-        sendMessageConfig: SendMessageConfiguration(
-          imagePickerIconsConfig: ImagePickerIconsConfiguration(
-            cameraIconColor: colorScheme.onSurface,
-            galleryIconColor: colorScheme.onSurface,
-          ),
-          // replyMessageColor: colorScheme.onSurface.withOpacity(0.6),
-          defaultSendButtonColor: colorScheme.onSurface,
-          // replyDialogColor: colorScheme.surface,
-          // replyTitleColor: colorScheme.onSurface,
-          textFieldBackgroundColor: colorScheme.tertiary,
-          // closeIconColor: colorScheme.onSurface,
-          textFieldConfig: TextFieldConfiguration(
-            onMessageTyping: (status) {
-              /// Do with status
-              debugPrint(status.toString());
-              context.read<UserRepository>().setTypingIndicator(
-                  status == TypeWriterStatus.typing ? true : false);
-            },
-            compositionThresholdTime: const Duration(seconds: 1),
-            textStyle: TextStyle(color: colorScheme.onSurface),
-          ),
-          // micIconColor: colorScheme.onSurface,
-          voiceRecordingConfiguration: VoiceRecordingConfiguration(
-            backgroundColor: colorScheme.primary,
-            recorderIconColor: colorScheme.onSurface,
-            decoration: BoxDecoration(borderRadius: BorderRadius.circular(50)),
-            waveStyle: WaveStyle(
-              backgroundColor: colorScheme.primary,
-              showMiddleLine: false,
-              waveColor: colorScheme.onSurface,
-              extendWaveform: true,
-            ),
-          ),
-        ),
+        sendMessageConfig: _sendMessageConfigutraion(colorScheme, context),
         chatBubbleConfig: ChatBubbleConfiguration(
           onDoubleTap: (message) {
             chatRepository.doubleTapReactions(
@@ -485,6 +457,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
             color: colorScheme.primary,
           ),
           inComingChatBubbleConfig: ChatBubble(
+            
             linkPreviewConfig: LinkPreviewConfiguration(
               proxyUrl: !kIsWeb ? null : "https://proxy.corsfix.com/?",
               linkStyle: TextStyle(
@@ -573,6 +546,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
         ),
         profileCircleConfig: ProfileCircleConfiguration(
           profileImageUrl: widget.data.avatar,
+          
         ),
         repliedMessageConfig: RepliedMessageConfiguration(
           backgroundColor: colorScheme.primary.withOpacity(0.5),
@@ -615,6 +589,49 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
         ),
       );
     }));
+  }
+
+  SendMessageConfiguration _sendMessageConfigutraion(ColorScheme colorScheme, BuildContext context) {
+    return SendMessageConfiguration(
+        imagePickerIconsConfig: ImagePickerIconsConfiguration(
+          cameraIconColor: colorScheme.onSurface,
+          galleryIconColor: colorScheme.onSurface,
+          cameraImagePickerIcon: Icon(SolarIconsOutline.camera),
+          galleryImagePickerIcon: Icon(SolarIconsOutline.gallery),
+        ),
+        // replyMessageColor: colorScheme.onSurface.withOpacity(0.6),
+        defaultSendButtonColor: colorScheme.onSurface,
+        // replyDialogColor: colorScheme.surface,
+        // replyTitleColor: colorScheme.onSurface,
+        textFieldBackgroundColor: colorScheme.tertiary,
+        // closeIconColor: colorScheme.onSurface,
+        textFieldConfig: TextFieldConfiguration(
+          onMessageTyping: (status) {
+            /// Do with status
+            debugPrint(status.toString());
+            context.read<UserRepository>().setTypingIndicator(
+                status == TypeWriterStatus.typing ? true : false);
+          },
+          compositionThresholdTime: const Duration(seconds: 1),
+          textStyle: TextStyle(color: colorScheme.onSurface),
+        ),
+        imagePickerConfiguration: ImagePickerConfiguration(
+          
+        ),
+        // micIconColor: colorScheme.onSurface,
+        voiceRecordingConfiguration: VoiceRecordingConfiguration(
+          backgroundColor: colorScheme.primary,
+          recorderIconColor: colorScheme.onSurface,
+          micIcon: Icon(SolarIconsBold.microphone),
+          decoration: BoxDecoration(borderRadius: BorderRadius.circular(50)),
+          waveStyle: WaveStyle(
+            backgroundColor: colorScheme.primary,
+            showMiddleLine: false,
+            waveColor: colorScheme.onSurface,
+            extendWaveform: true,
+          ),
+        ),
+      );
   }
 
   ImageMessageConfiguration _imageMessageConfiguration(ColorScheme colorScheme) {
