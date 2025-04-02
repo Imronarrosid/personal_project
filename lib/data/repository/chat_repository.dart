@@ -548,6 +548,7 @@ class ChatRepository {
                   data['updatedAt']?.millisecondsSinceEpoch);
           data['id'] = doc.id;
           data['message_type'] = data['type'] ?? data['message_type'];
+
           if (data['type'] == MessageType.text.name ||
               data['message_type'] == MessageType.text.name) {
             data[TEXT] = data[TEXT];
@@ -558,20 +559,7 @@ class ChatRepository {
             data[TEXT] = data['caption'] ?? data[TEXT];
           }
 
-          if (data['message_type'] == MessageType.voice.name &&
-              kDebugMode &&
-              kIsWeb) {
-            data[TEXT] = 'Web doesn\'t support voice message yet.';
-            data['message_type'] = MessageType.text.name;
-          }
-          if (data['message_type'] == MessageType.voice.name &&
-              data['sentBy'] == firebaseAuth.currentUser!.uid) {
-            String? path = LocalData.instance.getAudioPath(data['id']);
-
-            if (path != null && File(path).existsSync()) {
-              data[MEDIA_PATH] = path;
-            }
-          }
+          _processVoiceMessage(data);
 
           final authorUnreaded = room.unreadedTotal!.firstWhere(
             (element) => element.uid == author.id,
@@ -614,6 +602,24 @@ class ChatRepository {
       //   }
       // }
     });
+  }
+
+  void _processVoiceMessage(Map<String, dynamic> data) {
+    data[MEDIA_PATH] = data['message'] ?? data[MEDIA_PATH];
+    if (data['message_type'] == MessageType.voice.name &&
+        kDebugMode &&
+        kIsWeb) {
+      data[TEXT] = 'Web doesn\'t support voice message yet.';
+      data['message_type'] = MessageType.text.name;
+    }
+    if (data['message_type'] == MessageType.voice.name &&
+        data['sentBy'] == firebaseAuth.currentUser!.uid) {
+      String? path = LocalData.instance.getAudioPath(data['id']);
+
+      if (path != null && File(path).existsSync()) {
+        data[MEDIA_PATH] = path;
+      }
+    }
   }
 
   Future<List<PreviewImage>> getMoreImages(
@@ -706,6 +712,7 @@ class ChatRepository {
                   data['updatedAt']?.millisecondsSinceEpoch);
           data['id'] = doc.id;
           data['message_type'] = data['type'] ?? data['message_type'];
+
           if (data['type'] == MessageType.text.name ||
               data['message_type'] == MessageType.text.name) {
             data[TEXT] = data[TEXT];
@@ -716,20 +723,7 @@ class ChatRepository {
             data[TEXT] = data['caption'] ?? data[TEXT];
           }
 
-          if (data['message_type'] == MessageType.voice.name &&
-              kDebugMode &&
-              kIsWeb) {
-            data[TEXT] = 'Web doesn\'t support voice message yet.';
-            data['message_type'] = MessageType.text.name;
-          }
-          if (data['message_type'] == MessageType.voice.name &&
-              data['sentBy'] == firebaseAuth.currentUser!.uid) {
-            String? path = LocalData.instance.getAudioPath(data['id']);
-
-            if (path != null && File(path).existsSync()) {
-              data[MEDIA_PATH] = path;
-            }
-          }
+          _processVoiceMessage(data);
 
           final authorUnreaded = room.unreadedTotal!.firstWhere(
             (element) => element.uid == author.id,
