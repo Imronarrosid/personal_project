@@ -732,9 +732,16 @@ class AppRouter {
                 name: APP_PAGE.selectCover.toName,
                 builder: (context, state) {
                   XFile data = state.extra as XFile;
-                  return SelectCover(
-                    file: data,
+                  return  Text(
+                    'Select Cover',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
                   );
+                  // return SelectCover(
+                  //   file: data,
+                  // );
                 },
               ),
               GoRoute(

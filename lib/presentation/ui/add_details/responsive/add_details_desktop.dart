@@ -140,8 +140,7 @@ class _AddDetailsDesktopState extends State<AddDetailsDesktop> {
                         Expanded(
                           child: ListView(shrinkWrap: true, children: [
                             Padding(
-                              padding: const EdgeInsets.only(
-                                  left: 12, top: 24, bottom: 12),
+                              padding: const EdgeInsets.only(left: 12, top: 24, bottom: 12),
                               child: Text(
                                 LocaleKeys.label_cover.tr(),
                                 textAlign: TextAlign.left,
@@ -154,8 +153,7 @@ class _AddDetailsDesktopState extends State<AddDetailsDesktop> {
                             Container(
                               width: size.width,
                               height: Dimens.DIMENS_250,
-                              padding: EdgeInsets.symmetric(
-                                  horizontal: Dimens.DIMENS_12),
+                              padding: EdgeInsets.symmetric(horizontal: Dimens.DIMENS_12),
                               child: Row(children: [
                                 Stack(
                                   children: [
@@ -169,8 +167,7 @@ class _AddDetailsDesktopState extends State<AddDetailsDesktop> {
                               height: Dimens.DIMENS_12,
                             ),
                             const Padding(
-                              padding: EdgeInsets.only(
-                                  left: 12, top: 18, bottom: 12),
+                              padding: EdgeInsets.only(left: 12, top: 18, bottom: 12),
                               child: Text(
                                 'Descriptions',
                                 textAlign: TextAlign.left,
@@ -181,16 +178,13 @@ class _AddDetailsDesktopState extends State<AddDetailsDesktop> {
                               ),
                             ),
                             Padding(
-                              padding: EdgeInsets.symmetric(
-                                  horizontal: Dimens.DIMENS_12),
+                              padding: EdgeInsets.symmetric(horizontal: Dimens.DIMENS_12),
                               child: Container(
                                 padding: const EdgeInsets.all(18),
                                 height: 200,
                                 decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(10),
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .background),
+                                    color: Theme.of(context).colorScheme.background),
                                 child: TextField(
                                   maxLength: 1500,
                                   maxLines: 10,
@@ -198,11 +192,8 @@ class _AddDetailsDesktopState extends State<AddDetailsDesktop> {
                                   onChanged: updateCaptions,
                                   decoration: InputDecoration(
                                       contentPadding: EdgeInsets.zero,
-                                      border: const OutlineInputBorder(
-                                          borderSide: BorderSide.none),
-                                      hintText: LocaleKeys
-                                          .message_write_something
-                                          .tr()),
+                                      border: const OutlineInputBorder(borderSide: BorderSide.none),
+                                      hintText: LocaleKeys.message_write_something.tr()),
                                 ),
                               ),
                             ),
@@ -214,21 +205,15 @@ class _AddDetailsDesktopState extends State<AddDetailsDesktop> {
                                   subtitle: Text(
                                     'Check for non gaming content',
                                     style: TextStyle(
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .onSurface
-                                          .withOpacity(0.6),
+                                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                                     ),
                                   ),
-                                  checkColor:
-                                      Theme.of(context).colorScheme.tertiary,
+                                  checkColor: Theme.of(context).colorScheme.tertiary,
                                   value: state.status == BlocStatus.active,
                                   onChanged: (isActive) {
-                                    BlocProvider.of<CheckBoxCubit>(context)
-                                        .checkBoxHandle();
+                                    BlocProvider.of<CheckBoxCubit>(context).checkBoxHandle();
 
-                                    BlocProvider.of<SelectGameCubit>(context)
-                                        .initSelectGame();
+                                    BlocProvider.of<SelectGameCubit>(context).initSelectGame();
                                     category = 'Non Gaming';
                                   },
                                 );
@@ -241,30 +226,23 @@ class _AddDetailsDesktopState extends State<AddDetailsDesktop> {
                                     opacity: 0.4,
                                     child: ListTile(
                                       tileColor: Colors.transparent,
-                                      leading:
-                                          const Icon(BootstrapIcons.controller),
-                                      title: Text(
-                                          LocaleKeys.message_game_title.tr()),
-                                      trailing: const Icon(
-                                          Icons.keyboard_arrow_right),
+                                      leading: const Icon(BootstrapIcons.controller),
+                                      title: Text(LocaleKeys.message_game_title.tr()),
+                                      trailing: const Icon(Icons.keyboard_arrow_right),
                                     ),
                                   );
                                 }
-                                return BlocBuilder<SelectGameCubit,
-                                    SelectGameState>(
+                                return BlocBuilder<SelectGameCubit, SelectGameState>(
                                   builder: (context, state) {
-                                    if (state.status ==
-                                        SelectGameStatus.selected) {
+                                    if (state.status == SelectGameStatus.selected) {
                                       return ListTile(
                                         tileColor: Colors.transparent,
                                         leading: CircleAvatar(
                                           backgroundColor: COLOR_grey,
                                           child: ClipRRect(
-                                            borderRadius:
-                                                BorderRadius.circular(50),
+                                            borderRadius: BorderRadius.circular(50),
                                             child: CachedNetworkImage(
-                                              imageUrl: state
-                                                  .selectedGame!.gameImage!,
+                                              imageUrl: state.selectedGame!.gameImage!,
                                               fit: BoxFit.cover,
                                               width: double.infinity,
                                             ),
@@ -273,25 +251,16 @@ class _AddDetailsDesktopState extends State<AddDetailsDesktop> {
                                         trailing: IconButton(
                                             iconSize: Dimens.DIMENS_18,
                                             onPressed: () {
-                                              BlocProvider.of<SelectGameCubit>(
-                                                      context)
-                                                  .initSelectGame();
+                                              BlocProvider.of<SelectGameCubit>(context).initSelectGame();
                                             },
                                             style: IconButton.styleFrom(
                                               padding: EdgeInsets.zero,
-                                              minimumSize: Size(
-                                                  Dimens.DIMENS_30,
-                                                  Dimens.DIMENS_30),
-                                              maximumSize: Size(
-                                                  Dimens.DIMENS_30,
-                                                  Dimens.DIMENS_30),
-                                              backgroundColor: Theme.of(context)
-                                                  .colorScheme
-                                                  .tertiary,
+                                              minimumSize: Size(Dimens.DIMENS_30, Dimens.DIMENS_30),
+                                              maximumSize: Size(Dimens.DIMENS_30, Dimens.DIMENS_30),
+                                              backgroundColor: Theme.of(context).colorScheme.tertiary,
                                             ),
                                             icon: const Icon(Icons.close)),
-                                        title: Text(
-                                            state.selectedGame!.gameTitle!),
+                                        title: Text(state.selectedGame!.gameTitle!),
                                         onTap: () {
                                           selectGameDialog(context);
                                         },
@@ -299,12 +268,9 @@ class _AddDetailsDesktopState extends State<AddDetailsDesktop> {
                                     }
                                     return ListTile(
                                       tileColor: Colors.transparent,
-                                      leading:
-                                          const Icon(BootstrapIcons.controller),
-                                      title: Text(
-                                          LocaleKeys.message_game_title.tr()),
-                                      trailing: const Icon(
-                                          Icons.keyboard_arrow_right),
+                                      leading: const Icon(BootstrapIcons.controller),
+                                      title: Text(LocaleKeys.message_game_title.tr()),
+                                      trailing: const Icon(Icons.keyboard_arrow_right),
                                       onTap: () {
                                         selectGameDialog(context);
                                         // context
@@ -320,38 +286,30 @@ class _AddDetailsDesktopState extends State<AddDetailsDesktop> {
                             ),
                             Container(
                               width: 400,
-                              padding: EdgeInsets.symmetric(
-                                  horizontal: Dimens.DIMENS_12),
+                              padding: EdgeInsets.symmetric(horizontal: Dimens.DIMENS_12),
                               child: Container(
                                 height: Dimens.DIMENS_38,
                                 alignment: Alignment.center,
                                 decoration: BoxDecoration(
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .onTertiary,
+                                    color: Theme.of(context).colorScheme.onTertiary,
                                     borderRadius: BorderRadius.circular(50)),
                                 child: Material(
                                   color: Colors.transparent,
                                   child: InkWell(
-                                      splashColor:
-                                          COLOR_white_fff5f5f5.withOpacity(0.1),
+                                      splashColor: COLOR_white_fff5f5f5.withOpacity(0.1),
                                       borderRadius: BorderRadius.circular(50),
                                       onTap: () {
-                                        var isUserEmpty = RepositoryProvider.of<
-                                                AuthRepository>(context)
-                                            .currentUser;
+                                        var isUserEmpty =
+                                            RepositoryProvider.of<AuthRepository>(context).currentUser;
                                         if (isUserEmpty == null) {
                                           showAuthBottomSheetFunc(context);
                                         } else {
                                           //will upload videos
-                                          BlocProvider.of<UploadBloc>(context)
-                                              .add(
+                                          BlocProvider.of<UploadBloc>(context).add(
                                             UploadVideoEvent(
                                               thumbnail: coverFile!.path,
-                                              videoPath:
-                                                  widget.data.videoFile.path,
-                                              caption:
-                                                  textEditingController.text,
+                                              videoPath: widget.data.videoFile.path,
+                                              caption: textEditingController.text,
                                               category: category,
                                             ),
                                           );
@@ -364,9 +322,7 @@ class _AddDetailsDesktopState extends State<AddDetailsDesktop> {
                                         child: Text(
                                           LocaleKeys.title_upload.tr(),
                                           style: TextStyle(
-                                              color: Theme.of(context)
-                                                  .colorScheme
-                                                  .onSurface,
+                                              color: Theme.of(context).colorScheme.onSurface,
                                               fontSize: FontSize.FONT_SIZE_12),
                                         ),
                                       )),
@@ -433,9 +389,16 @@ class _AddDetailsDesktopState extends State<AddDetailsDesktop> {
                     context.pop();
                     return true;
                   },
-                  child: SelectCover(
-                    file: XFile(widget.data.videoFile.path),
+                  child: Text(
+                    'Select Cover',
+                    style: TextStyle(
+                      fontSize: FontSize.FONT_SIZE_16,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
+                  // child: SelectCover(
+                  //   file: XFile(widget.data.videoFile.path),
+                  // ),
                 ),
               ),
             );
@@ -457,9 +420,7 @@ class _AddDetailsDesktopState extends State<AddDetailsDesktop> {
                     borderRadius: BorderRadius.circular(10),
                     child: Image(
                         image: NetworkImage(
-                          state.status == BlocStatus.selected
-                              ? state.coverPath!
-                              : file.path,
+                          state.status == BlocStatus.selected ? state.coverPath! : file.path,
                         ),
                         fit: BoxFit.cover),
                   ),
@@ -470,10 +431,7 @@ class _AddDetailsDesktopState extends State<AddDetailsDesktop> {
                 height: Dimens.DIMENS_120,
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(10),
-                  child: Image.file(
-                      state.status == BlocStatus.selected
-                          ? File(state.coverPath!)
-                          : file,
+                  child: Image.file(state.status == BlocStatus.selected ? File(state.coverPath!) : file,
                       fit: BoxFit.cover),
                 ),
               );
@@ -506,9 +464,16 @@ class _AddDetailsDesktopState extends State<AddDetailsDesktop> {
                           context.pop();
                           return true;
                         },
-                        child: SelectCoverDesktop(
-                          file: XFile(widget.data.videoFile.path),
+                        child: Text(
+                          'Select Cover',
+                          style: TextStyle(
+                            fontSize: FontSize.FONT_SIZE_16,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
+                        // child: SelectCoverDesktop(
+                        //   file: XFile(widget.data.videoFile.path),
+                        // ),
                       ),
                     ),
                   ),
@@ -601,8 +566,7 @@ class _PreviewState extends State<Preview> with SingleTickerProviderStateMixin {
             child: Container(
               padding: const EdgeInsets.all(4),
               decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(5),
-                  color: Theme.of(context).colorScheme.background),
+                  borderRadius: BorderRadius.circular(5), color: Theme.of(context).colorScheme.background),
               child: TabBar(
                   indicatorSize: TabBarIndicatorSize.tab,
                   indicator: BoxDecoration(
@@ -700,8 +664,7 @@ class _DesktopPreviewState extends State<DesktopPreview> {
                     child: Container(
                       width: 220,
                       decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.tertiary,
-                          borderRadius: BorderRadius.circular(12)),
+                          color: Theme.of(context).colorScheme.tertiary, borderRadius: BorderRadius.circular(12)),
                       child: Column(
                         children: [
                           Container(
@@ -721,9 +684,7 @@ class _DesktopPreviewState extends State<DesktopPreview> {
                                   style: Theme.of(context)
                                       .textTheme
                                       .bodyMedium!
-                                      .apply(
-                                          fontSizeDelta: 4,
-                                          fontWeightDelta: 35),
+                                      .apply(fontSizeDelta: 4, fontWeightDelta: 35),
                                 )
                               ],
                             ),
@@ -735,8 +696,7 @@ class _DesktopPreviewState extends State<DesktopPreview> {
                             selected: true,
                             leading: const Icon(SolarIconsBold.home2),
                             title: Text(LocaleKeys.label_home.tr(),
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.bold)),
+                                style: const TextStyle(fontWeight: FontWeight.bold)),
                             onTap: () {
                               debugPrint('Home');
                             },
@@ -825,46 +785,29 @@ class _DesktopPreviewState extends State<DesktopPreview> {
                                             child: FittedBox(
                                               fit: BoxFit.fitWidth,
                                               child: SizedBox(
-                                                height: _videoController
-                                                        .value.isInitialized
-                                                    ? _videoController
-                                                        .value.size.height
+                                                height: _videoController.value.isInitialized
+                                                    ? _videoController.value.size.height
                                                     : 0,
-                                                width: _videoController
-                                                        .value.isInitialized
-                                                    ? _videoController
-                                                        .value.size.width
+                                                width: _videoController.value.isInitialized
+                                                    ? _videoController.value.size.width
                                                     : 0,
                                                 child: GestureDetector(
                                                   onTap: () {
-                                                    _videoController
-                                                            .value.isPlaying
-                                                        ? _videoController
-                                                            .pause()
-                                                        : _videoController
-                                                            .play();
+                                                    _videoController.value.isPlaying
+                                                        ? _videoController.pause()
+                                                        : _videoController.play();
                                                   },
-                                                  child: BlocBuilder<
-                                                      SelectCoverCubit,
-                                                      SelectCoverState>(
+                                                  child: BlocBuilder<SelectCoverCubit, SelectCoverState>(
                                                     builder: (context, state) {
-                                                      if (state.status ==
-                                                              BlocStatus
-                                                                  .selected &&
-                                                          !_videoController
-                                                              .value
-                                                              .isPlaying) {
+                                                      if (state.status == BlocStatus.selected &&
+                                                          !_videoController.value.isPlaying) {
                                                         if (kIsWeb) {
                                                           return Image(
-                                                              image: NetworkImage(
-                                                                  state
-                                                                      .coverPath!),
-                                                              fit:
-                                                                  BoxFit.cover);
+                                                              image: NetworkImage(state.coverPath!),
+                                                              fit: BoxFit.cover);
                                                         }
                                                         return Image.file(
-                                                          File(
-                                                              state.coverPath!),
+                                                          File(state.coverPath!),
                                                         );
                                                       }
                                                       return VideoPlayer(
@@ -883,15 +826,12 @@ class _DesktopPreviewState extends State<DesktopPreview> {
                                   AspectRatio(
                                     aspectRatio: 9 / 16,
                                     child: SizedBox(
-                                      height:
-                                          _videoController.value.size.height,
+                                      height: _videoController.value.size.height,
                                       width: _videoController.value.size.width,
                                       child: InkWell(
                                         hoverColor: Colors.transparent,
                                         splashColor: Colors.transparent,
-                                        overlayColor:
-                                            const MaterialStatePropertyAll<
-                                                Color>(
+                                        overlayColor: const MaterialStatePropertyAll<Color>(
                                           Colors.transparent,
                                         ),
                                         onTap: () {
@@ -901,10 +841,8 @@ class _DesktopPreviewState extends State<DesktopPreview> {
                                               : _videoController.play();
                                         },
                                         child: SizedBox(
-                                          height: _videoController
-                                              .value.size.height,
-                                          width:
-                                              _videoController.value.size.width,
+                                          height: _videoController.value.size.height,
+                                          width: _videoController.value.size.width,
                                         ),
                                       ),
                                     ),
@@ -912,11 +850,9 @@ class _DesktopPreviewState extends State<DesktopPreview> {
                                   Align(
                                     alignment: Alignment.bottomLeft,
                                     child: Padding(
-                                      padding: const EdgeInsets.only(
-                                          left: 12, bottom: 16),
+                                      padding: const EdgeInsets.only(left: 12, bottom: 16),
                                       child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
+                                        crossAxisAlignment: CrossAxisAlignment.start,
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
                                           Row(
@@ -925,30 +861,19 @@ class _DesktopPreviewState extends State<DesktopPreview> {
                                                 child: FutureBuilder(
                                                     future: context
                                                         .read<UserRepository>()
-                                                        .getUserNameOnly(
-                                                            firebaseAuth
-                                                                    .currentUser
-                                                                    ?.uid ??
-                                                                ''),
-                                                    builder:
-                                                        (context, snapshot) {
-                                                      if (snapshot.hasData &&
-                                                          snapshot.data!
-                                                              .isNotEmpty) {
+                                                        .getUserNameOnly(firebaseAuth.currentUser?.uid ?? ''),
+                                                    builder: (context, snapshot) {
+                                                      if (snapshot.hasData && snapshot.data!.isNotEmpty) {
                                                         return Text(
                                                           '@${snapshot.data}',
-                                                          style: TextStyle(
-                                                              color:
-                                                                  COLOR_white_fff5f5f5,
-                                                              fontSize: 14),
+                                                          style:
+                                                              TextStyle(color: COLOR_white_fff5f5f5, fontSize: 14),
                                                         );
                                                       }
                                                       return Text(
                                                         '@username',
-                                                        style: TextStyle(
-                                                            color:
-                                                                COLOR_white_fff5f5f5,
-                                                            fontSize: 14),
+                                                        style:
+                                                            TextStyle(color: COLOR_white_fff5f5f5, fontSize: 14),
                                                       );
                                                     }),
                                               ),
@@ -962,72 +887,52 @@ class _DesktopPreviewState extends State<DesktopPreview> {
                                                 ),
                                                 alignment: Alignment.center,
                                                 decoration: BoxDecoration(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            8),
-                                                    color: Theme.of(context)
-                                                        .colorScheme
-                                                        .primary),
+                                                    borderRadius: BorderRadius.circular(8),
+                                                    color: Theme.of(context).colorScheme.primary),
                                                 child: Text(
                                                   LocaleKeys.label_follow.tr(),
-                                                  style: Theme.of(context)
-                                                      .textTheme
-                                                      .bodySmall,
+                                                  style: Theme.of(context).textTheme.bodySmall,
                                                 ),
                                               ),
                                             ],
                                           ),
                                           Padding(
                                             padding: EdgeInsets.only(right: 12),
-                                            child:
-                                                ValueListenableBuilder<String>(
-                                                    valueListenable: widget
-                                                        .captionValueListener,
-                                                    builder: (context, value,
-                                                        child) {
-                                                      return Text(value);
-                                                    }),
+                                            child: ValueListenableBuilder<String>(
+                                                valueListenable: widget.captionValueListener,
+                                                builder: (context, value, child) {
+                                                  return Text(value);
+                                                }),
                                           ),
-                                          BlocBuilder<SelectGameCubit,
-                                              SelectGameState>(
+                                          BlocBuilder<SelectGameCubit, SelectGameState>(
                                             builder: (context, state) {
-                                              if (state.status ==
-                                                  SelectGameStatus.initial) {
+                                              if (state.status == SelectGameStatus.initial) {
                                                 return Container();
                                               }
 
                                               return SizedBox(
                                                 width: Dimens.DIMENS_150,
                                                 height: Dimens.DIMENS_24,
-                                                child: Row(
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .center,
-                                                    children: [
-                                                      Icon(
-                                                        BootstrapIcons
-                                                            .controller,
-                                                        color:
-                                                            COLOR_white_fff5f5f5,
-                                                        size: 16,
-                                                      ),
-                                                      SizedBox(
-                                                        width: Dimens.DIMENS_10,
-                                                      ),
-                                                      Text(
-                                                        state.selectedGame!
-                                                            .gameTitle!,
-                                                        overflow: TextOverflow
-                                                            .ellipsis,
-                                                        style: TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.w300,
-                                                          fontSize: 12,
-                                                          color:
-                                                              COLOR_white_fff5f5f5,
-                                                        ),
-                                                      ),
-                                                    ]),
+                                                child:
+                                                    Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
+                                                  Icon(
+                                                    BootstrapIcons.controller,
+                                                    color: COLOR_white_fff5f5f5,
+                                                    size: 16,
+                                                  ),
+                                                  SizedBox(
+                                                    width: Dimens.DIMENS_10,
+                                                  ),
+                                                  Text(
+                                                    state.selectedGame!.gameTitle!,
+                                                    overflow: TextOverflow.ellipsis,
+                                                    style: TextStyle(
+                                                      fontWeight: FontWeight.w300,
+                                                      fontSize: 12,
+                                                      color: COLOR_white_fff5f5f5,
+                                                    ),
+                                                  ),
+                                                ]),
                                               );
                                             },
                                           ),
@@ -1039,8 +944,7 @@ class _DesktopPreviewState extends State<DesktopPreview> {
                                     alignment: Alignment.bottomCenter,
                                     child: Builder(
                                       builder: (context) {
-                                        if (_videoController
-                                            .value.isInitialized) {
+                                        if (_videoController.value.isInitialized) {
                                           return SizedBox(
                                             width: 400,
                                             height: 3,
@@ -1048,11 +952,8 @@ class _DesktopPreviewState extends State<DesktopPreview> {
                                               _videoController,
                                               padding: EdgeInsets.zero,
                                               colors: VideoProgressColors(
-                                                  bufferedColor:
-                                                      COLOR_white_fff5f5f5
-                                                          .withOpacity(0.3),
-                                                  playedColor:
-                                                      COLOR_white_fff5f5f5),
+                                                  bufferedColor: COLOR_white_fff5f5f5.withOpacity(0.3),
+                                                  playedColor: COLOR_white_fff5f5f5),
                                               allowScrubbing: true,
                                             ),
                                           );
@@ -1112,25 +1013,19 @@ class _DesktopPreviewState extends State<DesktopPreview> {
                                   height: Dimens.DIMENS_30,
                                   alignment: Alignment.center,
                                   decoration: BoxDecoration(
-                                    border:
-                                        Border.all(color: COLOR_white_fff5f5f5),
+                                    border: Border.all(color: COLOR_white_fff5f5f5),
                                     borderRadius: BorderRadius.circular(8),
-                                    color:
-                                        const Color.fromARGB(255, 27, 26, 26),
+                                    color: const Color.fromARGB(255, 27, 26, 26),
                                   ),
-                                  child: BlocBuilder<SelectGameCubit,
-                                      SelectGameState>(
+                                  child: BlocBuilder<SelectGameCubit, SelectGameState>(
                                     builder: (context, state) {
-                                      if (state.status ==
-                                          SelectGameStatus.selected) {
+                                      if (state.status == SelectGameStatus.selected) {
                                         return ClipRRect(
-                                          borderRadius:
-                                              BorderRadius.circular(8),
+                                          borderRadius: BorderRadius.circular(8),
                                           child: CachedNetworkImage(
                                             width: double.infinity,
                                             fit: BoxFit.cover,
-                                            imageUrl:
-                                                state.selectedGame!.gameImage!,
+                                            imageUrl: state.selectedGame!.gameImage!,
                                           ),
                                         );
                                       }
@@ -1209,8 +1104,7 @@ class MobilePreview extends StatefulWidget {
   State<MobilePreview> createState() => _MobilePreviewState();
 }
 
-class _MobilePreviewState extends State<MobilePreview>
-    with SingleTickerProviderStateMixin {
+class _MobilePreviewState extends State<MobilePreview> with SingleTickerProviderStateMixin {
   late final TabController _tabController;
   late final VideoPlayerController _videoController;
 
@@ -1248,11 +1142,9 @@ class _MobilePreviewState extends State<MobilePreview>
                       labelColor: Theme.of(context).colorScheme.onSurface,
                       indicatorColor: Theme.of(context).colorScheme.onSurface,
                       controller: _tabController,
-                      overlayColor: const MaterialStatePropertyAll<Color>(
-                          Colors.transparent),
+                      overlayColor: const MaterialStatePropertyAll<Color>(Colors.transparent),
                       splashFactory: NoSplash.splashFactory,
-                      padding:
-                          EdgeInsets.symmetric(horizontal: Dimens.DIMENS_45),
+                      padding: EdgeInsets.symmetric(horizontal: Dimens.DIMENS_45),
                       isScrollable: false,
                       dividerColor: Colors.transparent,
                       tabs: <Widget>[
@@ -1275,19 +1167,13 @@ class _MobilePreviewState extends State<MobilePreview>
                     alignment: Alignment.center,
                     child: GestureDetector(
                       onTap: () {
-                        _videoController.value.isPlaying
-                            ? _videoController.pause()
-                            : _videoController.play();
+                        _videoController.value.isPlaying ? _videoController.pause() : _videoController.play();
                         setState(() {});
                       },
-                      child: BlocBuilder<SelectCoverCubit, SelectCoverState>(
-                          builder: (context, state) {
-                        if (state.status == BlocStatus.selected &&
-                            !_videoController.value.isPlaying) {
+                      child: BlocBuilder<SelectCoverCubit, SelectCoverState>(builder: (context, state) {
+                        if (state.status == BlocStatus.selected && !_videoController.value.isPlaying) {
                           if (kIsWeb) {
-                            return Image(
-                                image: NetworkImage(state.coverPath!),
-                                fit: BoxFit.cover);
+                            return Image(image: NetworkImage(state.coverPath!), fit: BoxFit.cover);
                           }
                           return Image.file(
                             File(state.coverPath!),
@@ -1306,9 +1192,7 @@ class _MobilePreviewState extends State<MobilePreview>
                       Colors.transparent,
                     ),
                     onTap: () {
-                      _videoController.value.isPlaying
-                          ? _videoController.pause()
-                          : _videoController.play();
+                      _videoController.value.isPlaying ? _videoController.pause() : _videoController.play();
                       setState(() {});
                     },
                     child: const SizedBox(
@@ -1366,8 +1250,7 @@ class _MobilePreviewState extends State<MobilePreview>
                               borderRadius: BorderRadius.circular(8),
                               color: const Color.fromARGB(255, 27, 26, 26),
                             ),
-                            child:
-                                BlocBuilder<SelectGameCubit, SelectGameState>(
+                            child: BlocBuilder<SelectGameCubit, SelectGameState>(
                               builder: (context, state) {
                                 if (state.status == SelectGameStatus.selected) {
                                   return ClipRRect(
@@ -1408,24 +1291,17 @@ class _MobilePreviewState extends State<MobilePreview>
                                 child: FutureBuilder(
                                     future: context
                                         .read<UserRepository>()
-                                        .getUserNameOnly(
-                                            firebaseAuth.currentUser?.uid ??
-                                                ''),
+                                        .getUserNameOnly(firebaseAuth.currentUser?.uid ?? ''),
                                     builder: (context, snapshot) {
-                                      if (snapshot.hasData &&
-                                          snapshot.data!.isNotEmpty) {
+                                      if (snapshot.hasData && snapshot.data!.isNotEmpty) {
                                         return Text(
                                           '@${snapshot.data}',
-                                          style: TextStyle(
-                                              color: COLOR_white_fff5f5f5,
-                                              fontSize: 14),
+                                          style: TextStyle(color: COLOR_white_fff5f5f5, fontSize: 14),
                                         );
                                       }
                                       return Text(
                                         '@username',
-                                        style: TextStyle(
-                                            color: COLOR_white_fff5f5f5,
-                                            fontSize: 14),
+                                        style: TextStyle(color: COLOR_white_fff5f5f5, fontSize: 14),
                                       );
                                     }),
                               ),
@@ -1440,8 +1316,7 @@ class _MobilePreviewState extends State<MobilePreview>
                                 alignment: Alignment.center,
                                 decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(8),
-                                    color:
-                                        Theme.of(context).colorScheme.primary),
+                                    color: Theme.of(context).colorScheme.primary),
                                 child: Text(
                                   LocaleKeys.label_follow.tr(),
                                   style: Theme.of(context).textTheme.bodySmall,
@@ -1459,8 +1334,7 @@ class _MobilePreviewState extends State<MobilePreview>
                               }),
                           GestureDetector(
                             onTap: () {},
-                            child:
-                                BlocBuilder<SelectGameCubit, SelectGameState>(
+                            child: BlocBuilder<SelectGameCubit, SelectGameState>(
                               builder: (context, state) {
                                 if (state.status == SelectGameStatus.initial) {
                                   return Container();
@@ -1469,28 +1343,25 @@ class _MobilePreviewState extends State<MobilePreview>
                                 return SizedBox(
                                   width: Dimens.DIMENS_150,
                                   height: Dimens.DIMENS_24,
-                                  child: Row(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.center,
-                                      children: [
-                                        Icon(
-                                          BootstrapIcons.controller,
-                                          color: COLOR_white_fff5f5f5,
-                                          size: 16,
-                                        ),
-                                        SizedBox(
-                                          width: Dimens.DIMENS_10,
-                                        ),
-                                        Text(
-                                          state.selectedGame!.gameTitle!,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.w300,
-                                            fontSize: 12,
-                                            color: COLOR_white_fff5f5f5,
-                                          ),
-                                        ),
-                                      ]),
+                                  child: Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
+                                    Icon(
+                                      BootstrapIcons.controller,
+                                      color: COLOR_white_fff5f5f5,
+                                      size: 16,
+                                    ),
+                                    SizedBox(
+                                      width: Dimens.DIMENS_10,
+                                    ),
+                                    Text(
+                                      state.selectedGame!.gameTitle!,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w300,
+                                        fontSize: 12,
+                                        color: COLOR_white_fff5f5f5,
+                                      ),
+                                    ),
+                                  ]),
                                 );
                               },
                             ),
@@ -1507,8 +1378,7 @@ class _MobilePreviewState extends State<MobilePreview>
                         _videoController,
                         padding: EdgeInsets.zero,
                         colors: VideoProgressColors(
-                            bufferedColor:
-                                COLOR_white_fff5f5f5.withOpacity(0.3),
+                            bufferedColor: COLOR_white_fff5f5f5.withOpacity(0.3),
                             playedColor: COLOR_white_fff5f5f5),
                         allowScrubbing: true,
                       ),

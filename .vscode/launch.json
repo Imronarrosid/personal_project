@@ -10,8 +10,7 @@
         "--enable-features=SharedArrayBuffer",
         "--web-port",
         "3000",
-        "--web-renderer",
-        "html"
+        "--no-enable-impeller"
       ],
     },
   ]

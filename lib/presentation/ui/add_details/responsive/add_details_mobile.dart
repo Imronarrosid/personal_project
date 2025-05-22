@@ -91,16 +91,14 @@ class _AddDetailsMobileState extends State<AddDetailsMobile> {
           child: Builder(builder: (context) {
             return BackButtonListener(
               onBackButtonPressed: () async {
-                Provider.of<AppRouter>(context, listen: false)
-                    .onBackButtonPressed(context);
+                Provider.of<AppRouter>(context, listen: false).onBackButtonPressed(context);
                 return true;
               },
               child: Scaffold(
                 appBar: AppBar(
                   leading: BackButton(
                     onPressed: () {
-                      Provider.of<AppRouter>(context, listen: false)
-                          .onBackButtonPressed(context);
+                      Provider.of<AppRouter>(context, listen: false).onBackButtonPressed(context);
                     },
                   ),
                   title: Text(LocaleKeys.title_upload.tr()),
@@ -110,228 +108,191 @@ class _AddDetailsMobileState extends State<AddDetailsMobile> {
                 body: SizedBox(
                   width: size.width,
                   height: size.height,
-                  child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          width: size.width,
-                          height: Dimens.DIMENS_120,
-                          padding: EdgeInsets.symmetric(
-                              horizontal: Dimens.DIMENS_12),
-                          child: Row(children: [
-                            Stack(
-                              children: [
-                                _coverView(context, coverFile!),
-                                _selectCover(context),
-                              ],
-                            ),
-                            Expanded(
-                                child: Padding(
-                              padding: EdgeInsets.symmetric(
-                                  horizontal: Dimens.DIMENS_12),
-                              child: TextField(
-                                maxLines: 5,
-                                maxLength: 1500,
-                                controller: textEditingController,
-                                decoration: InputDecoration(
-                                    border: const OutlineInputBorder(
-                                        borderSide: BorderSide.none),
-                                    hintText: LocaleKeys.message_write_something
-                                        .tr()),
-                              ),
-                            ))
-                          ]),
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Container(
+                      width: size.width,
+                      height: Dimens.DIMENS_120,
+                      padding: EdgeInsets.symmetric(horizontal: Dimens.DIMENS_12),
+                      child: Row(children: [
+                        Stack(
+                          children: [
+                            _coverView(context, coverFile!),
+                            _selectCover(context),
+                          ],
                         ),
-                        SizedBox(
-                          height: Dimens.DIMENS_12,
-                        ),
-                        Padding(
-                          padding: EdgeInsets.symmetric(
-                              horizontal: Dimens.DIMENS_12),
-                          child: const Divider(),
-                        ),
-                        BlocBuilder<CheckBoxCubit, CheckBoxState>(
-                          builder: (_, state) {
-                            return CheckboxListTile(
-                              tileColor: Colors.transparent,
-                              title: const Text('Non gaming content'),
-                              subtitle: Text(
-                                'Check for non gaming content',
-                                style: TextStyle(
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .onSurface
-                                        .withOpacity(0.6)),
-                              ),
-                              checkColor:
-                                  Theme.of(context).colorScheme.tertiary,
-                              value: state.status == BlocStatus.active,
-                              onChanged: (isActive) {
-                                BlocProvider.of<CheckBoxCubit>(context)
-                                    .checkBoxHandle();
-                                if (isActive!) {
-                                  BlocProvider.of<SelectGameCubit>(context)
-                                      .initSelectGame();
-                                  category = 'Non Gaming';
-                                  selectedGame = null;
-                                } else {
-                                  category = 'Gaming';
-                                }
-                              },
-                            );
+                        Expanded(
+                            child: Padding(
+                          padding: EdgeInsets.symmetric(horizontal: Dimens.DIMENS_12),
+                          child: TextField(
+                            maxLines: 5,
+                            maxLength: 1500,
+                            controller: textEditingController,
+                            decoration: InputDecoration(
+                                border: const OutlineInputBorder(borderSide: BorderSide.none),
+                                hintText: LocaleKeys.message_write_something.tr()),
+                          ),
+                        ))
+                      ]),
+                    ),
+                    SizedBox(
+                      height: Dimens.DIMENS_12,
+                    ),
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: Dimens.DIMENS_12),
+                      child: const Divider(),
+                    ),
+                    BlocBuilder<CheckBoxCubit, CheckBoxState>(
+                      builder: (_, state) {
+                        return CheckboxListTile(
+                          tileColor: Colors.transparent,
+                          title: const Text('Non gaming content'),
+                          subtitle: Text(
+                            'Check for non gaming content',
+                            style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
+                          ),
+                          checkColor: Theme.of(context).colorScheme.tertiary,
+                          value: state.status == BlocStatus.active,
+                          onChanged: (isActive) {
+                            BlocProvider.of<CheckBoxCubit>(context).checkBoxHandle();
+                            if (isActive!) {
+                              BlocProvider.of<SelectGameCubit>(context).initSelectGame();
+                              category = 'Non Gaming';
+                              selectedGame = null;
+                            } else {
+                              category = 'Gaming';
+                            }
                           },
-                        ),
-                        BlocBuilder<CheckBoxCubit, CheckBoxState>(
+                        );
+                      },
+                    ),
+                    BlocBuilder<CheckBoxCubit, CheckBoxState>(
+                      builder: (context, state) {
+                        if (state.status == BlocStatus.active) {
+                          return Opacity(
+                            opacity: 0.4,
+                            child: ListTile(
+                              tileColor: Colors.transparent,
+                              leading: const Icon(BootstrapIcons.controller),
+                              title: Text(LocaleKeys.message_game_title.tr()),
+                              trailing: const Icon(Icons.keyboard_arrow_right),
+                            ),
+                          );
+                        }
+                        return BlocBuilder<SelectGameCubit, SelectGameState>(
                           builder: (context, state) {
-                            if (state.status == BlocStatus.active) {
-                              return Opacity(
-                                opacity: 0.4,
-                                child: ListTile(
-                                  tileColor: Colors.transparent,
-                                  leading:
-                                      const Icon(BootstrapIcons.controller),
-                                  title:
-                                      Text(LocaleKeys.message_game_title.tr()),
-                                  trailing:
-                                      const Icon(Icons.keyboard_arrow_right),
+                            if (state.status == SelectGameStatus.selected) {
+                              return ListTile(
+                                tileColor: Colors.transparent,
+                                leading: CircleAvatar(
+                                  backgroundColor: COLOR_grey,
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(50),
+                                    child: CachedNetworkImage(
+                                      imageUrl: state.selectedGame!.gameImage!,
+                                      fit: BoxFit.cover,
+                                      width: double.infinity,
+                                    ),
+                                  ),
                                 ),
+                                trailing: IconButton(
+                                    iconSize: Dimens.DIMENS_18,
+                                    onPressed: () {
+                                      BlocProvider.of<SelectGameCubit>(context).initSelectGame();
+                                    },
+                                    style: IconButton.styleFrom(
+                                      padding: EdgeInsets.zero,
+                                      minimumSize: Size(Dimens.DIMENS_30, Dimens.DIMENS_30),
+                                      maximumSize: Size(Dimens.DIMENS_30, Dimens.DIMENS_30),
+                                      backgroundColor: Theme.of(context).colorScheme.tertiary,
+                                    ),
+                                    icon: const Icon(Icons.close)),
+                                title: Text(state.selectedGame!.gameTitle!),
+                                onTap: () {
+                                  showDialog(
+                                      context: context,
+                                      builder: ((context) {
+                                        return Dialog.fullscreen(
+                                          child: BackButtonListener(
+                                              onBackButtonPressed: () async {
+                                                context.pop();
+                                                return true;
+                                              },
+                                              child: const SelectGamePage()),
+                                        );
+                                      }));
+                                },
                               );
                             }
-                            return BlocBuilder<SelectGameCubit,
-                                SelectGameState>(
-                              builder: (context, state) {
-                                if (state.status == SelectGameStatus.selected) {
-                                  return ListTile(
-                                    tileColor: Colors.transparent,
-                                    leading: CircleAvatar(
-                                      backgroundColor: COLOR_grey,
-                                      child: ClipRRect(
-                                        borderRadius: BorderRadius.circular(50),
-                                        child: CachedNetworkImage(
-                                          imageUrl:
-                                              state.selectedGame!.gameImage!,
-                                          fit: BoxFit.cover,
-                                          width: double.infinity,
-                                        ),
-                                      ),
-                                    ),
-                                    trailing: IconButton(
-                                        iconSize: Dimens.DIMENS_18,
-                                        onPressed: () {
-                                          BlocProvider.of<SelectGameCubit>(
-                                                  context)
-                                              .initSelectGame();
-                                        },
-                                        style: IconButton.styleFrom(
-                                          padding: EdgeInsets.zero,
-                                          minimumSize: Size(Dimens.DIMENS_30,
-                                              Dimens.DIMENS_30),
-                                          maximumSize: Size(Dimens.DIMENS_30,
-                                              Dimens.DIMENS_30),
-                                          backgroundColor: Theme.of(context)
-                                              .colorScheme
-                                              .tertiary,
-                                        ),
-                                        icon: const Icon(Icons.close)),
-                                    title: Text(state.selectedGame!.gameTitle!),
-                                    onTap: () {
-                                      showDialog(
-                                          context: context,
-                                          builder: ((context) {
-                                            return Dialog.fullscreen(
-                                              child: BackButtonListener(
-                                                  onBackButtonPressed:
-                                                      () async {
-                                                    context.pop();
-                                                    return true;
-                                                  },
-                                                  child:
-                                                      const SelectGamePage()),
-                                            );
-                                          }));
-                                    },
-                                  );
-                                }
-                                return ListTile(
-                                  tileColor: Colors.transparent,
-                                  leading:
-                                      const Icon(BootstrapIcons.controller),
-                                  title:
-                                      Text(LocaleKeys.message_game_title.tr()),
-                                  trailing:
-                                      const Icon(Icons.keyboard_arrow_right),
-                                  onTap: () {
-                                    showDialog(
-                                        context: context,
-                                        builder: ((context) {
-                                          return Dialog.fullscreen(
-                                            child: BackButtonListener(
-                                                onBackButtonPressed: () async {
-                                                  context.pop();
-                                                  return true;
-                                                },
-                                                child: const SelectGamePage()),
-                                          );
-                                        }));
-                                  },
-                                );
+                            return ListTile(
+                              tileColor: Colors.transparent,
+                              leading: const Icon(BootstrapIcons.controller),
+                              title: Text(LocaleKeys.message_game_title.tr()),
+                              trailing: const Icon(Icons.keyboard_arrow_right),
+                              onTap: () {
+                                showDialog(
+                                    context: context,
+                                    builder: ((context) {
+                                      return Dialog.fullscreen(
+                                        child: BackButtonListener(
+                                            onBackButtonPressed: () async {
+                                              context.pop();
+                                              return true;
+                                            },
+                                            child: const SelectGamePage()),
+                                      );
+                                    }));
                               },
                             );
                           },
-                        ),
-                        SizedBox(
-                          height: Dimens.DIMENS_28,
-                        ),
-                        Padding(
-                          padding: EdgeInsets.symmetric(
-                              horizontal: Dimens.DIMENS_12),
-                          child: Container(
-                            height: Dimens.DIMENS_38,
-                            alignment: Alignment.center,
-                            decoration: BoxDecoration(
-                                color: Theme.of(context).colorScheme.onTertiary,
-                                borderRadius: BorderRadius.circular(50)),
-                            child: Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                  splashColor:
-                                      COLOR_white_fff5f5f5.withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(50),
-                                  onTap: () {
-                                    var isUserEmpty =
-                                        RepositoryProvider.of<AuthRepository>(
-                                                context)
-                                            .currentUser;
-                                    if (isUserEmpty == null) {
-                                      showAuthBottomSheetFunc(context);
-                                    } else {
-                                      //will upload videos
-                                      BlocProvider.of<UploadBloc>(context).add(
-                                        UploadVideoEvent(
-                                          thumbnail: coverFile!.path,
-                                          videoPath: widget.data.videoFile.path,
-                                          caption: textEditingController.text,
-                                          game: selectedGame,
-                                          category: category,
-                                        ),
-                                      );
-                                      debugPrint('Uploading');
-                                    }
-                                  },
-                                  child: Container(
-                                    alignment: Alignment.center,
-                                    height: Dimens.DIMENS_38,
-                                    child: Text(
-                                      LocaleKeys.title_upload.tr(),
-                                      style: TextStyle(
-                                          color: COLOR_white_fff5f5f5,
-                                          fontSize: FontSize.FONT_SIZE_12),
+                        );
+                      },
+                    ),
+                    SizedBox(
+                      height: Dimens.DIMENS_28,
+                    ),
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: Dimens.DIMENS_12),
+                      child: Container(
+                        height: Dimens.DIMENS_38,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.onTertiary,
+                            borderRadius: BorderRadius.circular(50)),
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                              splashColor: COLOR_white_fff5f5f5.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(50),
+                              onTap: () {
+                                var isUserEmpty = RepositoryProvider.of<AuthRepository>(context).currentUser;
+                                if (isUserEmpty == null) {
+                                  showAuthBottomSheetFunc(context);
+                                } else {
+                                  //will upload videos
+                                  BlocProvider.of<UploadBloc>(context).add(
+                                    UploadVideoEvent(
+                                      thumbnail: coverFile!.path,
+                                      videoPath: widget.data.videoFile.path,
+                                      caption: textEditingController.text,
+                                      game: selectedGame,
+                                      category: category,
                                     ),
-                                  )),
-                            ),
-                          ),
+                                  );
+                                  debugPrint('Uploading');
+                                }
+                              },
+                              child: Container(
+                                alignment: Alignment.center,
+                                height: Dimens.DIMENS_38,
+                                child: Text(
+                                  LocaleKeys.title_upload.tr(),
+                                  style: TextStyle(color: COLOR_white_fff5f5f5, fontSize: FontSize.FONT_SIZE_12),
+                                ),
+                              )),
                         ),
-                      ]),
+                      ),
+                    ),
+                  ]),
                 ),
               ),
             );
@@ -415,9 +376,16 @@ class _AddDetailsMobileState extends State<AddDetailsMobile> {
                       context.pop();
                       return true;
                     },
-                    child: SelectCover(
-                      file: XFile(widget.data.videoFile.path),
+                    child: Text(
+                      'Select Cover',
+                      style: TextStyle(
+                        fontSize: FontSize.FONT_SIZE_16,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
+                    // child: SelectCover(
+                    //   file: XFile(widget.data.videoFile.path),
+                    // ),
                   ),
                 );
               }),

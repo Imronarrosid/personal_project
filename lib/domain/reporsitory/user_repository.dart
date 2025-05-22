@@ -28,11 +28,7 @@ class UserRepository implements UserUseCaseType {
   }
 
   Stream<User> currentUserSream() {
-    return firebaseFirestore
-        .collection('users')
-        .doc(firebaseAuth.currentUser!.uid)
-        .snapshots()
-        .map(
+    return firebaseFirestore.collection('users').doc(firebaseAuth.currentUser!.uid).snapshots().map(
           (event) => User.fromSnap(event),
         );
   }
@@ -45,10 +41,7 @@ class UserRepository implements UserUseCaseType {
 
   Future<void> onUserOnline() async {
     if (firebaseAuth.currentUser != null) {
-      return await firebaseFirestore
-          .collection('users')
-          .doc(firebaseAuth.currentUser!.uid)
-          .update({
+      return await firebaseFirestore.collection('users').doc(firebaseAuth.currentUser!.uid).update({
         'lastSeen': FieldValue.serverTimestamp(),
         'isOnline': true,
       });
@@ -56,19 +49,17 @@ class UserRepository implements UserUseCaseType {
   }
 
   Future<void> onUserOffline() async {
-    return await firebaseFirestore
-        .collection('users')
-        .doc(firebaseAuth.currentUser!.uid)
-        .update({
+    if (firebaseAuth.currentUser == null) {
+      return;
+    }
+    return await firebaseFirestore.collection('users').doc(firebaseAuth.currentUser!.uid).update({
       'lastSeen': FieldValue.serverTimestamp(),
       'isOnline': false,
     });
   }
 
   Future<void> setTypingIndicator(bool status) async {
-    DocumentReference ref = firebaseFirestore
-        .collection('users')
-        .doc(firebaseAuth.currentUser!.uid);
+    DocumentReference ref = firebaseFirestore.collection('users').doc(firebaseAuth.currentUser!.uid);
     firebaseFirestore.runTransaction(
       (transaction) {
         return transaction.get(ref).then(
@@ -191,8 +182,7 @@ class UserRepository implements UserUseCaseType {
   Future<List<User>> getUserSuggestion(int limit) async {
     try {
       final List<User> users = [];
-      final QuerySnapshot queryDocumentSnapshot =
-          await firebaseFirestore.collection('users').limit(limit).get();
+      final QuerySnapshot queryDocumentSnapshot = await firebaseFirestore.collection('users').limit(limit).get();
 
       for (var element in queryDocumentSnapshot.docs) {
         users.add(User.fromSnap(element));
@@ -206,11 +196,7 @@ class UserRepository implements UserUseCaseType {
   Future<int> getFollowingCount(uid) async {
     try {
       int following = 0;
-      var followingDoc = await firebaseFirestore
-          .collection('users')
-          .doc(uid)
-          .collection('following')
-          .get();
+      var followingDoc = await firebaseFirestore.collection('users').doc(uid).collection('following').get();
 
       following = followingDoc.docs.length;
 
@@ -224,11 +210,7 @@ class UserRepository implements UserUseCaseType {
   Future<int> getFollowerCount(String uid) async {
     try {
       int followers = 0;
-      var followerDoc = await firebaseFirestore
-          .collection('users')
-          .doc(uid)
-          .collection('followers')
-          .get();
+      var followerDoc = await firebaseFirestore.collection('users').doc(uid).collection('followers').get();
       followers = followerDoc.docs.length;
       return followers;
     } catch (e) {
@@ -240,10 +222,7 @@ class UserRepository implements UserUseCaseType {
   Future<int> getLikesCount(String uid) async {
     int likes = 0;
 
-    var myVideos = await firebaseFirestore
-        .collection('videos')
-        .where('uid', isEqualTo: uid)
-        .get();
+    var myVideos = await firebaseFirestore.collection('videos').where('uid', isEqualTo: uid).get();
 
     for (var item in myVideos.docs) {
       if (item.data().containsKey('likesCount')) {
@@ -256,44 +235,19 @@ class UserRepository implements UserUseCaseType {
   }
 
   @override
-  Future<void> followUser(
-      {required String currentUserUid, required String uid}) async {
-    var doc = await firebaseFirestore
-        .collection('users')
-        .doc(uid)
-        .collection('followers')
-        .doc(currentUserUid)
-        .get();
+  Future<void> followUser({required String currentUserUid, required String uid}) async {
+    var doc =
+        await firebaseFirestore.collection('users').doc(uid).collection('followers').doc(currentUserUid).get();
     if (!doc.exists) {
-      await firebaseFirestore
-          .collection('users')
-          .doc(uid)
-          .collection('followers')
-          .doc(currentUserUid)
-          .set({});
-      await firebaseFirestore
-          .collection('users')
-          .doc(currentUserUid)
-          .collection('following')
-          .doc(uid)
-          .set({});
+      await firebaseFirestore.collection('users').doc(uid).collection('followers').doc(currentUserUid).set({});
+      await firebaseFirestore.collection('users').doc(currentUserUid).collection('following').doc(uid).set({});
       // _user.update(
       //   'followers',
       //   (value) => (int.parse(value) + 1).toString(),
       // );
     } else {
-      await firebaseFirestore
-          .collection('users')
-          .doc(currentUserUid)
-          .collection('following')
-          .doc(uid)
-          .delete();
-      await firebaseFirestore
-          .collection('users')
-          .doc(uid)
-          .collection('followers')
-          .doc(currentUserUid)
-          .delete();
+      await firebaseFirestore.collection('users').doc(currentUserUid).collection('following').doc(uid).delete();
+      await firebaseFirestore.collection('users').doc(uid).collection('followers').doc(currentUserUid).delete();
       // _user.update('followers', (value) => (int.parse(value) - 1).toString());
     }
   }
@@ -304,11 +258,7 @@ class UserRepository implements UserUseCaseType {
   }
 
   Stream<User>? userDataStream(String uid) {
-    return firebaseFirestore
-        .collection('users')
-        .doc(uid)
-        .snapshots()
-        .map((user) => User.fromSnap(user));
+    return firebaseFirestore.collection('users').doc(uid).snapshots().map((user) => User.fromSnap(user));
   }
 
   Stream<User>? userDataStreamByUsername(String userName) {
@@ -334,10 +284,7 @@ class UserRepository implements UserUseCaseType {
   @override
   Future<List<String>> getUserVideoThumnails(String uid) async {
     List<String> thumbnails = [];
-    var myVideos = await firebaseFirestore
-        .collection('videos')
-        .where('uid', isEqualTo: uid)
-        .get();
+    var myVideos = await firebaseFirestore.collection('videos').where('uid', isEqualTo: uid).get();
 
     for (var i = 0; i < myVideos.docs.length; i++) {
       thumbnails.add((myVideos.docs[i].data() as dynamic)['thumnail']);
@@ -346,8 +293,7 @@ class UserRepository implements UserUseCaseType {
     return Future.value(thumbnails);
   }
 
-  Future<bool> isFollowig(
-      {required String currentUserUid, required String otherUserUid}) async {
+  Future<bool> isFollowig({required String currentUserUid, required String otherUserUid}) async {
     await firebaseFirestore
         .collection('user')
         .doc(otherUserUid)
@@ -365,12 +311,7 @@ class UserRepository implements UserUseCaseType {
   Future<String> getBio(String uid) async {
     String bio = '';
     try {
-      var doc = await firebaseFirestore
-          .collection('users')
-          .doc(uid)
-          .collection('otherInfo')
-          .doc('bio')
-          .get();
+      var doc = await firebaseFirestore.collection('users').doc(uid).collection('otherInfo').doc('bio').get();
       if (doc.exists) {
         bio = doc['bio'] ?? '';
       }
@@ -383,10 +324,7 @@ class UserRepository implements UserUseCaseType {
   Future<void> editName(String newName) async {
     try {
       debugModePrint(newName);
-      await firebaseFirestore
-          .collection('users')
-          .doc(firebaseAuth.currentUser!.uid)
-          .update({
+      await firebaseFirestore.collection('users').doc(firebaseAuth.currentUser!.uid).update({
         'name': newName,
         'nameUpdatedAt': FieldValue.serverTimestamp(),
         'updatedAt': FieldValue.serverTimestamp(),
@@ -399,10 +337,7 @@ class UserRepository implements UserUseCaseType {
   Future<void> editUserName(String newName) async {
     try {
       debugModePrint(newName);
-      await firebaseFirestore
-          .collection('users')
-          .doc(firebaseAuth.currentUser!.uid)
-          .update({
+      await firebaseFirestore.collection('users').doc(firebaseAuth.currentUser!.uid).update({
         'userName': newName,
         'userNameUpdatedAt': FieldValue.serverTimestamp(),
         'updatedAt': FieldValue.serverTimestamp()
@@ -442,10 +377,7 @@ class UserRepository implements UserUseCaseType {
           .collection('users')
           .doc(firebaseAuth.currentUser!.uid)
           .update({'photoUrl': downloaUrl});
-      await firebaseFirestore
-          .collection('avatars')
-          .doc(firebaseAuth.currentUser!.uid)
-          .set({'avatar': downloaUrl});
+      await firebaseFirestore.collection('avatars').doc(firebaseAuth.currentUser!.uid).set({'avatar': downloaUrl});
 
       imageFile.deleteSync(recursive: true);
     } catch (e) {
@@ -467,10 +399,7 @@ class UserRepository implements UserUseCaseType {
           .collection('users')
           .doc(firebaseAuth.currentUser!.uid)
           .update({'photoUrl': downloaUrl});
-      await firebaseFirestore
-          .collection('avatars')
-          .doc(firebaseAuth.currentUser!.uid)
-          .set({'avatar': downloaUrl});
+      await firebaseFirestore.collection('avatars').doc(firebaseAuth.currentUser!.uid).set({'avatar': downloaUrl});
     } catch (e) {
       debugModePrint('upload $data$e');
       rethrow;
@@ -480,8 +409,7 @@ class UserRepository implements UserUseCaseType {
   Future<List<GameFav>> getAllGameFav() async {
     List<GameFav> gameFav = [];
     try {
-      QuerySnapshot<Map<String, dynamic>> docs =
-          await firebaseFirestore.collection('gameFavorites').get();
+      QuerySnapshot<Map<String, dynamic>> docs = await firebaseFirestore.collection('gameFavorites').get();
       for (var element in docs.docs) {
         gameFav.add(GameFav.fromSnap(element));
         element.reference;
@@ -534,21 +462,14 @@ class UserRepository implements UserUseCaseType {
     List<GameFav> gameFav = [];
     debugModePrint('gametes');
     try {
-      DocumentSnapshot data = await firebaseFirestore
-          .collection('users')
-          .doc(uid)
-          .collection('otherInfo')
-          .doc('gameFav')
-          .get();
+      DocumentSnapshot data =
+          await firebaseFirestore.collection('users').doc(uid).collection('otherInfo').doc('gameFav').get();
 
       List<dynamic> gv = data['titles'];
 
       // debugModePrint('games ${rfs.length}');
       for (var element in gv) {
-        var game = await firebaseFirestore
-            .collection('gameFavorites')
-            .doc(element)
-            .get();
+        var game = await firebaseFirestore.collection('gameFavorites').doc(element).get();
         if (game.exists) {
           gameFav.add(GameFav.fromSnap(game));
 
@@ -566,11 +487,7 @@ class UserRepository implements UserUseCaseType {
 
   Stream<String>? getAvatar(String uid) {
     try {
-      return firebaseFirestore
-          .collection('avatars')
-          .doc(uid)
-          .snapshots()
-          .map((event) => event['avatar']);
+      return firebaseFirestore.collection('avatars').doc(uid).snapshots().map((event) => event['avatar']);
 
       // avatar = snap['avatar'];
       // return avatar;
@@ -590,8 +507,7 @@ class UserRepository implements UserUseCaseType {
           .limit(limit)
           .get();
       for (var element in snapshot.docs) {
-        DocumentSnapshot docs =
-            await firebaseFirestore.collection('users').doc(element.id).get();
+        DocumentSnapshot docs = await firebaseFirestore.collection('users').doc(element.id).get();
         users.add(User.fromSnap(docs));
       }
       return users;
@@ -605,8 +521,7 @@ class UserRepository implements UserUseCaseType {
     try {
       String avatar;
 
-      DocumentSnapshot snap =
-          await firebaseFirestore.collection('userNames').doc(uid).get();
+      DocumentSnapshot snap = await firebaseFirestore.collection('userNames').doc(uid).get();
 
       avatar = snap['userName'];
       return avatar;

@@ -8,16 +8,19 @@ class VideoEditor extends StatelessWidget {
   final XFile? file;
   const VideoEditor({
     super.key,
-     this.file,
+    this.file,
   });
 
   @override
   Widget build(BuildContext context) {
-    return ResponsiveLayout(
-      mobileBody: VideoEditorMobile(
-        file: file,
-      ),
-      desktopBody: VideoEditorDesktop(file: file),
+    return const Center(
+      child: Text('Video Editor'),
     );
+    // return ResponsiveLayout(
+    //   mobileBody: VideoEditorMobile(
+    //     file: file,
+    //   ),
+    //   desktopBody: VideoEditorDesktop(file: file),
+    // );
   }
 }
