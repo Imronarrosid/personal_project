@@ -47,6 +47,8 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   late final ValueNotifier<int> _limitNotifier;
   double? chatScaffoldWidth;
 
+  final ValueNotifier<ChatViewState> _chatViewState = ValueNotifier(ChatViewState.loading);
+
   final List<StreamSubscription> streams = [];
 
   @override
@@ -63,8 +65,8 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
       ),
       otherUsers: [
         ChatUser(
-        profilePhoto: widget.data.avatar,
-        imageType: ImageType.network,
+          profilePhoto: widget.data.avatar,
+          imageType: ImageType.network,
           id: widget.data.room.users.firstWhere(
             (element) {
               return element.id != firebaseAuth.currentUser!.uid;
@@ -75,15 +77,11 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
       ],
     );
     _chatController!.setTypingIndicator = false;
-    context
-        .read<UserRepository>()
-        .otherUserSream(_chatController!.otherUsers[0].id)
-        .listen(
+    context.read<UserRepository>().otherUserSream(_chatController!.otherUsers[0].id).listen(
       (event) {
         int last = DateTime.now()
             .difference(DateTime.fromMillisecondsSinceEpoch(
-                event.lastTyping?.millisecondsSinceEpoch ??
-                    DateTime.now().millisecondsSinceEpoch))
+                event.lastTyping?.millisecondsSinceEpoch ?? DateTime.now().millisecondsSinceEpoch))
             .inSeconds;
         if ((event.isTyping ?? false) && last < 2) {
           _chatController!.setTypingIndicator = true;
@@ -108,16 +106,13 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
     required Room room,
     int? limit,
   }) async {
-    context.read<ChatRepository>().messages(
-        limit: _currentLimit,
-        room,
-        startAfter: [
-          _chatController!.initialMessageList.first.createdAt
-        ]).listen(
+    final StreamSubscription streamSubscription = context.read<ChatRepository>().messages(
+        limit: _currentLimit, room, startAfter: [_chatController!.initialMessageList.first.createdAt]).listen(
       (event) {
         _chatController!.setIsLoadMore = true;
         debugModePrint('isloadmore ${_chatController!.isLoadMore}');
         _chatController!.loadMoreData(event.reversed.toList());
+        _chatController!.setIsLoadMore = false;
         debugModePrint('isloadmore ${_chatController!.isLoadMore}');
         // final
         // Set<String> existingIds =
@@ -130,31 +125,49 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
         // }
         Set<String> newMesageIds = event.map((message) => message.id).toSet();
 
-        List<Message> commonMessages = _chatController!.initialMessageList
-            .where((message) => newMesageIds.contains(message.id))
-            .toList();
+        List<Message> commonMessages =
+            _chatController!.initialMessageList.where((message) => newMesageIds.contains(message.id)).toList();
 
         _compareMessages(commonMessages, event);
       },
     );
 
+    streams.add(streamSubscription);
+
     _currentLimit += _limitIncrement;
   }
 
+  void clearStreams() {
+    for (var stream in streams) {
+      stream.cancel();
+    }
+  }
+
   void listenNewMessage(Room room) async {
-    final List<Message> initialMessages = await context
-        .read<ChatRepository>()
-        .initialMessages(room, limit: _limitIncrement);
+    final List<Message> initialMessages =
+        await context.read<ChatRepository>().initialMessages(room, limit: _limitIncrement);
 
     _chatController!.loadMoreData(initialMessages);
+    if (initialMessages.isEmpty) {
+      _chatViewState.value = ChatViewState.noData;
+    } else {
+      _chatViewState.value = ChatViewState.hasMessages;
+    }
     if (!mounted) return;
-    context.read<ChatRepository>().messages(
-      room,
-      endAt: [initialMessages.first.createdAt],
-    ).listen(
+    context
+        .read<ChatRepository>()
+        .messages(
+          room,
+          endAt: initialMessages.isEmpty ? null : [initialMessages.first.createdAt],
+        )
+        .listen(
       (event) {
-        Set<String> existingIds =
-            _chatController!.initialMessageList.map((m) => m.id).toSet();
+        if (event.isEmpty) {
+          _chatViewState.value = ChatViewState.noData;
+        } else {
+          _chatViewState.value = ChatViewState.hasMessages;
+        }
+        Set<String> existingIds = _chatController!.initialMessageList.map((m) => m.id).toSet();
         for (var element in event) {
           if (!existingIds.contains(element.id)) {
             _chatController!.addMessage(element);
@@ -162,24 +175,20 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
         }
         Set<String> newMesageIds = event.map((message) => message.id).toSet();
 
-        List<Message> commonMessages = _chatController!.initialMessageList
-            .where((message) => newMesageIds.contains(message.id))
-            .toList();
+        List<Message> commonMessages =
+            _chatController!.initialMessageList.where((message) => newMesageIds.contains(message.id)).toList();
 
         _compareMessages(commonMessages, event);
       },
     );
   }
 
-  void _compareMessages(
-      List<Message> previousMessages, List<Message> newMessages) {
+  void _compareMessages(List<Message> previousMessages, List<Message> newMessages) {
     for (var newMessage in newMessages) {
-      var previousMessage =
-          previousMessages.firstWhere((message) => message.id == newMessage.id);
+      var previousMessage = previousMessages.firstWhere((message) => message.id == newMessage.id);
 
       if (previousMessage.id.isNotEmpty) {
-        if (!listEquals(newMessage.reaction.reactions,
-            previousMessage.reaction.reactions)) {
+        if (!listEquals(newMessage.reaction.reactions, previousMessage.reaction.reactions)) {
           print('Reaction update detected for message ${newMessage.createdAt}');
           // Add your action here for reaction update
 
@@ -189,25 +198,20 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
           List<String> newData = newMessage.reaction.reactedUserIds;
 
           // Find added items
-          List<String> addedItems =
-              newData.where((item) => !oldData.contains(item)).toList();
+          List<String> addedItems = newData.where((item) => !oldData.contains(item)).toList();
 
           // Find removed items
-          List<String> removedItems =
-              oldData.where((item) => !newData.contains(item)).toList();
+          List<String> removedItems = oldData.where((item) => !newData.contains(item)).toList();
 
           // Find common items (potentially modified if you have more complex data)
-          List<String> commonItems =
-              newData.where((item) => oldData.contains(item)).toList();
+          List<String> commonItems = newData.where((item) => oldData.contains(item)).toList();
 
           // Perform actions based on changes
           if (addedItems.isNotEmpty) {
             debugModePrint('Added items: $addedItems');
             // Perform action for added items
             _chatController!.setReaction(
-                emoji: newMessage.reaction.reactions[newMessage
-                    .reaction.reactedUserIds
-                    .indexOf(addedItems.first)],
+                emoji: newMessage.reaction.reactions[newMessage.reaction.reactedUserIds.indexOf(addedItems.first)],
                 messageId: newMessage.id,
                 userId: addedItems.first);
           }
@@ -215,9 +219,8 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
           if (removedItems.isNotEmpty) {
             debugModePrint('Removed items: $removedItems');
             _chatController!.setReaction(
-                emoji: previousMessage.reaction.reactions[previousMessage
-                    .reaction.reactedUserIds
-                    .indexOf(removedItems.first)],
+                emoji: previousMessage
+                    .reaction.reactions[previousMessage.reaction.reactedUserIds.indexOf(removedItems.first)],
                 messageId: previousMessage.id,
                 userId: removedItems.first);
             // Perform action for removed items
@@ -227,16 +230,11 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
             debugModePrint('Common items: $commonItems');
             // Perform action for common items (e.g., check for modifications)
             for (var element in commonItems) {
-              final int index =
-                  newMessage.reaction.reactedUserIds.indexOf(element);
-              final int oIndex =
-                  previousMessage.reaction.reactedUserIds.indexOf(element);
-              if (newMessage.reaction.reactions[index] !=
-                  previousMessage.reaction.reactions[oIndex]) {
+              final int index = newMessage.reaction.reactedUserIds.indexOf(element);
+              final int oIndex = previousMessage.reaction.reactedUserIds.indexOf(element);
+              if (newMessage.reaction.reactions[index] != previousMessage.reaction.reactions[oIndex]) {
                 _chatController!.setReaction(
-                    emoji: newMessage.reaction.reactions[index],
-                    messageId: newMessage.id,
-                    userId: element);
+                    emoji: newMessage.reaction.reactions[index], messageId: newMessage.id, userId: element);
               }
             }
           }
@@ -266,6 +264,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   @override
   void dispose() {
     _limitNotifier.dispose();
+    clearStreams();
     super.dispose();
   }
 
@@ -278,392 +277,377 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
       chatScaffoldWidth = box.size.width;
       debugModePrint('Chat Scaffold width: $chatScaffoldWidth');
     });
-    return Scaffold(body: Builder(builder: (context) {
-      final ChatRepository chatRepository =
-          RepositoryProvider.of<ChatRepository>(context);
-      return ChatView(
-        loadingWidget: Container(
-          padding: EdgeInsets.all(Dimens.DIMENS_3),
-          height: 26,
-          child: const Center(
-            child: CircularProgressIndicator(),
-          ),
-        ),
-        imageProviderBuilder: (
-            {required conditional, required imageHeaders, required uri}) {
-          if (uri.startsWith('http')) {
-            return CachedNetworkImageProvider(
-              uri,
-              headers: imageHeaders,
-            );
-          }
-          return FileImage(
-            File(uri),
-          );
-        },
-        loadMoreData: () async {
-          debugModePrint('load more $_currentLimit');
-          loadMoreMessage(room: widget.data.room); // await isNextPageLoading;
-        },
-        loadMoreImages: () async {
-          final List<PreviewImage> images = await chatRepository.getMoreImages(
-            room: widget.data.room,
-            startAfter: Timestamp.fromMillisecondsSinceEpoch(
-              _chatController!.imageList.first.createdAt,
-            ),
-          );
-          _chatController!.loadMoreImages(images);
-        },
-        chatController: _chatController!,
-        onSendTap: _onSendTap,
-        featureActiveConfig: const FeatureActiveConfig(
-          lastSeenAgoBuilderVisibility: false,
-          receiptsBuilderVisibility: true,
-          enableScrollToBottomButton: true,
-          enablePagination: true,
-          enableOtherUserProfileAvatar: true,
-          enableOtherUserName: false
-        ),
-      
-        scrollToBottomButtonConfig: ScrollToBottomButtonConfig(
-          backgroundColor: colorScheme.tertiary,
-          icon: Icon(
-            Icons.keyboard_arrow_down_rounded,
-            color: colorScheme.onSurface,
-            weight: 10,
-            size: 30,
-          ),
-        ),
-        chatViewState: ChatViewState.hasMessages,
-        chatViewStateConfig: ChatViewStateConfiguration(
-          noMessageWidgetConfig: ChatViewStateWidgetConfiguration(
-              title: LocaleKeys.message_no_message.tr()),
-          loadingWidgetConfig: ChatViewStateWidgetConfiguration(
-            loadingIndicatorColor: colorScheme.primary,
-          ),
-          onReloadButtonTap: () {},
-        ),
-        typeIndicatorConfig: TypeIndicatorConfiguration(
-          flashingCircleBrightColor: colorScheme.primary.withOpacity(0.4),
-          flashingCircleDarkColor: colorScheme.primary,
-        ),
-        appBar: StreamBuilder<User>(
-            stream: context
-                .read<UserRepository>()
-                .otherUserSream(_chatController!.otherUsers.first.id),
-            builder: (context, snapshot) {
-              return ChatViewAppBar(
-                leading: BackButton(
-                  onPressed: () =>
-                      context.read<AppRouter>().onBackButtonPressed(context),
+    return ValueListenableBuilder<ChatViewState>(
+        valueListenable: _chatViewState,
+        builder: (context, chatViewState, _) {
+          return Scaffold(body: Builder(builder: (context) {
+            final ChatRepository chatRepository = RepositoryProvider.of<ChatRepository>(context);
+            return ChatView(
+              loadingWidget: Container(
+                padding: EdgeInsets.all(Dimens.DIMENS_3),
+                height: 26,
+                child: const Center(
+                  child: CircularProgressIndicator(),
                 ),
-                elevation: 0.3,
-                backGroundColor: colorScheme.surface,
-                profilePicture: widget.data.avatar,
-                backArrowColor: colorScheme.surface,
-                chatTitle: widget.data.userName,
-                chatTitleTextStyle: TextStyle(
-                  color: colorScheme.onSurface,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
-                  letterSpacing: 0.25,
-                ),
-                userStatus: getLastSeen(snapshot),
-                userStatusTextStyle: const TextStyle(color: Colors.grey),
-                imageProviderBuilder: (
-                    {required conditional,
-                    required imageHeaders,
-                    required uri}) {
-                  if (uri.startsWith('http')) {
-                    return CachedNetworkImageProvider(
-                      uri,
-                      headers: imageHeaders,
-                    );
-                  }
-                  return FileImage(
-                    File(uri),
-                  );
-                },
-              );
-            }),
-        chatBackgroundConfig: ChatBackgroundConfiguration(
-          // sortEnable: true,
-
-          width: chatScaffoldWidth,
-          groupedListOrder: GroupedListOrder.asc,
-          messageTimeIconColor: colorScheme.onSurface,
-          messageTimeTextStyle: TextStyle(
-            color: colorScheme.onSurface,
-          ),
-          defaultGroupSeparatorConfig: DefaultGroupSeparatorConfiguration(
-            textStyle: TextStyle(
-              color: colorScheme.onSurface,
-              fontSize: 17,
-            ),
-          ),
-          backgroundColor: colorScheme.surface,
-        ),
-        mediaPreviewConfig: MediaPreviewConfig(
-          defaultSendButtonColor: colorScheme.primary,
-        ),
-        sendMessageConfig: _sendMessageConfigutraion(colorScheme, context),
-        chatBubbleConfig: ChatBubbleConfiguration(
-          onDoubleTap: (message) {
-            chatRepository.doubleTapReactions(
-                roomId: widget.data.room.id,
-                message: message,
-                reaction: "\u{1F44D}");
-          },
-          outgoingChatBubbleConfig: ChatBubble(
-            linkPreviewConfig: LinkPreviewConfiguration(
-              proxyUrl: !kIsWeb ? null : "https://proxy.corsfix.com/?",
-              backgroundColor: colorScheme.surface.withOpacity(0.2),
-              titleStyle: TextStyle(color: colorScheme.onSurface),
-              bodyStyle: TextStyle(
-                color: colorScheme.onSurface.withOpacity(0.7),
               ),
-            ),
-            receiptsWidgetConfig: ReceiptsWidgetConfig(
-                receiptsBuilder: (status) {
-                  if (status == MessageStatus.pending) {
-                    return Padding(
-                      padding: const EdgeInsets.only(right: 6.0),
-                      child: Icon(
-                        SolarIconsOutline.clockCircle,
-                        size: 14,
-                      ),
-                    );
-                  } else if (status == MessageStatus.delivered) {
-                    return Padding(
-                      padding: const EdgeInsets.only(right: 6.0),
-                      child: Icon(
-                        size: 16,
-                        SolarIconsOutline.chatRead,
-                      ),
-                    );
-                  } else if (status == MessageStatus.read) {
-                    return Padding(
-                      padding: const EdgeInsets.only(right: 6.0),
-                      child: Icon(
-                        SolarIconsOutline.chatRead,
-                        color: Colors.blue,
-                        size: 16,
-                      ),
-                    );
-                  }
-                  return SizedBox.shrink();
-                },
-                showReceiptsIn: ShowReceiptsIn.all),
-            color: colorScheme.primary,
-          ),
-          inComingChatBubbleConfig: ChatBubble(
-            
-            linkPreviewConfig: LinkPreviewConfiguration(
-              proxyUrl: !kIsWeb ? null : "https://proxy.corsfix.com/?",
-              linkStyle: TextStyle(
-                color: Colors.blue,
-                decoration: TextDecoration.underline,
-                decorationColor: Colors.blue,
-              ),
-              backgroundColor: colorScheme.surface.withOpacity(0.2),
-              bodyStyle: TextStyle(
-                color: colorScheme.onSurface.withOpacity(0.7),
-              ),
-              titleStyle: TextStyle(color: colorScheme.onSurface),
-            ),
-            textStyle: TextStyle(color: colorScheme.onSurface),
-            onMessageRead: (message) {
-              /// send your message reciepts to the other
-              if (message.createdAt.isAfter(widget.data.room.unreadedTotal!
-                  .firstWhere(
-                      (element) => element.uid == firebaseAuth.currentUser!.uid)
-                  .lastReadedAt
-                  .toDate())) {
-                chatRepository.updateChat(
-                  message: message,
-                  room: widget.data.room,
-                );
-                debugPrint('Message Read');
-              }
-            },
-            senderNameTextStyle: TextStyle(color: colorScheme.onSurface),
-            color: colorScheme.tertiary,
-          ),
-        ),
-        replyPopupConfig: ReplyPopupConfiguration(
-          replyPopupBuilder: (message, sentByCurrentUser) =>
-              const SizedBox.shrink(),
-          backgroundColor: colorScheme.tertiary,
-          buttonTextStyle: TextStyle(color: colorScheme.onSurface),
-          topBorderColor: colorScheme.tertiary,
-        ),
-        reactionPopupConfig: ReactionPopupConfiguration(
-          overrideUserReactionCallback: true,
-          userReactionCallback: (message, emoji) {
-            chatRepository.setReactions(
-                roomId: widget.data.room.id, message: message, reaction: emoji);
-          },
-          shadow: BoxShadow(
-            color: colorScheme.tertiary,
-            blurRadius: 20,
-          ),
-          backgroundColor: colorScheme.tertiary,
-        ),
-        messageConfig: MessageConfiguration(
-          voiceMessageConfig: _voiceMessageConfiguration(colorScheme),
-          messageReactionConfig: MessageReactionConfiguration(
-            backgroundColor: colorScheme.tertiary,
-            borderColor: colorScheme.surface,
-            reactedUserCountTextStyle: TextStyle(color: colorScheme.onSurface),
-            reactionCountTextStyle: TextStyle(color: colorScheme.onSurface),
-            reactionsBottomSheetConfig: ReactionsBottomSheetConfiguration(
-              removeReactedCurrentUserCallback: (reactedUser, message) {
-                if (reactedUser.id == _chatController!.currentUser.id) {
-                  chatRepository.removeReactions(
-                    roomId: widget.data.room.id,
-                    message: message,
+              imageProviderBuilder: ({required conditional, required imageHeaders, required uri}) {
+                if (uri.startsWith('http')) {
+                  return CachedNetworkImageProvider(
+                    uri,
+                    headers: imageHeaders,
                   );
                 }
+                return FileImage(
+                  File(uri),
+                );
               },
-              backgroundColor: colorScheme.surface,
-              reactedUserTextStyle: TextStyle(
-                color: colorScheme.onSurface,
+              loadMoreData: () async {
+                debugModePrint('load more $_currentLimit');
+                loadMoreMessage(room: widget.data.room); // await isNextPageLoading;
+              },
+              loadMoreImages: () async {
+                final List<PreviewImage> images = await chatRepository.getMoreImages(
+                  room: widget.data.room,
+                  startAfter: Timestamp.fromMillisecondsSinceEpoch(
+                    _chatController!.imageList.first.createdAt,
+                  ),
+                );
+                _chatController!.loadMoreImages(images);
+              },
+              chatController: _chatController!,
+              onSendTap: _onSendTap,
+              featureActiveConfig: const FeatureActiveConfig(
+                  lastSeenAgoBuilderVisibility: false,
+                  receiptsBuilderVisibility: true,
+                  enableScrollToBottomButton: true,
+                  enablePagination: true,
+                  enableOtherUserProfileAvatar: true,
+                  enableOtherUserName: false),
+              scrollToBottomButtonConfig: ScrollToBottomButtonConfig(
+                backgroundColor: colorScheme.tertiary,
+                icon: Icon(
+                  Icons.keyboard_arrow_down_rounded,
+                  color: colorScheme.onSurface,
+                  weight: 10,
+                  size: 30,
+                ),
               ),
-              reactionWidgetDecoration: BoxDecoration(
-                color: colorScheme.tertiary,
-                boxShadow: [
-                  BoxShadow(
-                    color: colorScheme.tertiary,
-                    offset: const Offset(0, 20),
-                    blurRadius: 40,
-                  )
-                ],
-                borderRadius: BorderRadius.circular(10),
+              chatViewState: chatViewState,
+              chatViewStateConfig: ChatViewStateConfiguration(
+                noMessageWidgetConfig: ChatViewStateWidgetConfiguration(title: LocaleKeys.message_no_message.tr()),
+                loadingWidgetConfig: ChatViewStateWidgetConfiguration(
+                  loadingIndicatorColor: colorScheme.primary,
+                ),
+                onReloadButtonTap: () {},
               ),
-            ),
-          ),
-          imageMessageConfig: _imageMessageConfiguration(colorScheme),
-        ),
-        profileCircleConfig: ProfileCircleConfiguration(
-          profileImageUrl: widget.data.avatar,
-          
-        ),
-        repliedMessageConfig: RepliedMessageConfiguration(
-          backgroundColor: colorScheme.primary.withOpacity(0.5),
-          verticalBarColor: colorScheme.primary,
-          repliedMsgAutoScrollConfig: RepliedMsgAutoScrollConfig(
-            enableHighlightRepliedMsg: true,
-            highlightColor: colorScheme.primary,
-            highlightScale: 1.1,
-          ),
-          textStyle: TextStyle(
-            color: colorScheme.onSurface,
-            fontWeight: FontWeight.bold,
-            letterSpacing: 0.25,
-          ),
-          replyTitleTextStyle: TextStyle(color: colorScheme.onSurface),
-        ),
-        swipeToReplyConfig: SwipeToReplyConfiguration(
-            replyIconBackgroundColor: colorScheme.surface,
-            replyIconColor: colorScheme.primary,
-            replyIconProgressRingColor: colorScheme.primary),
-        replySuggestionsConfig: ReplySuggestionsConfig(
-          itemConfig: SuggestionItemConfig(
-            decoration: BoxDecoration(
-              color: colorScheme.surface,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(
-                color: colorScheme.tertiary,
+              typeIndicatorConfig: TypeIndicatorConfiguration(
+                flashingCircleBrightColor: colorScheme.primary.withOpacity(0.4),
+                flashingCircleDarkColor: colorScheme.primary,
               ),
-            ),
-            textStyle: TextStyle(
-              color: isDarkTheme ? Colors.white : Colors.black,
-            ),
-          ),
-          onTap: (item) => _onSendTap(
-            mediaPath: '',
-            text: item.text,
-            replyMessage: const ReplyMessage(),
-            messageType: MessageType.text,
-          ),
-        ),
-      );
-    }));
+              appBar: StreamBuilder<User>(
+                  stream: context.read<UserRepository>().otherUserSream(_chatController!.otherUsers.first.id),
+                  builder: (context, snapshot) {
+                    return ChatViewAppBar(
+                      leading: BackButton(
+                        onPressed: () => context.read<AppRouter>().onBackButtonPressed(context),
+                      ),
+                      elevation: 0.3,
+                      backGroundColor: colorScheme.surface,
+                      profilePicture: widget.data.avatar,
+                      backArrowColor: colorScheme.surface,
+                      chatTitle: widget.data.userName,
+                      chatTitleTextStyle: TextStyle(
+                        color: colorScheme.onSurface,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                        letterSpacing: 0.25,
+                      ),
+                      userStatus: getLastSeen(snapshot),
+                      userStatusTextStyle: const TextStyle(color: Colors.grey),
+                      imageProviderBuilder: ({required conditional, required imageHeaders, required uri}) {
+                        if (uri.startsWith('http')) {
+                          return CachedNetworkImageProvider(
+                            uri,
+                            headers: imageHeaders,
+                          );
+                        }
+                        return FileImage(
+                          File(uri),
+                        );
+                      },
+                    );
+                  }),
+              chatBackgroundConfig: ChatBackgroundConfiguration(
+                // sortEnable: true,
+
+                width: chatScaffoldWidth,
+                groupedListOrder: GroupedListOrder.asc,
+                messageTimeIconColor: colorScheme.onSurface,
+                messageTimeTextStyle: TextStyle(
+                  color: colorScheme.onSurface,
+                ),
+                defaultGroupSeparatorConfig: DefaultGroupSeparatorConfiguration(
+                  textStyle: TextStyle(
+                    color: colorScheme.onSurface,
+                    fontSize: 17,
+                  ),
+                ),
+                backgroundColor: colorScheme.surface,
+              ),
+              mediaPreviewConfig: MediaPreviewConfig(
+                defaultSendButtonColor: colorScheme.primary,
+              ),
+              sendMessageConfig: _sendMessageConfigutraion(colorScheme, context),
+              chatBubbleConfig: ChatBubbleConfiguration(
+                onDoubleTap: (message) {
+                  chatRepository.doubleTapReactions(
+                      roomId: widget.data.room.id, message: message, reaction: "\u{1F44D}");
+                },
+                outgoingChatBubbleConfig: ChatBubble(
+                  linkPreviewConfig: LinkPreviewConfiguration(
+                    proxyUrl: !kIsWeb ? null : "https://proxy.corsfix.com/?",
+                    backgroundColor: colorScheme.surface.withOpacity(0.2),
+                    titleStyle: TextStyle(color: colorScheme.onSurface),
+                    bodyStyle: TextStyle(
+                      color: colorScheme.onSurface.withOpacity(0.7),
+                    ),
+                  ),
+                  receiptsWidgetConfig: ReceiptsWidgetConfig(
+                      receiptsBuilder: (status) {
+                        if (status == MessageStatus.pending) {
+                          return Padding(
+                            padding: const EdgeInsets.only(right: 6.0),
+                            child: Icon(
+                              SolarIconsOutline.clockCircle,
+                              size: 14,
+                            ),
+                          );
+                        } else if (status == MessageStatus.delivered) {
+                          return Padding(
+                            padding: const EdgeInsets.only(right: 6.0),
+                            child: Icon(
+                              size: 16,
+                              SolarIconsOutline.chatRead,
+                            ),
+                          );
+                        } else if (status == MessageStatus.read) {
+                          return Padding(
+                            padding: const EdgeInsets.only(right: 6.0),
+                            child: Icon(
+                              SolarIconsOutline.chatRead,
+                              color: Colors.blue,
+                              size: 16,
+                            ),
+                          );
+                        }
+                        return SizedBox.shrink();
+                      },
+                      showReceiptsIn: ShowReceiptsIn.all),
+                  color: colorScheme.primary,
+                ),
+                inComingChatBubbleConfig: ChatBubble(
+                  linkPreviewConfig: LinkPreviewConfiguration(
+                    proxyUrl: !kIsWeb ? null : "https://proxy.corsfix.com/?",
+                    linkStyle: TextStyle(
+                      color: Colors.blue,
+                      decoration: TextDecoration.underline,
+                      decorationColor: Colors.blue,
+                    ),
+                    backgroundColor: colorScheme.surface.withOpacity(0.2),
+                    bodyStyle: TextStyle(
+                      color: colorScheme.onSurface.withOpacity(0.7),
+                    ),
+                    titleStyle: TextStyle(color: colorScheme.onSurface),
+                  ),
+                  textStyle: TextStyle(color: colorScheme.onSurface),
+                  onMessageRead: (message) {
+                    /// send your message reciepts to the other
+                    if (message.createdAt.isAfter(widget.data.room.unreadedTotal!
+                        .firstWhere((element) => element.uid == firebaseAuth.currentUser!.uid)
+                        .lastReadedAt
+                        .toDate())) {
+                      chatRepository.updateChat(
+                        message: message,
+                        room: widget.data.room,
+                      );
+                      debugPrint('Message Read');
+                    }
+                  },
+                  senderNameTextStyle: TextStyle(color: colorScheme.onSurface),
+                  color: colorScheme.tertiary,
+                ),
+              ),
+              replyPopupConfig: ReplyPopupConfiguration(
+                replyPopupBuilder: (message, sentByCurrentUser) => const SizedBox.shrink(),
+                backgroundColor: colorScheme.tertiary,
+                buttonTextStyle: TextStyle(color: colorScheme.onSurface),
+                topBorderColor: colorScheme.tertiary,
+              ),
+              reactionPopupConfig: ReactionPopupConfiguration(
+                overrideUserReactionCallback: true,
+                userReactionCallback: (message, emoji) {
+                  chatRepository.setReactions(roomId: widget.data.room.id, message: message, reaction: emoji);
+                },
+                shadow: BoxShadow(
+                  color: colorScheme.tertiary,
+                  blurRadius: 20,
+                ),
+                backgroundColor: colorScheme.tertiary,
+              ),
+              messageConfig: MessageConfiguration(
+                voiceMessageConfig: _voiceMessageConfiguration(colorScheme),
+                messageReactionConfig: MessageReactionConfiguration(
+                  backgroundColor: colorScheme.tertiary,
+                  borderColor: colorScheme.surface,
+                  reactedUserCountTextStyle: TextStyle(color: colorScheme.onSurface),
+                  reactionCountTextStyle: TextStyle(color: colorScheme.onSurface),
+                  reactionsBottomSheetConfig: ReactionsBottomSheetConfiguration(
+                    removeReactedCurrentUserCallback: (reactedUser, message) {
+                      if (reactedUser.id == _chatController!.currentUser.id) {
+                        chatRepository.removeReactions(
+                          roomId: widget.data.room.id,
+                          message: message,
+                        );
+                      }
+                    },
+                    backgroundColor: colorScheme.surface,
+                    reactedUserTextStyle: TextStyle(
+                      color: colorScheme.onSurface,
+                    ),
+                    reactionWidgetDecoration: BoxDecoration(
+                      color: colorScheme.tertiary,
+                      boxShadow: [
+                        BoxShadow(
+                          color: colorScheme.tertiary,
+                          offset: const Offset(0, 20),
+                          blurRadius: 40,
+                        )
+                      ],
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                ),
+                imageMessageConfig: _imageMessageConfiguration(colorScheme),
+              ),
+              profileCircleConfig: ProfileCircleConfiguration(
+                profileImageUrl: widget.data.avatar,
+              ),
+              repliedMessageConfig: RepliedMessageConfiguration(
+                backgroundColor: colorScheme.primary.withOpacity(0.5),
+                verticalBarColor: colorScheme.primary,
+                repliedMsgAutoScrollConfig: RepliedMsgAutoScrollConfig(
+                  enableHighlightRepliedMsg: true,
+                  highlightColor: colorScheme.primary,
+                  highlightScale: 1.1,
+                ),
+                textStyle: TextStyle(
+                  color: colorScheme.onSurface,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 0.25,
+                ),
+                replyTitleTextStyle: TextStyle(color: colorScheme.onSurface),
+              ),
+              swipeToReplyConfig: SwipeToReplyConfiguration(
+                  replyIconBackgroundColor: colorScheme.surface,
+                  replyIconColor: colorScheme.primary,
+                  replyIconProgressRingColor: colorScheme.primary),
+              replySuggestionsConfig: ReplySuggestionsConfig(
+                itemConfig: SuggestionItemConfig(
+                  decoration: BoxDecoration(
+                    color: colorScheme.surface,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: colorScheme.tertiary,
+                    ),
+                  ),
+                  textStyle: TextStyle(
+                    color: isDarkTheme ? Colors.white : Colors.black,
+                  ),
+                ),
+                onTap: (item) => _onSendTap(
+                  mediaPath: '',
+                  text: item.text,
+                  replyMessage: const ReplyMessage(),
+                  messageType: MessageType.text,
+                ),
+              ),
+            );
+          }));
+        });
   }
 
   SendMessageConfiguration _sendMessageConfigutraion(ColorScheme colorScheme, BuildContext context) {
     return SendMessageConfiguration(
-        imagePickerIconsConfig: ImagePickerIconsConfiguration(
-          cameraIconColor: colorScheme.onSurface,
-          galleryIconColor: colorScheme.onSurface,
-          cameraImagePickerIcon: Icon(SolarIconsOutline.camera),
-          galleryImagePickerIcon: Icon(SolarIconsOutline.gallery),
+      imagePickerIconsConfig: ImagePickerIconsConfiguration(
+        cameraIconColor: colorScheme.onSurface,
+        galleryIconColor: colorScheme.onSurface,
+        cameraImagePickerIcon: Icon(SolarIconsOutline.camera),
+        galleryImagePickerIcon: Icon(SolarIconsOutline.gallery),
+      ),
+      // replyMessageColor: colorScheme.onSurface.withOpacity(0.6),
+      defaultSendButtonColor: colorScheme.onSurface,
+      // replyDialogColor: colorScheme.surface,
+      // replyTitleColor: colorScheme.onSurface,
+      textFieldBackgroundColor: colorScheme.tertiary,
+      // closeIconColor: colorScheme.onSurface,
+      textFieldConfig: TextFieldConfiguration(
+        padding: const EdgeInsets.symmetric(
+          horizontal: 8,
+          vertical: 3,
         ),
-        // replyMessageColor: colorScheme.onSurface.withOpacity(0.6),
-        defaultSendButtonColor: colorScheme.onSurface,
-        // replyDialogColor: colorScheme.surface,
-        // replyTitleColor: colorScheme.onSurface,
-        textFieldBackgroundColor: colorScheme.tertiary,
-        // closeIconColor: colorScheme.onSurface,
-        textFieldConfig: TextFieldConfiguration(
-          onMessageTyping: (status) {
-            /// Do with status
-            debugPrint(status.toString());
-            context.read<UserRepository>().setTypingIndicator(
-                status == TypeWriterStatus.typing ? true : false);
-          },
-          compositionThresholdTime: const Duration(seconds: 1),
-          textStyle: TextStyle(color: colorScheme.onSurface),
-        ),
-        imagePickerConfiguration: ImagePickerConfiguration(
-          
-        ),
-        // micIconColor: colorScheme.onSurface,
-        voiceRecordingConfiguration: VoiceRecordingConfiguration(
+        onMessageTyping: (status) {
+          /// Do with status
+          debugPrint(status.toString());
+          context.read<UserRepository>().setTypingIndicator(status == TypeWriterStatus.typing ? true : false);
+        },
+        compositionThresholdTime: const Duration(seconds: 1),
+        textStyle: TextStyle(color: colorScheme.onSurface),
+      ),
+      imagePickerConfiguration: ImagePickerConfiguration(),
+      // micIconColor: colorScheme.onSurface,
+      voiceRecordingConfiguration: VoiceRecordingConfiguration(
+        backgroundColor: colorScheme.primary,
+        recorderIconColor: colorScheme.onSurface,
+        margin: EdgeInsets.zero,
+        micIcon: Icon(Icons.mic_outlined),
+        decoration: BoxDecoration(borderRadius: BorderRadius.circular(50)),
+        waveStyle: WaveStyle(
           backgroundColor: colorScheme.primary,
-          recorderIconColor: colorScheme.onSurface,
-          micIcon: Icon(SolarIconsBold.microphone),
-          decoration: BoxDecoration(borderRadius: BorderRadius.circular(50)),
-          waveStyle: WaveStyle(
-            backgroundColor: colorScheme.primary,
-            showMiddleLine: false,
-            waveColor: colorScheme.onSurface,
-            extendWaveform: true,
-          ),
+          showMiddleLine: false,
+          waveColor: colorScheme.onSurface,
+          extendWaveform: true,
         ),
-      );
+      ),
+    );
   }
 
   ImageMessageConfiguration _imageMessageConfiguration(ColorScheme colorScheme) {
     return ImageMessageConfiguration(
-          hideShareIcon: true,
-          imageProviderBuilder: (
-              {required conditional, required imageHeaders, required uri}) {
-            if (uri.startsWith('http')) {
-              return CachedNetworkImageProvider(
-                uri,
-                headers: imageHeaders,
-              );
-            }
-            return FileImage(
-              File(uri),
-            );
-          },
-          margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 15),
-          shareIconConfig: ShareIconConfiguration(
-            
-            onPressed: (message) {
-              debugPrint('Share Image $message');
-            },
-            // icon: SizedBox.shrink(),
-            defaultIconBackgroundColor: colorScheme.tertiary,
-            defaultIconColor: colorScheme.onSurface,
-          ),
+      hideShareIcon: true,
+      imageProviderBuilder: ({required conditional, required imageHeaders, required uri}) {
+        if (uri.startsWith('http')) {
+          return CachedNetworkImageProvider(
+            uri,
+            headers: imageHeaders,
+          );
+        }
+        return FileImage(
+          File(uri),
         );
+      },
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 15),
+      shareIconConfig: ShareIconConfiguration(
+        onPressed: (message) {
+          debugPrint('Share Image $message');
+        },
+        // icon: SizedBox.shrink(),
+        defaultIconBackgroundColor: colorScheme.tertiary,
+        defaultIconColor: colorScheme.onSurface,
+      ),
+    );
   }
 
-  VoiceMessageConfiguration _voiceMessageConfiguration(
-      ColorScheme colorScheme) {
+  VoiceMessageConfiguration _voiceMessageConfiguration(ColorScheme colorScheme) {
     return VoiceMessageConfiguration(
       unDownoadedWaveColor: colorScheme.onSurface.withValues(
         alpha: 0.5,
@@ -699,8 +683,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
       return '';
     }
 
-    if (snapshot.data!.isOnline! &&
-        !snapshot.data!.lastSeen!.toDate().isBefore(DateTime.now())) {
+    if ((snapshot.data?.isOnline ?? false) && !snapshot.data!.lastSeen!.toDate().isBefore(DateTime.now())) {
       return 'online';
     }
 
