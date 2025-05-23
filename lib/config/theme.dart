@@ -49,8 +49,7 @@ class AppTheme {
       ),
     ),
     tabBarTheme: TabBarTheme(
-        unselectedLabelColor: Colors.white38,
-        overlayColor: WidgetStateProperty.all<Color>(Colors.black12)),
+        unselectedLabelColor: Colors.white38, overlayColor: WidgetStateProperty.all<Color>(Colors.black12)),
     chipTheme: ChipThemeData(
       backgroundColor: COLOR_black_900,
       selectedColor: COLOR_white_fff5f5f5,
@@ -59,17 +58,17 @@ class AppTheme {
       labelStyle: TextStyle(color: COLOR_white_fff5f5f5),
     ),
     colorScheme: ColorScheme.dark(
-        primary: COLOR_purple,
-        onPrimary: COLOR_white_fff5f5f5,
-        onSecondary: COLOR_white_fff5f5f5,
-        secondary: COLOR_white_fff5f5f5,
-        onSurface: COLOR_white_fff5f5f5,
-        onTertiary: COLOR_purple,
-        tertiary: COLOR_black_900),
+      primary: COLOR_purple,
+      onPrimary: COLOR_white_fff5f5f5,
+      onSecondary: COLOR_white_fff5f5f5,
+      secondary: COLOR_white_fff5f5f5,
+      onSurface: COLOR_white_fff5f5f5,
+      onTertiary: COLOR_black_5E5D5,
+      tertiary: COLOR_black_900,
+    ),
     iconTheme: IconThemeData(
       color: COLOR_white_fff5f5f5,
     ),
-    textTheme: GoogleFonts.openSansTextTheme(
-        const TextTheme().apply(displayColor: COLOR_white_fff5f5f5)),
+    textTheme: GoogleFonts.openSansTextTheme(const TextTheme().apply(displayColor: COLOR_white_fff5f5f5)),
   );
 }

@@ -1,8 +1,10 @@
 // ignore_for_file: non_constant_identifier_names
 
 import 'package:flutter/material.dart';
+import 'package:personal_project/utils/hex_to_color.dart';
 
 Color COLOR_black_ff121212 = const Color(0xFF121212);
+Color COLOR_black_5E5D5 = Color(hexToColor('#5E5D5D'));
 Color COLOR_black_800 = const Color(0xFF3B3B3B);
 Color COLOR_black_900 = const Color(0xFF222222);
 int _COLOR_black_ff121212 = 0xFF121212;
