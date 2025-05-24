@@ -124,5 +124,8 @@
     "message_unsupported_message": "Message unsupported",
     "message_send_video": "Send a video",
     "message_no_comment_yet": "No comments yet",
-    "message_profile_picture_chaged": "Profile picture changed"
+    "message_profile_picture_chaged": "Profile picture changed",
+    "message_chat_textfield": "Message",
+    "message_hold_to_record": "Hold to record, release to send",
+    "message_swipe_left": "Swipe left to cancel"
 }

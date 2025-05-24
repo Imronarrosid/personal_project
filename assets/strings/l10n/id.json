@@ -124,5 +124,8 @@
     "message_unsupported_message": "Pesan tidak di support",
     "message_send_video": "Mengirim video",
     "message_no_comment_yet": "Belum ada komentar",
-    "message_profile_picture_chaged": "Foto profil diganti"
+    "message_profile_picture_chaged": "Foto profil diganti",
+    "message_chat_textfield": "Ketik pesan",
+    "message_hold_to_record": "Tahan untuk merekam, lepaskan untuk mengirim",
+    "message_swipe_left": "Geser ke kiri untuk membatalkan"
 }
