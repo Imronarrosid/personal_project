@@ -348,9 +348,11 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                   stream: context.read<UserRepository>().otherUserSream(_chatController!.otherUsers.first.id),
                   builder: (context, snapshot) {
                     return ChatViewAppBar(
-                      leading: BackButton(
-                        onPressed: () => context.read<AppRouter>().onBackButtonPressed(context),
-                      ),
+                      leading: BackButton(onPressed: () {
+                        context.read<AppRouter>().onBackButtonPressed(context);
+
+                        FocusScope.of(context).unfocus();
+                      }),
                       elevation: 0.3,
                       backGroundColor: colorScheme.surface,
                       profilePicture: widget.data.avatar,
@@ -579,22 +581,31 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   SendMessageConfiguration _sendMessageConfigutraion(ColorScheme colorScheme, BuildContext context) {
     return SendMessageConfiguration(
       imagePickerIconsConfig: ImagePickerIconsConfiguration(
-        cameraIconColor: colorScheme.onSurface,
-        galleryIconColor: colorScheme.onSurface,
-        cameraImagePickerIcon: Icon(SolarIconsOutline.camera),
-        galleryImagePickerIcon: Icon(SolarIconsOutline.gallery),
-      ),
-      // replyMessageColor: colorScheme.onSurface.withOpacity(0.6),
-      defaultSendButtonColor: colorScheme.onSurface,
-      // replyDialogColor: colorScheme.surface,
-      // replyTitleColor: colorScheme.onSurface,
-      textFieldBackgroundColor: colorScheme.tertiary,
-      // closeIconColor: colorScheme.onSurface,
-      textFieldConfig: TextFieldConfiguration(
-        padding: const EdgeInsets.symmetric(
-          horizontal: 8,
-          vertical: 3,
+        cameraImagePickerIcon: Icon(
+          SolarIconsOutline.camera,
+          color: colorScheme.onTertiary,
         ),
+        galleryImagePickerIcon: Icon(
+          SolarIconsOutline.gallery,
+          color: colorScheme.onTertiary,
+        ),
+      ),
+
+      replyMessageConfiguration: ReplyMessageViewConfiguration(
+        replyDialogColor: colorScheme.surface,
+        replyMessageColor: colorScheme.onTertiary,
+        imageIcon: Icon(
+          SolarIconsBold.gallery,
+          color: colorScheme.onTertiary,
+          size: 18,
+        ),
+      ),
+      textFieldBackgroundColor: colorScheme.tertiary,
+      textFieldConfig: TextFieldConfiguration(
+        hintStyle: TextStyle(
+          color: colorScheme.onTertiary,
+        ),
+        hintText: LocaleKeys.message_chat_textfield.tr(),
         onMessageTyping: (status) {
           /// Do with status
           debugPrint(status.toString());
@@ -605,18 +616,78 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
       ),
       imagePickerConfiguration: ImagePickerConfiguration(),
       // micIconColor: colorScheme.onSurface,
-      voiceRecordingConfiguration: VoiceRecordingConfiguration(
-        backgroundColor: colorScheme.primary,
-        recorderIconColor: colorScheme.onSurface,
-        margin: EdgeInsets.zero,
-        micIcon: Icon(Icons.mic_outlined),
-        decoration: BoxDecoration(borderRadius: BorderRadius.circular(50)),
-        waveStyle: WaveStyle(
-          backgroundColor: colorScheme.primary,
-          showMiddleLine: false,
-          waveColor: colorScheme.onSurface,
-          extendWaveform: true,
+      sendButtonIconColor: Colors.black,
+
+      defaultSendButtonColor: colorScheme.primary,
+      sendButtonIcon: Transform.translate(
+        offset: const Offset(-1.2, 0.5),
+        child: Icon(
+          SolarIconsBold.plain,
+          color: colorScheme.onSurface,
         ),
+      ),
+      voiceRecordingConfiguration: _voiceRecordingConfig(colorScheme),
+    );
+  }
+
+  VoiceRecordingConfiguration _voiceRecordingConfig(ColorScheme colorScheme) {
+    return VoiceRecordingConfiguration(
+      micTooltipMsg: LocaleKeys.message_hold_to_record.tr(),
+      swipeLeftWidget: SwipeLeftAnimationWidget(
+        duration: const Duration(milliseconds: 870),
+        swipeDistance: 20,
+        curve: Curves.ease,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              SolarIconsOutline.altArrowLeft,
+              color: colorScheme.onTertiary,
+            ),
+            Text(
+              LocaleKeys.message_swipe_left.tr(),
+              style: TextStyle(
+                color: colorScheme.onTertiary,
+              ),
+            ),
+            SizedBox(
+              width: Dimens.DIMENS_28,
+            ),
+          ],
+        ),
+      ),
+      lockIcon: Icon(
+        SolarIconsBold.lock,
+        size: 18,
+        color: colorScheme.onSurface,
+      ),
+      pauseIcon: Icon(
+        SolarIconsBold.pause,
+        color: colorScheme.onSurface,
+        size: 16,
+      ),
+      sendIcon: Transform.translate(
+        offset: const Offset(-1.2, 0.5),
+        child: Icon(
+          SolarIconsBold.plain,
+          color: colorScheme.onSurface,
+        ),
+      ),
+      backgroundColor: colorScheme.tertiary,
+      recorderIndicatorColor: Colors.red,
+      recordDurationColor: colorScheme.onSurface,
+      playIconColor: colorScheme.onSurface,
+      micIconColor: colorScheme.surface,
+      margin: EdgeInsets.zero,
+      micIcon: Icon(
+        Icons.mic_outlined,
+        color: colorScheme.onSurface,
+      ),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(50),
+      ),
+      playerWaveStyle: PlayerWaveStyle(
+        backgroundColor: colorScheme.surface,
       ),
     );
   }
