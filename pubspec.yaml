@@ -102,7 +102,7 @@ dependencies:
   chatview: 
     git: 
       url: https://github.com/Imronarrosid/flutter_chatview.git
-      ref: 1d16b2e12cb2fa2b2944f6c841271ef244bcc473
+      ref: 10b032e4922e472dbe291407bc4f97da7e9d0c03
   photo_view: ^0.15.0
   meta: ^1.15.0
   # ffmpeg_kit_flutter_new: ^1.6.0
