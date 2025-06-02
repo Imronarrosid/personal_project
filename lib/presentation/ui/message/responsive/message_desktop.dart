@@ -412,7 +412,7 @@ class _MessageDesktopState extends State<MessageDesktop> {
 
             if (!context.mounted) return;
             context.go(
-              '${APP_PAGE.message.toPath}/${user.userName}',
+              '${APP_PAGE.message.toPath}/u/${user.userName}',
               extra: ChatData(
                 room: room,
                 userName: user.userName!,
@@ -637,7 +637,7 @@ class _MessageDesktopState extends State<MessageDesktop> {
                   tileColor: Colors.transparent,
                   onTap: () async {
                     context.go(
-                      '${APP_PAGE.message.toPath}/${data.userName}',
+                      '${APP_PAGE.message.toPath}/u/${data.userName}',
                       extra: ChatPayload(
                         room: await context
                             .read<ChatRepository>()
