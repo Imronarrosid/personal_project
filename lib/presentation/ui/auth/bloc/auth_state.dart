@@ -8,6 +8,14 @@ enum AuthStatus {
   error,
 }
 
+extension AuthStatusX on AuthStatus {
+  bool get isInitial => this == AuthStatus.initial;
+  bool get isAuthenticated => this == AuthStatus.authenticated;
+  bool get isNotAuthenticated => this == AuthStatus.notAuthenticated;
+  bool get isLoading => this == AuthStatus.loading;
+  bool get isError => this == AuthStatus.error;
+}
+
 class AuthState extends Equatable {
   final AuthStatus status;
   final User? user;
