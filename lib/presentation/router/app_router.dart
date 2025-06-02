@@ -86,8 +86,7 @@ class AppRouter {
       if (_routeHistory[_routeHistory.length - 2].contains('/upload') &&
           _routeHistory[_routeHistory.length - 3].contains('/upload')) {
         context.go(_routeHistory[_routeHistory.length - 4]);
-        _routeHistory.removeRange(
-            _routeHistory.length - 3, _routeHistory.length - 1);
+        _routeHistory.removeRange(_routeHistory.length - 3, _routeHistory.length - 1);
       }
       context.go(_routeHistory[_routeHistory.length - 2]);
       _routeHistory.removeLast();
@@ -98,9 +97,7 @@ class AppRouter {
       refreshListenable: appService,
       routerNeglect: true,
       debugLogDiagnostics: true,
-      initialLocation: appService.onboarding
-          ? APP_PAGE.forYou.toPath
-          : APP_PAGE.onBoarding.toPath,
+      initialLocation: appService.onboarding ? APP_PAGE.forYou.toPath : APP_PAGE.onBoarding.toPath,
       redirect: (context, state) {
         if (state.fullPath == APP_PAGE.home.toPath) {
           return APP_PAGE.forYou.toPath;
@@ -172,31 +169,27 @@ class AppRouter {
                       key: state.pageKey,
                       child: KeepAlivePage(
                         key: state.pageKey,
-                        child:
-                            BlocBuilder<EditUserNameCubit, EditUserNameState>(
+                        child: BlocBuilder<EditUserNameCubit, EditUserNameState>(
                           builder: (context, editUserNameState) {
                             return ProfilePage(
                               key: state.pageKey,
-                              userName: editUserNameState.status ==
-                                      EditUserNameStatus.success
+                              userName: editUserNameState.status == EditUserNameStatus.success
                                   ? editUserNameState.newUserName!
                                   : usrename!,
                             );
                           },
                         ),
                       ),
-                      transitionsBuilder:
-                          (context, animation, secondaryAnimation, child) =>
-                              SlideTransition(
-                                  position: animation.drive(
-                                    Tween<Offset>(
-                                      begin: const Offset(0.75, 0),
-                                      end: Offset.zero,
-                                    ).chain(
-                                      CurveTween(curve: Curves.ease),
-                                    ),
-                                  ),
-                                  child: child),
+                      transitionsBuilder: (context, animation, secondaryAnimation, child) => SlideTransition(
+                          position: animation.drive(
+                            Tween<Offset>(
+                              begin: const Offset(0.75, 0),
+                              end: Offset.zero,
+                            ).chain(
+                              CurveTween(curve: Curves.ease),
+                            ),
+                          ),
+                          child: child),
                     );
                   },
                   routes: [
@@ -252,17 +245,15 @@ class AppRouter {
               GoRoute(
                 path: '/dm/:username',
                 onExit: (context, state) async {
-                  context
-                      .read<NavbarNotifier>()
-                      .chnageNavbarState(NavbarState.show);
+                  context.read<NavbarNotifier>().chnageNavbarState(NavbarState.show);
 
                   context.read<ChatRepository>().setChatPayload = null;
                   context.read<ChatRepository>().messagesLists.clear();
                   return true;
                 },
                 pageBuilder: (context, state) {
-                  final ChatPayload? data = state.extra as ChatPayload? ??
-                      context.read<ChatRepository>().chatPayload;
+                  final ChatPayload? data =
+                      state.extra as ChatPayload? ?? context.read<ChatRepository>().chatPayload;
                   if (data != null) {
                     context.read<ChatRepository>().setChatPayload = data;
                   }
@@ -293,12 +284,9 @@ class AppRouter {
                   GoRoute(
                       path: APP_PAGE.addDetails.toPath.replaceAll('/', ''),
                       redirect: (context, state) {
-                        if (state.fullPath ==
-                                APP_PAGE.upload.toPath +
-                                    APP_PAGE.addDetails.toPath &&
+                        if (state.fullPath == APP_PAGE.upload.toPath + APP_PAGE.addDetails.toPath &&
                             state.extra == null) {
-                          return APP_PAGE.upload.toPath +
-                              APP_PAGE.videoEditor.toPath;
+                          return APP_PAGE.upload.toPath + APP_PAGE.videoEditor.toPath;
                         }
                         return null;
                       },
@@ -359,8 +347,7 @@ class AppRouter {
                   builder: (context, state) {
                     return FollowingsNFollowers(
                       key: state.pageKey,
-                      userName:
-                          GoRouterState.of(context).pathParameters['username']!,
+                      userName: GoRouterState.of(context).pathParameters['username']!,
                       tab: 'following',
                     );
                   }),
@@ -370,8 +357,7 @@ class AppRouter {
                   builder: (context, state) {
                     return FollowingsNFollowers(
                       key: state.pageKey,
-                      userName:
-                          GoRouterState.of(context).pathParameters['username']!,
+                      userName: GoRouterState.of(context).pathParameters['username']!,
                       tab: 'followers',
                     );
                   }),
@@ -422,18 +408,16 @@ class AppRouter {
                 name: APP_PAGE.cachesPage.toName,
                 pageBuilder: (context, state) => CustomTransitionPage(
                   child: const CachesPage(),
-                  transitionsBuilder:
-                      (context, animation, secondaryAnimation, child) =>
-                          SlideTransition(
-                              position: animation.drive(
-                                Tween<Offset>(
-                                  begin: const Offset(0.75, 0),
-                                  end: Offset.zero,
-                                ).chain(
-                                  CurveTween(curve: Curves.ease),
-                                ),
-                              ),
-                              child: child),
+                  transitionsBuilder: (context, animation, secondaryAnimation, child) => SlideTransition(
+                      position: animation.drive(
+                        Tween<Offset>(
+                          begin: const Offset(0.75, 0),
+                          end: Offset.zero,
+                        ).chain(
+                          CurveTween(curve: Curves.ease),
+                        ),
+                      ),
+                      child: child),
                 ),
                 builder: (context, state) {
                   return const CachesPage();
@@ -445,18 +429,16 @@ class AppRouter {
                 pageBuilder: (context, state) {
                   return CustomTransitionPage(
                     child: const SearchRoomPage(),
-                    transitionsBuilder:
-                        (context, animation, secondaryAnimation, child) =>
-                            SlideTransition(
-                                position: animation.drive(
-                                  Tween<Offset>(
-                                    begin: const Offset(0.75, 0),
-                                    end: Offset.zero,
-                                  ).chain(
-                                    CurveTween(curve: Curves.ease),
-                                  ),
-                                ),
-                                child: child),
+                    transitionsBuilder: (context, animation, secondaryAnimation, child) => SlideTransition(
+                        position: animation.drive(
+                          Tween<Offset>(
+                            begin: const Offset(0.75, 0),
+                            end: Offset.zero,
+                          ).chain(
+                            CurveTween(curve: Curves.ease),
+                          ),
+                        ),
+                        child: child),
                   );
                 },
                 builder: (context, state) {
@@ -469,21 +451,17 @@ class AppRouter {
                 pageBuilder: (context, state) {
                   final PlaySingleData? extra = state.extra as PlaySingleData?;
                   return CustomTransitionPage(
-                    child: PlaySingleVideoPage(
-                        key: ValueKey(state.pathParameters['postId']),
-                        data: extra),
-                    transitionsBuilder:
-                        (context, animation, secondaryAnimation, child) =>
-                            SlideTransition(
-                                position: animation.drive(
-                                  Tween<Offset>(
-                                    begin: const Offset(0.75, 0),
-                                    end: Offset.zero,
-                                  ).chain(
-                                    CurveTween(curve: Curves.ease),
-                                  ),
-                                ),
-                                child: child),
+                    child: PlaySingleVideoPage(key: ValueKey(state.pathParameters['postId']), data: extra),
+                    transitionsBuilder: (context, animation, secondaryAnimation, child) => SlideTransition(
+                        position: animation.drive(
+                          Tween<Offset>(
+                            begin: const Offset(0.75, 0),
+                            end: Offset.zero,
+                          ).chain(
+                            CurveTween(curve: Curves.ease),
+                          ),
+                        ),
+                        child: child),
                   );
                 },
               ),
@@ -491,27 +469,23 @@ class AppRouter {
                 path: APP_PAGE.videoFromGame.toPath,
                 name: APP_PAGE.videoFromGame.toName,
                 pageBuilder: (context, state) {
-                  final VideoFromGameData data =
-                      state.extra as VideoFromGameData;
+                  final VideoFromGameData data = state.extra as VideoFromGameData;
                   return CustomTransitionPage(
                     child: VideoFromGamePage(data: data),
-                    transitionsBuilder:
-                        (context, animation, secondaryAnimation, child) =>
-                            SlideTransition(
-                                position: animation.drive(
-                                  Tween<Offset>(
-                                    begin: const Offset(0.75, 0),
-                                    end: Offset.zero,
-                                  ).chain(
-                                    CurveTween(curve: Curves.ease),
-                                  ),
-                                ),
-                                child: child),
+                    transitionsBuilder: (context, animation, secondaryAnimation, child) => SlideTransition(
+                        position: animation.drive(
+                          Tween<Offset>(
+                            begin: const Offset(0.75, 0),
+                            end: Offset.zero,
+                          ).chain(
+                            CurveTween(curve: Curves.ease),
+                          ),
+                        ),
+                        child: child),
                   );
                 },
                 builder: (context, state) {
-                  final VideoFromGameData data =
-                      state.extra as VideoFromGameData;
+                  final VideoFromGameData data = state.extra as VideoFromGameData;
                   return VideoFromGamePage(
                     data: data,
                   );
@@ -523,18 +497,16 @@ class AppRouter {
                 pageBuilder: (context, state) {
                   return CustomTransitionPage(
                     child: const SelectGamePage(),
-                    transitionsBuilder:
-                        (context, animation, secondaryAnimation, child) =>
-                            SlideTransition(
-                                position: animation.drive(
-                                  Tween<Offset>(
-                                    begin: const Offset(0.75, 0),
-                                    end: Offset.zero,
-                                  ).chain(
-                                    CurveTween(curve: Curves.ease),
-                                  ),
-                                ),
-                                child: child),
+                    transitionsBuilder: (context, animation, secondaryAnimation, child) => SlideTransition(
+                        position: animation.drive(
+                          Tween<Offset>(
+                            begin: const Offset(0.75, 0),
+                            end: Offset.zero,
+                          ).chain(
+                            CurveTween(curve: Curves.ease),
+                          ),
+                        ),
+                        child: child),
                   );
                 },
                 builder: (context, state) {
@@ -584,11 +556,7 @@ class AppRouter {
                   routes: [
                     ShellRoute(
                         pageBuilder: (context, state, child) {
-                          String routeName = GoRouter.of(context)
-                              .routeInformationProvider
-                              .value
-                              .uri
-                              .path;
+                          String routeName = GoRouter.of(context).routeInformationProvider.value.uri.path;
                           int menuIndex = 0;
                           if (routeName == '/settings/login') {
                             menuIndex = 0;
@@ -607,8 +575,7 @@ class AppRouter {
                             redirect: (context, state) {
                               return null;
                             },
-                            path:
-                                APP_PAGE.editProfile.toPath.replaceAll('/', ''),
+                            path: APP_PAGE.editProfile.toPath.replaceAll('/', ''),
                             // name: APP_PAGE.editProfile.toName,
                             builder: (context, state) {
                               return const EditProfile();
@@ -617,15 +584,13 @@ class AppRouter {
                           GoRoute(
                             path: 'language',
                             pageBuilder: (context, state) {
-                              return const NoTransitionPage(
-                                  child: LanguagePage());
+                              return const NoTransitionPage(child: LanguagePage());
                             },
                           ),
                           GoRoute(
                             path: 'caches',
                             pageBuilder: (context, state) {
-                              return const NoTransitionPage(
-                                  child: CachesPage());
+                              return const NoTransitionPage(child: CachesPage());
                             },
                           ),
                           GoRoute(
@@ -635,8 +600,7 @@ class AppRouter {
                                 child: HandleBackButton(
                                   child: Scaffold(
                                       appBar: AppBar(
-                                        title:
-                                            Text(LocaleKeys.label_login.tr()),
+                                        title: Text(LocaleKeys.label_login.tr()),
                                       ),
                                       body: const NotAuthenticatedPage()),
                                 ),
@@ -709,18 +673,16 @@ class AppRouter {
                 pageBuilder: (context, state) {
                   return CustomTransitionPage(
                     child: const LanguagePage(),
-                    transitionsBuilder:
-                        (context, animation, secondaryAnimation, child) =>
-                            SlideTransition(
-                                position: animation.drive(
-                                  Tween<Offset>(
-                                    begin: const Offset(0.75, 0),
-                                    end: Offset.zero,
-                                  ).chain(
-                                    CurveTween(curve: Curves.ease),
-                                  ),
-                                ),
-                                child: child),
+                    transitionsBuilder: (context, animation, secondaryAnimation, child) => SlideTransition(
+                        position: animation.drive(
+                          Tween<Offset>(
+                            begin: const Offset(0.75, 0),
+                            end: Offset.zero,
+                          ).chain(
+                            CurveTween(curve: Curves.ease),
+                          ),
+                        ),
+                        child: child),
                   );
                 },
                 builder: (context, state) {
@@ -732,7 +694,7 @@ class AppRouter {
                 name: APP_PAGE.selectCover.toName,
                 builder: (context, state) {
                   XFile data = state.extra as XFile;
-                  return  Text(
+                  return Text(
                     'Select Cover',
                     style: TextStyle(
                       fontSize: 16,
@@ -759,14 +721,12 @@ class AppRouter {
             StatefulShellBranch(routes: [
               _messageRoute(),
             ]),
-            StatefulShellBranch(
-                navigatorKey: GlobalKey<NavigatorState>(),
-                routes: [
-                  GoRoute(
-                    path: '/dummy',
-                    builder: (context, state) => Container(),
-                  ),
-                ]),
+            StatefulShellBranch(navigatorKey: GlobalKey<NavigatorState>(), routes: [
+              GoRoute(
+                path: '/dummy',
+                builder: (context, state) => Container(),
+              ),
+            ]),
           ],
           // errorBuilder: (context, state) => ErrorPage(error: state.error.toString()),
         ),
@@ -777,8 +737,7 @@ class AppRouter {
         path: APP_PAGE.message.toPath,
         name: APP_PAGE.message.toName,
         redirect: (context, state) {
-          if (state.uri.path ==
-                  APP_PAGE.message.toPath + APP_PAGE.chat.toPath ||
+          if (state.uri.path == APP_PAGE.message.toPath + APP_PAGE.chat.toPath ||
               state.uri.path == APP_PAGE.message.toPath) {
             if (MediaQuery.of(context).size.width < mobileWidth) {
               return APP_PAGE.message.toPath;
@@ -830,11 +789,10 @@ class AppRouter {
                   ),
                 ),
                 GoRoute(
-                  path: ':username',
+                  path: 'u/:username',
                   redirect: (context, state) {
                     final ChatPayload? data = state.extra as ChatPayload?;
-                    if (data == null &&
-                        context.read<ChatRepository>().chatPayload == null) {
+                    if (data == null && context.read<ChatRepository>().chatPayload == null) {
                       return APP_PAGE.message.toPath + APP_PAGE.chat.toPath;
                     }
                     return null;
@@ -854,18 +812,16 @@ class AppRouter {
                         data: context.read<ChatRepository>().chatPayload!,
                         key: ValueKey(state.pathParameters['username']),
                       ),
-                      transitionsBuilder:
-                          (context, animation, secondaryAnimation, child) =>
-                              SlideTransition(
-                                  position: animation.drive(
-                                    Tween<Offset>(
-                                      begin: const Offset(0.75, 0),
-                                      end: Offset.zero,
-                                    ).chain(
-                                      CurveTween(curve: Curves.ease),
-                                    ),
-                                  ),
-                                  child: child),
+                      transitionsBuilder: (context, animation, secondaryAnimation, child) => SlideTransition(
+                          position: animation.drive(
+                            Tween<Offset>(
+                              begin: const Offset(0.75, 0),
+                              end: Offset.zero,
+                            ).chain(
+                              CurveTween(curve: Curves.ease),
+                            ),
+                          ),
+                          child: child),
                     );
                   },
                 ),
@@ -874,8 +830,7 @@ class AppRouter {
   }
 
   void manageRoute(BuildContext context) {
-    final String routeName =
-        GoRouter.of(context).routeInformationProvider.value.uri.path;
+    final String routeName = GoRouter.of(context).routeInformationProvider.value.uri.path;
 
     LocationNotifier.instance.setCurrentLocation(routeName);
 
@@ -903,8 +858,7 @@ class AppRouter {
       _pageIndex = 2;
     } else if (routeName == '/profile' ||
         (context.read<AuthRepository>().currentUserData != null &&
-            routeName.contains(
-                '/@${context.read<AuthRepository>().currentUserData?.userName}'))) {
+            routeName.contains('/@${context.read<AuthRepository>().currentUserData?.userName}'))) {
       _pageIndex = 3;
     } else if (routeName.contains(APP_PAGE.upload.toPath)) {
       _pageIndex = 4;
