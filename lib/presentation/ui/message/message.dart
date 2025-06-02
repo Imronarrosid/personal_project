@@ -25,7 +25,6 @@ import 'package:personal_project/presentation/router/app_router.dart';
 import 'package:personal_project/presentation/router/route_utils.dart';
 import 'package:personal_project/presentation/shared_components/not_authenticated_page.dart';
 import 'package:personal_project/presentation/theme/user_profile_theme.dart';
-import 'package:personal_project/presentation/ui/chat/chat.dart';
 import 'package:personal_project/presentation/ui/home/navbar_notifier/navbar_notifier.dart';
 import 'package:provider/provider.dart';
 
@@ -138,12 +137,6 @@ class _MessagePageState extends State<MessagePage> {
                   backgroundImage: CachedNetworkImageProvider(user.photo!),
                 ),
         ),
-        // child: !hasImage
-        //     ? Text(
-        //         name.isEmpty ? '' : name[0].toUpperCase(),
-        //         style: const TextStyle(color: Colors.white),
-        //       )
-        //     : null,
       ),
     );
   }
@@ -157,8 +150,7 @@ class _MessagePageState extends State<MessagePage> {
     if (!_initialized) {
       return Container();
     }
-    final UserRepository userRepository =
-        RepositoryProvider.of<UserRepository>(context);
+    final UserRepository userRepository = RepositoryProvider.of<UserRepository>(context);
     return BackButtonListener(
       onBackButtonPressed: () async {
         AppRouter appRouter = Provider.of<AppRouter>(context, listen: false);
@@ -168,14 +160,16 @@ class _MessagePageState extends State<MessagePage> {
       },
       child: BlocProvider(
         create: (context) =>
-            SearchRoomBloc(RepositoryProvider.of<ChatRepository>(context))
-              ..add(const InitSearchRoom()),
-        child: Center(
+            SearchRoomBloc(RepositoryProvider.of<ChatRepository>(context))..add(const InitSearchRoom()),
+        child: GestureDetector(
+          onTap: () {
+            FocusScope.of(context).unfocus();
+          },
           child: Scaffold(
             appBar: _appBar(context),
             body: BlocBuilder<AuthBloc, AuthState>(
               builder: (context, state) {
-                if (state.status == AuthStatus.authenticated) {
+                if (state.status.isAuthenticated) {
                   return SingleChildScrollView(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.start,
@@ -190,19 +184,17 @@ class _MessagePageState extends State<MessagePage> {
                           builder: (context, state) {
                             if (state.status == SearchRoomStatus.loading) {
                               return SizedBox(
-                                height: MediaQuery.of(context).size.height - 70,
-                                child: const Center(
-                                    child: CircularProgressIndicator()),
+                                height: 270,
+                                child: const Center(child: CircularProgressIndicator()),
                               );
                             }
 
                             if (state.status == SearchRoomStatus.noItemFound) {
                               return SizedBox(
-                                height: MediaQuery.of(context).size.height - 70,
+                                height: 270,
                                 child: Center(
                                   child: Text(
-                                    LocaleKeys.message_not_found.tr(
-                                        args: [_textEditingController.text]),
+                                    LocaleKeys.message_not_found.tr(args: [_textEditingController.text]),
                                   ),
                                 ),
                               );
@@ -214,48 +206,7 @@ class _MessagePageState extends State<MessagePage> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 _suggestedRooms(context, userRepository),
-                                Padding(
-                                  padding:
-                                      EdgeInsets.only(left: Dimens.DIMENS_12),
-                                  child: Text(LocaleKeys.label_messages.tr()),
-                                ),
-                                StreamBuilder<List<Room>>(
-                                  stream:
-                                      context.read<ChatRepository>().rooms(),
-                                  builder: (context, snapshot) {
-                                    if (!snapshot.hasData) {
-                                      return Container(
-                                          padding: EdgeInsets.only(
-                                              top: Dimens.DIMENS_150),
-                                          alignment: Alignment.center,
-                                          child:
-                                              const CircularProgressIndicator());
-                                    }
-                                    if (snapshot.data!.isEmpty) {
-                                      return Container(
-                                        alignment: Alignment.center,
-                                        padding: EdgeInsets.only(
-                                            top: Dimens.DIMENS_150),
-                                        margin: const EdgeInsets.only(
-                                          bottom: 200,
-                                        ),
-                                        child: Text(
-                                            LocaleKeys.message_no_message.tr()),
-                                      );
-                                    }
-
-                                    return ListView.builder(
-                                      physics:
-                                          const NeverScrollableScrollPhysics(),
-                                      shrinkWrap: true,
-                                      itemCount: snapshot.data!.length,
-                                      itemBuilder: (context, index) {
-                                        final room = snapshot.data![index];
-                                        return _buildRoom(room);
-                                      },
-                                    );
-                                  },
-                                ),
+                                _rooms(context),
                               ],
                             );
                           },
@@ -271,6 +222,40 @@ class _MessagePageState extends State<MessagePage> {
           ),
         ),
       ),
+    );
+  }
+
+  StreamBuilder<List<Room>> _rooms(BuildContext context) {
+    return StreamBuilder<List<Room>>(
+      stream: context.read<ChatRepository>().rooms(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return Container(
+              padding: EdgeInsets.only(top: Dimens.DIMENS_105),
+              alignment: Alignment.center,
+              child: const CircularProgressIndicator());
+        }
+        if (snapshot.data!.isEmpty) {
+          return Container(
+            alignment: Alignment.center,
+            padding: EdgeInsets.only(top: Dimens.DIMENS_105),
+            margin: const EdgeInsets.only(
+              bottom: 200,
+            ),
+            child: Text(LocaleKeys.message_no_message.tr()),
+          );
+        }
+
+        return ListView.builder(
+          physics: const NeverScrollableScrollPhysics(),
+          shrinkWrap: true,
+          itemCount: snapshot.data!.length,
+          itemBuilder: (context, index) {
+            final room = snapshot.data![index];
+            return _buildRoom(room);
+          },
+        );
+      },
     );
   }
 
@@ -302,8 +287,7 @@ class _MessagePageState extends State<MessagePage> {
             // debugPrint('profile');
             types.User otherUser = types.User(
                 id: user.id,
-                createdAt:
-                    user.createdAt!.toDate().millisecondsSinceEpoch ~/ 1000,
+                createdAt: user.createdAt!.toDate().millisecondsSinceEpoch ~/ 1000,
                 firstName: user.userName);
             if (!mounted) return;
 
@@ -311,7 +295,7 @@ class _MessagePageState extends State<MessagePage> {
 
             if (!context.mounted) return;
             context.go(
-              '${APP_PAGE.message.toPath}/${user.userName}',
+              '${APP_PAGE.message.toPath}/u/${user.userName}',
               extra: ChatData(
                 room: room,
                 userName: user.userName!,
@@ -340,8 +324,7 @@ class _MessagePageState extends State<MessagePage> {
     );
   }
 
-  SizedBox _suggestedRooms(
-      BuildContext context, UserRepository userRepository) {
+  SizedBox _suggestedRooms(BuildContext context, UserRepository userRepository) {
     return SizedBox(
       width: MediaQuery.of(context).size.width,
       height: Dimens.DIMENS_105,
@@ -364,8 +347,7 @@ class _MessagePageState extends State<MessagePage> {
                       children: [
                         CircleAvatar(
                           radius: Dimens.DIMENS_28,
-                          backgroundColor:
-                              Theme.of(context).colorScheme.tertiary,
+                          backgroundColor: Theme.of(context).colorScheme.tertiary,
                         ),
                         SizedBox(
                           height: Dimens.DIMENS_6,
@@ -389,25 +371,19 @@ class _MessagePageState extends State<MessagePage> {
                   models.User user = users[index];
                   return InkWell(
                     onTap: () async {
-                      types.User otherUser = types.User(
-                          id: user.id,
-                          createdAt:
-                              user.createdAt!.toDate().millisecondsSinceEpoch ~/
-                                  1000,
-                          firstName: user.userName);
+                      // types.User otherUser = types.User(
+                      //     id: user.id,
+                      //     createdAt: user.createdAt!.toDate().millisecondsSinceEpoch ~/ 1000,
+                      //     firstName: user.userName);
                       if (!mounted) return;
 
-                      final room =
-                          await context.read<ChatRepository>().createRoom(user);
+                      final room = await context.read<ChatRepository>().createRoom(user);
 
                       if (!context.mounted) return;
                       context.go(
-                        '${APP_PAGE.message.toPath}/${user.userName}',
+                        '${APP_PAGE.message.toPath}/u/${user.userName}',
                         extra: ChatPayload(
-                            room: room,
-                            userName: user.userName!,
-                            avatar: user.photo!,
-                            name: user.name),
+                            room: room, userName: user.userName!, avatar: user.photo!, name: user.name),
                       );
                     },
                     child: Container(
@@ -423,10 +399,8 @@ class _MessagePageState extends State<MessagePage> {
                           ),
                           CircleAvatar(
                             radius: Dimens.DIMENS_28,
-                            backgroundColor:
-                                Theme.of(context).colorScheme.tertiary,
-                            backgroundImage:
-                                CachedNetworkImageProvider(user.photo!),
+                            backgroundColor: Theme.of(context).colorScheme.tertiary,
+                            backgroundImage: CachedNetworkImageProvider(user.photo!),
                           ),
                           SizedBox(
                             height: Dimens.DIMENS_6,
@@ -465,8 +439,7 @@ class _MessagePageState extends State<MessagePage> {
                                 height: Dimens.DIMENS_6,
                               ),
                               CircleAvatar(
-                                backgroundColor:
-                                    Theme.of(context).colorScheme.onTertiary,
+                                backgroundColor: Theme.of(context).colorScheme.onTertiary,
                                 radius: Dimens.DIMENS_28,
                                 child: const Icon(BootstrapIcons.plus),
                               ),
@@ -491,9 +464,8 @@ class _MessagePageState extends State<MessagePage> {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Container(
-        decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.tertiary,
-            borderRadius: BorderRadius.circular(50)),
+        decoration:
+            BoxDecoration(color: Theme.of(context).colorScheme.tertiary, borderRadius: BorderRadius.circular(50)),
         child: TextField(
           controller: _textEditingController,
           onChanged: (query) {
@@ -509,11 +481,14 @@ class _MessagePageState extends State<MessagePage> {
               padding: EdgeInsets.only(left: 8.0, top: 0.3),
               child: Icon(Icons.search_rounded),
             ),
+            hintStyle: TextStyle(
+              color: Theme.of(context).colorScheme.onTertiary,
+            ),
             hintText: LocaleKeys.label_search.tr(),
             contentPadding: const EdgeInsets.all(5),
             suffixIcon: BlocBuilder<SearchRoomBloc, SearchRoomState>(
               builder: (context, state) {
-                if (state.status == SearchRoomStatus.initial) {
+                if (_textEditingController.text.isEmpty) {
                   return const SizedBox(
                     width: 0,
                     height: 0,
@@ -530,9 +505,7 @@ class _MessagePageState extends State<MessagePage> {
               },
             ),
             suffixIconColor: COLOR_grey,
-            border: OutlineInputBorder(
-                borderSide: BorderSide.none,
-                borderRadius: BorderRadius.circular(500)),
+            border: OutlineInputBorder(borderSide: BorderSide.none, borderRadius: BorderRadius.circular(500)),
           ),
         ),
       ),
@@ -558,8 +531,7 @@ class _MessagePageState extends State<MessagePage> {
               initialData: const [],
               stream: context.read<ChatRepository>().getLastMessages(room),
               builder: (context, AsyncSnapshot<List<Message>> snapshot) {
-                final UserRepository userRepository =
-                    RepositoryProvider.of<UserRepository>(context);
+                final UserRepository userRepository = RepositoryProvider.of<UserRepository>(context);
 
                 List<Message>? messages = snapshot.data;
                 Message? message;
@@ -579,8 +551,7 @@ class _MessagePageState extends State<MessagePage> {
                   tileColor: Colors.transparent,
                   onTap: () async {
                     context.read<ChatRepository>().setChatPayload = ChatPayload(
-                      room:
-                          await context.read<ChatRepository>().createRoom(data),
+                      room: await context.read<ChatRepository>().createRoom(data),
                       userName: data.userName!,
                       avatar: data.photo!,
                       name: data.name,
@@ -588,12 +559,10 @@ class _MessagePageState extends State<MessagePage> {
 
                     if (!context.mounted) return;
 
-                    context
-                        .read<NavbarNotifier>()
-                        .chnageNavbarState(NavbarState.hidden);
+                    context.read<NavbarNotifier>().chnageNavbarState(NavbarState.hidden);
 
                     context.go(
-                      '/dm/${data.userName}',
+                      '${APP_PAGE.message.toPath}/u/${data.userName}',
                       // '${APP_PAGE.message.toPath}/${data.userName}',
                     );
                     // context.go(APP_PAGE.lobby.toPath);
@@ -618,7 +587,7 @@ class _MessagePageState extends State<MessagePage> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(data.userName!),
-                        _messageCreated(message, context)
+                        _messageCreated(message, context),
                       ],
                     ),
                   ),
@@ -626,12 +595,18 @@ class _MessagePageState extends State<MessagePage> {
                     future: userRepository.getUserNameOnly(message!.sentBy),
                     builder: (context, snapshot) {
                       if (!snapshot.hasData) {
-                        return Container();
+                        return Text('');
                       }
                       if (messages!.isEmpty) {
-                        return Container();
+                        return Text('');
                       }
-                      return _buildMessage(snapshot, message!, room.type!);
+                      return Row(
+                        children: [
+                          _buildMessage(snapshot, message!, room.type!),
+                          const Spacer(),
+                          _unreadedTotal(room)
+                        ],
+                      );
                     },
                   ),
                 );
@@ -639,32 +614,50 @@ class _MessagePageState extends State<MessagePage> {
         });
   }
 
+  Widget _unreadedTotal(Room room) {
+    final int total =
+        (room.unreadedTotal!.firstWhere((element) => element.uid == firebaseAuth.currentUser!.uid)).total;
+    return total > 0
+        ? Container(
+            width: 16,
+            height: 16,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(50), color: Theme.of(context).colorScheme.primary),
+            child: Text(
+              total > 99 ? '99+' : total.toString(),
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.surface,
+                fontWeight: FontWeight.w100,
+                fontSize: 8,
+              ),
+            ),
+          )
+        : const SizedBox.shrink();
+  }
+
   Text _messageCreated(Message? message, BuildContext context) {
-    return _isSameDay(message?.createdAt.millisecondsSinceEpoch ??
-            DateTime.now().millisecondsSinceEpoch)
+    return _isSameDay(message?.createdAt.millisecondsSinceEpoch ?? DateTime.now().millisecondsSinceEpoch)
         ? Text(
             DateFormat('HH:mm').format(DateTime.fromMillisecondsSinceEpoch(
-                message?.createdAt.millisecondsSinceEpoch ??
-                    DateTime.now().millisecondsSinceEpoch)),
-            style:
-                Theme.of(context).textTheme.bodySmall!.apply(color: COLOR_grey),
+                message?.createdAt.millisecondsSinceEpoch ?? DateTime.now().millisecondsSinceEpoch)),
+            style: Theme.of(context).textTheme.bodySmall!.apply(
+                  color: Theme.of(context).colorScheme.onTertiary,
+                ),
           )
         : Text(
             DateFormat('EEE,MM/yy').format(
               DateTime.fromMillisecondsSinceEpoch(
-                  message?.createdAt.millisecondsSinceEpoch ??
-                      DateTime.now().millisecondsSinceEpoch),
+                  message?.createdAt.millisecondsSinceEpoch ?? DateTime.now().millisecondsSinceEpoch),
             ),
             style: Theme.of(context).textTheme.bodySmall!.apply(
-                color:
-                    Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
+                  color: Theme.of(context).colorScheme.onTertiary,
+                ),
           );
   }
 
-  Text _buildMessage(
-      AsyncSnapshot<String> snapshot, Message message, RoomType roomType) {
-    String currentUser =
-        RepositoryProvider.of<AuthRepository>(context).currentUser!.uid;
+  Text _buildMessage(AsyncSnapshot<String> snapshot, Message message, RoomType roomType) {
+    String currentUser = RepositoryProvider.of<AuthRepository>(context).currentUser!.uid;
     if (message.sentBy == currentUser) {
       return Text(
         '${LocaleKeys.label_you.tr()}: ${_getMessage(message.messageType, message: message)}',
@@ -678,8 +671,7 @@ class _MessagePageState extends State<MessagePage> {
         '${snapshot.data!}: ${_getMessage(message.messageType, message: message)}',
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
-        style: TextStyle(
-            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
+        style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
       );
     }
     return Text(' ${_getMessage(message.messageType, message: message)}',
@@ -690,8 +682,7 @@ class _MessagePageState extends State<MessagePage> {
   }
 
   bool _isSameDay(int createdAt) {
-    return DateTime.fromMillisecondsSinceEpoch(createdAt).day ==
-        DateTime.now().day;
+    return DateTime.fromMillisecondsSinceEpoch(createdAt).day == DateTime.now().day;
   }
 
   String _getMessage(MessageType type, {required Message message}) {
@@ -709,8 +700,7 @@ class _MessagePageState extends State<MessagePage> {
 
   Future<models.User> _getOtherUsersData(Room room) async {
     try {
-      String currentUser =
-          RepositoryProvider.of<AuthRepository>(context).currentUser!.uid;
+      String currentUser = RepositoryProvider.of<AuthRepository>(context).currentUser!.uid;
 
       String? uid;
 
@@ -720,8 +710,7 @@ class _MessagePageState extends State<MessagePage> {
         }
       }
 
-      DocumentSnapshot snap =
-          await firebaseFirestore.collection('users').doc(uid).get();
+      DocumentSnapshot snap = await firebaseFirestore.collection('users').doc(uid).get();
 
       models.User otherUser = models.User.fromSnap(snap);
 
