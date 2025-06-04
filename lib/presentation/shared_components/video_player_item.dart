@@ -1,3 +1,4 @@
+import 'package:cached_video_player_plus/cached_video_player_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:personal_project/data/repository/video_player_repository.dart';
@@ -19,6 +20,7 @@ class VideoPlayerItem extends StatelessWidget {
   /// play and pause
   final bool auto;
   final bool? isForLogedUserVideo;
+  final CachedVideoPlayerPlusController controller;
   const VideoPlayerItem({
     super.key,
     required this.index,
@@ -26,6 +28,7 @@ class VideoPlayerItem extends StatelessWidget {
     required this.item,
     this.auto = false,
     this.isForLogedUserVideo = false,
+    required this.controller,
   });
 
   @override
@@ -34,15 +37,15 @@ class VideoPlayerItem extends StatelessWidget {
       create: (context) => VideoPlayerRepository(),
       child: BlocProvider(
         create: (context) => VideoPlayerBloc(
-            videoPlayerRepository:
-                RepositoryProvider.of<VideoPlayerRepository>(context),
+            controller: controller,
+            videoPlayerRepository: RepositoryProvider.of<VideoPlayerRepository>(context),
             videoRepository: RepositoryProvider.of<VideoRepository>(context))
           ..add(
-            VideoPlayerEvent(
-                actions: VideoEvent.initialize, videoUrl: item.videoUrl),
+            VideoPlayerEvent(actions: VideoEvent.initialize, videoUrl: item.videoUrl),
           ),
         child: ResponsiveLayout(
           mobileBody: VideoItemMobile(
+            controller: controller,
             index: index,
             videoData: item,
             auto: auto,

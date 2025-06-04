@@ -17,3 +17,12 @@ class InitPagingController extends VideoPagingEvent {
   @override
   List<Object> get props => [super.props, from];
 }
+
+class OnNextPage extends VideoPagingEvent {
+  final int index;
+
+  const OnNextPage({required this.index});
+
+  @override
+  List<Object> get props => [super.props, index];
+}

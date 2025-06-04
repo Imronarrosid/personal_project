@@ -1,3 +1,4 @@
+import 'package:cached_video_player_plus/cached_video_player_plus.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -25,9 +26,7 @@ class PlaySingleVideoPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return HandleBackButton(
       child: Padding(
-        padding: MediaQuery.of(context).size.width > mobileWidth
-            ? const EdgeInsets.all(8.0)
-            : EdgeInsets.zero,
+        padding: MediaQuery.of(context).size.width > mobileWidth ? const EdgeInsets.all(8.0) : EdgeInsets.zero,
         child: Scaffold(
           resizeToAvoidBottomInset: false,
           extendBodyBehindAppBar: true,
@@ -35,16 +34,16 @@ class PlaySingleVideoPage extends StatelessWidget {
           appBar: MediaQuery.of(context).size.width > mobileWidth
               ? null
               : AppBar(
-                  leading:
-                      BackButton(onPressed: () => _backButtonHanlde(context)),
+                  leading: BackButton(onPressed: () => _backButtonHanlde(context)),
                   backgroundColor: Colors.transparent,
                   elevation: 0,
                 ),
           body: Stack(
             children: [
               StreamBuilder<Video>(
-                  stream: context.read<VideoRepository>().videoStream(
-                      GoRouterState.of(context).pathParameters['postId'] ?? ''),
+                  stream: context
+                      .read<VideoRepository>()
+                      .videoStream(GoRouterState.of(context).pathParameters['postId'] ?? ''),
                   builder: (context, snapshot) {
                     final Video? data = snapshot.data;
                     if (!snapshot.hasData) {
@@ -59,26 +58,22 @@ class PlaySingleVideoPage extends StatelessWidget {
                         child: Scaffold(
                       resizeToAvoidBottomInset: false,
                       extendBodyBehindAppBar: true,
-                      backgroundColor:
-                          MediaQuery.of(context).size.width > mobileWidth
-                              ? Theme.of(context).colorScheme.background
-                              : Colors.black,
+                      backgroundColor: MediaQuery.of(context).size.width > mobileWidth
+                          ? Theme.of(context).colorScheme.background
+                          : Colors.black,
                       body: VideoPlayerItem(
+                        controller: CachedVideoPlayerPlusController.networkUrl(Uri.parse(data!.videoUrl)),
                         index: 0,
                         url: data!.uid,
                         item: data,
-                        isForLogedUserVideo:
-                            data.uid == (firebaseAuth.currentUser?.uid ?? ''),
+                        isForLogedUserVideo: data.uid == (firebaseAuth.currentUser?.uid ?? ''),
                       ),
-                      bottomNavigationBar: MediaQuery.of(context).size.width >
-                              mobileWidth
+                      bottomNavigationBar: MediaQuery.of(context).size.width > mobileWidth
                           ? null
                           : InkWell(
                               splashFactory: NoSplash.splashFactory,
                               splashColor: Colors.transparent,
-                              overlayColor:
-                                  const MaterialStatePropertyAll<Color>(
-                                      Colors.transparent),
+                              overlayColor: const MaterialStatePropertyAll<Color>(Colors.transparent),
                               onTap: () {
                                 showCommentsBottomSheet(
                                   context,
@@ -86,16 +81,14 @@ class PlaySingleVideoPage extends StatelessWidget {
                                 );
                               },
                               child: Container(
-                                decoration:
-                                    BoxDecoration(color: COLOR_black_900),
+                                decoration: BoxDecoration(color: COLOR_black_900),
                                 height: Dimens.DIMENS_50,
                                 width: MediaQuery.of(context).size.width,
                                 padding: EdgeInsets.only(
                                   left: Dimens.DIMENS_12,
                                 ),
                                 alignment: Alignment.centerLeft,
-                                child:
-                                    Text(LocaleKeys.message_add_comments.tr()),
+                                child: Text(LocaleKeys.message_add_comments.tr()),
                               ),
                             ),
                     ));

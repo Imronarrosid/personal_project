@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:cached_video_player_plus/cached_video_player_plus.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
@@ -12,7 +13,7 @@ import 'package:personal_project/presentation/ui/video/list_video/bloc/paging_bl
 class PagingRepository {
   PagingController<int, Video>? controller;
   VideoRepository videoRepository = VideoRepository();
-  final int _pageSize = 10;
+  final int _pageSize = 4;
 
   final List<DocumentSnapshot> _videoFromFollowing = [];
   final List<DocumentSnapshot> _videoFromGame = [];
@@ -21,6 +22,13 @@ class PagingRepository {
 
   late Future<List<String>> _gameTitle;
   late Future<List<String>> _followingUid;
+
+  final List<CachedVideoPlayerPlusController> _videoPlayerControllers = [];
+  final List<Video> _videos = [];
+
+  List<CachedVideoPlayerPlusController> get videoPlayerControllers => _videoPlayerControllers;
+
+  List<Video> get videos => _videos;
 
   Future<List<String>> getFollowedUid() async {
     try {
@@ -84,8 +92,7 @@ class PagingRepository {
         newItems = await getListVideoByGame(limit: limit1);
         List<DocumentSnapshot> secondList = await getFromUnselectedGame(limit: limit2);
         newItems.addAll(secondList);
-        List<DocumentSnapshot> thirdList =
-            await getListVideoGameIsNull(limit: _pageSize - newItems.length);
+        List<DocumentSnapshot> thirdList = await getListVideoGameIsNull(limit: _pageSize - newItems.length);
         newItems.addAll(thirdList);
       }
 
@@ -158,11 +165,8 @@ class PagingRepository {
     }
     try {
       if (_videoFromGame.isEmpty) {
-        querySnapshot = await firebaseFirestore
-            .collection('videos')
-            .where('game.title', whereIn: gameList)
-            .limit(limit)
-            .get();
+        querySnapshot =
+            await firebaseFirestore.collection('videos').where('game.title', whereIn: gameList).limit(limit).get();
       } else {
         querySnapshot = await firebaseFirestore
             .collection('videos')
@@ -210,11 +214,8 @@ class PagingRepository {
             .limit(limit)
             .get();
       } else if (_videoNotFromGame.isEmpty && gameList.isEmpty) {
-        querySnapshot = await firebaseFirestore
-            .collection('videos')
-            .where('game', isNull: false)
-            .limit(limit)
-            .get();
+        querySnapshot =
+            await firebaseFirestore.collection('videos').where('game', isNull: false).limit(limit).get();
       } else {
         querySnapshot = await firebaseFirestore
             .collection('videos')
@@ -252,11 +253,8 @@ class PagingRepository {
     // }
     try {
       if (_videoGameIsNull.isEmpty) {
-        querySnapshot = await firebaseFirestore
-            .collection('videos')
-            .where('game', isNull: true)
-            .limit(limit)
-            .get();
+        querySnapshot =
+            await firebaseFirestore.collection('videos').where('game', isNull: true).limit(limit).get();
       } else {
         querySnapshot = await firebaseFirestore
             .collection('videos')
@@ -302,6 +300,51 @@ class PagingRepository {
     } catch (e) {
       debugPrint(e.toString());
       return [];
+    }
+  }
+
+  Future<List<Video>?> getVideos({
+    required VideoFrom from,
+  }) async {
+    try {
+      List<Video> listVideo = [];
+      final List<DocumentSnapshot> newItems;
+      if (from == VideoFrom.following) {
+        newItems = await getListVideoFromFollowing(limit: _pageSize);
+      } else {
+        Random random = Random();
+        int limit1 = random.nextInt(1) + 1;
+        int limit2 = random.nextInt(2) + 1;
+        newItems = await getListVideoByGame(limit: limit1);
+        List<DocumentSnapshot> secondList = await getFromUnselectedGame(limit: limit2);
+        newItems.addAll(secondList);
+        List<DocumentSnapshot> thirdList = await getListVideoGameIsNull(limit: _pageSize - newItems.length);
+        newItems.addAll(thirdList);
+      }
+
+      for (var element in newItems) {
+        listVideo.add(Video.fromSnap(element));
+      }
+
+      return listVideo;
+    } catch (error) {
+      controller!.error = error;
+      return null;
+    }
+  }
+
+  Future<void> loadVideos() async {
+    final List<Video>? videos = await getVideos(from: VideoFrom.forYou);
+
+    if (videos != null) {
+      _videos.addAll(videos);
+
+      for (var video in videos) {
+        CachedVideoPlayerPlusController controller = CachedVideoPlayerPlusController.networkUrl(
+          Uri.parse(video.videoUrl),
+        );
+        _videoPlayerControllers.add(controller);
+      }
     }
   }
 }

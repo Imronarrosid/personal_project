@@ -38,6 +38,7 @@ import 'package:solar_icons/solar_icons.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
 import '../../../../../utils/debug_mode_print.dart';
+import '../../../../shared_components/shared_components.dart';
 
 class VideoItemMobile extends StatefulWidget {
   final int index;
@@ -48,12 +49,15 @@ class VideoItemMobile extends StatefulWidget {
   /// play and pause
   final bool auto;
   final bool? isForLogedUserVideo;
+
+  final CachedVideoPlayerPlusController controller;
   const VideoItemMobile({
     super.key,
     required this.index,
     required this.videoData,
     this.auto = false,
     this.isForLogedUserVideo = false,
+    required this.controller,
   });
 
   @override
@@ -70,10 +74,8 @@ class _VideoItemMobileState extends State<VideoItemMobile> {
   Widget build(BuildContext context) {
     var videoData = widget.videoData;
     Size size = MediaQuery.of(context).size;
-    final AuthRepository authRepository =
-        RepositoryProvider.of<AuthRepository>(context);
-    final VideoRepository videoRepository =
-        RepositoryProvider.of<VideoRepository>(context);
+    final AuthRepository authRepository = RepositoryProvider.of<AuthRepository>(context);
+    final VideoRepository videoRepository = RepositoryProvider.of<VideoRepository>(context);
 
     return MultiBlocProvider(
       providers: [
@@ -87,20 +89,18 @@ class _VideoItemMobileState extends State<VideoItemMobile> {
             listener: (context, state) {
               debugModePrint(state.toString());
 
-              if (state.status == VideoPlayerStatus.initialized) {
-                if (isViewed == false) {
-                  addListener(state: state, videoData: videoData);
-                }
-              }
+              // if (state.status == VideoPlayerStatus.initialized && state.controller!.value.isInitialized) {
+              //   if (isViewed == false) {
+              //     addListener(state: state, videoData: videoData);
+              //   }
+              // }
             },
             child: GestureDetector(
               onTap: () {
                 _onTap(context);
               },
               onDoubleTap: () {
-                String? uid = RepositoryProvider.of<AuthRepository>(context)
-                    .currentUser
-                    ?.uid;
+                String? uid = RepositoryProvider.of<AuthRepository>(context).currentUser?.uid;
                 bool isLiked = videoData.likes.contains(uid);
                 BlocProvider.of<LikeVideoCubit>(context).doubleTapToLike(
                   postId: videoData.id!,
@@ -147,15 +147,12 @@ class _VideoItemMobileState extends State<VideoItemMobile> {
   }
 
   void _onTap(BuildContext context) {
-    final VideoPlayerRepository repo =
-        RepositoryProvider.of<VideoPlayerRepository>(context);
     VideoPlayerBloc bloc = BlocProvider.of<VideoPlayerBloc>(context);
-    if (repo.controller != null) {
-      if (repo.controller!.value.isPlaying) {
-        bloc.add(const VideoPlayerEvent(actions: VideoEvent.pause));
-      } else {
-        bloc.add(const VideoPlayerEvent(actions: VideoEvent.play));
-      }
+
+    if (widget.controller.value.isPlaying) {
+      bloc.add(const VideoPlayerEvent(actions: VideoEvent.pause));
+    } else {
+      bloc.add(const VideoPlayerEvent(actions: VideoEvent.play));
     }
   }
 
@@ -187,14 +184,11 @@ class _VideoItemMobileState extends State<VideoItemMobile> {
               duration: kThemeAnimationDuration,
               child: GestureDetector(
                 onTap: () {
-                  BlocProvider.of<VideoPlayerBloc>(context)
-                      .add(const VideoPlayerEvent(actions: VideoEvent.play));
+                  BlocProvider.of<VideoPlayerBloc>(context).add(const VideoPlayerEvent(actions: VideoEvent.play));
                 },
                 child: Icon(
                   SolarIconsBold.play,
-                  size: state.status == VideoPlayerStatus.paused
-                      ? Dimens.DIMENS_38
-                      : Dimens.DIMENS_50,
+                  size: state.status == VideoPlayerStatus.paused ? Dimens.DIMENS_38 : Dimens.DIMENS_50,
                   color: COLOR_white_fff5f5f5,
                 ),
               ),
@@ -207,8 +201,6 @@ class _VideoItemMobileState extends State<VideoItemMobile> {
   }
 
   Widget _videoView(Size size, Video videoData) {
-    final VideoPlayerRepository repo =
-        RepositoryProvider.of<VideoPlayerRepository>(context);
     return ListenableBuilder(
       listenable: VideoPaddingNOtifire.instance,
       builder: (context, child) {
@@ -227,34 +219,6 @@ class _VideoItemMobileState extends State<VideoItemMobile> {
             onVisibilityChanged: (info) {
               // CachedVideoPlayerController controller =
               //     state.controller!;
-
-              var visiblePercentage = info.visibleFraction * 100;
-              if (visiblePercentage == 0.0 && isActive) {
-                BlocProvider.of<VideoPlayerBloc>(context)
-                    .add(const VideoPlayerEvent(actions: VideoEvent.dispose));
-              }
-              if (visiblePercentage > 30 && isActive) {
-                debugModePrint('ctrlll isnull ${repo.controller == null}');
-                if (repo.controller == null) {
-                  debugModePrint('ctrlll ');
-                  BlocProvider.of<VideoPlayerBloc>(context).add(
-                      VideoPlayerEvent(
-                          actions: VideoEvent.initialize,
-                          videoUrl: videoData.videoUrl));
-                }
-
-                // Point the controller is initialized
-                // if (repo.controller!.value.isInitialized &&
-                //     widget.auto &&
-                //     isActive) {
-                if (repo.controller != null && bottomPadding == 0.0) {
-                  BlocProvider.of<VideoPlayerBloc>(context)
-                      .add(const VideoPlayerEvent(actions: VideoEvent.play));
-                  debugModePrint(
-                      'isready ${repo.controller!.value.isInitialized}');
-                }
-                // }
-              }
             },
             child: BlocBuilder<VideoPlayerBloc, VideoPlayerState>(
               buildWhen: (previous, current) {
@@ -266,31 +230,34 @@ class _VideoItemMobileState extends State<VideoItemMobile> {
                 return true;
               },
               builder: (_, state) {
-                if (state.status == VideoPlayerStatus.initialized) {
-                  return SizedBox.expand(
-                    child: FittedBox(
-                      fit: BoxFit.contain,
-                      child: SizedBox(
-                        width: state.controller!.value.size.width,
-                        height: state.controller!.value.size.height,
-                        child: Stack(
-                          children: [
-                            CachedVideoPlayerPlus(repo.controller!),
+                if (state.status == VideoPlayerStatus.initialized && widget.controller.value.isInitialized) {
+                  debugModePrint(
+                      'state ${widget.index}  width ${state.controller!.value.size.width} aspc ${state.controller!.value.size.aspectRatio}');
 
-                            //Inkwell to fix play and pause video on web
-                            _fixsPlayVideoWeb()
-                          ],
+                  return Stack(
+                    children: [
+                      ///to fixs blank if size is 0
+                      if (widget.controller.value.size.aspectRatio == 0)
+                        CachedVideoPlayerPlus(widget.controller)
+                      else
+                        FittedBox(
+                          fit: BoxFit.fitWidth, //
+                          child: SizedBox(
+                            width: widget.controller.value.size.width,
+                            height: widget.controller.value.size.height,
+                            child: CachedVideoPlayerPlus(widget.controller),
+                          ),
                         ),
-                      ),
-                    ),
+
+                      //Inkwell to fix play and pause video on web
+                      _fixsPlayVideoWeb()
+                    ],
                   );
-                } else if (state is VideoPlayerInitial ||
-                    state.status == VideoPlayerStatus.disposed) {
+                } else if (!widget.controller.value.isInitialized) {
                   return SizedBox(
                     width: MediaQuery.of(context).size.width,
                     child: CachedNetworkImage(
-                      placeholder: (_, __) =>
-                          const Center(child: CircularProgressIndicator()),
+                      placeholder: (_, __) => const Center(child: CircularProgressIndicator()),
                       imageUrl: videoData.thumnail,
                       errorWidget: (_, __, ___) {
                         return Container();
@@ -304,19 +271,10 @@ class _VideoItemMobileState extends State<VideoItemMobile> {
                   children: [
                     Text(
                       'Error',
-                      style: TextStyle(
-                          color: COLOR_white_fff5f5f5,
-                          fontSize: _IC_LABEL_FONTSIZE),
+                      style: TextStyle(color: COLOR_white_fff5f5f5, fontSize: _IC_LABEL_FONTSIZE),
                     ),
                     IconButton(
                         onPressed: () {
-                          final CachedVideoPlayerPlusController? controller0 =
-                              RepositoryProvider.of<VideoPlayerRepository>(
-                                      context)
-                                  .controller;
-                          if (controller0 != null) {
-                            controller0.dispose();
-                          }
                           BlocProvider.of<VideoPlayerBloc>(context).add(
                             VideoPlayerEvent(
                               actions: VideoEvent.initialize,
@@ -336,11 +294,9 @@ class _VideoItemMobileState extends State<VideoItemMobile> {
     );
   }
 
-  FutureBuilder<User> _rightOveray(
-      BuildContext context, Video videoData, AuthRepository authRepository) {
+  FutureBuilder<User> _rightOveray(BuildContext context, Video videoData, AuthRepository authRepository) {
     return FutureBuilder(
-        future: RepositoryProvider.of<VideoRepository>(context)
-            .getVideoOwnerData(widget.videoData.uid),
+        future: RepositoryProvider.of<VideoRepository>(context).getVideoOwnerData(widget.videoData.uid),
         builder: (_, snapshot) {
           var data = snapshot.data;
           if (snapshot.hasData) {
@@ -359,8 +315,7 @@ class _VideoItemMobileState extends State<VideoItemMobile> {
                   ),
                   BlocBuilder<LikeVideoCubit, LikeVideoState>(
                     buildWhen: (_, current) {
-                      if (current is ShowDobleTapLikeWidget ||
-                          current is RemoveDoubleTapLikeWidget) {
+                      if (current is ShowDobleTapLikeWidget || current is RemoveDoubleTapLikeWidget) {
                         return false;
                       }
                       return true;
@@ -407,17 +362,13 @@ class _VideoItemMobileState extends State<VideoItemMobile> {
                         //     bottomSheetHeight:
                         //         ((MediaQuery.of(context).size.height * 0.7) -
                         //             85));
-                        context
-                            .read<NavbarNotifier>()
-                            .chnageNavbarState(NavbarState.hidden);
+                        context.read<NavbarNotifier>().chnageNavbarState(NavbarState.hidden);
                         await showCommentsBottomSheet(
                           context,
                           postId: widget.videoData.id!,
                         );
                         if (context.mounted) {
-                          context
-                              .read<NavbarNotifier>()
-                              .chnageNavbarState(NavbarState.show);
+                          context.read<NavbarNotifier>().chnageNavbarState(NavbarState.show);
                         }
                       },
                       child: Transform.flip(
@@ -448,8 +399,7 @@ class _VideoItemMobileState extends State<VideoItemMobile> {
                   ),
                   GestureDetector(
                     onTap: () {
-                      debugModePrint(
-                          'lmnop${LocaleKeys.message_share_featur_not_ready.tr()}');
+                      debugModePrint('lmnop${LocaleKeys.message_share_featur_not_ready.tr()}');
                       Fluttertoast.showToast(
                         msg: LocaleKeys.message_share_featur_not_ready.tr(),
                         toastLength: Toast.LENGTH_SHORT,
@@ -499,9 +449,7 @@ class _VideoItemMobileState extends State<VideoItemMobile> {
                           ),
                         );
                       } else {
-                        Fluttertoast.showToast(
-                            gravity: ToastGravity.TOP,
-                            msg: LocaleKeys.message_no_game.tr());
+                        Fluttertoast.showToast(gravity: ToastGravity.TOP, msg: LocaleKeys.message_no_game.tr());
                       }
                     },
                     child: Container(
@@ -542,11 +490,10 @@ class _VideoItemMobileState extends State<VideoItemMobile> {
       return InkWell(
           overlayColor: const WidgetStatePropertyAll<Color>(Colors.transparent),
           onTap: () {
-            final VideoPlayerRepository repo =
-                RepositoryProvider.of<VideoPlayerRepository>(context);
+            final VideoPlayerRepository repo = RepositoryProvider.of<VideoPlayerRepository>(context);
             VideoPlayerBloc bloc = BlocProvider.of<VideoPlayerBloc>(context);
-            if (repo.controller != null) {
-              if (repo.controller!.value.isPlaying) {
+            if (widget.controller.value.isInitialized) {
+              if (widget.controller.value.isPlaying) {
                 bloc.add(const VideoPlayerEvent(actions: VideoEvent.pause));
               } else {
                 bloc.add(const VideoPlayerEvent(actions: VideoEvent.play));
@@ -567,8 +514,7 @@ class _VideoItemMobileState extends State<VideoItemMobile> {
             padding: EdgeInsets.only(bottom: Dimens.DIMENS_25),
             child: GestureDetector(
               onTap: () {
-                if (videoData.uid == authRepository.currentUser?.uid &&
-                    authRepository.currentUser?.uid != null) {
+                if (videoData.uid == authRepository.currentUser?.uid && authRepository.currentUser?.uid != null) {
                   showModalBottomSheetMenu(context, height: 100, menu: [
                     Material(
                       child: ListTile(
@@ -577,37 +523,29 @@ class _VideoItemMobileState extends State<VideoItemMobile> {
                           showDialog(
                               context: context,
                               builder: (_) => AlertDialog(
-                                    title: Text(
-                                        LocaleKeys.message_delete_video.tr()),
+                                    title: Text(LocaleKeys.message_delete_video.tr()),
                                     actions: [
                                       TextButton(
                                         onPressed: () => context.pop(),
                                         child: Text(
                                           LocaleKeys.label_cancel.tr(),
                                           style: TextStyle(
-                                            color: Theme.of(context)
-                                                .colorScheme
-                                                .primary
-                                                .withOpacity(0.5),
+                                            color: Theme.of(context).colorScheme.primary.withOpacity(0.5),
                                           ),
                                         ),
                                       ),
                                       TextButton(
                                         onPressed: () {
-                                          BlocProvider.of<VideoPlayerBloc>(
-                                                  context)
-                                              .add(
+                                          BlocProvider.of<VideoPlayerBloc>(context).add(
                                             VideoPlayerEvent(
                                                 actions: VideoEvent.delete,
                                                 postId: videoData.id,
                                                 videoUrl: videoData.videoUrl,
-                                                thumnailUrl:
-                                                    videoData.thumnail),
+                                                thumnailUrl: videoData.thumnail),
                                           );
 
                                           //for refresh video list
-                                          BlocProvider.of<UploadBloc>(context)
-                                              .add(
+                                          BlocProvider.of<UploadBloc>(context).add(
                                             DeleteVideo(
                                               pagingIndex: widget.index,
                                             ),
@@ -668,8 +606,7 @@ class _VideoItemMobileState extends State<VideoItemMobile> {
                 ),
               )
             : FutureBuilder(
-                future:
-                    UploadRepository.instance.getGameAvatar(videoData.category),
+                future: UploadRepository.instance.getGameAvatar(videoData.category),
                 builder: (context, snapshot) {
                   if (!snapshot.hasData) {
                     return Container(
@@ -686,18 +623,16 @@ class _VideoItemMobileState extends State<VideoItemMobile> {
     );
   }
 
-  void addListener(
-      {required VideoPlayerState state, required Video videoData}) {
+  void addListener({required VideoPlayerState state, required Video videoData}) {
+    if (!state.controller!.value.isInitialized) return;
     state.controller!.addListener(() {
       int duratio = state.controller!.value.duration.inSeconds;
       double minDur = 3 / 10 * duratio;
       if (mounted) {
         final vBloc = BlocProvider.of<VideoPlayerBloc>(context);
 
-        if (state.controller!.value.position.inSeconds > minDur.toInt() &&
-            !isViewed) {
-          RepositoryProvider.of<VideoRepository>(context)
-              .addViewsCount(videoData.id!);
+        if (state.controller!.value.position.inSeconds > minDur.toInt() && !isViewed) {
+          RepositoryProvider.of<VideoRepository>(context).addViewsCount(videoData.id!);
           debugModePrint('add views');
           isViewed = true;
           // state.controller!.removeListener(() {});
@@ -710,8 +645,7 @@ class _VideoItemMobileState extends State<VideoItemMobile> {
             ),
           );
         } else {
-          if (state.controller!.value.isPlaying &&
-              isBufferingIndicatorVisible) {
+          if (state.controller!.value.isPlaying && isBufferingIndicatorVisible) {
             vBloc.add(
               const VideoPlayerEvent(
                 actions: VideoEvent.removeBufferingIndicator,
@@ -724,33 +658,49 @@ class _VideoItemMobileState extends State<VideoItemMobile> {
     });
   }
 
-  GestureDetector _buildLikeButton(BuildContext context, Video videoData) {
-    return GestureDetector(
-      onTap: () {
+  Widget _buildLikeButton(BuildContext context, Video videoData, {bool isLiked = false}) {
+    return PostButtonItem(
+      style: IconButton.styleFrom(
+        iconSize: Dimens.DIMENS_34,
+      ),
+      onPressed: () {
         int likeCount = videoData.likesCount;
-        String? uid =
-            RepositoryProvider.of<AuthRepository>(context).currentUser?.uid;
+        String? uid = RepositoryProvider.of<AuthRepository>(context).currentUser?.uid;
         if (uid == null) {
           showAuthBottomSheetFunc(context);
         } else {
           bool isLiked = videoData.likes.contains(uid);
-          BlocProvider.of<LikeVideoCubit>(context).likePost(
-              postId: videoData.id!,
-              stateFromDatabase: isLiked,
-              databaseLikeCount: likeCount);
+          BlocProvider.of<LikeVideoCubit>(context)
+              .likePost(postId: videoData.id!, stateFromDatabase: isLiked, databaseLikeCount: likeCount);
+        }
+      },
+      icon: Icon(
+        SolarIconsBold.heart,
+        size: Dimens.DIMENS_34,
+        color: isLiked ? Colors.red : Theme.of(context).colorScheme.onSurface,
+      ),
+    );
+    return GestureDetector(
+      onTap: () {
+        int likeCount = videoData.likesCount;
+        String? uid = RepositoryProvider.of<AuthRepository>(context).currentUser?.uid;
+        if (uid == null) {
+          showAuthBottomSheetFunc(context);
+        } else {
+          bool isLiked = videoData.likes.contains(uid);
+          BlocProvider.of<LikeVideoCubit>(context)
+              .likePost(postId: videoData.id!, stateFromDatabase: isLiked, databaseLikeCount: likeCount);
         }
       },
       child: BlocBuilder<LikeVideoCubit, LikeVideoState>(
         buildWhen: (previous, current) {
-          if (current is ShowDobleTapLikeWidget ||
-              current is RemoveDoubleTapLikeWidget) {
+          if (current is ShowDobleTapLikeWidget || current is RemoveDoubleTapLikeWidget) {
             return false;
           }
           return true;
         },
         builder: (context, state) {
-          String? uid =
-              RepositoryProvider.of<AuthRepository>(context).currentUser?.uid;
+          String? uid = RepositoryProvider.of<AuthRepository>(context).currentUser?.uid;
           bool isLiked = videoData.likes.contains(uid);
           if (state is VideoIsLiked) {
             return Icon(
@@ -828,15 +778,14 @@ class _VideoItemMobileState extends State<VideoItemMobile> {
           return true;
         },
         builder: (context, state) {
-          if (state.status == VideoPlayerStatus.initialized) {
+          if (state.status == VideoPlayerStatus.initialized && state.controller!.value.isInitialized) {
             return SizedBox(
               height: 3,
               child: VideoProgressIndicator(
                 state.controller!,
                 padding: EdgeInsets.zero,
                 colors: VideoProgressColors(
-                    bufferedColor: COLOR_white_fff5f5f5.withOpacity(0.3),
-                    playedColor: COLOR_white_fff5f5f5),
+                    bufferedColor: COLOR_white_fff5f5f5.withOpacity(0.3), playedColor: COLOR_white_fff5f5f5),
                 allowScrubbing: true,
               ),
             );
@@ -848,11 +797,9 @@ class _VideoItemMobileState extends State<VideoItemMobile> {
   }
 
   FutureBuilder<User> _bottomOverLay(BuildContext context, Video videoData) {
-    final UserRepository userRepository =
-        RepositoryProvider.of<UserRepository>(context);
+    final UserRepository userRepository = RepositoryProvider.of<UserRepository>(context);
     return FutureBuilder(
-      future: RepositoryProvider.of<VideoRepository>(context)
-          .getVideoOwnerData(widget.videoData.uid),
+      future: RepositoryProvider.of<VideoRepository>(context).getVideoOwnerData(widget.videoData.uid),
       builder: (context, snapshot) {
         var data = snapshot.data;
         if (snapshot.hasData) {
@@ -870,8 +817,7 @@ class _VideoItemMobileState extends State<VideoItemMobile> {
                       },
                       child: Text(
                         '@${data!.userName!}',
-                        style: TextStyle(
-                            color: COLOR_white_fff5f5f5, fontSize: 14),
+                        style: TextStyle(color: COLOR_white_fff5f5f5, fontSize: 14),
                       ),
                     ),
                     SizedBox(
@@ -883,41 +829,29 @@ class _VideoItemMobileState extends State<VideoItemMobile> {
                             stream: userRepository.isFollowingStream(data.id),
                             builder: (_, AsyncSnapshot<bool> snapshot) {
                               bool? isFollowing = snapshot.data;
-                              if (!snapshot.hasData ||
-                                  snapshot.hasError ||
-                                  isFollowing!) {
+                              if (!snapshot.hasData || snapshot.hasError || isFollowing!) {
                                 return Container(
                                   height: Dimens.DIMENS_28,
                                 );
                               }
 
                               return BlocProvider(
-                                create: (context) => FollowCubit(
-                                    RepositoryProvider.of<UserRepository>(
-                                        context)),
+                                create: (context) => FollowCubit(RepositoryProvider.of<UserRepository>(context)),
                                 child: BlocBuilder<FollowCubit, FollowState>(
                                   builder: (context, state) {
                                     return Material(
                                       borderRadius: BorderRadius.circular(5),
-                                      color: state.status ==
-                                                  BlocStatus.following ||
-                                              isFollowing
+                                      color: state.status == BlocStatus.following || isFollowing
                                           ? Colors.transparent
-                                          : Theme.of(context)
-                                              .colorScheme
-                                              .onTertiary,
+                                          : Theme.of(context).colorScheme.onTertiary,
                                       child: InkWell(
                                         borderRadius: BorderRadius.circular(5),
                                         onTap: () {
-                                          if (firebaseAuth.currentUser ==
-                                              null) {
+                                          if (firebaseAuth.currentUser == null) {
                                             showAuthBottomSheetFunc(context);
                                           } else {
-                                            BlocProvider.of<FollowCubit>(
-                                                    context)
-                                                .followButtonHandle(
-                                              currentUserUid:
-                                                  firebaseAuth.currentUser!.uid,
+                                            BlocProvider.of<FollowCubit>(context).followButtonHandle(
+                                              currentUserUid: firebaseAuth.currentUser!.uid,
                                               uid: data.id,
                                               stateFromDatabase: isFollowing,
                                             );
@@ -931,28 +865,17 @@ class _VideoItemMobileState extends State<VideoItemMobile> {
                                           alignment: Alignment.center,
                                           decoration: BoxDecoration(
                                               border: Border.all(
-                                                color: state.status ==
-                                                            BlocStatus
-                                                                .following ||
-                                                        isFollowing
-                                                    ? Theme.of(context)
-                                                        .colorScheme
-                                                        .primary
+                                                color: state.status == BlocStatus.following || isFollowing
+                                                    ? Theme.of(context).colorScheme.primary
                                                     : Colors.transparent,
                                               ),
-                                              borderRadius:
-                                                  BorderRadius.circular(8),
+                                              borderRadius: BorderRadius.circular(8),
                                               color: Colors.transparent),
                                           child: Text(
-                                            state.status ==
-                                                        BlocStatus.following ||
-                                                    isFollowing
-                                                ? LocaleKeys.label_following
-                                                    .tr()
+                                            state.status == BlocStatus.following || isFollowing
+                                                ? LocaleKeys.label_following.tr()
                                                 : LocaleKeys.label_follow.tr(),
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .bodySmall,
+                                            style: Theme.of(context).textTheme.bodySmall,
                                           ),
                                         ),
                                       ),
@@ -984,16 +907,12 @@ class _VideoItemMobileState extends State<VideoItemMobile> {
                       final textPainter = TextPainter(
                         text: TextSpan(
                           text: text,
-                          style: const TextStyle(
-                              fontSize: 14.0, fontWeight: FontWeight.w400),
+                          style: const TextStyle(fontSize: 14.0, fontWeight: FontWeight.w400),
                         ),
                         textDirection: TextDirection.ltr,
                       );
-                      textPainter.layout(
-                          maxWidth: MediaQuery.of(context).size.width * 0.7);
-                      final lines = (textPainter.size.height /
-                              textPainter.preferredLineHeight)
-                          .ceil();
+                      textPainter.layout(maxWidth: MediaQuery.of(context).size.width * 0.7);
+                      final lines = (textPainter.size.height / textPainter.preferredLineHeight).ceil();
                       return SizedBox(
                         width: MediaQuery.of(context).size.width * 0.7,
                         child: SingleChildScrollView(
@@ -1011,8 +930,7 @@ class _VideoItemMobileState extends State<VideoItemMobile> {
                                           fontWeight: FontWeight.w400),
                                     ),
                               Visibility(
-                                visible: videoData.caption.isNotEmpty ||
-                                    videoData.game != null,
+                                visible: videoData.caption.isNotEmpty || videoData.game != null,
                                 child: SizedBox(
                                   height: Dimens.DIMENS_10,
                                 ),
@@ -1020,8 +938,7 @@ class _VideoItemMobileState extends State<VideoItemMobile> {
                               lines > 2
                                   ? InkWell(
                                       onTap: () {
-                                        BlocProvider.of<CaptionsCubit>(context)
-                                            .captionsHandle();
+                                        BlocProvider.of<CaptionsCubit>(context).captionsHandle();
                                       },
                                       child: Text(
                                         maxLines != null
@@ -1059,27 +976,25 @@ class _VideoItemMobileState extends State<VideoItemMobile> {
                         child: SizedBox(
                           width: Dimens.DIMENS_150,
                           height: Dimens.DIMENS_24,
-                          child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  SolarIconsBold.gamepad,
-                                  color: COLOR_white_fff5f5f5,
-                                  size: 16,
-                                ),
-                                SizedBox(
-                                  width: Dimens.DIMENS_10,
-                                ),
-                                Text(
-                                  videoData.game!.gameTitle!,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.w300,
-                                    fontSize: 12,
-                                    color: COLOR_white_fff5f5f5,
-                                  ),
-                                ),
-                              ]),
+                          child: Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
+                            Icon(
+                              SolarIconsBold.gamepad,
+                              color: COLOR_white_fff5f5f5,
+                              size: 16,
+                            ),
+                            SizedBox(
+                              width: Dimens.DIMENS_10,
+                            ),
+                            Text(
+                              videoData.game!.gameTitle!,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontWeight: FontWeight.w300,
+                                fontSize: 12,
+                                color: COLOR_white_fff5f5f5,
+                              ),
+                            ),
+                          ]),
                         ),
                       )
                     : Container()

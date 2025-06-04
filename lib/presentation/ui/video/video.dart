@@ -24,8 +24,7 @@ class VideoPage extends StatefulWidget {
   State<VideoPage> createState() => _VideoPageState();
 }
 
-class _VideoPageState extends State<VideoPage>
-    with SingleTickerProviderStateMixin {
+class _VideoPageState extends State<VideoPage> with SingleTickerProviderStateMixin {
   late final TabController _tabController;
   String droDownValue = LocaleKeys.label_for_you.tr();
 
@@ -65,12 +64,10 @@ class _VideoPageState extends State<VideoPage>
                             // ),
                             labelColor: COLOR_white_fff5f5f5,
                             indicatorColor: COLOR_white_fff5f5f5,
-                            overlayColor: const MaterialStatePropertyAll<Color>(
-                                Colors.transparent),
+                            overlayColor: const MaterialStatePropertyAll<Color>(Colors.transparent),
                             controller: _tabController,
                             splashFactory: NoSplash.splashFactory,
-                            padding: EdgeInsets.symmetric(
-                                horizontal: Dimens.DIMENS_45),
+                            padding: EdgeInsets.symmetric(horizontal: Dimens.DIMENS_45),
                             isScrollable: false,
                             dividerColor: Colors.transparent,
                             tabAlignment: TabAlignment.center,
@@ -102,13 +99,13 @@ class _VideoPageState extends State<VideoPage>
         body: Stack(
           children: [
             TabBarView(
-                physics: desktopScreen
-                    ? const NeverScrollableScrollPhysics()
-                    : const AlwaysScrollableScrollPhysics(),
+                physics:
+                    desktopScreen ? const NeverScrollableScrollPhysics() : const AlwaysScrollableScrollPhysics(),
                 controller: _tabController,
                 children: const [
                   KeepAlivePage(child: ListVideo(from: VideoFrom.following)),
-                  KeepAlivePage(child: ListVideo(from: VideoFrom.forYou)),
+                  // KeepAlivePage(child: ListVideo(from: VideoFrom.forYou)),
+                  ListVideo(from: VideoFrom.forYou),
                 ]),
             ResponsiveLayout(
               desktopBody: SafeArea(
@@ -119,8 +116,7 @@ class _VideoPageState extends State<VideoPage>
                     height: Dimens.DIMENS_42,
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.tertiary,
-                        borderRadius: BorderRadius.circular(50)),
+                        color: Theme.of(context).colorScheme.tertiary, borderRadius: BorderRadius.circular(50)),
                     child: DropdownButton<String>(
                       dropdownColor: Theme.of(context).colorScheme.tertiary,
                       elevation: 0,

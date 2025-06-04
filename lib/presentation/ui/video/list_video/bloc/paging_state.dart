@@ -4,17 +4,26 @@ sealed class VideoPagingState extends Equatable {
   const VideoPagingState();
 
   @override
-  List<Object> get props => [];
+  List<Object?> get props => [];
 }
 
 final class PagingInitial extends VideoPagingState {}
 
 class PagingControllerState extends VideoPagingState {
   final PagingController<int, Video>? controller;
+  final List<CachedVideoPlayerPlusController>? cachedControllers;
+  final List<Video>? videos;
 
-  const PagingControllerState({required this.controller});
+  const PagingControllerState({
+    this.videos,
+    this.controller,
+    this.cachedControllers,
+  });
 
   @override
-  List<Object> get props => [controller!];
+  List<Object?> get props => [
+        controller,
+        cachedControllers,
+        videos,
+      ];
 }
-
