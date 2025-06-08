@@ -18,7 +18,9 @@ class Video {
   final String category;
   final dynamic createdAt;
   final List likes, views;
-  final int commentCount, shareCount, viewsCount, likesCount;
+  final int commentCount, shareCount, viewsCount;
+  int likesCount;
+  bool isLiked;
   Video({
     this.id,
     this.username,
@@ -37,6 +39,7 @@ class Video {
     required this.createdAt,
     required this.likesCount,
     required this.category,
+    this.isLiked = false,
   });
 
   Map<String, dynamic> toJson() => {
@@ -56,9 +59,8 @@ class Video {
         "createdAt": createdAt,
         "views": views,
         "category": category,
-        "game": game == null
-            ? null
-            : {"title": game?.gameTitle, "icon": game?.gameImage}
+        "isLiked": isLiked,
+        "game": game == null ? null : {"title": game?.gameTitle, "icon": game?.gameImage}
       };
   static Video fromSnap(DocumentSnapshot snapshot) {
     var snap = snapshot.data() as Map<String, dynamic>;
@@ -79,11 +81,52 @@ class Video {
       thumnail: snap["thumnail"],
       createdAt: snap["createdAt"],
       views: snap["views"],
-      game: snap['game'] != null
-          ? GameFav(
-              gameTitle: snap['game']['title'], gameImage: snap['game']['icon'])
-          : null,
-      category: snap["category"]??'',
+      isLiked: snap['isLiked'] ?? false,
+      game:
+          snap['game'] != null ? GameFav(gameTitle: snap['game']['title'], gameImage: snap['game']['icon']) : null,
+      category: snap["category"] ?? '',
+    );
+  }
+
+  Video copyWith({
+    String? id,
+    String? username,
+    String? uid,
+    String? songName,
+    String? caption,
+    String? thumnail,
+    String? videoUrl,
+    String? profileImg,
+    GameFav? game,
+    String? category,
+    dynamic createdAt,
+    List? likes,
+    List? views,
+    int? commentCount,
+    int? shareCount,
+    int? viewsCount,
+    int? likesCount,
+    bool? isLiked,
+  }) {
+    return Video(
+      id: id ?? this.id,
+      username: username ?? this.username,
+      uid: uid ?? this.uid,
+      songName: songName ?? this.songName,
+      caption: caption ?? this.caption,
+      thumnail: thumnail ?? this.thumnail,
+      videoUrl: videoUrl ?? this.videoUrl,
+      profileImg: profileImg ?? this.profileImg,
+      game: game ?? this.game,
+      category: category ?? this.category,
+      createdAt: createdAt ?? this.createdAt,
+      likes: likes ?? this.likes,
+      views: views ?? this.views,
+      commentCount: commentCount ?? this.commentCount,
+      shareCount: shareCount ?? this.shareCount,
+      viewsCount: viewsCount ?? this.viewsCount,
+      likesCount: likesCount ?? this.likesCount,
+      isLiked: isLiked ?? this.isLiked,
     );
   }
 }

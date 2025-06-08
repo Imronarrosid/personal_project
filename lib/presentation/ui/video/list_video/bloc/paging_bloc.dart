@@ -35,7 +35,7 @@ class VideoPaginBloc extends Bloc<VideoPagingEvent, VideoPagingState> {
     });
 
     on<OnNextPage>((event, emit) async {
-      repository.videoPlayerControllers[event.index].play();
+      // repository.videoPlayerControllers[event.index].play();
       if (event.index + 1 < repository.videoPlayerControllers.length) {
         await initControllerAtIndex(event.index + 1);
       }

@@ -22,6 +22,7 @@ import 'package:personal_project/domain/services/firebase/firebase_service.dart'
 import 'package:personal_project/presentation/l10n/stings.g.dart';
 import 'package:personal_project/presentation/responsive/dimension.dart';
 import 'package:personal_project/presentation/router/route_utils.dart';
+import 'package:personal_project/presentation/shared_components/flutter_toast_func.dart';
 import 'package:personal_project/presentation/shared_components/menu_modal_bottom_sheet.dart';
 import 'package:personal_project/presentation/ui/add_details/bloc/upload_bloc.dart';
 import 'package:personal_project/presentation/ui/auth/auth.dart';
@@ -29,6 +30,7 @@ import 'package:personal_project/presentation/ui/comments/comments_page.dart';
 import 'package:personal_project/presentation/ui/home/cubit/home_cubit.dart';
 import 'package:personal_project/presentation/ui/home/navbar_notifier/navbar_notifier.dart';
 import 'package:personal_project/presentation/ui/profile/cubit/follow_cubit.dart';
+import 'package:personal_project/presentation/ui/video/list_video/bloc/list_video_player_bloc.dart';
 import 'package:personal_project/presentation/ui/video/list_video/bloc/video_player_bloc.dart';
 import 'package:personal_project/presentation/ui/video/list_video/cubit/captions_cubit.dart';
 import 'package:personal_project/presentation/ui/video/list_video/cubit/like_video_cubit.dart';
@@ -38,6 +40,7 @@ import 'package:solar_icons/solar_icons.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
 import '../../../../../utils/debug_mode_print.dart';
+import '../../../../controllers/controllers.dart';
 import '../../../../shared_components/shared_components.dart';
 
 class VideoItemMobile extends StatefulWidget {
@@ -70,13 +73,18 @@ class _VideoItemMobileState extends State<VideoItemMobile> {
   bool isViewed = false;
   bool isActive = true;
   bool isBufferingIndicatorVisible = false;
+
+  Video get videoData => widget.videoData;
+  CachedVideoPlayerPlusController get videoController => widget.controller;
+
+  final likeAnimationController = LikeAnimationController();
+
   @override
   Widget build(BuildContext context) {
-    var videoData = widget.videoData;
     Size size = MediaQuery.of(context).size;
     final AuthRepository authRepository = RepositoryProvider.of<AuthRepository>(context);
     final VideoRepository videoRepository = RepositoryProvider.of<VideoRepository>(context);
-
+    final ColorScheme colorScheme = Theme.of(context).colorScheme;
     return MultiBlocProvider(
       providers: [
         BlocProvider(
@@ -85,75 +93,102 @@ class _VideoItemMobileState extends State<VideoItemMobile> {
         BlocProvider(create: ((context) => CaptionsCubit())),
       ],
       child: Builder(builder: (context) {
-        return BlocListener<VideoPlayerBloc, VideoPlayerState>(
-            listener: (context, state) {
-              debugModePrint(state.toString());
+        final lvp = context.read<ListVideoPlayerBloc>().state;
+        return BlocListener<ListVideoPlayerBloc, ListVideoPlayerState>(
+          listener: (context, state) {
+            if (state is VideoState) {
+              if (state.likeStatus.error) {
+                showFlutterToast(msg: 'action failed');
+              }
+            }
+          },
+          child: BlocListener<VideoPlayerBloc, VideoPlayerState>(
+              listener: (context, state) {
+                debugModePrint(state.toString());
 
-              // if (state.status == VideoPlayerStatus.initialized && state.controller!.value.isInitialized) {
-              //   if (isViewed == false) {
-              //     addListener(state: state, videoData: videoData);
-              //   }
-              // }
-            },
-            child: GestureDetector(
-              onTap: () {
-                _onTap(context);
+                // if (state.status == VideoPlayerStatus.initialized && state.controller!.value.isInitialized) {
+                //   if (isViewed == false) {
+                //     addListener(state: state, videoData: videoData);
+                //   }
+                // }
               },
-              onDoubleTap: () {
-                String? uid = RepositoryProvider.of<AuthRepository>(context).currentUser?.uid;
-                bool isLiked = videoData.likes.contains(uid);
-                BlocProvider.of<LikeVideoCubit>(context).doubleTapToLike(
-                  postId: videoData.id!,
-                  dataBaseState: isLiked,
-                  databaseLikeCount: videoData.likesCount,
-                );
-              },
-              child: BlocBuilder<VideoPlayerBloc, VideoPlayerState>(
-                buildWhen: (previous, current) {
-                  if (current.status != VideoPlayerStatus.videoDeleted) {
-                    return false;
-                  } else {
-                    return true;
+              child: GestureDetector(
+                onTap: () {
+                  _onTap(context);
+                },
+                onDoubleTap: () {
+                  likeAnimationController.show();
+                  if (!videoData.isLiked) {
+                    context
+                        .read<ListVideoPlayerBloc>()
+                        .add(DoubleTapLikeVideo(index: widget.index, video: videoData));
                   }
                 },
-                builder: (context, state) {
-                  if (state.status == VideoPlayerStatus.videoDeleted) {
-                    return const Center(
-                      child: Text('Video deleted'),
+                child: BlocBuilder<VideoPlayerBloc, VideoPlayerState>(
+                  buildWhen: (previous, current) {
+                    if (current.status != VideoPlayerStatus.videoDeleted) {
+                      return false;
+                    } else {
+                      return true;
+                    }
+                  },
+                  builder: (context, state) {
+                    if (state.status == VideoPlayerStatus.videoDeleted) {
+                      return const Center(
+                        child: Text('Video deleted'),
+                      );
+                    }
+                    return Container(
+                      color: Colors.black,
+                      width: size.width,
+                      height: size.height,
+                      child: Stack(children: <Widget>[
+                        _videoView(size, videoData),
+                        _rightOveray(context, videoData, authRepository),
+                        _bottomOverLay(context, videoData),
+                        _buildProgerBarIndicatorView(),
+                        if (!widget.controller.value.isPlaying && (lvp is VideoState && lvp.index == widget.index))
+                          Center(
+                            child: Icon(
+                              SolarIconsBold.play,
+                              size: 54,
+                              color: colorScheme.onSurface.withAlpha(120),
+                            ),
+                          ),
+                        _bufferingIndicator(),
+                        Align(
+                          alignment: Alignment.center,
+                          child: LikeAnimation(
+                            controller: likeAnimationController,
+                            icon: SolarIconsBold.heart,
+                            iconColor: Colors.red,
+                          ),
+                        ),
+                      ]),
                     );
-                  }
-                  return Container(
-                    color: Colors.black,
-                    width: size.width,
-                    height: size.height,
-                    child: Stack(children: <Widget>[
-                      _videoView(size, videoData),
-                      _rightOveray(context, videoData, authRepository),
-                      _bottomOverLay(context, videoData),
-                      _buildProgerBarIndicatorView(),
-                      _playButton(),
-                      _bufferingIndicator(),
-                      const Align(
-                        alignment: Alignment.center,
-                        child: LikeWidget(),
-                      ),
-                    ]),
-                  );
-                },
-              ),
-            ));
+                  },
+                ),
+              )),
+        );
       }),
     );
   }
 
   void _onTap(BuildContext context) {
-    VideoPlayerBloc bloc = BlocProvider.of<VideoPlayerBloc>(context);
-
     if (widget.controller.value.isPlaying) {
-      bloc.add(const VideoPlayerEvent(actions: VideoEvent.pause));
+      context.read<ListVideoPlayerBloc>().add(PauseVideo(index: widget.index, controller: widget.controller));
     } else {
-      bloc.add(const VideoPlayerEvent(actions: VideoEvent.play));
+      context.read<ListVideoPlayerBloc>().add(PlayVideo(index: widget.index, controller: widget.controller));
     }
+
+    // VideoPlayerBloc bloc = BlocProvider.of<VideoPlayerBloc>(context);
+
+    // if (widget.controller.value.isPlaying) {
+
+    //   bloc.add(const VideoPlayerEvent(actions: VideoEvent.pause));
+    // } else {
+    //   bloc.add(const VideoPlayerEvent(actions: VideoEvent.play));
+    // }
   }
 
   BlocBuilder<VideoPlayerBloc, VideoPlayerState> _bufferingIndicator() {
@@ -176,7 +211,7 @@ class _VideoItemMobileState extends State<VideoItemMobile> {
   BlocBuilder<VideoPlayerBloc, VideoPlayerState> _playButton() {
     return BlocBuilder<VideoPlayerBloc, VideoPlayerState>(
       builder: (context, state) {
-        if (state.status == VideoPlayerStatus.paused) {
+        if (!widget.controller.value.isPlaying) {
           return Align(
             alignment: Alignment.center,
             child: AnimatedOpacity(
@@ -309,55 +344,14 @@ class _VideoItemMobileState extends State<VideoItemMobile> {
                   SizedBox(
                     height: Dimens.DIMENS_25,
                   ),
-                  _buildLikeButton(context, videoData),
-                  SizedBox(
-                    height: Dimens.DIMENS_5,
-                  ),
-                  BlocBuilder<LikeVideoCubit, LikeVideoState>(
-                    buildWhen: (_, current) {
-                      if (current is ShowDobleTapLikeWidget || current is RemoveDoubleTapLikeWidget) {
-                        return false;
-                      }
-                      return true;
-                    },
-                    builder: (context, state) {
-                      if (state is VideoIsLiked) {
-                        debugModePrint('likeCount${state.likeCount}');
-                        return Text(
-                          numberFormat(context.locale, state.likeCount),
-                          style: TextStyle(
-                            color: COLOR_white_fff5f5f5,
-                            fontSize: _IC_LABEL_FONTSIZE,
-                          ),
-                        );
-                      } else if (state is UnilkedVideo) {
-                        return Text(
-                          numberFormat(context.locale, state.likeCount),
-                          style: TextStyle(
-                            color: COLOR_white_fff5f5f5,
-                            fontSize: _IC_LABEL_FONTSIZE,
-                          ),
-                        );
-                      }
-                      return Text(
-                        numberFormat(
-                          context.locale,
-                          videoData.likesCount,
-                        ),
-                        style: TextStyle(
-                          color: COLOR_white_fff5f5f5,
-                          fontSize: _IC_LABEL_FONTSIZE,
-                        ),
-                      );
-                    },
-                  ),
+                  _buildLikeButton(context, videoData, isLiked: videoData.isLiked),
                   SizedBox(
                     height: Dimens.DIMENS_25,
                   ),
                   RepositoryProvider(
                     create: (context) => CommentRepository(),
-                    child: GestureDetector(
-                      onTap: () async {
+                    child: PostButtonItem(
+                      onPressed: () async {
                         // VideoPaddingNOtifire.instance.setBottomPdding(
                         //     bottomSheetHeight:
                         //         ((MediaQuery.of(context).size.height * 0.7) -
@@ -371,7 +365,7 @@ class _VideoItemMobileState extends State<VideoItemMobile> {
                           context.read<NavbarNotifier>().chnageNavbarState(NavbarState.show);
                         }
                       },
-                      child: Transform.flip(
+                      icon: Transform.flip(
                         flipX: true,
                         child: Icon(
                           SolarIconsBold.chatRoundDots,
@@ -379,19 +373,16 @@ class _VideoItemMobileState extends State<VideoItemMobile> {
                           size: Dimens.DIMENS_28,
                         ),
                       ),
-                    ),
-                  ),
-                  SizedBox(
-                    height: Dimens.DIMENS_5,
-                  ),
-                  Text(
-                    numberFormat(
-                      context.locale,
-                      videoData.commentCount,
-                    ),
-                    style: TextStyle(
-                      color: COLOR_white_fff5f5f5,
-                      fontSize: _IC_LABEL_FONTSIZE,
+                      label: Text(
+                        numberFormat(
+                          context.locale,
+                          videoData.commentCount,
+                        ),
+                        style: TextStyle(
+                          color: COLOR_white_fff5f5f5,
+                          fontSize: _IC_LABEL_FONTSIZE,
+                        ),
+                      ),
                     ),
                   ),
                   SizedBox(
@@ -664,21 +655,14 @@ class _VideoItemMobileState extends State<VideoItemMobile> {
         iconSize: Dimens.DIMENS_34,
       ),
       onPressed: () {
-        int likeCount = videoData.likesCount;
-        String? uid = RepositoryProvider.of<AuthRepository>(context).currentUser?.uid;
-        if (uid == null) {
-          showAuthBottomSheetFunc(context);
-        } else {
-          bool isLiked = videoData.likes.contains(uid);
-          BlocProvider.of<LikeVideoCubit>(context)
-              .likePost(postId: videoData.id!, stateFromDatabase: isLiked, databaseLikeCount: likeCount);
-        }
+        context.read<ListVideoPlayerBloc>().add(LikeVideo(index: widget.index, video: videoData));
       },
       icon: Icon(
         SolarIconsBold.heart,
         size: Dimens.DIMENS_34,
         color: isLiked ? Colors.red : Theme.of(context).colorScheme.onSurface,
       ),
+      label: Text(numberFormat(context.locale, videoData.likesCount)),
     );
     return GestureDetector(
       onTap: () {
@@ -1008,11 +992,44 @@ class _VideoItemMobileState extends State<VideoItemMobile> {
   }
 }
 
-class LikeWidget extends StatelessWidget {
-  const LikeWidget({super.key});
+class LikeWidget extends StatefulWidget {
+  final bool isLiked;
+  const LikeWidget({
+    super.key,
+    required this.isLiked,
+  });
+
+  @override
+  State<LikeWidget> createState() => _LikeWidgetState();
+}
+
+class _LikeWidgetState extends State<LikeWidget> {
+  bool showAnimation = false;
 
   @override
   Widget build(BuildContext context) {
+    showAnimation = (context.read<ListVideoPlayerBloc>().state as VideoState).likeStatus.liked;
+    return AnimatedSwitcher(
+      duration: Duration(
+        milliseconds: 120,
+      ),
+      layoutBuilder: (currentChild, previousChildren) {
+        if (widget.isLiked) {
+          return AnimatedScale(
+            duration: Duration(milliseconds: 120),
+            curve: Curves.bounceInOut,
+            scale: widget.isLiked ? 2 : 1,
+            child: Icon(
+              SolarIconsBold.heart,
+              color: Colors.red,
+              size: 80,
+            ),
+          );
+        }
+        return SizedBox.shrink();
+      },
+      child: SizedBox.shrink(),
+    );
     return BlocBuilder<LikeVideoCubit, LikeVideoState>(
       buildWhen: (previous, current) {
         if (current is VideoIsLiked) {

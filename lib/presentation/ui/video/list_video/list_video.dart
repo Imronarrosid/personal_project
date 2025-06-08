@@ -16,6 +16,7 @@ import 'package:personal_project/presentation/shared_components/video_player_ite
 import 'package:personal_project/presentation/ui/auth/auth.dart';
 import 'package:personal_project/presentation/ui/auth/bloc/auth_bloc.dart';
 import 'package:personal_project/presentation/ui/home/cubit/home_cubit.dart';
+import 'package:personal_project/presentation/ui/video/list_video/bloc/list_video_player_bloc.dart';
 import 'package:personal_project/presentation/ui/video/list_video/bloc/paging_bloc.dart';
 import 'package:personal_project/presentation/ui/video/list_video/is_can_scroll_notification.dart';
 import 'package:visibility_detector/visibility_detector.dart';
@@ -255,47 +256,78 @@ class _NewVideoListState extends State<NewVideoList> {
   @override
   Widget build(BuildContext context) {
     final PagingRepository pagingRepository = RepositoryProvider.of<PagingRepository>(context);
-    return BlocBuilder<VideoPaginBloc, VideoPagingState>(
-      builder: (context, state) {
-        if (state is PagingControllerState) {
-          final List<Video>? videos = state.videos;
-          if (videos == null) {
-            return Center(
-              child: CircularProgressIndicator(),
-            );
-          }
-          if (videos.isEmpty) {
-            return Center(
-              child: Text(LocaleKeys.message_no_post.tr()),
-            );
-          }
-          return PageView.custom(
-            scrollDirection: Axis.vertical,
-            onPageChanged: (value) {
-              context.read<VideoPaginBloc>().add(OnNextPage(index: value));
-              if (value > state.cachedControllers!.length - 2) {
-                context.read<VideoPaginBloc>().add(InitPagingController(from: VideoFrom.forYou));
-              }
-            },
-            childrenDelegate: SliverChildBuilderDelegate(
-              (context, index) {
-                final Video video = videos[index];
-                return VideoPlayerItem(
-                  controller: state.cachedControllers![index],
-                  index: index,
-                  item: video,
-                  url: video.videoUrl,
-                  auto: true,
+    return BlocProvider(
+      create: (context) => ListVideoPlayerBloc(
+        pagingRepository,
+      ),
+      child: BlocListener<ListVideoPlayerBloc, ListVideoPlayerState>(
+        listener: (context, state) {
+          debugModePrint('lvpb $state');
+        },
+        child: BlocBuilder<ListVideoPlayerBloc, ListVideoPlayerState>(
+          // buildWhen: (previous, current) {
+
+          // },
+
+          builder: (context, _) {
+            return BlocBuilder<VideoPaginBloc, VideoPagingState>(
+              builder: (context, state) {
+                if (state is PagingControllerState) {
+                  final List<Video>? videos = state.videos;
+                  if (videos == null) {
+                    return Center(
+                      child: CircularProgressIndicator(),
+                    );
+                  }
+                  if (videos.isEmpty) {
+                    return Center(
+                      child: Text(LocaleKeys.message_no_post.tr()),
+                    );
+                  }
+                  return PageView.custom(
+                    scrollDirection: Axis.vertical,
+                    onPageChanged: (value) {
+                      final currentController = state.cachedControllers![value];
+                      context.read<VideoPaginBloc>().add(OnNextPage(index: value));
+
+                      if (currentController.value.isInitialized) {
+                        context
+                            .read<ListVideoPlayerBloc>()
+                            .add(PlayVideo(index: value, controller: currentController));
+                      } else {
+                        context
+                            .read<ListVideoPlayerBloc>()
+                            .add(InitVideoPlayer(index: value, controller: currentController));
+                      }
+
+                      if (value > state.cachedControllers!.length - 2) {
+                        context.read<VideoPaginBloc>().add(InitPagingController(from: VideoFrom.forYou));
+                      }
+                    },
+                    childrenDelegate: SliverChildBuilderDelegate(
+                      (context, index) {
+                        final Video video = videos[index];
+                        return VideoPlayerItem(
+                          key: ValueKey(video.id),
+                          controller: state.cachedControllers![index],
+                          index: index,
+                          item: video,
+                          url: video.videoUrl,
+                          auto: true,
+                        );
+                      },
+                      childCount: videos.length, // Example count, adjust as needed
+                    ),
+                  );
+                }
+                return const Center(
+                  child: CircularProgressIndicator(),
                 );
               },
-              childCount: videos.length, // Example count, adjust as needed
-            ),
-          );
-        }
-        return const Center(
-          child: CircularProgressIndicator(),
-        );
-      },
+            );
+          },
+        ),
+      ),
     );
   }
 }

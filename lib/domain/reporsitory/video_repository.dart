@@ -26,11 +26,9 @@ class VideoRepository implements VideoUseCaseType {
   final List<DocumentSnapshot> likedVideosDocs = [];
   final List<DocumentSnapshot> videosByGamesDocs = [];
 
-  StreamController<double> _uploadVideoController =
-      StreamController<double>.broadcast();
+  StreamController<double> _uploadVideoController = StreamController<double>.broadcast();
 
-  Stream<double> get uploadProgressStream =>
-      _uploadVideoController.stream.asBroadcastStream();
+  Stream<double> get uploadProgressStream => _uploadVideoController.stream.asBroadcastStream();
 
   late User videoOwnerData;
   int currentPageIndex = 0;
@@ -48,16 +46,12 @@ class VideoRepository implements VideoUseCaseType {
   // }
 
   Future<String> _uploadToStorage(String id, File videoFile) async {
-    Reference ref = firebaseStorage
-        .ref()
-        .child('videos/${firebaseAuth.currentUser!.uid}')
-        .child(id);
+    Reference ref = firebaseStorage.ref().child('videos/${firebaseAuth.currentUser!.uid}').child(id);
 
     UploadTask uploadTask = ref.putFile(videoFile);
 
     uploadTask.snapshotEvents.listen((snapshot) {
-      double progress =
-          ((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+      double progress = ((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
       _uploadVideoController.add(progress);
     });
 
@@ -68,10 +62,7 @@ class VideoRepository implements VideoUseCaseType {
   }
 
   _uploadThumnailesToStorage(String id, String thumbnail) async {
-    Reference ref = firebaseStorage
-        .ref()
-        .child('thumbnailes/${firebaseAuth.currentUser!.uid}')
-        .child(id);
+    Reference ref = firebaseStorage.ref().child('thumbnailes/${firebaseAuth.currentUser!.uid}').child(id);
 
     UploadTask uploadTask = ref.putFile(File(thumbnail));
     TaskSnapshot snapshot = await uploadTask;
@@ -95,10 +86,8 @@ class VideoRepository implements VideoUseCaseType {
       //Get id
 
       final String uuid = generateUuid();
-      String videoUrl =
-          await _uploadToStorage("video_$uuid.mp4", File(videoPath));
-      String thumnail =
-          await _uploadThumnailesToStorage("video $uuid", thumbnailPath);
+      String videoUrl = await _uploadToStorage("video_$uuid.mp4", File(videoPath));
+      String thumnail = await _uploadThumnailesToStorage("video $uuid", thumbnailPath);
 
       Video video = Video(
           uid: uid,
@@ -116,11 +105,7 @@ class VideoRepository implements VideoUseCaseType {
           views: [],
           category: category ?? '');
 
-      await firebaseFirestore
-          .collection('videos')
-          .doc()
-          .set(video.toJson())
-          .then((_) {
+      await firebaseFirestore.collection('videos').doc().set(video.toJson()).then((_) {
         debugPrint('uploaded');
       });
       _uploadVideoController.close();
@@ -138,11 +123,8 @@ class VideoRepository implements VideoUseCaseType {
     QuerySnapshot querySnapshot;
     try {
       if (allDocs.isEmpty) {
-        querySnapshot = await firebaseFirestore
-            .collection('videos')
-            .orderBy('createdAt', descending: true)
-            .limit(limit)
-            .get();
+        querySnapshot =
+            await firebaseFirestore.collection('videos').orderBy('createdAt', descending: true).limit(limit).get();
       } else {
         querySnapshot = await firebaseFirestore
             .collection('videos')
@@ -179,11 +161,8 @@ class VideoRepository implements VideoUseCaseType {
   Future<List<Video>> getVideoSuggestion(int limit) async {
     try {
       final List<Video> videos = [];
-      final QuerySnapshot querySnapshot = await firebaseFirestore
-          .collection('videos')
-          .orderBy('likesCount', descending: true)
-          .limit(limit)
-          .get();
+      final QuerySnapshot querySnapshot =
+          await firebaseFirestore.collection('videos').orderBy('likesCount', descending: true).limit(limit).get();
 
       debugPrint(querySnapshot.docs.toString());
       for (var element in querySnapshot.docs) {
@@ -196,8 +175,7 @@ class VideoRepository implements VideoUseCaseType {
     }
   }
 
-  Future<List<DocumentSnapshot>> getListVideoFromGame(
-      {required int limit, required GameFav game}) async {
+  Future<List<DocumentSnapshot>> getListVideoFromGame({required int limit, required GameFav game}) async {
     List<DocumentSnapshot> listDocs = [];
 
     QuerySnapshot querySnapshot;
@@ -276,91 +254,60 @@ class VideoRepository implements VideoUseCaseType {
   }
 
   Future<User> getVideoOwnerData(String uid) async {
-    DocumentSnapshot docs =
-        await firebaseFirestore.collection('users').doc(uid).get();
-    videoOwnerData = User(
-        id: docs['uid'],
-        name: docs['name'],
-        userName: docs['userName'],
-        photo: docs['photoUrl']);
+    DocumentSnapshot docs = await firebaseFirestore.collection('users').doc(uid).get();
+    videoOwnerData =
+        User(id: docs['uid'], name: docs['name'], userName: docs['userName'], photo: docs['photoUrl']);
     return videoOwnerData;
   }
 
-  Future<void> likeVideo(String id) async {
-    try {
-      DocumentSnapshot doc =
-          await firebaseFirestore.collection('videos').doc(id).get();
+  Future<(bool? isLiked, int count)> likeVideo(String postId) async {
+    bool isLikedResult = false;
+    int likesCount = 0;
+    var uid = firebaseAuth.currentUser!.uid;
+    final DocumentReference likesreff = firebaseFirestore.collection('likes').doc('${postId}_$uid');
+    final DocumentReference videoReff = firebaseFirestore.collection('videos').doc(postId);
 
-      var uid = firebaseAuth.currentUser!.uid;
-      // if ((doc.data()! as dynamic)['likes'].contains(uid)) {
-      //   await firebaseFirestore.collection('videos').doc(id).update({
-      //     'likes': FieldValue.arrayRemove([uid])
-      //   });
+    await firebaseFirestore.runTransaction(
+      (transaction) async {
+        final DocumentSnapshot likesDocs = await transaction.get(likesreff);
+        final DocumentSnapshot videoDoc = await transaction.get(videoReff);
 
-      //   await firebaseFirestore.collection('users').doc(uid).collection('likes').doc(id).delete();
-      // } else {
-      //   await firebaseFirestore.collection('videos').doc(id).update({
-      //     'likes': FieldValue.arrayUnion([uid])
-      //   });
-      // }
+        final videoData = videoDoc.data() as Map<String, dynamic>;
+        if (likesDocs.exists) {
+          transaction.delete(likesreff);
+          videoData['likesCount'] = videoData['likesCount'] - 1;
+          transaction.set(
+            videoReff,
+            videoData,
+          );
+          isLikedResult = false;
+          likesCount = videoData['likesCount'];
+        } else {
+          transaction.set(
+            likesreff,
+            {
+              'postId': postId,
+              'uid': uid,
+              'timestamp': FieldValue.serverTimestamp(),
+            },
+          );
+          videoData['likesCount'] = videoData['likesCount'] + 1;
+          transaction.set(
+            videoReff,
+            videoData,
+          );
+          isLikedResult = true;
+          likesCount = videoData['likesCount'];
+        }
+      },
+    );
 
-      DocumentReference documentReference =
-          firebaseFirestore.collection('videos').doc(id);
-      firebaseFirestore.runTransaction((transaction) {
-        return transaction.get(documentReference).then((value) {
-          if ((value.data() as Map<String, dynamic>)
-              .containsKey('likesCount')) {
-            int currentCount =
-                (value.data() as Map<String, dynamic>)['likesCount'];
-            if ((doc.data()! as dynamic)['likes'].contains(uid)) {
-              transaction
-                  .update(documentReference, {'likesCount': currentCount - 1});
-              transaction.update(documentReference, {
-                'likes': FieldValue.arrayRemove([uid])
-              });
-              firebaseFirestore
-                  .collection('users')
-                  .doc(uid)
-                  .collection('likes')
-                  .doc(id)
-                  .delete();
-            } else {
-              transaction.update(documentReference, {
-                'likes': FieldValue.arrayUnion([uid])
-              });
-              transaction
-                  .update(documentReference, {'likesCount': currentCount + 1});
-              firebaseFirestore
-                  .collection('users')
-                  .doc(uid)
-                  .collection('likes')
-                  .doc(id)
-                  .set({'postId': id, 'likedAt': FieldValue.serverTimestamp()});
-            }
-          } else {
-            final List<dynamic> likes =
-                (value.data() as Map<String, dynamic>)['likes'];
-            int currentCount = likes.length;
-            Video video = Video.fromSnap(value);
-            if ((doc.data()! as dynamic)['likes'].contains(uid)) {
-              transaction.set(documentReference,
-                  {...video.toJson(), 'likesCount': currentCount - 1});
-            } else {
-              transaction.set(documentReference,
-                  {...video.toJson(), 'likesCount': currentCount + 1});
-            }
-          }
-        });
-      });
-    } catch (e) {
-      debugPrint(e.toString());
-    }
+    return (isLikedResult, likesCount);
   }
 
   /// double tap to like if video is liked will do nothing.
   Future<void> doubleTaplikeVideo(String id) async {
-    DocumentSnapshot doc =
-        await firebaseFirestore.collection('videos').doc(id).get();
+    DocumentSnapshot doc = await firebaseFirestore.collection('videos').doc(id).get();
 
     var uid = firebaseAuth.currentUser!.uid;
     if ((doc.data()! as dynamic)['likes'].contains(uid)) {
@@ -372,8 +319,7 @@ class VideoRepository implements VideoUseCaseType {
     }
   }
 
-  Future<List<DocumentSnapshot>> getUserVideo(
-      {required String uid, required int limit}) async {
+  Future<List<DocumentSnapshot>> getUserVideo({required String uid, required int limit}) async {
     List<DocumentSnapshot> listDocs = [];
 
     debugPrint('get user video $uid');
@@ -418,8 +364,7 @@ class VideoRepository implements VideoUseCaseType {
     return listDocs;
   }
 
-  Future<List<DocumentSnapshot>> getLikedVideo(
-      {required String uid, required int limit}) async {
+  Future<List<DocumentSnapshot>> getLikedVideo({required String uid, required int limit}) async {
     List<DocumentSnapshot> listDocs = [];
 
     debugPrint('get liked video $uid');
@@ -458,8 +403,7 @@ class VideoRepository implements VideoUseCaseType {
     return listDocs;
   }
 
-  Future<List<DocumentSnapshot>> getVideoByGames(
-      {required String game, required int limit}) async {
+  Future<List<DocumentSnapshot>> getVideoByGames({required String game, required int limit}) async {
     List<DocumentSnapshot> listDocs = [];
 
     QuerySnapshot querySnapshot;
@@ -496,23 +440,17 @@ class VideoRepository implements VideoUseCaseType {
 
   Future<void> addViewsCount(String postId) async {
     try {
-      DocumentReference documentReference =
-          firebaseFirestore.collection('videos').doc(postId);
+      DocumentReference documentReference = firebaseFirestore.collection('videos').doc(postId);
       firebaseFirestore.runTransaction((transaction) {
         return transaction.get(documentReference).then((value) {
-          if ((value.data() as Map<String, dynamic>)
-              .containsKey('viewsCount')) {
-            int currentCount =
-                (value.data() as Map<String, dynamic>)['viewsCount'];
-            transaction
-                .update(documentReference, {'viewsCount': currentCount + 1});
+          if ((value.data() as Map<String, dynamic>).containsKey('viewsCount')) {
+            int currentCount = (value.data() as Map<String, dynamic>)['viewsCount'];
+            transaction.update(documentReference, {'viewsCount': currentCount + 1});
           } else {
-            final List<dynamic> views =
-                (value.data() as Map<String, dynamic>)['views'];
+            final List<dynamic> views = (value.data() as Map<String, dynamic>)['views'];
             int currentCount = views.length;
             Video video = Video.fromSnap(value);
-            transaction.set(documentReference,
-                {...video.toJson(), 'viewsCount': currentCount + 1});
+            transaction.set(documentReference, {...video.toJson(), 'viewsCount': currentCount + 1});
           }
         });
       });

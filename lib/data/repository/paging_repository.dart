@@ -9,6 +9,7 @@ import 'package:personal_project/domain/model/video_model.dart';
 import 'package:personal_project/domain/reporsitory/video_repository.dart';
 import 'package:personal_project/domain/services/firebase/firebase_service.dart';
 import 'package:personal_project/presentation/ui/video/list_video/bloc/paging_bloc.dart';
+import 'package:personal_project/utils/debug_mode_print.dart';
 
 class PagingRepository {
   PagingController<int, Video>? controller;
@@ -322,9 +323,7 @@ class PagingRepository {
         newItems.addAll(thirdList);
       }
 
-      for (var element in newItems) {
-        listVideo.add(Video.fromSnap(element));
-      }
+      listVideo = newItems.map((e) => Video.fromSnap(e)).toList();
 
       return listVideo;
     } catch (error) {
@@ -335,16 +334,41 @@ class PagingRepository {
 
   Future<void> loadVideos() async {
     final List<Video>? videos = await getVideos(from: VideoFrom.forYou);
+    List<String> likedVideos = [];
 
+    final String uid = firebaseAuth.currentUser?.uid ?? '';
     if (videos != null) {
       _videos.addAll(videos);
+      final likesDoc = await firebaseFirestore
+          .collection('likes')
+          .where('postId', whereIn: videos.map((e) => e.id).toList())
+          .where('uid', isEqualTo: uid)
+          .get();
+
+      if (likesDoc.docs.isNotEmpty) {
+        for (var element in likesDoc.docs) {
+          likedVideos.add(element['uid']);
+        }
+      }
 
       for (var video in videos) {
         CachedVideoPlayerPlusController controller = CachedVideoPlayerPlusController.networkUrl(
           Uri.parse(video.videoUrl),
         );
+        video.isLiked = likedVideos.contains(uid);
         _videoPlayerControllers.add(controller);
       }
     }
+  }
+
+  void likeVideo(
+    String video,
+  ) {
+    Video videoItem = _videos.firstWhere((element) => element.id! == video);
+    bool? isLiked = videoItem.isLiked;
+    int count = videoItem.likesCount;
+
+    videoItem.isLiked = !isLiked;
+    videoItem.likesCount = isLiked ? count - 1 : count + 1;
   }
 }

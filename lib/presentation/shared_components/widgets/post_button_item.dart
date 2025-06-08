@@ -5,14 +5,14 @@ class PostButtonItem extends StatelessWidget {
     super.key,
     required this.onPressed,
     required this.icon,
-    required this.style,
+    this.style,
     this.label,
     this.labelText,
   });
 
   final void Function() onPressed;
   final Widget icon;
-  final ButtonStyle style;
+  final ButtonStyle? style;
   final String? labelText;
   final Widget? label;
 
@@ -20,7 +20,11 @@ class PostButtonItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        IconButton(onPressed: onPressed, icon: icon),
+        IconButton(
+          onPressed: onPressed,
+          icon: icon,
+          style: style,
+        ),
         label ?? (label != null ? Text(labelText!) : SizedBox.shrink()),
       ],
     );
