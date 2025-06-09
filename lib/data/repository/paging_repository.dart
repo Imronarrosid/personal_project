@@ -371,4 +371,19 @@ class PagingRepository {
     videoItem.isLiked = !isLiked;
     videoItem.likesCount = isLiked ? count - 1 : count + 1;
   }
+
+  void replaceControllerAtIndex(int index, CachedVideoPlayerPlusController newController) {
+    _videoPlayerControllers.removeAt(index);
+    _videoPlayerControllers.insert(index, newController);
+  }
+
+  CachedVideoPlayerPlusController setUpVideoController(String url) {
+    return CachedVideoPlayerPlusController.networkUrl(
+      Uri.parse(url),
+    );
+  }
+
+  CachedVideoPlayerPlusController getControllerAtIndex(int index) {
+    return _videoPlayerControllers[index];
+  }
 }

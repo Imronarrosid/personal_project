@@ -246,6 +246,8 @@ class NewVideoList extends StatefulWidget {
 }
 
 class _NewVideoListState extends State<NewVideoList> {
+  int previousPageIndex = 0;
+
   @override
   void initState() {
     final PagingRepository pagingRepository = RepositoryProvider.of<PagingRepository>(context);
@@ -286,30 +288,38 @@ class _NewVideoListState extends State<NewVideoList> {
                   }
                   return PageView.custom(
                     scrollDirection: Axis.vertical,
-                    onPageChanged: (value) {
-                      final currentController = state.cachedControllers![value];
-                      context.read<VideoPaginBloc>().add(OnNextPage(index: value));
-
+                    onPageChanged: (activeIndex) {
+                      final currentController = state.cachedControllers![activeIndex];
+                      if (previousPageIndex < activeIndex) {
+                        context.read<VideoPaginBloc>().add(OnNextPage(index: activeIndex));
+                        context.read<ListVideoPlayerBloc>().add(DisposeVideoController(
+                            controller: state.cachedControllers![activeIndex - 1], index: activeIndex - 1));
+                      } else {
+                        context.read<ListVideoPlayerBloc>().add(DisposeVideoController(
+                            controller: state.cachedControllers![activeIndex + 1], index: activeIndex + 1));
+                      }
                       if (currentController.value.isInitialized) {
                         context
                             .read<ListVideoPlayerBloc>()
-                            .add(PlayVideo(index: value, controller: currentController));
+                            .add(PlayVideo(index: activeIndex, controller: currentController));
                       } else {
                         context
                             .read<ListVideoPlayerBloc>()
-                            .add(InitVideoPlayer(index: value, controller: currentController));
+                            .add(InitVideoPlayer(index: activeIndex, controller: currentController));
                       }
 
-                      if (value > state.cachedControllers!.length - 2) {
+                      if (activeIndex > state.cachedControllers!.length - 2) {
                         context.read<VideoPaginBloc>().add(InitPagingController(from: VideoFrom.forYou));
                       }
+
+                      previousPageIndex = activeIndex;
                     },
                     childrenDelegate: SliverChildBuilderDelegate(
                       (context, index) {
                         final Video video = videos[index];
                         return VideoPlayerItem(
                           key: ValueKey(video.id),
-                          controller: state.cachedControllers![index],
+                          controller: pagingRepository.getControllerAtIndex(index),
                           index: index,
                           item: video,
                           url: video.videoUrl,

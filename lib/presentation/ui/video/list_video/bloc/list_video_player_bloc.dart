@@ -133,6 +133,14 @@ class ListVideoPlayerBloc extends Bloc<ListVideoPlayerEvent, ListVideoPlayerStat
         );
       }
     });
+
+    on<DisposeVideoController>(
+      (event, emit) async {
+        final String url = event.controller.dataSource;
+        await event.controller.dispose();
+        repository.replaceControllerAtIndex(event.index, repository.setUpVideoController(url));
+      },
+    );
   }
   final PagingRepository repository;
 }

@@ -11,7 +11,6 @@ import 'package:personal_project/constant/color.dart';
 import 'package:personal_project/constant/dimens.dart';
 import 'package:personal_project/data/repository/coment_repository.dart';
 import 'package:personal_project/data/repository/upload_repository.dart';
-import 'package:personal_project/data/repository/video_player_repository.dart';
 import 'package:personal_project/domain/model/category_model.dart';
 import 'package:personal_project/domain/model/user.dart';
 import 'package:personal_project/domain/model/video_model.dart';
@@ -22,7 +21,6 @@ import 'package:personal_project/domain/services/firebase/firebase_service.dart'
 import 'package:personal_project/presentation/l10n/stings.g.dart';
 import 'package:personal_project/presentation/responsive/dimension.dart';
 import 'package:personal_project/presentation/router/route_utils.dart';
-import 'package:personal_project/presentation/shared_components/flutter_toast_func.dart';
 import 'package:personal_project/presentation/shared_components/menu_modal_bottom_sheet.dart';
 import 'package:personal_project/presentation/ui/add_details/bloc/upload_bloc.dart';
 import 'package:personal_project/presentation/ui/auth/auth.dart';
@@ -33,11 +31,9 @@ import 'package:personal_project/presentation/ui/profile/cubit/follow_cubit.dart
 import 'package:personal_project/presentation/ui/video/list_video/bloc/list_video_player_bloc.dart';
 import 'package:personal_project/presentation/ui/video/list_video/bloc/video_player_bloc.dart';
 import 'package:personal_project/presentation/ui/video/list_video/cubit/captions_cubit.dart';
-import 'package:personal_project/presentation/ui/video/list_video/cubit/like_video_cubit.dart';
 import 'package:personal_project/presentation/ui/video/video_item/video_padding_notifier.dart';
 import 'package:personal_project/utils/number_format.dart';
 import 'package:solar_icons/solar_icons.dart';
-import 'package:visibility_detector/visibility_detector.dart';
 
 import '../../../../../utils/debug_mode_print.dart';
 import '../../../../controllers/controllers.dart';
@@ -83,102 +79,60 @@ class _VideoItemMobileState extends State<VideoItemMobile> {
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
     final AuthRepository authRepository = RepositoryProvider.of<AuthRepository>(context);
-    final VideoRepository videoRepository = RepositoryProvider.of<VideoRepository>(context);
     final ColorScheme colorScheme = Theme.of(context).colorScheme;
+    final listVideoPlayerBloc = context.read<ListVideoPlayerBloc>();
+
     return MultiBlocProvider(
       providers: [
-        BlocProvider(
-          create: (context) => LikeVideoCubit(videoRepository),
-        ),
         BlocProvider(create: ((context) => CaptionsCubit())),
       ],
       child: Builder(builder: (context) {
-        final lvp = context.read<ListVideoPlayerBloc>().state;
-        return BlocListener<ListVideoPlayerBloc, ListVideoPlayerState>(
-          listener: (context, state) {
-            if (state is VideoState) {
-              if (state.likeStatus.error) {
-                showFlutterToast(msg: 'action failed');
-              }
+        return GestureDetector(
+          onTap: () => _onTap(listVideoPlayerBloc),
+          onDoubleTap: () {
+            likeAnimationController.show();
+            if (!videoData.isLiked) {
+              listVideoPlayerBloc.add(DoubleTapLikeVideo(index: widget.index, video: videoData));
             }
           },
-          child: BlocListener<VideoPlayerBloc, VideoPlayerState>(
-              listener: (context, state) {
-                debugModePrint(state.toString());
-
-                // if (state.status == VideoPlayerStatus.initialized && state.controller!.value.isInitialized) {
-                //   if (isViewed == false) {
-                //     addListener(state: state, videoData: videoData);
-                //   }
-                // }
-              },
-              child: GestureDetector(
-                onTap: () {
-                  _onTap(context);
-                },
-                onDoubleTap: () {
-                  likeAnimationController.show();
-                  if (!videoData.isLiked) {
-                    context
-                        .read<ListVideoPlayerBloc>()
-                        .add(DoubleTapLikeVideo(index: widget.index, video: videoData));
-                  }
-                },
-                child: BlocBuilder<VideoPlayerBloc, VideoPlayerState>(
-                  buildWhen: (previous, current) {
-                    if (current.status != VideoPlayerStatus.videoDeleted) {
-                      return false;
-                    } else {
-                      return true;
-                    }
-                  },
-                  builder: (context, state) {
-                    if (state.status == VideoPlayerStatus.videoDeleted) {
-                      return const Center(
-                        child: Text('Video deleted'),
-                      );
-                    }
-                    return Container(
-                      color: Colors.black,
-                      width: size.width,
-                      height: size.height,
-                      child: Stack(children: <Widget>[
-                        _videoView(size, videoData),
-                        _rightOveray(context, videoData, authRepository),
-                        _bottomOverLay(context, videoData),
-                        _buildProgerBarIndicatorView(),
-                        if (!widget.controller.value.isPlaying && (lvp is VideoState && lvp.index == widget.index))
-                          Center(
-                            child: Icon(
-                              SolarIconsBold.play,
-                              size: 54,
-                              color: colorScheme.onSurface.withAlpha(120),
-                            ),
-                          ),
-                        _bufferingIndicator(),
-                        Align(
-                          alignment: Alignment.center,
-                          child: LikeAnimation(
-                            controller: likeAnimationController,
-                            icon: SolarIconsBold.heart,
-                            iconColor: Colors.red,
-                          ),
-                        ),
-                      ]),
-                    );
-                  },
+          child: Container(
+            color: Colors.black,
+            width: size.width,
+            height: size.height,
+            child: Stack(children: <Widget>[
+              _videoView(size, videoData),
+              _rightOveray(context, videoData, authRepository),
+              _bottomOverLay(context, videoData),
+              _buildProgerBarIndicatorView(),
+              if (!widget.controller.value.isPlaying && widget.controller.value.isInitialized)
+                Center(
+                  child: Icon(
+                    SolarIconsBold.play,
+                    size: 54,
+                    color: colorScheme.onSurface.withAlpha(120),
+                  ),
                 ),
-              )),
+              _bufferingIndicator(),
+              Align(
+                alignment: Alignment.center,
+                child: LikeAnimation(
+                  controller: likeAnimationController,
+                  icon: SolarIconsBold.heart,
+                  iconColor: Colors.red,
+                ),
+              ),
+            ]),
+          ),
         );
       }),
     );
   }
 
-  void _onTap(BuildContext context) {
+  void _onTap(ListVideoPlayerBloc listVideoPlayerBloc) {
     if (widget.controller.value.isPlaying) {
-      context.read<ListVideoPlayerBloc>().add(PauseVideo(index: widget.index, controller: widget.controller));
+      listVideoPlayerBloc.add(PauseVideo(index: widget.index, controller: widget.controller));
     } else {
-      context.read<ListVideoPlayerBloc>().add(PlayVideo(index: widget.index, controller: widget.controller));
+      listVideoPlayerBloc.add(PlayVideo(index: widget.index, controller: widget.controller));
     }
 
     // VideoPlayerBloc bloc = BlocProvider.of<VideoPlayerBloc>(context);
@@ -191,47 +145,16 @@ class _VideoItemMobileState extends State<VideoItemMobile> {
     // }
   }
 
-  BlocBuilder<VideoPlayerBloc, VideoPlayerState> _bufferingIndicator() {
-    return BlocBuilder<VideoPlayerBloc, VideoPlayerState>(
-      builder: (context, state) {
-        if (state.status == VideoPlayerStatus.buffering) {
-          return const Align(
-            alignment: Alignment.center,
-            child: CircularProgressIndicator(),
-          );
-        }
-        return const SizedBox(
-          width: 0,
-          height: 0,
-        );
-      },
-    );
-  }
-
-  BlocBuilder<VideoPlayerBloc, VideoPlayerState> _playButton() {
-    return BlocBuilder<VideoPlayerBloc, VideoPlayerState>(
-      builder: (context, state) {
-        if (!widget.controller.value.isPlaying) {
-          return Align(
-            alignment: Alignment.center,
-            child: AnimatedOpacity(
-              opacity: state.status == VideoPlayerStatus.paused ? 1 : 0,
-              duration: kThemeAnimationDuration,
-              child: GestureDetector(
-                onTap: () {
-                  BlocProvider.of<VideoPlayerBloc>(context).add(const VideoPlayerEvent(actions: VideoEvent.play));
-                },
-                child: Icon(
-                  SolarIconsBold.play,
-                  size: state.status == VideoPlayerStatus.paused ? Dimens.DIMENS_38 : Dimens.DIMENS_50,
-                  color: COLOR_white_fff5f5f5,
-                ),
-              ),
-            ),
-          );
-        }
-        return Container();
-      },
+  Widget _bufferingIndicator() {
+    if (videoController.value.isBuffering) {
+      return const Align(
+        alignment: Alignment.center,
+        child: CircularProgressIndicator(),
+      );
+    }
+    return const SizedBox(
+      width: 0,
+      height: 0,
     );
   }
 
@@ -241,6 +164,31 @@ class _VideoItemMobileState extends State<VideoItemMobile> {
       builder: (context, child) {
         double bottomPadding = VideoPaddingNOtifire.instance.bottomPadding;
         debugModePrint('bottompadding $bottomPadding');
+        if (!widget.controller.value.isInitialized) {
+          return SizedBox(
+            width: MediaQuery.of(context).size.width,
+            child: CachedNetworkImage(
+              placeholder: (_, __) => const Center(child: CircularProgressIndicator()),
+              imageUrl: videoData.thumnail,
+              errorWidget: (_, __, ___) {
+                return Container();
+              },
+              fit: BoxFit.fitWidth,
+            ),
+          );
+        }
+        if (videoController.value.hasError) {
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                'Error',
+                style: TextStyle(color: COLOR_white_fff5f5f5, fontSize: _IC_LABEL_FONTSIZE),
+              ),
+              IconButton(onPressed: () {}, icon: const Icon(SolarIconsOutline.refresh)),
+            ],
+          );
+        }
         return Container(
           width: size.width,
           height: size.height,
@@ -249,80 +197,24 @@ class _VideoItemMobileState extends State<VideoItemMobile> {
             bottom: bottomPadding,
           ),
           alignment: Alignment.center,
-          child: VisibilityDetector(
-            key: Key('visible-video-key-//${widget.videoData.createdAt}'),
-            onVisibilityChanged: (info) {
-              // CachedVideoPlayerController controller =
-              //     state.controller!;
-            },
-            child: BlocBuilder<VideoPlayerBloc, VideoPlayerState>(
-              buildWhen: (previous, current) {
-                if (current.status == VideoPlayerStatus.paused ||
-                    current.status == VideoPlayerStatus.playing ||
-                    current.status == VideoPlayerStatus.buffering) {
-                  return false;
-                }
-                return true;
-              },
-              builder: (_, state) {
-                if (state.status == VideoPlayerStatus.initialized && widget.controller.value.isInitialized) {
-                  debugModePrint(
-                      'state ${widget.index}  width ${state.controller!.value.size.width} aspc ${state.controller!.value.size.aspectRatio}');
+          child: Stack(
+            children: [
+              ///to fixs blank if size is 0
+              if (widget.controller.value.size.aspectRatio == 0)
+                CachedVideoPlayerPlus(widget.controller)
+              else
+                FittedBox(
+                  fit: BoxFit.fitWidth, //
+                  child: SizedBox(
+                    width: widget.controller.value.size.width,
+                    height: widget.controller.value.size.height,
+                    child: CachedVideoPlayerPlus(widget.controller),
+                  ),
+                ),
 
-                  return Stack(
-                    children: [
-                      ///to fixs blank if size is 0
-                      if (widget.controller.value.size.aspectRatio == 0)
-                        CachedVideoPlayerPlus(widget.controller)
-                      else
-                        FittedBox(
-                          fit: BoxFit.fitWidth, //
-                          child: SizedBox(
-                            width: widget.controller.value.size.width,
-                            height: widget.controller.value.size.height,
-                            child: CachedVideoPlayerPlus(widget.controller),
-                          ),
-                        ),
-
-                      //Inkwell to fix play and pause video on web
-                      _fixsPlayVideoWeb()
-                    ],
-                  );
-                } else if (!widget.controller.value.isInitialized) {
-                  return SizedBox(
-                    width: MediaQuery.of(context).size.width,
-                    child: CachedNetworkImage(
-                      placeholder: (_, __) => const Center(child: CircularProgressIndicator()),
-                      imageUrl: videoData.thumnail,
-                      errorWidget: (_, __, ___) {
-                        return Container();
-                      },
-                      fit: BoxFit.fitWidth,
-                    ),
-                  );
-                }
-                return Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      'Error',
-                      style: TextStyle(color: COLOR_white_fff5f5f5, fontSize: _IC_LABEL_FONTSIZE),
-                    ),
-                    IconButton(
-                        onPressed: () {
-                          BlocProvider.of<VideoPlayerBloc>(context).add(
-                            VideoPlayerEvent(
-                              actions: VideoEvent.initialize,
-                              postId: videoData.id,
-                              videoUrl: videoData.videoUrl,
-                            ),
-                          );
-                        },
-                        icon: const Icon(SolarIconsOutline.refresh)),
-                  ],
-                );
-              },
-            ),
+              //Inkwell to fix play and pause video on web
+              _fixsPlayVideoWeb()
+            ],
           ),
         );
       },
@@ -481,13 +373,12 @@ class _VideoItemMobileState extends State<VideoItemMobile> {
       return InkWell(
           overlayColor: const WidgetStatePropertyAll<Color>(Colors.transparent),
           onTap: () {
-            final VideoPlayerRepository repo = RepositoryProvider.of<VideoPlayerRepository>(context);
-            VideoPlayerBloc bloc = BlocProvider.of<VideoPlayerBloc>(context);
+            ListVideoPlayerBloc bloc = BlocProvider.of<ListVideoPlayerBloc>(context);
             if (widget.controller.value.isInitialized) {
               if (widget.controller.value.isPlaying) {
-                bloc.add(const VideoPlayerEvent(actions: VideoEvent.pause));
+                bloc.add(PauseVideo(index: widget.index, controller: widget.controller));
               } else {
-                bloc.add(const VideoPlayerEvent(actions: VideoEvent.play));
+                bloc.add(PlayVideo(index: widget.index, controller: widget.controller));
               }
             }
           },
@@ -664,55 +555,6 @@ class _VideoItemMobileState extends State<VideoItemMobile> {
       ),
       label: Text(numberFormat(context.locale, videoData.likesCount)),
     );
-    return GestureDetector(
-      onTap: () {
-        int likeCount = videoData.likesCount;
-        String? uid = RepositoryProvider.of<AuthRepository>(context).currentUser?.uid;
-        if (uid == null) {
-          showAuthBottomSheetFunc(context);
-        } else {
-          bool isLiked = videoData.likes.contains(uid);
-          BlocProvider.of<LikeVideoCubit>(context)
-              .likePost(postId: videoData.id!, stateFromDatabase: isLiked, databaseLikeCount: likeCount);
-        }
-      },
-      child: BlocBuilder<LikeVideoCubit, LikeVideoState>(
-        buildWhen: (previous, current) {
-          if (current is ShowDobleTapLikeWidget || current is RemoveDoubleTapLikeWidget) {
-            return false;
-          }
-          return true;
-        },
-        builder: (context, state) {
-          String? uid = RepositoryProvider.of<AuthRepository>(context).currentUser?.uid;
-          bool isLiked = videoData.likes.contains(uid);
-          if (state is VideoIsLiked) {
-            return Icon(
-              SolarIconsBold.heart,
-              size: Dimens.DIMENS_34,
-              color: Colors.red,
-            );
-          } else if (state is UnilkedVideo) {
-            return Icon(
-              SolarIconsBold.heart,
-              size: Dimens.DIMENS_34,
-              color: COLOR_white_fff5f5f5,
-            );
-          }
-          return isLiked
-              ? Icon(
-                  SolarIconsBold.heart,
-                  size: Dimens.DIMENS_34,
-                  color: Colors.red,
-                )
-              : Icon(
-                  SolarIconsBold.heart,
-                  size: Dimens.DIMENS_34,
-                  color: COLOR_white_fff5f5f5,
-                );
-        },
-      ),
-    );
   }
 
   GestureDetector _buildProfilePictures(BuildContext context, User? data) {
@@ -749,33 +591,21 @@ class _VideoItemMobileState extends State<VideoItemMobile> {
     }
   }
 
-  Align _buildProgerBarIndicatorView() {
+  Widget _buildProgerBarIndicatorView() {
+    if (!videoController.value.isInitialized) {
+      return SizedBox.shrink();
+    }
     return Align(
       alignment: Alignment.bottomCenter,
-      child: BlocBuilder<VideoPlayerBloc, VideoPlayerState>(
-        buildWhen: (previous, current) {
-          if (current.status == VideoPlayerStatus.paused ||
-              current.status == VideoPlayerStatus.playing ||
-              current.status == VideoPlayerStatus.buffering) {
-            return false;
-          }
-          return true;
-        },
-        builder: (context, state) {
-          if (state.status == VideoPlayerStatus.initialized && state.controller!.value.isInitialized) {
-            return SizedBox(
-              height: 3,
-              child: VideoProgressIndicator(
-                state.controller!,
-                padding: EdgeInsets.zero,
-                colors: VideoProgressColors(
-                    bufferedColor: COLOR_white_fff5f5f5.withOpacity(0.3), playedColor: COLOR_white_fff5f5f5),
-                allowScrubbing: true,
-              ),
-            );
-          }
-          return Container();
-        },
+      child: SizedBox(
+        height: 3,
+        child: VideoProgressIndicator(
+          videoController,
+          padding: EdgeInsets.zero,
+          colors: VideoProgressColors(
+              bufferedColor: COLOR_white_fff5f5f5.withOpacity(0.3), playedColor: COLOR_white_fff5f5f5),
+          allowScrubbing: true,
+        ),
       ),
     );
   }
@@ -983,69 +813,6 @@ class _VideoItemMobileState extends State<VideoItemMobile> {
                       )
                     : Container()
               ],
-            ),
-          );
-        }
-        return Container();
-      },
-    );
-  }
-}
-
-class LikeWidget extends StatefulWidget {
-  final bool isLiked;
-  const LikeWidget({
-    super.key,
-    required this.isLiked,
-  });
-
-  @override
-  State<LikeWidget> createState() => _LikeWidgetState();
-}
-
-class _LikeWidgetState extends State<LikeWidget> {
-  bool showAnimation = false;
-
-  @override
-  Widget build(BuildContext context) {
-    showAnimation = (context.read<ListVideoPlayerBloc>().state as VideoState).likeStatus.liked;
-    return AnimatedSwitcher(
-      duration: Duration(
-        milliseconds: 120,
-      ),
-      layoutBuilder: (currentChild, previousChildren) {
-        if (widget.isLiked) {
-          return AnimatedScale(
-            duration: Duration(milliseconds: 120),
-            curve: Curves.bounceInOut,
-            scale: widget.isLiked ? 2 : 1,
-            child: Icon(
-              SolarIconsBold.heart,
-              color: Colors.red,
-              size: 80,
-            ),
-          );
-        }
-        return SizedBox.shrink();
-      },
-      child: SizedBox.shrink(),
-    );
-    return BlocBuilder<LikeVideoCubit, LikeVideoState>(
-      buildWhen: (previous, current) {
-        if (current is VideoIsLiked) {
-          return true;
-        }
-        return true;
-      },
-      builder: (context, state) {
-        if (state is ShowDobleTapLikeWidget) {
-          return AnimatedOpacity(
-            opacity: state.isVisible ? 1.0 : 0.0,
-            duration: const Duration(milliseconds: 300),
-            child: Icon(
-              SolarIconsBold.heart,
-              color: Colors.red,
-              size: state.isVisible ? 80 : 50,
             ),
           );
         }

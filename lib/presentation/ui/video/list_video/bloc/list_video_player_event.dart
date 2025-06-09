@@ -72,6 +72,21 @@ class RemovePreviousePauseIcon extends ListVideoPlayerEvent {
       ];
 }
 
+class DisposeVideoController extends ListVideoPlayerEvent {
+  final CachedVideoPlayerPlusController controller;
+
+  const DisposeVideoController({
+    required this.controller,
+    required super.index,
+  });
+
+  @override
+  List<Object> get props => [
+        super.props,
+        controller,
+      ];
+}
+
 class LikeVideo extends ListVideoPlayerEvent {
   final Video video;
 
