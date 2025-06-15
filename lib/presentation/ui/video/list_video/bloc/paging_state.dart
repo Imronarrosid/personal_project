@@ -27,3 +27,20 @@ class PagingControllerState extends VideoPagingState {
         videos,
       ];
 }
+
+class PagingLoadingSate extends VideoPagingState {
+  const PagingLoadingSate();
+
+  @override
+  List<Object?> get props => [
+        super.props,
+      ];
+}
+class NoMoreItem extends VideoPagingState {
+  const NoMoreItem();
+
+  @override
+  List<Object?> get props => [
+        super.props,
+      ];
+}

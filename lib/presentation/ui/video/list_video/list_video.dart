@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:bootstrap_icons/bootstrap_icons.dart';
+import 'package:cached_video_player_plus/cached_video_player_plus.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -11,7 +12,9 @@ import 'package:personal_project/constant/dimens.dart';
 import 'package:personal_project/data/repository/paging_repository.dart';
 import 'package:personal_project/domain/model/video_model.dart';
 import 'package:personal_project/domain/reporsitory/auth_reposotory.dart';
+import 'package:personal_project/domain/reporsitory/video_repository.dart';
 import 'package:personal_project/presentation/l10n/stings.g.dart';
+import 'package:personal_project/presentation/shared_components/flutter_toast.dart';
 import 'package:personal_project/presentation/shared_components/video_player_item.dart';
 import 'package:personal_project/presentation/ui/auth/auth.dart';
 import 'package:personal_project/presentation/ui/auth/bloc/auth_bloc.dart';
@@ -61,76 +64,63 @@ class _ListVideoState extends State<ListVideo> {
         },
         child: SizedBox(
           height: MediaQuery.of(context).size.height,
-          child: RepositoryProvider(
-            create: (context) => PagingRepository(),
+          child: BlocProvider(
+            create: (context) {
+              if (widget.from == VideoFrom.following) {
+                return VideoPaginBloc(RepositoryProvider.of<PagingRepository>(context))
+                  ..add(
+                    const InitPagingController(from: VideoFrom.following),
+                  );
+              } else {
+                return VideoPaginBloc(RepositoryProvider.of<PagingRepository>(context))
+                  ..add(
+                    const InitPagingController(from: VideoFrom.forYou),
+                  );
+              }
+            },
             child: BlocProvider(
-              create: (context) {
-                if (widget.from == VideoFrom.following) {
-                  return VideoPaginBloc(RepositoryProvider.of<PagingRepository>(context))
-                    ..add(
-                      const InitPagingController(from: VideoFrom.following),
-                    );
-                } else {
-                  return VideoPaginBloc(RepositoryProvider.of<PagingRepository>(context))
-                    ..add(
-                      const InitPagingController(from: VideoFrom.forYou),
-                    );
-                }
-              },
-              child: BlocBuilder<VideoPaginBloc, VideoPagingState>(
-                builder: (context, state) {
-                  // No more video still swhowing last loaded video.
-                  if (state is PagingControllerState) {
-                    return RefreshIndicator(
-                      onRefresh: () {
-                        final PagingRepository pagingRepository = RepositoryProvider.of<PagingRepository>(context);
+              create: (context) => ListVideoPlayerBloc(
+                RepositoryProvider.of<PagingRepository>(context),
+              ),
+              child: RefreshIndicator(
+                onRefresh: () {
+                  final PagingRepository pagingRepository = RepositoryProvider.of<PagingRepository>(context);
 
-                        pagingRepository.clearAllVideo();
+                  pagingRepository.clearAllVideo();
 
-                        return Future.sync(
-                          () {
-                            RepositoryProvider.of<PagingRepository>(context).controller!.refresh();
-                          },
-                        );
-                      },
-                      child: BackButtonListener(
-                        onBackButtonPressed: () async {
-                          _controller.animateToPage(0,
-                              duration: const Duration(milliseconds: 300), curve: Curves.bounceIn);
-                          return true;
-                        },
-                        child: KeyboardListener(
-                          focusNode: _focusNode,
-                          autofocus: true,
-                          onKeyEvent: (KeyEvent keyEvent) {
-                            debugModePrint('index ${_controller.page}');
-                            if (keyEvent.logicalKey == LogicalKeyboardKey.arrowDown) {
-                              _controller.nextPage(
-                                duration: const Duration(milliseconds: 300),
-                                curve: Curves.easeInCubic,
-                              );
-                            } else if (keyEvent.logicalKey == LogicalKeyboardKey.arrowUp) {
-                              if (_controller.page!.toInt() > 0) {
-                                _controller.previousPage(
-                                  duration: const Duration(milliseconds: 300),
-                                  curve: Curves.easeInCubic,
-                                );
-                              }
-                            }
-                          },
-                          child: ListenableBuilder(
-                            listenable: IsCanScrollNotification.instance,
-                            builder: (context, child) {
-                              return NewVideoList();
-                              // return _pageView(state, authRepository, context);
-                            },
-                          ),
-                        ),
-                      ),
-                    );
-                  }
-                  return Container();
+                  return Future.sync(
+                    () {
+                      RepositoryProvider.of<PagingRepository>(context).controller!.refresh();
+                    },
+                  );
                 },
+                child: BackButtonListener(
+                  onBackButtonPressed: () async {
+                    _controller.animateToPage(0,
+                        duration: const Duration(milliseconds: 300), curve: Curves.bounceIn);
+                    return true;
+                  },
+                  child: KeyboardListener(
+                      focusNode: _focusNode,
+                      autofocus: true,
+                      onKeyEvent: (KeyEvent keyEvent) {
+                        debugModePrint('index ${_controller.page}');
+                        if (keyEvent.logicalKey == LogicalKeyboardKey.arrowDown) {
+                          _controller.nextPage(
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.easeInCubic,
+                          );
+                        } else if (keyEvent.logicalKey == LogicalKeyboardKey.arrowUp) {
+                          if (_controller.page!.toInt() > 0) {
+                            _controller.previousPage(
+                              duration: const Duration(milliseconds: 300),
+                              curve: Curves.easeInCubic,
+                            );
+                          }
+                        }
+                      },
+                      child: NewVideoList()),
+                ),
               ),
             ),
           ),
@@ -247,97 +237,179 @@ class NewVideoList extends StatefulWidget {
 
 class _NewVideoListState extends State<NewVideoList> {
   int previousPageIndex = 0;
-
+  int? viewedIndex;
   @override
   void initState() {
     final PagingRepository pagingRepository = RepositoryProvider.of<PagingRepository>(context);
-    pagingRepository.loadVideos();
+    final firstVideoPlayerController = pagingRepository.getControllerAtIndex(0);
+    if (viewedIndex == null && firstVideoPlayerController.value.isInitialized) {
+      context.read<ListVideoPlayerBloc>().add(
+            PlayVideo(
+              index: 0,
+              controller: firstVideoPlayerController,
+            ),
+          );
+
+      addVideoListener(
+        activeIndex: 0,
+        videoId: pagingRepository.videos.first.id!,
+        currentController: firstVideoPlayerController,
+      );
+    }
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
     final PagingRepository pagingRepository = RepositoryProvider.of<PagingRepository>(context);
-    return BlocProvider(
-      create: (context) => ListVideoPlayerBloc(
-        pagingRepository,
-      ),
-      child: BlocListener<ListVideoPlayerBloc, ListVideoPlayerState>(
-        listener: (context, state) {
-          debugModePrint('lvpb $state');
-        },
-        child: BlocBuilder<ListVideoPlayerBloc, ListVideoPlayerState>(
-          // buildWhen: (previous, current) {
 
-          // },
-
-          builder: (context, _) {
-            return BlocBuilder<VideoPaginBloc, VideoPagingState>(
-              builder: (context, state) {
-                if (state is PagingControllerState) {
-                  final List<Video>? videos = state.videos;
-                  if (videos == null) {
-                    return Center(
-                      child: CircularProgressIndicator(),
-                    );
-                  }
-                  if (videos.isEmpty) {
-                    return Center(
-                      child: Text(LocaleKeys.message_no_post.tr()),
-                    );
-                  }
-                  return PageView.custom(
-                    scrollDirection: Axis.vertical,
-                    onPageChanged: (activeIndex) {
-                      final currentController = state.cachedControllers![activeIndex];
-                      if (previousPageIndex < activeIndex) {
-                        context.read<VideoPaginBloc>().add(OnNextPage(index: activeIndex));
-                        context.read<ListVideoPlayerBloc>().add(DisposeVideoController(
-                            controller: state.cachedControllers![activeIndex - 1], index: activeIndex - 1));
-                      } else {
-                        context.read<ListVideoPlayerBloc>().add(DisposeVideoController(
-                            controller: state.cachedControllers![activeIndex + 1], index: activeIndex + 1));
-                      }
-                      if (currentController.value.isInitialized) {
-                        context
-                            .read<ListVideoPlayerBloc>()
-                            .add(PlayVideo(index: activeIndex, controller: currentController));
-                      } else {
-                        context
-                            .read<ListVideoPlayerBloc>()
-                            .add(InitVideoPlayer(index: activeIndex, controller: currentController));
-                      }
-
-                      if (activeIndex > state.cachedControllers!.length - 2) {
-                        context.read<VideoPaginBloc>().add(InitPagingController(from: VideoFrom.forYou));
-                      }
-
-                      previousPageIndex = activeIndex;
-                    },
-                    childrenDelegate: SliverChildBuilderDelegate(
-                      (context, index) {
-                        final Video video = videos[index];
-                        return VideoPlayerItem(
-                          key: ValueKey(video.id),
-                          controller: pagingRepository.getControllerAtIndex(index),
-                          index: index,
-                          item: video,
-                          url: video.videoUrl,
-                          auto: true,
-                        );
-                      },
-                      childCount: videos.length, // Example count, adjust as needed
-                    ),
-                  );
-                }
-                return const Center(
-                  child: CircularProgressIndicator(),
-                );
-              },
-            );
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<ListVideoPlayerBloc, ListVideoPlayerState>(
+          listener: (context, state) {
+            debugModePrint('lvpb //');
           },
         ),
+        BlocListener<VideoPaginBloc, VideoPagingState>(
+          listener: (context, state) {
+            if (state is NoMoreItem && previousPageIndex == pagingRepository.videoPlayerControllers.length - 1) {
+              showToast(msg: LocaleKeys.message_no_new_video.tr());
+            }
+            if (state is PagingLoadingSate) {
+              showToast(msg: 'load more video');
+            }
+          },
+        ),
+      ],
+      child: BlocBuilder<ListVideoPlayerBloc, ListVideoPlayerState>(
+        // buildWhen: (previous, current) {
+
+        // },
+
+        builder: (context, _) {
+          return BlocBuilder<VideoPaginBloc, VideoPagingState>(
+            builder: (context, state) {
+              if (state is PagingControllerState ||
+                  state is PagingInitial ||
+                  state is PagingLoadingSate ||
+                  state is NoMoreItem) {
+                final List<Video> videos = pagingRepository.videos;
+                final cachedControllers = pagingRepository.videoPlayerControllers;
+                if (videos.isEmpty) {
+                  return Center(
+                    child: Text(LocaleKeys.message_no_post.tr()),
+                  );
+                }
+                return ListenableBuilder(
+                    listenable: IsCanScrollNotification.instance,
+                    builder: (context, child) {
+                      return NotificationListener<ScrollNotification>(
+                        onNotification: (notification) {
+                          if (notification.metrics.axisDirection == AxisDirection.down) {
+                            IsCanScrollNotification.instance.setValue(true);
+                          }
+                          return true;
+                        },
+                        child: PageView.custom(
+                          physics: IsCanScrollNotification.instance.value
+                              ? const AlwaysScrollableScrollPhysics()
+                              : const NeverScrollableScrollPhysics(),
+                          scrollDirection: Axis.vertical,
+                          onPageChanged: (activeIndex) {
+                            debugModePrint('activepage ');
+                            CachedVideoPlayerPlusController currentController =
+                                pagingRepository.getControllerAtIndex(activeIndex);
+
+                            debugModePrint('activepage  isInitialized ${currentController.value.isInitialized}');
+                            if (previousPageIndex < activeIndex) {
+                              context.read<VideoPaginBloc>().add(OnNextPage(index: activeIndex));
+                              context.read<ListVideoPlayerBloc>().add(DisposeVideoController(
+                                  controller: cachedControllers[activeIndex - 1], index: activeIndex - 1));
+                            } else if (previousPageIndex > activeIndex &&
+                                activeIndex < cachedControllers.length - 1) {
+                              context.read<ListVideoPlayerBloc>().add(DisposeVideoController(
+                                  controller: cachedControllers[activeIndex + 1], index: activeIndex + 1));
+                              context.read<VideoPaginBloc>().add(OnNextPage(index: activeIndex));
+                            } else if (activeIndex == pagingRepository.videoPlayerControllers.length - 1) {
+                              // context.read<ListVideoPlayerBloc>().add(DisposeVideoController(
+                              //     controller: cachedControllers[activeIndex - 1], index: activeIndex - 1));
+                            }
+                            if (currentController.value.isInitialized) {
+                              context
+                                  .read<ListVideoPlayerBloc>()
+                                  .add(PlayVideo(index: activeIndex, controller: currentController));
+                              debugModePrint('activepage play ');
+                              addVideoListener(
+                                activeIndex: activeIndex,
+                                videoId: videos[activeIndex].id!,
+                                currentController: currentController,
+                              );
+                            } else {
+                              context
+                                  .read<ListVideoPlayerBloc>()
+                                  .add(InitVideoPlayer(index: activeIndex, controller: currentController));
+                              addVideoListener(
+                                activeIndex: activeIndex,
+                                videoId: videos[activeIndex].id!,
+                                currentController: currentController,
+                              );
+                            }
+
+                            if (activeIndex > cachedControllers.length - 2) {
+                              context.read<VideoPaginBloc>().add(LoadMoreVideo(from: VideoFrom.forYou));
+                            }
+
+                            previousPageIndex = activeIndex;
+                          },
+                          childrenDelegate: SliverChildBuilderDelegate(
+                            (context, index) {
+                              final Video video = videos[index];
+                              return VideoPlayerItem(
+                                key: ValueKey(video.id),
+                                controller: pagingRepository.getControllerAtIndex(index),
+                                index: index,
+                                item: video,
+                                url: video.videoUrl,
+                                auto: true,
+                              );
+                            },
+                            childCount: cachedControllers.length, // Example count, adjust as needed
+                          ),
+                        ),
+                      );
+                    });
+              }
+
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
+            },
+          );
+        },
       ),
+    );
+  }
+
+  void addVideoListener(
+      {required int activeIndex,
+      required String videoId,
+      required CachedVideoPlayerPlusController currentController}) {
+    currentController.addListener(
+      () {
+        int duratio = currentController.value.position.inMicroseconds;
+        double minDur = 3 / 10 * duratio;
+
+        if (duratio > minDur.toInt() && (viewedIndex == null || viewedIndex != activeIndex)) {
+          RepositoryProvider.of<VideoRepository>(context).addViewsCount(videoId);
+          debugModePrint('add views activepage $activeIndex');
+          viewedIndex = activeIndex;
+          // currentController.removeListener(() {});
+        }
+        if (currentController.value.isBuffering) {
+          //TODO:
+          //showbuffering indicator
+        }
+      },
     );
   }
 }

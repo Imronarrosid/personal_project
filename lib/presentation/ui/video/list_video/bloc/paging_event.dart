@@ -17,6 +17,14 @@ class InitPagingController extends VideoPagingEvent {
   @override
   List<Object> get props => [super.props, from];
 }
+class LoadMoreVideo extends VideoPagingEvent {
+  final VideoFrom from;
+
+  const LoadMoreVideo({required this.from});
+
+  @override
+  List<Object> get props => [super.props, from];
+}
 
 class OnNextPage extends VideoPagingEvent {
   final int index;

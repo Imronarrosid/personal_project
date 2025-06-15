@@ -11,18 +11,30 @@ part 'paging_state.dart';
 class VideoPaginBloc extends Bloc<VideoPagingEvent, VideoPagingState> {
   VideoPaginBloc(this.repository) : super(PagingInitial()) {
     on<InitPagingController>((event, emit) async {
-      if (repository.controller == null) {
-        repository.initPagingController(event.from);
-        emit(PagingControllerState(controller: repository.controller));
-      }
-      if (repository.videoPlayerControllers.isEmpty) {
-        await repository.loadVideos();
+      // final List<Video> videos = repository.videos;
+
+      // final List<CachedVideoPlayerPlusController> controllers = repository.videoPlayerControllers;
+
+      // if (videos.isNotEmpty && controllers.isNotEmpty) {
+      //   emit(
+      //     PagingControllerState(
+      //       controller: repository.controller,
+      //       cachedControllers: controllers,
+      //       videos: videos,
+      //     ),
+      //   );
+      // }
+    });
+
+    on<LoadMoreVideo>(
+      (event, emit) async {
+        emit(PagingLoadingSate());
+        List<Video> newVideos = await repository.loadVideos();
         final List<Video> videos = repository.videos;
 
         final List<CachedVideoPlayerPlusController> controllers = repository.videoPlayerControllers;
+
         if (videos.isNotEmpty && controllers.isNotEmpty) {
-          await initControllerAtIndex(0);
-          repository.videoPlayerControllers[0].play();
           emit(
             PagingControllerState(
               controller: repository.controller,
@@ -31,8 +43,11 @@ class VideoPaginBloc extends Bloc<VideoPagingEvent, VideoPagingState> {
             ),
           );
         }
-      }
-    });
+        if (newVideos.isEmpty) {
+          emit(const NoMoreItem());
+        }
+      },
+    );
 
     on<OnNextPage>((event, emit) async {
       // repository.videoPlayerControllers[event.index].play();

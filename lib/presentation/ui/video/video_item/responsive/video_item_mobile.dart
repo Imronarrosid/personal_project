@@ -81,6 +81,7 @@ class _VideoItemMobileState extends State<VideoItemMobile> {
     final AuthRepository authRepository = RepositoryProvider.of<AuthRepository>(context);
     final ColorScheme colorScheme = Theme.of(context).colorScheme;
     final listVideoPlayerBloc = context.read<ListVideoPlayerBloc>();
+    final lvpState = context.read<ListVideoPlayerBloc>().state;
 
     return MultiBlocProvider(
       providers: [
@@ -104,7 +105,8 @@ class _VideoItemMobileState extends State<VideoItemMobile> {
               _rightOveray(context, videoData, authRepository),
               _bottomOverLay(context, videoData),
               _buildProgerBarIndicatorView(),
-              if (!widget.controller.value.isPlaying && widget.controller.value.isInitialized)
+              if (!widget.controller.value.isPlaying &&
+                  (lvpState is VideoState && lvpState.index == widget.index && lvpState.status.paused))
                 Center(
                   child: Icon(
                     SolarIconsBold.play,

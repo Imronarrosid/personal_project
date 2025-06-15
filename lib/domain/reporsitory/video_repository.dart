@@ -440,17 +440,31 @@ class VideoRepository implements VideoUseCaseType {
 
   Future<void> addViewsCount(String postId) async {
     try {
+      final String? uid = firebaseAuth.currentUser?.uid;
+      if (uid == null) return;
+
+      DocumentReference viewsDocumentReference = firebaseFirestore.collection('views').doc('${postId}_$uid');
       DocumentReference documentReference = firebaseFirestore.collection('videos').doc(postId);
       firebaseFirestore.runTransaction((transaction) {
         return transaction.get(documentReference).then((value) {
           if ((value.data() as Map<String, dynamic>).containsKey('viewsCount')) {
             int currentCount = (value.data() as Map<String, dynamic>)['viewsCount'];
             transaction.update(documentReference, {'viewsCount': currentCount + 1});
+            transaction.set(viewsDocumentReference, {
+              'postId': postId,
+              'uid': uid,
+              'timeStamp': FieldValue.serverTimestamp(),
+            });
           } else {
             final List<dynamic> views = (value.data() as Map<String, dynamic>)['views'];
             int currentCount = views.length;
             Video video = Video.fromSnap(value);
             transaction.set(documentReference, {...video.toJson(), 'viewsCount': currentCount + 1});
+            transaction.set(viewsDocumentReference, {
+              'postId': postId,
+              'uid': uid,
+              'timeStamp': FieldValue.serverTimestamp(),
+            });
           }
         });
       });

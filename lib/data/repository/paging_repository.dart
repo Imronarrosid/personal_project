@@ -15,13 +15,14 @@ class PagingRepository {
   PagingController<int, Video>? controller;
   VideoRepository videoRepository = VideoRepository();
   final int _pageSize = 4;
+  bool isLastPage = false;
 
   final List<DocumentSnapshot> _videoFromFollowing = [];
   final List<DocumentSnapshot> _videoFromGame = [];
   final List<DocumentSnapshot> _videoNotFromGame = [];
   final List<DocumentSnapshot> _videoGameIsNull = [];
 
-  late Future<List<String>> _gameTitle;
+  List<String> _gameTitleList = [];
   late Future<List<String>> _followingUid;
 
   final List<CachedVideoPlayerPlusController> _videoPlayerControllers = [];
@@ -63,8 +64,8 @@ class PagingRepository {
     videoRepository.allDocs.clear();
   }
 
-  void initPagingController(VideoFrom from) {
-    _gameTitle = _getGameTitleList();
+  void initPagingController(VideoFrom from) async {
+    _gameTitleList = await _getGameTitleList();
     _followingUid = getFollowedUid();
     controller = PagingController(firstPageKey: 0);
     controller!.addPageRequestListener((pageKey) {
@@ -159,8 +160,13 @@ class PagingRepository {
     List<DocumentSnapshot> listDocs = [];
 
     QuerySnapshot querySnapshot;
-
-    List<String> gameList = await _gameTitle;
+    List<String> gameList = [];
+    if (_gameTitleList.isEmpty) {
+      gameList = await _getGameTitleList();
+      _gameTitleList = gameList;
+    } else {
+      gameList = _gameTitleList;
+    }
     if (gameList.isEmpty) {
       return [];
     }
@@ -198,8 +204,16 @@ class PagingRepository {
     List<DocumentSnapshot> listDocs = [];
 
     QuerySnapshot querySnapshot;
-    List<String> gameList = await _gameTitle;
-
+    List<String> gameList = [];
+    if (_gameTitleList.isEmpty) {
+      gameList = await _getGameTitleList();
+      _gameTitleList = gameList;
+    } else {
+      gameList = _gameTitleList;
+    }
+    if (gameList.isEmpty) {
+      return [];
+    }
     try {
       if (_videoNotFromGame.isEmpty && gameList.isNotEmpty) {
         querySnapshot = await firebaseFirestore
@@ -210,8 +224,8 @@ class PagingRepository {
       } else if (_videoNotFromGame.isNotEmpty && gameList.isNotEmpty) {
         querySnapshot = await firebaseFirestore
             .collection('videos')
-            .where('game.title', whereNotIn: gameList)
             .startAfterDocument(_videoNotFromGame.last)
+            .where('game.title', whereNotIn: gameList)
             .limit(limit)
             .get();
       } else if (_videoNotFromGame.isEmpty && gameList.isEmpty) {
@@ -220,8 +234,8 @@ class PagingRepository {
       } else {
         querySnapshot = await firebaseFirestore
             .collection('videos')
-            .where('game', isNull: false)
             .startAfterDocument(_videoNotFromGame.last)
+            .where('game', isNull: false)
             .limit(limit)
             .get();
       }
@@ -247,11 +261,13 @@ class PagingRepository {
     List<DocumentSnapshot> listDocs = [];
 
     QuerySnapshot querySnapshot;
-    List<String> gameList = await _gameTitle;
-
-    // if (gameList.isEmpty) {
-    //   return [];
-    // }
+    List<String> gameList = [];
+    if (_gameTitleList.isEmpty) {
+      gameList = await _getGameTitleList();
+      _gameTitleList = gameList;
+    } else {
+      gameList = _gameTitleList;
+    }
     try {
       if (_videoGameIsNull.isEmpty) {
         querySnapshot =
@@ -309,17 +325,15 @@ class PagingRepository {
   }) async {
     try {
       List<Video> listVideo = [];
-      final List<DocumentSnapshot> newItems;
+      List<DocumentSnapshot> newItems = [];
       if (from == VideoFrom.following) {
         newItems = await getListVideoFromFollowing(limit: _pageSize);
       } else {
         Random random = Random();
-        int limit1 = random.nextInt(1) + 1;
-        int limit2 = random.nextInt(2) + 1;
-        newItems = await getListVideoByGame(limit: limit1);
-        List<DocumentSnapshot> secondList = await getFromUnselectedGame(limit: limit2);
-        newItems.addAll(secondList);
-        List<DocumentSnapshot> thirdList = await getListVideoGameIsNull(limit: _pageSize - newItems.length);
+        // int limit1 = random.nextInt(3) + 1;
+        // newItems = await getListVideoByGame(limit: limit1);
+        List<DocumentSnapshot> thirdList = await getRestVideos(_pageSize - newItems.length);
+        _videoFromGame.addAll(thirdList);
         newItems.addAll(thirdList);
       }
 
@@ -332,16 +346,25 @@ class PagingRepository {
     }
   }
 
-  Future<void> loadVideos() async {
-    final List<Video>? videos = await getVideos(from: VideoFrom.forYou);
+  Future<List<Video>> loadVideos() async {
+    if (isLastPage) return [];
+    final List<Video>? newVideos = await getVideos(from: VideoFrom.forYou);
+
+    if ((newVideos?.length ?? 0) < _pageSize) {
+      isLastPage = true;
+      return [];
+    }
+
+    debugModePrint('Videos loaded: ${newVideos?.length ?? 0}');
+
     List<String> likedVideos = [];
 
     final String uid = firebaseAuth.currentUser?.uid ?? '';
-    if (videos != null) {
-      _videos.addAll(videos);
+    if (newVideos != null) {
+      _videos.addAll(newVideos);
       final likesDoc = await firebaseFirestore
           .collection('likes')
-          .where('postId', whereIn: videos.map((e) => e.id).toList())
+          .where('postId', whereIn: newVideos.map((e) => e.id).toList())
           .where('uid', isEqualTo: uid)
           .get();
 
@@ -351,13 +374,25 @@ class PagingRepository {
         }
       }
 
-      for (var video in videos) {
+      for (var video in newVideos) {
         CachedVideoPlayerPlusController controller = CachedVideoPlayerPlusController.networkUrl(
           Uri.parse(video.videoUrl),
         );
         video.isLiked = likedVideos.contains(uid);
         _videoPlayerControllers.add(controller);
       }
+      debugModePrint('VideosConteroller loaded: ${_videoPlayerControllers.length ?? 0}');
+    }
+    return newVideos ?? [];
+  }
+
+  Future<void> loadInitialVideo() async {
+    if (_videos.isEmpty) {
+      await loadVideos();
+      await _videoPlayerControllers.first.initialize();
+      _videoPlayerControllers.first.setLooping(true);
+      _videoPlayerControllers[1].initialize();
+      _videoPlayerControllers[1].setLooping(true);
     }
   }
 
@@ -385,5 +420,36 @@ class PagingRepository {
 
   CachedVideoPlayerPlusController getControllerAtIndex(int index) {
     return _videoPlayerControllers[index];
+  }
+
+  Future<List<DocumentSnapshot>> getRestVideos(int limit) async {
+    List<DocumentSnapshot> listDocs = [];
+
+    QuerySnapshot querySnapshot;
+
+    try {
+      if (_videoFromGame.isEmpty) {
+        querySnapshot = await firebaseFirestore.collection('videos').limit(limit).get();
+      } else {
+        querySnapshot = await firebaseFirestore
+            .collection('videos')
+            .orderBy('createdAt', descending: true)
+            .startAfterDocument(_videoFromGame.last)
+            .limit(limit)
+            .get();
+      }
+
+      //list that send to infinity list package
+      listDocs.addAll(querySnapshot.docs);
+      // setState(() {
+      //   _hasMore = false;
+      // });
+
+      return listDocs;
+    } catch (e) {
+      debugPrint(e.toString());
+
+      return [];
+    }
   }
 }

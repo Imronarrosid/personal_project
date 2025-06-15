@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:personal_project/config/theme.dart';
 import 'package:personal_project/data/repository/chat_repository.dart';
 import 'package:personal_project/data/repository/file_repository.dart';
+import 'package:personal_project/data/repository/paging_repository.dart';
 import 'package:personal_project/data/source/local/local_data.dart';
 import 'package:personal_project/domain/reporsitory/auth_reposotory.dart';
 import 'package:personal_project/domain/reporsitory/user_repository.dart';
@@ -28,6 +29,7 @@ import 'package:personal_project/presentation/ui/home/navbar_notifier/navbar_not
 import 'package:personal_project/presentation/ui/language/cubit/language_cubit.dart';
 import 'package:personal_project/presentation/ui/select_cover/cubit/select_cover_cubit.dart';
 import 'package:personal_project/presentation/ui/upload/bloc/camera_bloc.dart';
+import 'package:personal_project/presentation/ui/video/list_video/bloc/paging_bloc.dart';
 import 'package:personal_project/presentation/ui/video/list_video/cubit/video_size_cubit.dart';
 import 'package:personal_project/presentation/ui/video_preview/bloc/video_preview_bloc.dart';
 import 'package:provider/provider.dart';
@@ -42,8 +44,7 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  final SharedPreferences sharedPreferences =
-      await SharedPreferences.getInstance();
+  final SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
   // await dotenv.load(fileName: ".env");
   // if (!kIsWeb) {
   //   SystemChrome.setPreferredOrientations([
@@ -53,6 +54,9 @@ void main() async {
   // }
   LocalData.init(sharedPreferences);
   setPathUrlStrategy();
+  final PagingRepository pagingRepository = PagingRepository();
+
+  await pagingRepository.loadInitialVideo();
 
   GoRouter.optionURLReflectsImperativeAPIs = true;
   runApp(EasyLocalization(
@@ -61,15 +65,18 @@ void main() async {
       fallbackLocale: const Locale('id'),
       useFallbackTranslations: true,
       child: MyApp(
+        pagingRepository: pagingRepository,
         sharedPreferences: sharedPreferences,
       )));
 }
 
 class MyApp extends StatefulWidget {
   final SharedPreferences sharedPreferences;
+  final PagingRepository pagingRepository;
   const MyApp({
     super.key,
     required this.sharedPreferences,
+    required this.pagingRepository,
   });
 
   @override
@@ -126,8 +133,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         Provider<AuthService>(create: (_) => authService),
       ],
       child: Builder(builder: (context) {
-        final GoRouter goRouter =
-            Provider.of<AppRouter>(context, listen: false).router;
+        final GoRouter goRouter = Provider.of<AppRouter>(context, listen: false).router;
 
         return MultiRepositoryProvider(
           providers: [
@@ -145,7 +151,8 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
             ),
             RepositoryProvider(
               create: (context) => ChatRepository(),
-            )
+            ),
+            RepositoryProvider<PagingRepository>(create: (_) => widget.pagingRepository)
           ],
           child: ChangeNotifierProvider(
             create: (context) => NavbarNotifier(),
@@ -162,8 +169,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
                 ),
                 BlocProvider(
                   create: (context) {
-                    final AuthRepository repo =
-                        RepositoryProvider.of<AuthRepository>(context);
+                    final AuthRepository repo = RepositoryProvider.of<AuthRepository>(context);
 
                     return AuthBloc(repo);
                   },
@@ -175,30 +181,25 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
                 ),
                 BlocProvider(
                   create: (context) {
-                    final UserRepository userRepository =
-                        RepositoryProvider.of<UserRepository>(context);
+                    final UserRepository userRepository = RepositoryProvider.of<UserRepository>(context);
                     return EditNameCubit(userRepository);
                   },
                 ),
                 BlocProvider(create: (context) {
-                  final UserRepository repository =
-                      RepositoryProvider.of<UserRepository>(context);
+                  final UserRepository repository = RepositoryProvider.of<UserRepository>(context);
                   return EditBioCubit(repository);
                 }),
                 BlocProvider(create: (context) {
-                  final UserRepository userRepository =
-                      RepositoryProvider.of<UserRepository>(context);
+                  final UserRepository userRepository = RepositoryProvider.of<UserRepository>(context);
                   return EditUserNameCubit(userRepository);
                 }),
                 BlocProvider(create: (context) {
-                  final UserRepository userRepository =
-                      RepositoryProvider.of<UserRepository>(context);
+                  final UserRepository userRepository = RepositoryProvider.of<UserRepository>(context);
                   return EditProfilePictCubit(userRepository);
                 }),
                 BlocProvider(
                   create: (context) {
-                    final UserRepository userRepository =
-                        RepositoryProvider.of<UserRepository>(context);
+                    final UserRepository userRepository = RepositoryProvider.of<UserRepository>(context);
                     return GameFavCubit(userRepository);
                   },
                   child: Container(),
