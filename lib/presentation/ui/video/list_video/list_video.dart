@@ -1,24 +1,17 @@
 import 'dart:async';
 
-import 'package:bootstrap_icons/bootstrap_icons.dart';
 import 'package:cached_video_player_plus/cached_video_player_plus.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:personal_project/constant/color.dart';
-import 'package:personal_project/constant/dimens.dart';
 import 'package:personal_project/data/repository/paging_repository.dart';
 import 'package:personal_project/domain/model/video_model.dart';
-import 'package:personal_project/domain/reporsitory/auth_reposotory.dart';
 import 'package:personal_project/domain/reporsitory/video_repository.dart';
 import 'package:personal_project/presentation/l10n/stings.g.dart';
-import 'package:personal_project/presentation/shared_components/flutter_toast.dart';
 import 'package:personal_project/presentation/shared_components/flutter_toast_func.dart';
 import 'package:personal_project/presentation/shared_components/video_player_item.dart';
-import 'package:personal_project/presentation/ui/auth/auth.dart';
-import 'package:personal_project/presentation/ui/auth/bloc/auth_bloc.dart';
 import 'package:personal_project/presentation/ui/home/cubit/home_cubit.dart';
 import 'package:personal_project/presentation/ui/video/list_video/bloc/list_video_player_bloc.dart';
 import 'package:personal_project/presentation/ui/video/list_video/bloc/paging_bloc.dart';
@@ -46,7 +39,6 @@ class _ListVideoState extends State<ListVideo> {
   @override
   Widget build(BuildContext context) {
     debugModePrint('REbuild');
-    final AuthRepository authRepository = RepositoryProvider.of<AuthRepository>(context);
 
     return BlocListener<HomeCubit, HomeState>(
       listenWhen: (previous, current) => true,
