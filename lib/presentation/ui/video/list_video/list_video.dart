@@ -15,6 +15,7 @@ import 'package:personal_project/domain/reporsitory/auth_reposotory.dart';
 import 'package:personal_project/domain/reporsitory/video_repository.dart';
 import 'package:personal_project/presentation/l10n/stings.g.dart';
 import 'package:personal_project/presentation/shared_components/flutter_toast.dart';
+import 'package:personal_project/presentation/shared_components/flutter_toast_func.dart';
 import 'package:personal_project/presentation/shared_components/video_player_item.dart';
 import 'package:personal_project/presentation/ui/auth/auth.dart';
 import 'package:personal_project/presentation/ui/auth/bloc/auth_bloc.dart';
@@ -236,8 +237,12 @@ class NewVideoList extends StatefulWidget {
 }
 
 class _NewVideoListState extends State<NewVideoList> {
+  PageController controller = PageController();
+
   int previousPageIndex = 0;
   int? viewedIndex;
+
+  bool nomoreItemToasViisible = false;
   @override
   void initState() {
     final PagingRepository pagingRepository = RepositoryProvider.of<PagingRepository>(context);
@@ -272,10 +277,8 @@ class _NewVideoListState extends State<NewVideoList> {
         ),
         BlocListener<VideoPaginBloc, VideoPagingState>(
           listener: (context, state) {
-            if (state is NoMoreItem && previousPageIndex == pagingRepository.videoPlayerControllers.length - 1) {
-              showToast(msg: LocaleKeys.message_no_new_video.tr());
-            }
-            if (state is PagingLoadingSate) {
+            if (state is PagingLoadingSate &&
+                previousPageIndex == pagingRepository.videoPlayerControllers.length - 1) {
               showToast(msg: 'load more video');
             }
           },
@@ -300,22 +303,38 @@ class _NewVideoListState extends State<NewVideoList> {
                     child: Text(LocaleKeys.message_no_post.tr()),
                   );
                 }
-                return ListenableBuilder(
-                    listenable: IsCanScrollNotification.instance,
-                    builder: (context, child) {
-                      return NotificationListener<ScrollNotification>(
-                        onNotification: (notification) {
-                          if (notification.metrics.axisDirection == AxisDirection.down) {
-                            IsCanScrollNotification.instance.setValue(true);
-                          }
-                          return true;
-                        },
-                        child: PageView.custom(
+                return NotificationListener<ScrollNotification>(
+                  onNotification: (notification) {
+                    if (notification.metrics.pixels == notification.metrics.maxScrollExtent) {
+                      print("at edge ${notification.metrics.atEdge} ${notification.metrics.pixels}");
+                      if (previousPageIndex == pagingRepository.videoPlayerControllers.length - 1 &&
+                          state is NoMoreItem) {
+                        if (!nomoreItemToasViisible) {
+                          nomoreItemToasViisible = true;
+                          showFlutterToast(msg: LocaleKeys.message_no_new_video.tr());
+
+                          Future.delayed(const Duration(milliseconds: 1200), () {
+                            nomoreItemToasViisible = false;
+                          });
+                        }
+                      }
+                    }
+
+                    return false;
+                  },
+                  child: ListenableBuilder(
+                      listenable: IsCanScrollNotification.instance,
+                      builder: (context, child) {
+                        return PageView.custom(
+                          controller: controller,
                           physics: IsCanScrollNotification.instance.value
                               ? const AlwaysScrollableScrollPhysics()
                               : const NeverScrollableScrollPhysics(),
                           scrollDirection: Axis.vertical,
                           onPageChanged: (activeIndex) {
+                            if (activeIndex != cachedControllers.length - 1) {
+                              nomoreItemToasViisible = false;
+                            }
                             debugModePrint('activepage ');
                             CachedVideoPlayerPlusController currentController =
                                 pagingRepository.getControllerAtIndex(activeIndex);
@@ -375,9 +394,9 @@ class _NewVideoListState extends State<NewVideoList> {
                             },
                             childCount: cachedControllers.length, // Example count, adjust as needed
                           ),
-                        ),
-                      );
-                    });
+                        );
+                      }),
+                );
               }
 
               return const Center(
