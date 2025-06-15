@@ -275,14 +275,6 @@ class _NewVideoListState extends State<NewVideoList> {
             debugModePrint('lvpb //');
           },
         ),
-        BlocListener<VideoPaginBloc, VideoPagingState>(
-          listener: (context, state) {
-            if (state is PagingLoadingSate &&
-                previousPageIndex == pagingRepository.videoPlayerControllers.length - 1) {
-              showToast(msg: 'load more video');
-            }
-          },
-        ),
       ],
       child: BlocBuilder<ListVideoPlayerBloc, ListVideoPlayerState>(
         // buildWhen: (previous, current) {
@@ -306,12 +298,21 @@ class _NewVideoListState extends State<NewVideoList> {
                 return NotificationListener<ScrollNotification>(
                   onNotification: (notification) {
                     if (notification.metrics.pixels == notification.metrics.maxScrollExtent) {
-                      print("at edge ${notification.metrics.atEdge} ${notification.metrics.pixels}");
                       if (previousPageIndex == pagingRepository.videoPlayerControllers.length - 1 &&
                           state is NoMoreItem) {
                         if (!nomoreItemToasViisible) {
                           nomoreItemToasViisible = true;
                           showFlutterToast(msg: LocaleKeys.message_no_new_video.tr());
+
+                          Future.delayed(const Duration(milliseconds: 1200), () {
+                            nomoreItemToasViisible = false;
+                          });
+                        }
+                      } else if (previousPageIndex == pagingRepository.videoPlayerControllers.length - 1 &&
+                          state is PagingLoadingSate) {
+                        if (!nomoreItemToasViisible) {
+                          nomoreItemToasViisible = true;
+                          showFlutterToast(msg: 'loading more video');
 
                           Future.delayed(const Duration(milliseconds: 1200), () {
                             nomoreItemToasViisible = false;
