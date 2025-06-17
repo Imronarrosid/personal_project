@@ -287,9 +287,9 @@ class _NewVideoListState extends State<NewVideoList> {
                     child: Text(LocaleKeys.message_no_post.tr()),
                   );
                 }
-                return NotificationListener<ScrollNotification>(
-                  onNotification: (notification) {
-                    if (notification.metrics.pixels == notification.metrics.maxScrollExtent) {
+                return NotificationListener<OverscrollIndicatorNotification>(
+                  onNotification: (overscroll) {
+                    if (true) {
                       if (previousPageIndex == pagingRepository.videoPlayerControllers.length - 1 &&
                           state is NoMoreItem) {
                         if (!nomoreItemToasViisible) {
