@@ -236,11 +236,11 @@ class _VideoItemMobileState extends State<VideoItemMobile> {
                 children: [
                   _buildProfilePictures(context, data),
                   SizedBox(
-                    height: Dimens.DIMENS_25,
+                    height: Dimens.DIMENS_8,
                   ),
                   _buildLikeButton(context, videoData, isLiked: videoData.isLiked),
                   SizedBox(
-                    height: Dimens.DIMENS_25,
+                    height: Dimens.DIMENS_3,
                   ),
                   RepositoryProvider(
                     create: (context) => CommentRepository(),
@@ -262,9 +262,9 @@ class _VideoItemMobileState extends State<VideoItemMobile> {
                       icon: Transform.flip(
                         flipX: true,
                         child: Icon(
-                          SolarIconsBold.chatRoundDots,
+                          SolarIconsOutline.chatRoundDots,
                           color: COLOR_white_fff5f5f5,
-                          size: Dimens.DIMENS_28,
+                          size: 27,
                         ),
                       ),
                       label: Text(
@@ -280,10 +280,27 @@ class _VideoItemMobileState extends State<VideoItemMobile> {
                     ),
                   ),
                   SizedBox(
-                    height: Dimens.DIMENS_20,
+                    height: Dimens.DIMENS_3,
                   ),
-                  GestureDetector(
-                    onTap: () {
+                  PostButtonItem(
+                    icon: Icon(
+                      SolarIconsOutline.bookmark,
+                      size: Dimens.DIMENS_24,
+                    ),
+                    onPressed: () {},
+                    label: Text(
+                      numberFormat(
+                        context.locale,
+                        videoData.commentCount,
+                      ),
+                      style: TextStyle(
+                        color: COLOR_white_fff5f5f5,
+                        fontSize: _IC_LABEL_FONTSIZE,
+                      ),
+                    ),
+                  ),
+                  PostButtonItem(
+                    onPressed: () {
                       debugModePrint('lmnop${LocaleKeys.message_share_featur_not_ready.tr()}');
                       Fluttertoast.showToast(
                         msg: LocaleKeys.message_share_featur_not_ready.tr(),
@@ -295,66 +312,64 @@ class _VideoItemMobileState extends State<VideoItemMobile> {
                         fontSize: 16.0,
                       );
                     },
-                    child: Transform.flip(
+                    icon: Transform.flip(
                       flipX: true,
                       child: Icon(
-                        SolarIconsBold.reply,
+                        SolarIconsOutline.reply_2,
                         color: COLOR_white_fff5f5f5,
-                        size: Dimens.DIMENS_34,
+                        size: Dimens.DIMENS_25,
+                      ),
+                    ),
+                    label: Text(
+                      LocaleKeys.label_share.tr(),
+                      style: TextStyle(
+                        color: COLOR_white_fff5f5f5,
+                        fontSize: _IC_LABEL_FONTSIZE,
                       ),
                     ),
                   ),
-                  Text(
-                    LocaleKeys.label_share.tr(),
-                    style: TextStyle(
-                      color: COLOR_white_fff5f5f5,
-                      fontSize: _IC_LABEL_FONTSIZE,
-                    ),
-                  ),
-                  SizedBox(
-                    height: Dimens.DIMENS_25,
-                  ),
-                  _videoMenu(
-                    context,
-                    videoData,
-                    authRepository,
-                  ),
-                  GestureDetector(
-                    onTap: () {
-                      if (videoData.category != '') {
-                        // context.push(APP_PAGE.videoFromGame.toPath,
-                        //     extra: VideoFromGameData(
-                        //         game: videoData.game!,
-                        //         captions: videoData.caption,
-                        //         profileImg: data!.photo!));
-                        context.go(
-                          '${APP_PAGE.category.toPath}/${videoData.category}',
-                          extra: VideoCategory(
-                            gameFav: videoData.game,
-                          ),
-                        );
-                      } else {
-                        Fluttertoast.showToast(gravity: ToastGravity.TOP, msg: LocaleKeys.message_no_game.tr());
-                      }
-                    },
-                    child: Container(
-                      width: Dimens.DIMENS_30,
-                      height: Dimens.DIMENS_30,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        border: Border.all(color: COLOR_white_fff5f5f5),
-                        borderRadius: BorderRadius.circular(8),
-                        color: const Color.fromARGB(255, 27, 26, 26),
-                      ),
-                      child: (videoData.game == null)
-                          ? Icon(
-                              SolarIconsBold.gamepad,
-                              color: COLOR_white_fff5f5f5,
-                              size: Dimens.DIMENS_15,
-                            )
-                          : _buildGameImage(videoData),
-                    ),
-                  )
+
+                  // _videoMenu(
+                  //   context,
+                  //   videoData,
+                  //   authRepository,
+                  // ),
+                  // GestureDetector(
+                  //   onTap: () {
+                  //     if (videoData.category != '') {
+                  //       // context.push(APP_PAGE.videoFromGame.toPath,
+                  //       //     extra: VideoFromGameData(
+                  //       //         game: videoData.game!,
+                  //       //         captions: videoData.caption,
+                  //       //         profileImg: data!.photo!));
+                  //       context.go(
+                  //         '${APP_PAGE.category.toPath}/${videoData.category}',
+                  //         extra: VideoCategory(
+                  //           gameFav: videoData.game,
+                  //         ),
+                  //       );
+                  //     } else {
+                  //       Fluttertoast.showToast(gravity: ToastGravity.TOP, msg: LocaleKeys.message_no_game.tr());
+                  //     }
+                  //   },
+                  //   child: Container(
+                  //     width: Dimens.DIMENS_30,
+                  //     height: Dimens.DIMENS_30,
+                  //     alignment: Alignment.center,
+                  //     decoration: BoxDecoration(
+                  //       border: Border.all(color: COLOR_white_fff5f5f5),
+                  //       borderRadius: BorderRadius.circular(8),
+                  //       color: const Color.fromARGB(255, 27, 26, 26),
+                  //     ),
+                  //     child: (videoData.game == null)
+                  //         ? Icon(
+                  //             SolarIconsBold.gamepad,
+                  //             color: COLOR_white_fff5f5f5,
+                  //             size: Dimens.DIMENS_15,
+                  //           )
+                  //         : _buildGameImage(videoData),
+                  //   ),
+                  // )
                 ],
               ),
             );
@@ -544,17 +559,20 @@ class _VideoItemMobileState extends State<VideoItemMobile> {
 
   Widget _buildLikeButton(BuildContext context, Video videoData, {bool isLiked = false}) {
     return PostButtonItem(
-      style: IconButton.styleFrom(
-        iconSize: Dimens.DIMENS_34,
-      ),
       onPressed: () {
         context.read<ListVideoPlayerBloc>().add(LikeVideo(index: widget.index, video: videoData));
       },
-      icon: Icon(
-        SolarIconsBold.heart,
-        size: Dimens.DIMENS_34,
-        color: isLiked ? Colors.red : Theme.of(context).colorScheme.onSurface,
-      ),
+      icon: isLiked
+          ? Icon(
+              SolarIconsBold.heart,
+              size: Dimens.DIMENS_30,
+              color: Colors.red,
+            )
+          : Icon(
+              SolarIconsOutline.heart,
+              size: Dimens.DIMENS_30,
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
       label: Text(numberFormat(context.locale, videoData.likesCount)),
     );
   }
