@@ -124,7 +124,7 @@ class RepliesRepository {
         likes: [],
         likesCount: 0,
         uid: firebaseAuth.currentUser!.uid,
-        datePublished: Timestamp.fromDate(DateTime.now()),
+        datePublished: DateTime.now().millisecondsSinceEpoch,
         repliesCount: 0,
       );
 

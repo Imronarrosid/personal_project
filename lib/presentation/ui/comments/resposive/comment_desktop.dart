@@ -66,8 +66,7 @@ class _DesktopCommentsViewState extends State<DesktopCommentsView> {
     _draggableController.addListener(() {
       debugModePrint('height ${_draggableController.size.toString()}');
 
-      BlocProvider.of<VideoSizeCubit>(context)
-          .changeVideoSize(_draggableController.size);
+      BlocProvider.of<VideoSizeCubit>(context).changeVideoSize(_draggableController.size);
     });
 
     super.initState();
@@ -91,13 +90,12 @@ class _DesktopCommentsViewState extends State<DesktopCommentsView> {
               return MultiBlocProvider(
                 providers: [
                   BlocProvider(
-                    create: (context) => CommentBloc(
-                        RepositoryProvider.of<CommentRepository>(context)),
+                    create: (context) => CommentBloc(RepositoryProvider.of<CommentRepository>(context)),
                   ),
                   BlocProvider(
-                    create: (context) => CommentsPagingBloc(
-                        RepositoryProvider.of<ComentsPagingRepository>(context))
-                      ..add(InitCommentsPagingEvent(postId: widget.postId)),
+                    create: (context) =>
+                        CommentsPagingBloc(RepositoryProvider.of<ComentsPagingRepository>(context))
+                          ..add(LoadCommentsEvent(postId: widget.postId)),
                   ),
                 ],
                 child: MultiBlocListener(
@@ -105,14 +103,12 @@ class _DesktopCommentsViewState extends State<DesktopCommentsView> {
                     BlocListener<CommentBloc, CommentState>(
                       listener: (context, state) {
                         if (state.status == CommentStatus.succes) {
-                          final LocalCommentsNotifier notifier =
-                              context.read<LocalCommentsNotifier>();
+                          final LocalCommentsNotifier notifier = context.read<LocalCommentsNotifier>();
                           Comment commentToMove = state.comment!;
 
                           notifier.addLocalComments(
                             commentToMove,
-                            commentRepository:
-                                context.read<ComentsPagingRepository>(),
+                            commentRepository: context.read<ComentsPagingRepository>(),
                           );
                         }
 
@@ -130,8 +126,7 @@ class _DesktopCommentsViewState extends State<DesktopCommentsView> {
                             // context.pop();
                             // ignore: prefer_const_constructors
                             _draggableController.animateTo(0.0,
-                                duration: const Duration(milliseconds: 200),
-                                curve: Curves.easeInOut);
+                                duration: const Duration(milliseconds: 200), curve: Curves.easeInOut);
                             _isCanPop = false;
                             debugModePrint('pop');
                           }
@@ -145,12 +140,10 @@ class _DesktopCommentsViewState extends State<DesktopCommentsView> {
                         InkWell(
                           splashFactory: NoSplash.splashFactory,
                           splashColor: Colors.transparent,
-                          overlayColor: const WidgetStatePropertyAll<Color>(
-                              Colors.transparent),
+                          overlayColor: const WidgetStatePropertyAll<Color>(Colors.transparent),
                           onTap: () {
                             _draggableController.animateTo(0.0,
-                                duration: const Duration(milliseconds: 200),
-                                curve: Curves.easeInOut);
+                                duration: const Duration(milliseconds: 200), curve: Curves.easeInOut);
                           },
                           child: SizedBox(
                             width: MediaQuery.of(context).size.width,
@@ -164,25 +157,19 @@ class _DesktopCommentsViewState extends State<DesktopCommentsView> {
                           },
                           child: SafeArea(
                             child: ClipRRect(
-                              borderRadius: BorderRadius.horizontal(
-                                  right: Radius.circular(Dimens.DIMENS_10)),
+                              borderRadius: BorderRadius.horizontal(right: Radius.circular(Dimens.DIMENS_10)),
                               child: Scaffold(
                                 appBar: AppBar(
-                                  backgroundColor:
-                                      Theme.of(context).colorScheme.tertiary,
+                                  backgroundColor: Theme.of(context).colorScheme.tertiary,
                                   title: Text(LocaleKeys.title_comments.tr()),
                                   actions: [
                                     Padding(
-                                      padding:
-                                          const EdgeInsets.only(right: 8.0),
+                                      padding: const EdgeInsets.only(right: 8.0),
                                       child: IconButton(
                                           onPressed: () {
-                                            BlocProvider.of<
-                                                        DesktopCommentsBloc>(
-                                                    context)
+                                            BlocProvider.of<DesktopCommentsBloc>(context)
                                                 .add(CloseDesktopComments());
-                                            IsCanScrollNotification.instance
-                                                .onHover(false);
+                                            IsCanScrollNotification.instance.onHover(false);
                                           },
                                           icon: const Icon(Icons.close)),
                                     )
@@ -191,14 +178,10 @@ class _DesktopCommentsViewState extends State<DesktopCommentsView> {
                                       preferredSize: const Size.fromHeight(0.1),
                                       child: Divider(
                                         height: 0.1,
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .onSurface
-                                            .withOpacity(0.2),
+                                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.2),
                                       )),
                                 ),
-                                backgroundColor:
-                                    Theme.of(context).colorScheme.tertiary,
+                                backgroundColor: Theme.of(context).colorScheme.tertiary,
                                 body: _commentPaging(),
                                 // body: Container(
                                 //   child:
@@ -209,8 +192,7 @@ class _DesktopCommentsViewState extends State<DesktopCommentsView> {
                                 //     return _refreshComments(context);
                                 //   }),
                                 // ),
-                                bottomNavigationBar:
-                                    _buildCommnetsInput(context),
+                                bottomNavigationBar: _buildCommnetsInput(context),
                               ),
                             ),
                           ),
@@ -238,8 +220,7 @@ class _DesktopCommentsViewState extends State<DesktopCommentsView> {
         padding: EdgeInsets.symmetric(
           vertical: Dimens.DIMENS_6,
         ),
-        decoration:
-            BoxDecoration(color: Theme.of(context).colorScheme.tertiary),
+        decoration: BoxDecoration(color: Theme.of(context).colorScheme.tertiary),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
@@ -272,10 +253,7 @@ class _DesktopCommentsViewState extends State<DesktopCommentsView> {
                         Text(
                           '${LocaleKeys.label_reply_to.tr()} ',
                           style: TextStyle(
-                            color: Theme.of(context)
-                                .colorScheme
-                                .onSurface
-                                .withOpacity(0.6),
+                            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                             fontWeight: FontWeight.w300,
                           ),
                         ),
@@ -294,10 +272,7 @@ class _DesktopCommentsViewState extends State<DesktopCommentsView> {
                           child: Text(
                             LocaleKeys.label_cancel.tr(),
                             style: TextStyle(
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .onSurface
-                                  .withOpacity(
+                              color: Theme.of(context).colorScheme.onSurface.withOpacity(
                                     0.6,
                                   ),
                             ),
@@ -319,19 +294,15 @@ class _DesktopCommentsViewState extends State<DesktopCommentsView> {
                     padding: EdgeInsets.symmetric(vertical: Dimens.DIMENS_6),
                     child: Container(
                       decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.surface,
-                          borderRadius: BorderRadius.circular(10)),
+                          color: Theme.of(context).colorScheme.surface, borderRadius: BorderRadius.circular(10)),
                       child: BlocBuilder<AuthBloc, AuthState>(
                         builder: (context, state) {
                           return GestureDetector(
                             onTap: () {
                               final isAuthenticated =
-                                  RepositoryProvider.of<AuthRepository>(context)
-                                          .currentUser !=
-                                      null;
+                                  RepositoryProvider.of<AuthRepository>(context).currentUser != null;
                               if (isAuthenticated) {
-                                BlocProvider.of<CommentBloc>(context)
-                                    .add(TapCommentForm());
+                                BlocProvider.of<CommentBloc>(context).add(TapCommentForm());
                               } else {
                                 showAuthBottomSheetFunc(context);
                               }
@@ -340,35 +311,25 @@ class _DesktopCommentsViewState extends State<DesktopCommentsView> {
                               focusNode: _focusNode,
                               controller: _textEditingController,
                               decoration: InputDecoration(
-                                  enabled:
-                                      state.status == AuthStatus.authenticated,
-                                  contentPadding: EdgeInsets.symmetric(
-                                      horizontal: Dimens.DIMENS_12),
-                                  hintText:
-                                      '${LocaleKeys.message_add_comments.tr()}...',
+                                  enabled: state.status == AuthStatus.authenticated,
+                                  contentPadding: EdgeInsets.symmetric(horizontal: Dimens.DIMENS_12),
+                                  hintText: '${LocaleKeys.message_add_comments.tr()}...',
                                   hintStyle: TextStyle(
                                     fontWeight: FontWeight.normal,
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .onSurface
-                                        .withOpacity(0.3),
+                                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
                                   ),
                                   border: OutlineInputBorder(
-                                      borderSide: BorderSide.none,
-                                      borderRadius: BorderRadius.circular(10))),
+                                      borderSide: BorderSide.none, borderRadius: BorderRadius.circular(10))),
                               textAlignVertical: TextAlignVertical.center,
                               keyboardType: TextInputType.multiline,
                               minLines: 1,
                               maxLines: 3,
                               maxLength: 600,
                               buildCounter: (context,
-                                      {required currentLength,
-                                      required isFocused,
-                                      required maxLength}) =>
+                                      {required currentLength, required isFocused, required maxLength}) =>
                                   const SizedBox(width: 0, height: 0),
                               onChanged: (text) {
-                                final CommentBloc commentsBloc =
-                                    BlocProvider.of<CommentBloc>(context);
+                                final CommentBloc commentsBloc = BlocProvider.of<CommentBloc>(context);
                                 if (text.endsWith('\n')) {
                                   // Handle the Enter key press
 
@@ -395,44 +356,38 @@ class _DesktopCommentsViewState extends State<DesktopCommentsView> {
                 ),
                 BlocBuilder<CommentBloc, CommentState>(
                   builder: (context, state) {
-                    if (state.status == CommentStatus.open ||
-                        state.status == CommentStatus.typing) {
+                    if (state.status == CommentStatus.open || state.status == CommentStatus.typing) {
                       return ClipRRect(
                         borderRadius: BorderRadius.circular(50),
                         child: Material(
                           color: Colors.transparent,
                           child: IconButton(
-                            style: IconButton.styleFrom(
-                                backgroundColor: Colors.transparent),
+                            style: IconButton.styleFrom(backgroundColor: Colors.transparent),
                             splashRadius: Dimens.DIMENS_70,
-                            onPressed: state.status == CommentStatus.typing &&
-                                    _textEditingController.text.isNotEmpty
-                                ? () {
-                                    if (_textEditingController
-                                        .text.isNotEmpty) {
-                                      if (!_isForReply) {
-                                        BlocProvider.of<CommentBloc>(context)
-                                            .add(
-                                          PostCommentEvent(
+                            onPressed:
+                                state.status == CommentStatus.typing && _textEditingController.text.isNotEmpty
+                                    ? () {
+                                        if (_textEditingController.text.isNotEmpty) {
+                                          if (!_isForReply) {
+                                            BlocProvider.of<CommentBloc>(context).add(
+                                              PostCommentEvent(
+                                                  postId: widget.postId, comment: _textEditingController.text),
+                                            );
+                                          } else {
+                                            _selectedRepliescubit!.addReplies(
                                               postId: widget.postId,
-                                              comment:
-                                                  _textEditingController.text),
-                                        );
-                                      } else {
-                                        _selectedRepliescubit!.addReplies(
-                                          postId: widget.postId,
-                                          reply: _textEditingController.text,
-                                          commentId: _selectedCommentId!,
-                                          repliedUid: _repliedUid!,
-                                        );
-                                        _isForReply = false;
+                                              reply: _textEditingController.text,
+                                              commentId: _selectedCommentId!,
+                                              repliedUid: _repliedUid!,
+                                            );
+                                            _isForReply = false;
+                                          }
+                                          _textEditingController.clear();
+                                          FocusScope.of(context).unfocus();
+                                        }
+                                        debugModePrint('plane');
                                       }
-                                      _textEditingController.clear();
-                                      FocusScope.of(context).unfocus();
-                                    }
-                                    debugModePrint('plane');
-                                  }
-                                : null,
+                                    : null,
                             icon: const Icon(
                               Icons.send,
                             ),
@@ -464,8 +419,7 @@ class _DesktopCommentsViewState extends State<DesktopCommentsView> {
     } else if (context.locale.languageCode == LOCALE.en.code) {
       tago.setLocaleMessages('en', tago.EnMessages());
     }
-    final CommentRepository repository =
-        RepositoryProvider.of<CommentRepository>(context);
+    final CommentRepository repository = RepositoryProvider.of<CommentRepository>(context);
     final authRepository = RepositoryProvider.of<AuthRepository>(context);
     final userUid = authRepository.currentUser?.uid;
     Size size = MediaQuery.of(context).size;
@@ -476,11 +430,11 @@ class _DesktopCommentsViewState extends State<DesktopCommentsView> {
         providers: [
           BlocProvider(
             create: (context) => LikeCommentCubit(
-                RepositoryProvider.of<CommentRepository>(context)),
+                commentsPagingRepository: context.read<ComentsPagingRepository>(),
+                repository: RepositoryProvider.of<CommentRepository>(context)),
           ),
           BlocProvider(
-            create: (context) =>
-                RepliesCubit(RepositoryProvider.of<RepliesRepository>(context)),
+            create: (context) => RepliesCubit(RepositoryProvider.of<RepliesRepository>(context)),
           ),
         ],
         child: BlocListener<RepliesCubit, RepliesState>(
@@ -490,9 +444,7 @@ class _DesktopCommentsViewState extends State<DesktopCommentsView> {
               context.read<CommentBloc>().add(UnfocusForm());
             }
             if (state.status == RepliesStatus.loadReplies) {
-              if (context
-                  .read<RepliesRepository>()
-                  .isNotifyRemoveLocalReplies()) {
+              if (context.read<RepliesRepository>().isNotifyRemoveLocalReplies()) {
                 context.read<RepliesCubit>().clearLocalRelies();
               }
             }
@@ -544,8 +496,7 @@ class _DesktopCommentsViewState extends State<DesktopCommentsView> {
                               },
                               child: Text(
                                 '@${data.userName!}',
-                                style: const TextStyle(
-                                    fontSize: 11, fontWeight: FontWeight.w500),
+                                style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500),
                               ),
                             ),
                             SizedBox(
@@ -553,14 +504,10 @@ class _DesktopCommentsViewState extends State<DesktopCommentsView> {
                             ),
                             Text(
                               tago
-                                  .format(
-                                      DateTime.parse(comment.datePublished
-                                          .toDate()
-                                          .toString()),
+                                  .format(DateTime.fromMillisecondsSinceEpoch(comment.datePublished),
                                       locale: context.locale.languageCode)
                                   .toString(),
-                              style: const TextStyle(
-                                  fontSize: 11, color: Colors.grey),
+                              style: const TextStyle(fontSize: 11, color: Colors.grey),
                             ),
                           ],
                         ),
@@ -596,18 +543,13 @@ class _DesktopCommentsViewState extends State<DesktopCommentsView> {
                                 _isForReply = true;
                                 _repliedUid = '';
                                 _selectedCommentId = comment.id;
-                                _selectedRepliescubit =
-                                    context.read<RepliesCubit>();
+                                _selectedRepliescubit = context.read<RepliesCubit>();
                                 _focusNode.requestFocus();
                               },
                               child: Text(
                                 LocaleKeys.label_reply.tr(),
                                 style: TextStyle(
-                                    fontSize: 11,
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .onSurface
-                                        .withOpacity(0.6)),
+                                    fontSize: 11, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
                               ),
                               // child: Text(
                               //     '${LocaleKeys.label_reply.tr()}  ${comment.repliesCount != 0 ? '(${comment.repliesCount.toString()})' : ''} '),
@@ -622,13 +564,11 @@ class _DesktopCommentsViewState extends State<DesktopCommentsView> {
                               radius: 24,
                               onTap: () {
                                 if (authRepository.currentUser != null) {
-                                  BlocProvider.of<LikeCommentCubit>(context)
-                                      .likeComment(
-                                          postId: postId,
-                                          commentId: comment.id!,
-                                          databaseLikeCount: comment.likesCount,
-                                          stateFromDatabase:
-                                              comment.likes.contains(userUid));
+                                  BlocProvider.of<LikeCommentCubit>(context).likeComment(
+                                      postId: postId,
+                                      commentId: comment.id!,
+                                      databaseLikeCount: comment.likesCount,
+                                      stateFromDatabase: comment.likes.contains(userUid));
                                 } else {
                                   showAuthBottomSheetFunc(context);
                                 }
@@ -636,8 +576,7 @@ class _DesktopCommentsViewState extends State<DesktopCommentsView> {
                               child: SizedBox(
                                 width: Dimens.DIMENS_22,
                                 height: Dimens.DIMENS_22,
-                                child: BlocBuilder<LikeCommentCubit,
-                                    LikeCommentState>(
+                                child: BlocBuilder<LikeCommentCubit, LikeCommentState>(
                                   builder: (context, state) {
                                     if (state is CommentLiked) {
                                       return Icon(
@@ -649,10 +588,7 @@ class _DesktopCommentsViewState extends State<DesktopCommentsView> {
                                       return Icon(
                                         SolarIconsOutline.heart,
                                         size: hearthSize,
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .onSurface
-                                            .withOpacity(0.5),
+                                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
                                       );
                                     }
                                     return comment.likes.contains(userUid)
@@ -664,10 +600,7 @@ class _DesktopCommentsViewState extends State<DesktopCommentsView> {
                                         : Icon(
                                             SolarIconsOutline.heart,
                                             size: hearthSize,
-                                            color: Theme.of(context)
-                                                .colorScheme
-                                                .onSurface
-                                                .withOpacity(0.5),
+                                            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
                                           );
                                   },
                                 ),
@@ -687,8 +620,7 @@ class _DesktopCommentsViewState extends State<DesktopCommentsView> {
                                     ? const Text('')
                                     : Text(
                                         numberFormat(context.locale, likes),
-                                        style: const TextStyle(
-                                            fontSize: 12, color: Colors.grey),
+                                        style: const TextStyle(fontSize: 12, color: Colors.grey),
                                       );
                               },
                             ),
@@ -718,8 +650,7 @@ class _DesktopCommentsViewState extends State<DesktopCommentsView> {
               children: [
                 BlocBuilder<RepliesCubit, RepliesState>(
                   buildWhen: (previous, current) {
-                    if (current.status == RepliesStatus.loadReplies ||
-                        current.status == RepliesStatus.initial) {
+                    if (current.status == RepliesStatus.loadReplies || current.status == RepliesStatus.initial) {
                       return true;
                     } else {
                       return false;
@@ -758,8 +689,7 @@ class _DesktopCommentsViewState extends State<DesktopCommentsView> {
                     if (current.status == RepliesStatus.removeLocaleRelies) {
                       return false;
                     }
-                    if (current.status == RepliesStatus.replyadded ||
-                        current.status == RepliesStatus.uploading) {
+                    if (current.status == RepliesStatus.replyadded || current.status == RepliesStatus.uploading) {
                       return false;
                     }
                     return true;
@@ -769,27 +699,18 @@ class _DesktopCommentsViewState extends State<DesktopCommentsView> {
                       return Text(
                         LocaleKeys.label_loading.tr(),
                         style: TextStyle(
-                            fontSize: 11,
-                            color: Theme.of(context)
-                                .colorScheme
-                                .onSurface
-                                .withOpacity(0.6)),
+                            fontSize: 11, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
                       );
                     }
                     if (state.isLastReply ?? false) {
                       return InkWell(
                           onTap: () {
-                            BlocProvider.of<RepliesCubit>(context)
-                                .hideReplies();
+                            BlocProvider.of<RepliesCubit>(context).hideReplies();
                           },
                           child: Text(
                             LocaleKeys.label_hide_reply.tr(),
                             style: TextStyle(
-                                fontSize: 11,
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .onSurface
-                                    .withOpacity(0.6)),
+                                fontSize: 11, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
                           ));
                     }
                     return InkWell(
@@ -805,10 +726,7 @@ class _DesktopCommentsViewState extends State<DesktopCommentsView> {
                             : '${LocaleKeys.label_view_reply.tr()} ${comment.repliesCount != 0 ? '(${comment.repliesCount.toString()})' : ''}',
                         style: TextStyle(
                           fontSize: 11,
-                          color: Theme.of(context)
-                              .colorScheme
-                              .onSurface
-                              .withOpacity(0.6),
+                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                         ),
                       ),
                     );
@@ -831,15 +749,15 @@ class _DesktopCommentsViewState extends State<DesktopCommentsView> {
       tago.setLocaleMessages('en', tago.EnMessages());
     }
     int likes = 0;
-    final CommentRepository repository =
-        RepositoryProvider.of<CommentRepository>(context);
+    final CommentRepository repository = RepositoryProvider.of<CommentRepository>(context);
     final authRepository = RepositoryProvider.of<AuthRepository>(context);
     final userRepository = RepositoryProvider.of<UserRepository>(context);
     final userUid = authRepository.currentUser?.uid;
     Size size = MediaQuery.of(context).size;
     return BlocProvider(
-      create: (context) =>
-          LikeCommentCubit(RepositoryProvider.of<CommentRepository>(context)),
+      create: (context) => LikeCommentCubit(
+          commentsPagingRepository: context.read<ComentsPagingRepository>(),
+          repository: RepositoryProvider.of<CommentRepository>(context)),
       child: Builder(builder: (context) {
         return FutureBuilder(
             future: repository.getVideoOwnerData(reply.uid),
@@ -867,18 +785,12 @@ class _DesktopCommentsViewState extends State<DesktopCommentsView> {
                                   Icon(
                                     Icons.play_arrow,
                                     size: Dimens.DIMENS_16,
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .onSurface
-                                        .withOpacity(0.6),
+                                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                                   ),
                                   Text(
                                     '$repliedUsername',
                                     style: TextStyle(
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .onSurface
-                                          .withOpacity(0.6),
+                                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                                       fontSize: 10,
                                     ),
                                   ),
@@ -924,9 +836,7 @@ class _DesktopCommentsViewState extends State<DesktopCommentsView> {
                                 },
                                 child: Text(
                                   '@${data.userName!}',
-                                  style: const TextStyle(
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w500),
+                                  style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500),
                                 ),
                               ),
                               SizedBox(
@@ -934,25 +844,16 @@ class _DesktopCommentsViewState extends State<DesktopCommentsView> {
                               ),
                               Text(
                                 tago
-                                            .format(
-                                                DateTime.parse(reply
-                                                    .datePublished
-                                                    .toDate()
-                                                    .toString()),
-                                                locale:
-                                                    context.locale.languageCode)
+                                            .format(DateTime.fromMillisecondsSinceEpoch(reply.datePublished),
+                                                locale: context.locale.languageCode)
                                             .toString() ==
                                         'kurang dari semenit yang lalu'
                                     ? 'baru saja'
                                     : tago
-                                        .format(
-                                            DateTime.parse(reply.datePublished
-                                                .toDate()
-                                                .toString()),
+                                        .format(DateTime.fromMillisecondsSinceEpoch(reply.datePublished),
                                             locale: context.locale.languageCode)
                                         .toString(),
-                                style: const TextStyle(
-                                    fontSize: 11, color: Colors.grey),
+                                style: const TextStyle(fontSize: 11, color: Colors.grey),
                               ),
                             ],
                           ),
@@ -987,18 +888,14 @@ class _DesktopCommentsViewState extends State<DesktopCommentsView> {
                                   );
                                   _repliedUid = reply.uid;
                                   _selectedCommentId = commentId;
-                                  _selectedRepliescubit =
-                                      context.read<RepliesCubit>();
+                                  _selectedRepliescubit = context.read<RepliesCubit>();
                                   _focusNode.requestFocus();
                                 },
                                 child: Text(
                                   LocaleKeys.label_reply.tr(),
                                   style: TextStyle(
                                       fontSize: 11,
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .onSurface
-                                          .withOpacity(0.6)),
+                                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
                                 ),
                                 // child: Text(
                                 //     '${LocaleKeys.label_reply.tr()}  ${comment.repliesCount != 0 ? '(${comment.repliesCount.toString()})' : ''} '),
@@ -1013,14 +910,12 @@ class _DesktopCommentsViewState extends State<DesktopCommentsView> {
                                 radius: 24,
                                 onTap: () {
                                   if (authRepository.currentUser != null) {
-                                    BlocProvider.of<LikeCommentCubit>(context)
-                                        .likeReply(
-                                            postId: postId,
-                                            replyid: reply.id!,
-                                            commentId: commentId,
-                                            databaseLikeCount: reply.likesCount,
-                                            stateFromDatabase:
-                                                reply.likes.contains(userUid));
+                                    BlocProvider.of<LikeCommentCubit>(context).likeReply(
+                                        postId: postId,
+                                        replyid: reply.id!,
+                                        commentId: commentId,
+                                        databaseLikeCount: reply.likesCount,
+                                        stateFromDatabase: reply.likes.contains(userUid));
                                   } else {
                                     showAuthBottomSheetFunc(context);
                                   }
@@ -1028,8 +923,7 @@ class _DesktopCommentsViewState extends State<DesktopCommentsView> {
                                 child: SizedBox(
                                   width: Dimens.DIMENS_30,
                                   height: Dimens.DIMENS_30,
-                                  child: BlocBuilder<LikeCommentCubit,
-                                      LikeCommentState>(
+                                  child: BlocBuilder<LikeCommentCubit, LikeCommentState>(
                                     builder: (context, state) {
                                       if (state is ReplyLiked) {
                                         return const Icon(
@@ -1041,10 +935,7 @@ class _DesktopCommentsViewState extends State<DesktopCommentsView> {
                                         return Icon(
                                           SolarIconsOutline.heart,
                                           size: 16,
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .onSurface
-                                              .withOpacity(0.5),
+                                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
                                         );
                                       }
                                       return reply.likes.contains(userUid)
@@ -1056,10 +947,7 @@ class _DesktopCommentsViewState extends State<DesktopCommentsView> {
                                           : Icon(
                                               SolarIconsOutline.heart,
                                               size: 16,
-                                              color: Theme.of(context)
-                                                  .colorScheme
-                                                  .onSurface
-                                                  .withOpacity(0.5),
+                                              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
                                             );
                                     },
                                   ),
@@ -1082,8 +970,7 @@ class _DesktopCommentsViewState extends State<DesktopCommentsView> {
                                             context.locale,
                                             likes,
                                           ),
-                                          style: const TextStyle(
-                                              fontSize: 12, color: Colors.grey),
+                                          style: const TextStyle(fontSize: 12, color: Colors.grey),
                                         );
                                 },
                               ),
@@ -1112,49 +999,50 @@ class _DesktopCommentsViewState extends State<DesktopCommentsView> {
             builder: (context, value, child) => ListenableBuilder(
                 listenable: value,
                 builder: (context, child) {
-                  return RefreshIndicator(
-                    onRefresh: () async => _refreshComments(context),
-                    child: PagedListView<int, Comment>(
-                      scrollController: _scrollController,
-                      pagingController: state.controller!,
-                      // shrinkWrap: true,
-                      physics: const BouncingScrollPhysics(),
-                      builderDelegate: PagedChildBuilderDelegate(
-                          noItemsFoundIndicatorBuilder: (_) {
-                        ///Because new comment is not in this paging widget
-                        ///if [_newCommentItems] is not empty but the paging widget
-                        ///is empty ,this emty state widget will removed
-                        return BlocBuilder<CommentBloc, CommentState>(
-                          builder: (context, state) {
-                            return _newCommentItems.isNotEmpty
-                                ? Container()
-                                : Padding(
-                                    padding:
-                                        EdgeInsets.only(top: Dimens.DIMENS_50),
-                                    child: Center(
-                                      child: Text(
-                                        LocaleKeys.message_no_comment_yet.tr(),
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .titleMedium,
-                                      ),
-                                    ),
-                                  );
-                          },
-                        );
-                      }, itemBuilder: (
-                        context,
-                        item,
-                        index,
-                      ) {
-                        return _commentItem(
-                          context,
-                          comment: item,
-                          postId: widget.postId,
-                        );
-                      }),
-                    ),
-                  );
+                  return Container();
+                  // return RefreshIndicator(
+                  //   onRefresh: () async => _refreshComments(context),
+                  //   child: PagedListView<int, Comment>(
+                  //     scrollController: _scrollController,
+                  //     pagingController: state,
+                  //     // shrinkWrap: true,
+                  //     physics: const BouncingScrollPhysics(),
+                  //     builderDelegate: PagedChildBuilderDelegate(
+                  //         noItemsFoundIndicatorBuilder: (_) {
+                  //       ///Because new comment is not in this paging widget
+                  //       ///if [_newCommentItems] is not empty but the paging widget
+                  //       ///is empty ,this emty state widget will removed
+                  //       return BlocBuilder<CommentBloc, CommentState>(
+                  //         builder: (context, state) {
+                  //           return _newCommentItems.isNotEmpty
+                  //               ? Container()
+                  //               : Padding(
+                  //                   padding:
+                  //                       EdgeInsets.only(top: Dimens.DIMENS_50),
+                  //                   child: Center(
+                  //                     child: Text(
+                  //                       LocaleKeys.message_no_comment_yet.tr(),
+                  //                       style: Theme.of(context)
+                  //                           .textTheme
+                  //                           .titleMedium,
+                  //                     ),
+                  //                   ),
+                  //                 );
+                  //         },
+                  //       );
+                  //     }, itemBuilder: (
+                  //       context,
+                  //       item,
+                  //       index,
+                  //     ) {
+                  //       return _commentItem(
+                  //         context,
+                  //         comment: item,
+                  //         postId: widget.postId,
+                  //       );
+                  //     }),
+                  //   ),
+                  // );
                 }),
           );
         }
@@ -1166,8 +1054,7 @@ class _DesktopCommentsViewState extends State<DesktopCommentsView> {
   BlocBuilder<RepliesCubit, RepliesState> _repliesFromLocal(String commentId) {
     return BlocBuilder<RepliesCubit, RepliesState>(
       builder: (context, state) {
-        List<Reply> newRepliesItems =
-            context.read<RepliesRepository>().repliesFromLocal;
+        List<Reply> newRepliesItems = context.read<RepliesRepository>().repliesFromLocal;
         return ListView.builder(
           reverse: true,
           shrinkWrap: true,
@@ -1189,8 +1076,7 @@ class _DesktopCommentsViewState extends State<DesktopCommentsView> {
   Future<void> _refreshComments(BuildContext context) {
     return Future.sync(() {
       _newCommentItems.clear();
-      ComentsPagingRepository commentsPagingReository =
-          RepositoryProvider.of<ComentsPagingRepository>(context);
+      ComentsPagingRepository commentsPagingReository = RepositoryProvider.of<ComentsPagingRepository>(context);
       commentsPagingReository.clearAllcoment();
       BlocProvider.of<CommentBloc>(context).add(RefreshComentEvent());
       if (commentsPagingReository.controller != null) {

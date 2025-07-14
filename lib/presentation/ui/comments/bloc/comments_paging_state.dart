@@ -11,11 +11,6 @@ final class CommentsPagingInitial extends CommentsPagingState {}
 
 final class RemoveLocaleComment extends CommentsPagingState {}
 
-final class CommentsPagingInitialized extends CommentsPagingState {
-  final PagingController<int, Comment>? controller;
+final class CommentsLoading extends CommentsPagingState {}
 
-  const CommentsPagingInitialized({required this.controller});
-
-  @override
-  List<Object> get props => [controller!];
-}
+final class CommentsPagingInitialized extends CommentsPagingState {}

@@ -1,13 +1,16 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:personal_project/data/repository/coment_repository.dart';
+import 'package:personal_project/data/repository/coments_paging_repository.dart';
+import 'package:personal_project/domain/model/comment_model.dart';
 
 part 'like_comment_state.dart';
 
 class LikeCommentCubit extends Cubit<LikeCommentState> {
-  LikeCommentCubit(
-    this.repository,
-  ) : super(LikeCommentInitial());
+  LikeCommentCubit({
+    required this.repository,
+    required this.commentsPagingRepository,
+  }) : super(LikeCommentInitial());
 
   bool? _clientState;
   bool? _clientStateReply;
@@ -36,6 +39,19 @@ class LikeCommentCubit extends Cubit<LikeCommentState> {
       _clientState = true;
     }
   }
+
+  void like({required String postId, required Comment comment}) {
+    final Comment commentData = comment.copyWith();
+    final isLiked = commentData.isLiked;
+    commentsPagingRepository.likeComment(
+      postId: postId,
+      commentId: comment.id!,
+    );
+    isLiked
+        ? emit(CommentLiked(likeCount: commentData.likesCount - 1))
+        : emit(UnilkedComment(likeCount: commentData.likesCount + 1));
+  }
+
   void likeReply(
       {required String postId,
       required String commentId,
@@ -43,7 +59,7 @@ class LikeCommentCubit extends Cubit<LikeCommentState> {
       required int databaseLikeCount,
       required String replyid}) async {
     _clientStateReply ??= stateFromDatabase;
-    repository.likeReply(id: commentId, postId: postId,replyId: replyid);
+    repository.likeReply(id: commentId, postId: postId, replyId: replyid);
 
     // _clientStateReply! ? emit(UnilkedComment()) : emit(CommentLiked());
     // _clientStateReply = !_clientStateReply!;
@@ -64,4 +80,5 @@ class LikeCommentCubit extends Cubit<LikeCommentState> {
   }
 
   final CommentRepository repository;
+  final ComentsPagingRepository commentsPagingRepository;
 }

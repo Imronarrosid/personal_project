@@ -9,12 +9,10 @@ part 'comments_paging_state.dart';
 
 class CommentsPagingBloc extends Bloc<CommentsPagingEvent, CommentsPagingState> {
   CommentsPagingBloc(this.repository) : super(CommentsPagingInitial()) {
-    on<InitCommentsPagingEvent>((event, emit) {
-      if (repository.controller == null) {
-        repository.initPagingController(event.postId);
-
-        emit(CommentsPagingInitialized(controller: repository.controller));
-      }
+    on<LoadCommentsEvent>((event, emit) async {
+      emit(CommentsLoading());
+      await repository.loadComments(event.postId);
+      emit(CommentsPagingInitialized());
     });
   }
   @override

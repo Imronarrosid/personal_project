@@ -83,7 +83,7 @@ class _ListVideoState extends State<ListVideo> {
 
                   return Future.sync(
                     () {
-                      RepositoryProvider.of<PagingRepository>(context).controller!.refresh();
+                      // RepositoryProvider.of<PagingRepository>(context).controller!.refresh();
                     },
                   );
                 },

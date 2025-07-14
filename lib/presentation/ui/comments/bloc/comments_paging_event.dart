@@ -7,10 +7,10 @@ sealed class CommentsPagingEvent extends Equatable {
   List<Object> get props => [];
 }
 
-class InitCommentsPagingEvent extends CommentsPagingEvent {
+class LoadCommentsEvent extends CommentsPagingEvent {
   final String postId;
 
-  const InitCommentsPagingEvent({required this.postId});
+  const LoadCommentsEvent({required this.postId});
 
   @override
   List<Object> get props => [postId];
