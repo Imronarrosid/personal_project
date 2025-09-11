@@ -243,7 +243,9 @@ class _VideoItemMobileState extends State<VideoItemMobile> {
                     height: Dimens.DIMENS_3,
                   ),
                   RepositoryProvider(
-                    create: (context) => CommentRepository(),
+                    create: (context) => CommentRepository(
+                      authRepository: authRepository,
+                    ),
                     child: PostButtonItem(
                       onPressed: () async {
                         // VideoPaddingNOtifire.instance.setBottomPdding(

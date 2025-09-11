@@ -6,13 +6,18 @@ import 'package:flutter/material.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:personal_project/data/repository/coment_repository.dart';
 import 'package:personal_project/domain/model/comment_model.dart';
+import 'package:personal_project/domain/reporsitory/auth_reposotory.dart';
+import 'package:personal_project/domain/reporsitory/user_repository.dart';
 
 import '../../domain/model/user.dart';
 import '../../utils/debug_mode_print.dart';
 
 class ComentsPagingRepository {
+  final CommentRepository commentRepository;
+  final AuthRepository authRepository;
+  ComentsPagingRepository({required this.authRepository, required this.commentRepository});
+
   PagingController<int, Comment>? controller;
-  CommentRepository commentRepository = CommentRepository();
   final int _pageSize = 11;
   final List<Comment> _currentLoadedComments = [];
   List<Comment> get currentLoadedComments => _currentLoadedComments;
@@ -22,6 +27,7 @@ class ComentsPagingRepository {
   set addCommentLocal(Comment comment) => _commentLocal.add(comment);
 
   bool _isLatPage = false;
+
   get isLatPage => _isLatPage;
 
   void clearAllcoment() {
@@ -102,14 +108,7 @@ class ComentsPagingRepository {
       _isLatPage = newItems.length < _pageSize;
       uids = newItems.fold([], (previousValue, element) {
         final commentData = element.data() as Map<String, dynamic>;
-        commentData['id'] == element.id;
-        commentData['datePublished'] = commentData['datePublished'].millisecondsSinceEpoch;
-        commentData['likesCount'] = commentData['likesCount'] ?? 0;
-        commentData['isLiked'] = likedCommentIds.contains(element.id);
-        return [
-          ...previousValue,
-          Comment.fromJson(commentData).uid,
-        ];
+        return [...previousValue, commentData['uid']];
       });
       final List<DocumentSnapshot> nameDocuments = await commentRepository.fetchDocumentsBulk(postId, uids);
 
@@ -127,11 +126,12 @@ class ComentsPagingRepository {
           (user) => user.id == commentData['uid'],
         );
         commentData['id'] == element.id;
-        commentData['datePublished'] = commentData['datePublished'].millisecondsSinceEpoch;
+        commentData['datePublished'] = commentData['datePublished'];
         commentData['likesCount'] = commentData['likesCount'] ?? 0;
         commentData['isLiked'] = likedCommentIds.contains(element.id);
         commentData['authorName'] = author.userName;
         commentData['avatar'] = author.photo;
+        commentData['authorId'] = author.id;
         _currentLoadedComments.add(Comment.fromJson(commentData));
       }
     } catch (error) {
@@ -139,21 +139,63 @@ class ComentsPagingRepository {
     }
   }
 
-  void likeComment({
+  void insertComment(Comment comment) {
+    _currentLoadedComments.insert(0, comment);
+  }
+
+  void updateComment(Comment comment) {
+    final index = _currentLoadedComments.indexWhere((element) => element.id == comment.id);
+    if (index != -1) {
+      _currentLoadedComments[index] = comment;
+    }
+  }
+
+  Future<void> addComment({
+    required String commentText,
+    required String postId,
+  }) async {
+    final Comment comment = Comment(
+      comment: commentText,
+      datePublished: Timestamp.now(),
+      uid: authRepository.currentUserData.id,
+      id: '',
+      repliesCount: 0,
+      authorUserName: authRepository.currentUserData.userName!,
+      avatar: authRepository.currentUserData.photo,
+      status: Status.uploading,
+    );
+    _currentLoadedComments.insert(0, comment);
+
+    await commentRepository.postComment(commentText: commentText, postId: postId);
+    final index = _currentLoadedComments.indexOf(comment);
+    _currentLoadedComments[index] = comment.copyWith(status: Status.uploaded);
+    print(_currentLoadedComments[index].toJson());
+  }
+
+  Future<void> likeComment({
     required String postId,
     required String commentId,
   }) async {
-    try {
-      Comment comment = _currentLoadedComments.firstWhere((element) => element.id == commentId);
-      int index = _currentLoadedComments.indexOf(comment);
-      if (comment.isLiked) {
-        _currentLoadedComments[index] = comment.copyWith(isLiked: false, likesCount: comment.likesCount - 1);
-      } else {
-        _currentLoadedComments[index] = comment.copyWith(isLiked: true, likesCount: comment.likesCount + 1);
-      }
-      await commentRepository.likeComment(id: commentId, postId: postId);
-    } on Exception catch (e) {
-      // TODO
+    Comment comment = _currentLoadedComments.firstWhere((element) => element.id == commentId);
+    int index = _currentLoadedComments.indexOf(comment);
+    if (comment.isLiked) {
+      _currentLoadedComments[index] = comment.copyWith(isLiked: false, likesCount: comment.likesCount - 1);
+    } else {
+      _currentLoadedComments[index] = comment.copyWith(isLiked: true, likesCount: comment.likesCount + 1);
+    }
+    await commentRepository.likeComment(id: commentId, postId: postId);
+  }
+
+  Future<void> likeCommentReset({
+    required String postId,
+    required String commentId,
+  }) async {
+    Comment comment = _currentLoadedComments.firstWhere((element) => element.id == commentId);
+    int index = _currentLoadedComments.indexOf(comment);
+    if (comment.isLiked) {
+      _currentLoadedComments[index] = comment.copyWith(isLiked: false, likesCount: comment.likesCount - 1);
+    } else {
+      _currentLoadedComments[index] = comment.copyWith(isLiked: true, likesCount: comment.likesCount + 1);
     }
   }
 

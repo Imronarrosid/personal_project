@@ -3,11 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:personal_project/domain/model/comment_model.dart';
 import 'package:personal_project/domain/model/reply_models.dart';
 import 'package:personal_project/domain/model/user.dart';
+import 'package:personal_project/domain/reporsitory/auth_reposotory.dart';
 import 'package:personal_project/domain/services/firebase/firebase_service.dart';
 import 'package:personal_project/domain/services/uuid_generator.dart';
 import 'package:rxdart/rxdart.dart';
 
 class CommentRepository {
+  final AuthRepository authRepository;
+  CommentRepository({required this.authRepository});
   final List<DocumentSnapshot> allDocs = [];
   final List<DocumentSnapshot> repliesDocs = [];
   getCommentOwnerData() {}
@@ -115,7 +118,7 @@ class CommentRepository {
         final QuerySnapshot querySnapshot = await firebaseFirestore
             .collection('commentLikes')
             .where('commentId', whereIn: commentIds)
-            .where('uid', isEqualTo: firebaseAuth.currentUser?.uid)
+            .where('uid', isEqualTo: authRepository.currentUser?.uid)
             .get();
 
         likedCommentIds = querySnapshot.docs.fold(
@@ -139,7 +142,7 @@ class CommentRepository {
     required String commentText,
     required String postId,
   }) async {
-    String uid = firebaseAuth.currentUser!.uid;
+    String uid = authRepository.currentUser!.uid;
     late Comment comment;
     try {
       if (commentText.isNotEmpty) {
@@ -157,19 +160,15 @@ class CommentRepository {
         comment = Comment(
           id: len,
           comment: commentText.trim(),
-          likes: [],
           likesCount: 0,
           uid: uid,
-          datePublished: DateTime.now().millisecondsSinceEpoch,
+          datePublished: Timestamp.now(),
           repliesCount: 0,
         );
-
-        await firebaseFirestore
-            .collection('videos')
-            .doc(postId)
-            .collection('comments')
-            .doc(len)
-            .set(comment.toJson());
+        final commentMap = comment.toJson();
+        commentMap['createdAt'] = FieldValue.serverTimestamp();
+        commentMap.remove('status');
+        await firebaseFirestore.collection('videos').doc(postId).collection('comments').doc(len).set(commentMap);
 
         // DocumentSnapshot doc =
         //     await firebaseFirestore.collection('videos').doc(postId).get();
@@ -192,7 +191,7 @@ class CommentRepository {
     return comment;
   }
 
-  Future<Reply?> addReply({
+  Future<void> addReply({
     required String repliedUid,
     required String postId,
     required String commentId,
@@ -211,27 +210,14 @@ class CommentRepository {
       while (doc.exists) {
         replyId = generateUuid();
       }
-      final Reply replyForLocal = Reply(
-        repliedUid: repliedUid,
-        id: replyId,
-        comment: comment.trim(),
-        likes: [],
-        likesCount: 0,
-        uid: firebaseAuth.currentUser!.uid,
-        datePublished: DateTime.now().millisecondsSinceEpoch,
-        repliesCount: 0,
-      );
 
-      final Map<String, dynamic> replyToStore = {
-        'comment': comment,
-        'datePublished': FieldValue.serverTimestamp(),
-        'likes': [],
-        'uid': firebaseAuth.currentUser!.uid,
-        'id': replyId,
-        'likesCount': 0,
-        'repliesCount': 0,
-        'repliedUid': repliedUid,
-      };
+      final replyMap = Reply(
+        id: replyId,
+        comment: comment,
+        repliedUserId: repliedUid,
+        datePublished: Timestamp.now(),
+        uid: authRepository.currentUser!.uid,
+      ).toJson();
 
       await firebaseFirestore
           .collection('videos')
@@ -240,7 +226,7 @@ class CommentRepository {
           .doc(commentId)
           .collection('replies')
           .doc(replyId)
-          .set(replyToStore);
+          .set(replyMap);
       DocumentReference documentReference = firebaseFirestore.collection('videos').doc(postId);
       firebaseFirestore.runTransaction((transaction) {
         return transaction.get(documentReference).then((value) {
@@ -257,15 +243,13 @@ class CommentRepository {
           transaction.update(replyReference, {'repliesCount': currentRepliesCount + 1});
         });
       });
-      return replyForLocal;
     } catch (e) {
       debugPrint(e.toString());
-      return null;
     }
   }
 
   Future<void> likeComment({required String id, postId}) async {
-    var uid = firebaseAuth.currentUser!.uid;
+    var uid = authRepository.currentUser!.uid;
     debugPrint(postId + id);
     DocumentSnapshot doc =
         await firebaseFirestore.collection('videos').doc(postId).collection('comments').doc(id).get();
@@ -325,7 +309,7 @@ class CommentRepository {
 
   Future<void> likeReply({required String id, postId, required String replyId}) async {
     try {
-      var uid = firebaseAuth.currentUser!.uid;
+      var uid = authRepository.currentUser!.uid;
 
       DocumentReference documentReference = firebaseFirestore
           .collection('videos')

@@ -2,20 +2,29 @@ import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
+import 'package:personal_project/data/repository/coment_repository.dart';
 import 'package:personal_project/domain/model/comment_model.dart';
 import 'package:personal_project/domain/model/reply_models.dart';
+import 'package:personal_project/domain/model/user.dart';
 import 'package:personal_project/domain/services/firebase/firebase_service.dart';
 import 'package:personal_project/domain/services/uuid_generator.dart';
 import 'package:rxdart/rxdart.dart';
 
 class RepliesRepository {
-  final List<DocumentSnapshot> _repliesDoc = [];
+  final CommentRepository commentsRepository;
+  RepliesRepository({required this.commentsRepository});
+
+  final int limit = 5;
   final List<Reply> _replies = [];
+
+  List<Reply> get replies => _replies;
+
+  final List<DocumentSnapshot> _repliesDoc = [];
+
   final List<Reply> _repliesFromLocal = [];
   bool _isLastReply = false;
 
   List<DocumentSnapshot> get repliesDoc => _repliesDoc;
-  List<Reply> get replies => _replies;
   List<Reply> get repliesFromLocal => _repliesFromLocal;
 
   set addNewReplies(Reply reply) {
@@ -86,7 +95,9 @@ class RepliesRepository {
       }
 
       for (var element in querySnapshot.docs) {
-        _replies.add(Reply.fromSnap(element));
+        final comment = Reply.fromJson(element.data() as Map<String, dynamic>);
+
+        _replies.add(comment);
       }
 
       // setState(() {
@@ -98,109 +109,88 @@ class RepliesRepository {
     return listDocs;
   }
 
-  Future<void> addReply({
-    required String repliedUid,
+  Future<void> loadReplies({
     required String postId,
     required String commentId,
-    required String comment,
   }) async {
+    List<Reply> newReplies = [];
+
+    QuerySnapshot querySnapshot;
     try {
-      String replyId = generateUuid();
-      final DocumentSnapshot doc = await firebaseFirestore
-          .collection('videos')
-          .doc(postId)
-          .collection('comments')
-          .doc(commentId)
-          .collection('replies')
-          .doc(replyId)
-          .get();
-      while (doc.exists) {
-        replyId = generateUuid();
-      }
-      final Reply replyForLocal = Reply(
-        repliedUid: repliedUid,
-        id: replyId,
-        comment: comment.trim(),
-        likes: [],
-        likesCount: 0,
-        uid: firebaseAuth.currentUser!.uid,
-        datePublished: DateTime.now().millisecondsSinceEpoch,
-        repliesCount: 0,
-      );
+      final List<User> users = [];
+      final List<String> uids = [];
 
-      final Map<String, dynamic> replyToStore = {
-        'comment': comment,
-        'datePublished': FieldValue.serverTimestamp(),
-        'likes': [],
-        'uid': firebaseAuth.currentUser!.uid,
-        'id': replyId,
-        'likesCount': 0,
-        'repliesCount': 0,
-        'repliedUid': repliedUid,
-      };
-
-      await firebaseFirestore
-          .collection('videos')
-          .doc(postId)
-          .collection('comments')
-          .doc(commentId)
-          .collection('replies')
-          .doc(replyId)
-          .set(replyToStore);
-      DocumentReference documentReference = firebaseFirestore.collection('videos').doc(postId);
-      firebaseFirestore.runTransaction((transaction) {
-        return transaction.get(documentReference).then((value) {
-          int currentCount = (value.data() as Map<String, dynamic>)['commentCount'];
-          transaction.update(documentReference, {'commentCount': currentCount + 1});
-        });
-      });
-      DocumentReference replyReference =
-          firebaseFirestore.collection('videos').doc(postId).collection('comments').doc(commentId);
-      firebaseFirestore.runTransaction((transaction) {
-        return transaction.get(replyReference).then((value) {
-          debugPrint(Comment.fromSnap(value).toString());
-          int currentRepliesCount = (value.data() as Map<String, dynamic>)['repliesCount'];
-          transaction.update(replyReference, {'repliesCount': currentRepliesCount + 1});
-        });
-      });
-      _repliesFromLocal.add(replyForLocal);
-    } catch (e) {
-      debugPrint(e.toString());
-    }
-  }
-
-  Stream<List<Reply>> repliesStream({
-    required String postId,
-    required String commentId,
-  }) {
-    try {
-      if (_repliesDoc.isNotEmpty) {
-        return firebaseFirestore
+      if (_repliesDoc.isEmpty) {
+        querySnapshot = await firebaseFirestore
             .collection('videos')
             .doc(postId)
             .collection('comments')
             .doc(commentId)
             .collection('replies')
             .orderBy('datePublished', descending: false)
-            .startAfterDocument(_repliesDoc.last)
-            .snapshots()
-            .debounceTime(const Duration(seconds: 1))
-            .asBroadcastStream()
-            .map(
-              (event) => event.docs.fold(
-                [],
-                (previousValue, element) => [
-                  ...previousValue,
-                  Reply.fromSnap(element),
-                ],
-              ),
-            );
+            .limit(limit)
+            .get();
       } else {
-        return Stream.value([]);
+        querySnapshot = await firebaseFirestore
+            .collection('videos')
+            .doc(postId)
+            .collection('comments')
+            .doc(commentId)
+            .collection('replies')
+            .orderBy('datePublished', descending: false)
+            .startAt([_replies.last.datePublished])
+            .limit(limit)
+            .get();
       }
-    } on Exception catch (e) {
+
+      if (newReplies.length < limit) {
+        _isLastReply = true;
+      }
+
+      for (var element in newReplies) {
+        final reply = Reply.fromJson(element as Map<String, dynamic>);
+        final uid = reply.uid;
+        if (reply.repliedUserId.isNotEmpty) {
+          uids.add(reply.repliedUserId);
+        }
+
+        uids.add(uid);
+      }
+
+      for (var element in querySnapshot.docs) {
+        final reply = element.data() as Map<String, dynamic>;
+        reply['id'] = element.id;
+        reply['createdAt'] = (reply['createdAt'] as Timestamp).millisecondsSinceEpoch;
+
+        reply['authorUseName'] = users
+            .firstWhere(
+              (element) => element.id == reply['authorId'],
+            )
+            .userName;
+        reply['avatar'] = users
+            .firstWhere(
+              (element) => element.id == reply['authorId'],
+            )
+            .photo;
+        reply['repliedUserName'] = users
+            .firstWhere(
+              (element) => element.id == reply['authorId'],
+            )
+            .userName;
+        _replies.add(Reply.fromJson(reply));
+      }
+
+      // setState(() {
+      //   _hasMore = false;
+      // });
+    } catch (e) {
       debugPrint(e.toString());
-      return Stream.value([]);
     }
+  }
+
+  void addReply({
+    required Reply reply,
+  }) {
+    _replies.insert(0, reply);
   }
 }

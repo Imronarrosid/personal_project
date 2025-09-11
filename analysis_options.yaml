@@ -30,4 +30,5 @@ linter:
 analyzer:
   errors:
     invalid_annotation_target: ignore
+    annotate_overrides: ignore
      

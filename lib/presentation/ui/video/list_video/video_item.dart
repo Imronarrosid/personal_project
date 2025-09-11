@@ -397,7 +397,9 @@ class _VideoItemState extends State<VideoItem> {
                     height: Dimens.DIMENS_25,
                   ),
                   RepositoryProvider(
-                    create: (context) => CommentRepository(),
+                    create: (context) => CommentRepository(
+                      authRepository: authRepository
+                    ),
                     child: GestureDetector(
                       onTap: () {
                         BlocProvider.of<VideoSizeCubit>(context)

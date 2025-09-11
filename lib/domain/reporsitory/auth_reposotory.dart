@@ -69,8 +69,7 @@ class LogInWithGoogleFailure implements Exception {
 }
 
 class AuthRepository implements AuthUseCaseType {
-  final firebase_auth.FirebaseAuth _firebaseAuth =
-      firebase_auth.FirebaseAuth.instance;
+  final firebase_auth.FirebaseAuth _firebaseAuth = firebase_auth.FirebaseAuth.instance;
   final GoogleSignIn _googleSignIn = GoogleSignIn();
 
   FirebaseFirestore firestore = FirebaseFirestore.instance;
@@ -106,16 +105,15 @@ class AuthRepository implements AuthUseCaseType {
   ///
   /// Emits [User.empty] if the user is not authenticated.
 
-  User? currentUserData;
+  User? _currentUserData;
 
-  initAuthRepository() async {
+  User get currentUserData => _currentUserData?? User.empty;
+
+  Future<void> initAuthRepository() async {
     if (firebaseAuth.currentUser != null) {
-      DocumentSnapshot docs = await firebaseFirestore
-          .collection('users')
-          .doc(firebaseAuth.currentUser!.uid)
-          .get();
+      DocumentSnapshot docs = await firebaseFirestore.collection('users').doc(firebaseAuth.currentUser!.uid).get();
       if (docs.exists) {
-        currentUserData = User.fromSnap(docs);
+        _currentUserData = User.fromSnap(docs);
       }
       updateUserLastSeen();
     }
@@ -183,17 +181,11 @@ class AuthRepository implements AuthUseCaseType {
   }
 
   Future<void> _storeAvatar(String downloaUrl) async {
-    await firebaseFirestore
-        .collection('avatars')
-        .doc(firebaseAuth.currentUser!.uid)
-        .set({'avatar': downloaUrl});
+    await firebaseFirestore.collection('avatars').doc(firebaseAuth.currentUser!.uid).set({'avatar': downloaUrl});
   }
 
   Future<void> _storeUserName(String userName) async {
-    await firebaseFirestore
-        .collection('userNames')
-        .doc(currentUser!.uid)
-        .set({'userName': userName});
+    await firebaseFirestore.collection('userNames').doc(currentUser!.uid).set({'userName': userName});
   }
 
   String _createUserName(String userName) {
@@ -216,11 +208,7 @@ class AuthRepository implements AuthUseCaseType {
 
           if (user != null) {
             _authCompleter.complete(true);
-            User newUser = User(
-                id: user.uid,
-                name: user.displayName,
-                email: user.email,
-                photo: user.photoURL);
+            User newUser = User(id: user.uid, name: user.displayName, email: user.email, photo: user.photoURL);
 
             // Store user data to firebase if [user.uid] not exist.
 
@@ -250,11 +238,7 @@ class AuthRepository implements AuthUseCaseType {
 
           if (user != null) {
             _authCompleter.complete(true);
-            User newUser = User(
-                id: user.uid,
-                name: user.displayName,
-                email: user.email,
-                photo: user.photoURL);
+            User newUser = User(id: user.uid, name: user.displayName, email: user.email, photo: user.photoURL);
 
             // Store user data to firebase if [user.uid] not exist.
 
@@ -304,8 +288,7 @@ class AuthRepository implements AuthUseCaseType {
 
   Future<User> getUserData(String uid) async {
     try {
-      DocumentSnapshot docs =
-          await firebaseFirestore.collection('users').doc(uid).get();
+      DocumentSnapshot docs = await firebaseFirestore.collection('users').doc(uid).get();
       if (docs.exists) {
         return User.fromSnap(docs);
       }
@@ -317,8 +300,7 @@ class AuthRepository implements AuthUseCaseType {
   }
 
   Future<bool> isAdmin(String uid) async {
-    DocumentSnapshot<Map<String, dynamic>> doc =
-        await firebaseFirestore.collection('users').doc(uid).get();
+    DocumentSnapshot<Map<String, dynamic>> doc = await firebaseFirestore.collection('users').doc(uid).get();
 
     var data = doc.data();
     if (data!.containsKey('role') && data['role'] == 'admin') {
@@ -329,8 +311,7 @@ class AuthRepository implements AuthUseCaseType {
   }
 
   Future<void> addGameFav(String gameTitle, File image) async {
-    Reference ref =
-        firebaseStorage.ref().child('gameFavorites').child('Pict $gameTitle');
+    Reference ref = firebaseStorage.ref().child('gameFavorites').child('Pict $gameTitle');
     UploadTask uploadTask = ref.putFile(image);
     TaskSnapshot snapshot = await uploadTask;
     String gameImage = await snapshot.ref.getDownloadURL();
@@ -342,13 +323,11 @@ class AuthRepository implements AuthUseCaseType {
 
   void listenForDocumentCreation(String uid) {
     // Replace 'your_collection' and 'your_document_id' with your actual collection and document ID
-    DocumentReference documentReference =
-        FirebaseFirestore.instance.collection('users').doc(uid);
+    DocumentReference documentReference = FirebaseFirestore.instance.collection('users').doc(uid);
 
     // Create a real-time listener
     StreamSubscription? subscription;
-    subscription =
-        documentReference.snapshots().listen((DocumentSnapshot snapshot) {
+    subscription = documentReference.snapshots().listen((DocumentSnapshot snapshot) {
       if (snapshot.exists) {
         print('qwerty Document created or modified!');
         // Do something with the document data if needed

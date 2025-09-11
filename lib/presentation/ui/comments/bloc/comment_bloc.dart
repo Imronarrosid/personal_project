@@ -2,6 +2,7 @@ import 'package:bloc/bloc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 import 'package:personal_project/data/repository/coment_repository.dart';
+import 'package:personal_project/data/repository/coments_paging_repository.dart';
 import 'package:personal_project/domain/model/comment_model.dart';
 import 'package:personal_project/domain/model/reply_models.dart';
 import 'package:personal_project/domain/services/firebase/firebase_service.dart';
@@ -10,7 +11,8 @@ part 'comment_event.dart';
 part 'comment_state.dart';
 
 class CommentBloc extends Bloc<CommentEvent, CommentState> {
-  CommentBloc(this.repository) : super(const CommentState(status: CommentStatus.initial)) {
+  CommentBloc(this.repository, this.commentsPagingRepository)
+      : super(const CommentState(status: CommentStatus.initial)) {
     on<TapCommentForm>((event, emit) {
       emit(const CommentState(status: CommentStatus.open));
     });
@@ -48,11 +50,13 @@ class CommentBloc extends Bloc<CommentEvent, CommentState> {
       emit(
         const CommentState(status: CommentStatus.uploading),
       );
-      Comment comment =
-          await repository.postComment(commentText: event.comment, postId: event.postId);
+      await commentsPagingRepository.addComment(commentText: event.comment, postId: event.postId);
       emit(
-        CommentState(status: CommentStatus.succes, comment: comment),
+        CommentState(
+          status: CommentStatus.succes,
+        ),
       );
+      print(commentsPagingRepository.currentLoadedComments);
     });
     on<RefreshComentEvent>((event, emit) {
       emit(
@@ -64,7 +68,14 @@ class CommentBloc extends Bloc<CommentEvent, CommentState> {
       emit(
         const CommentState(status: CommentStatus.uploading),
       );
-      Reply? reply = await repository.addReply(
+      Reply? reply = Reply(
+        comment: event.reply,
+        datePublished: Timestamp.now(),
+        uid: repository.authRepository.currentUserData.id,
+        authorUserName: repository.authRepository.currentUserData.userName!,
+        repliedUserId: event.repliedUid,
+      );
+      await repository.addReply(
         repliedUid: event.repliedUid,
         postId: event.postId,
         commentId: event.commentId,
@@ -87,4 +98,5 @@ class CommentBloc extends Bloc<CommentEvent, CommentState> {
     });
   }
   final CommentRepository repository;
+  final ComentsPagingRepository commentsPagingRepository;
 }

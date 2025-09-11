@@ -9,8 +9,8 @@ class LocalCommentsNotifier extends ChangeNotifier {
 
   List<Comment> get localComments => _localComments;
 
-  void addLocalComments(Comment newComment,
-      {required ComentsPagingRepository commentRepository}) {
+  void addLocalComments(Comment newComment, {required ComentsPagingRepository commentRepository}) {
+    return;
     _localComments.insert(0, newComment);
     commentRepository.controller!.itemList!.insert(0, newComment);
     notifyListeners();
