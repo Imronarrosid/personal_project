@@ -20,6 +20,7 @@ enum CommentInputStatus {
   uploading,
   success,
   error,
+  isReply,
 }
 
 extension CommentInputStatusExtension on CommentInputStatus {
@@ -28,4 +29,5 @@ extension CommentInputStatusExtension on CommentInputStatus {
   bool get isSuccess => this == CommentInputStatus.success;
   bool get isError => this == CommentInputStatus.error;
   bool get isTyping => this == CommentInputStatus.typing;
+  bool get isReply => this == CommentInputStatus.isReply;
 }

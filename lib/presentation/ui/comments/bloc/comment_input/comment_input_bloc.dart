@@ -23,6 +23,7 @@ class CommentInputBloc extends Bloc<CommentInputEvent, CommentInputState> {
           repliedCommentId: event.repliedCommentId,
           repliedUserId: event.repliedUserId,
           repliedUserName: event.repliedUserName,
+          postId: event.postId,
           comment: null,
         ),
       );

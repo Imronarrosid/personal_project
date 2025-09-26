@@ -393,4 +393,62 @@ class CommentRepository {
       rethrow;
     }
   }
+
+  Future<List<DocumentSnapshot>> getRepliesDocs(
+    String postId,
+    String commentId,
+    int limit,
+  ) async {
+    QuerySnapshot querySnapshot;
+    List<DocumentSnapshot> newReplies = [];
+    if (repliesDocs.isEmpty) {
+      querySnapshot = await firebaseFirestore
+          .collection('videos')
+          .doc(postId)
+          .collection('comments')
+          .doc(commentId)
+          .collection('replies')
+          .orderBy('datePublished', descending: false)
+          .limit(limit)
+          .get();
+      if (querySnapshot.docs.isEmpty) {
+        querySnapshot = await firebaseFirestore
+            .collection('videos')
+            .doc(postId)
+            .collection('comments')
+            .doc(commentId)
+            .collection('replies')
+            .orderBy('createdAt', descending: false)
+            .limit(limit)
+            .get();
+      }
+    } else {
+      querySnapshot = await firebaseFirestore
+          .collection('videos')
+          .doc(postId)
+          .collection('comments')
+          .doc(commentId)
+          .collection('replies')
+          .orderBy('datePublished', descending: false)
+          .startAt([repliesDocs.last['datePublished']])
+          .limit(limit)
+          .get();
+      if (querySnapshot.docs.isEmpty) {
+        querySnapshot = await firebaseFirestore
+            .collection('videos')
+            .doc(postId)
+            .collection('comments')
+            .doc(commentId)
+            .collection('replies')
+            .orderBy('createdAt', descending: false)
+            .startAt([repliesDocs.last['datePublished']])
+            .limit(limit)
+            .get();
+      }
+      for (var element in querySnapshot.docs) {
+        repliesDocs.add(element);
+      }
+    }
+    return querySnapshot.docs;
+  }
 }

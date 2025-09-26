@@ -56,7 +56,7 @@ class Comment {
     var snapshot = snap.data() as Map<String, dynamic>;
     return Comment(
       comment: snapshot['comment'],
-      datePublished: snapshot['datePublished'].millisecondsSinceEpoch,
+      datePublished: snapshot['datePublished'],
       uid: snapshot['uid'],
       id: snap.id,
       repliesCount: snapshot['repliesCount'],

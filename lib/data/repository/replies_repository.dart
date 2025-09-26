@@ -8,6 +8,7 @@ import 'package:personal_project/domain/model/reply_models.dart';
 import 'package:personal_project/domain/model/user.dart';
 import 'package:personal_project/domain/services/firebase/firebase_service.dart';
 import 'package:personal_project/domain/services/uuid_generator.dart';
+import 'package:personal_project/utils/debug_mode_print.dart';
 import 'package:rxdart/rxdart.dart';
 
 class RepliesRepository {
@@ -115,69 +116,80 @@ class RepliesRepository {
   }) async {
     List<Reply> newReplies = [];
 
-    QuerySnapshot querySnapshot;
     try {
-      final List<User> users = [];
-      final List<String> uids = [];
+      List<User> users = [];
+      Set<String> uids = {};
+      Set<String> repliedUserId = {};
+      List<User> repliedUsers = [];
 
-      if (_repliesDoc.isEmpty) {
-        querySnapshot = await firebaseFirestore
-            .collection('videos')
-            .doc(postId)
-            .collection('comments')
-            .doc(commentId)
-            .collection('replies')
-            .orderBy('datePublished', descending: false)
-            .limit(limit)
-            .get();
-      } else {
-        querySnapshot = await firebaseFirestore
-            .collection('videos')
-            .doc(postId)
-            .collection('comments')
-            .doc(commentId)
-            .collection('replies')
-            .orderBy('datePublished', descending: false)
-            .startAt([_replies.last.datePublished])
-            .limit(limit)
-            .get();
+      if (isLastReply) {
+        debugModePrint('is last page');
+        return;
+      }
+      final newItems = await commentsRepository.getRepliesDocs(
+        postId,
+        commentId,
+        limit,
+      );
+      final List<String> likedCommentIds = await commentsRepository.getLikedCommentIds(
+        postId: postId,
+        commentIds: newItems.fold([], (previousValue, element) {
+          return [...previousValue, element.id];
+        }),
+      );
+      _isLastReply = newItems.length < limit;
+
+      for (var element in newItems) {
+        Map replyData = element.data() as Map<String, dynamic>;
+        uids.add(replyData['uid'] ?? replyData['authorId']);
+        repliedUserId.add(replyData['repliedUserId']);
       }
 
-      if (newReplies.length < limit) {
-        _isLastReply = true;
-      }
+      final List<DocumentSnapshot> nameDocuments =
+          await commentsRepository.fetchDocumentsBulk(postId, uids.toList());
 
-      for (var element in newReplies) {
-        final reply = Reply.fromJson(element as Map<String, dynamic>);
-        final uid = reply.uid;
-        if (reply.repliedUserId.isNotEmpty) {
-          uids.add(reply.repliedUserId);
-        }
+      final List<DocumentSnapshot> repliedUserDocument =
+          await commentsRepository.fetchDocumentsBulk(postId, repliedUserId.toList());
 
-        uids.add(uid);
-      }
+      users = nameDocuments.fold([], (previousValue, element) {
+        final user = User.fromSnap(element);
+        return [
+          ...previousValue,
+          user,
+        ];
+      });
+      repliedUsers = repliedUserDocument.fold([], (previousValue, element) {
+        final user = User.fromSnap(element);
+        return [
+          ...previousValue,
+          user,
+        ];
+      });
 
-      for (var element in querySnapshot.docs) {
-        final reply = element.data() as Map<String, dynamic>;
-        reply['id'] = element.id;
-        reply['createdAt'] = (reply['createdAt'] as Timestamp).millisecondsSinceEpoch;
+      for (var element in newItems) {
+        final commentData = element.data() as Map<String, dynamic>;
 
-        reply['authorUseName'] = users
-            .firstWhere(
-              (element) => element.id == reply['authorId'],
-            )
-            .userName;
-        reply['avatar'] = users
-            .firstWhere(
-              (element) => element.id == reply['authorId'],
-            )
-            .photo;
-        reply['repliedUserName'] = users
-            .firstWhere(
-              (element) => element.id == reply['authorId'],
-            )
-            .userName;
-        _replies.add(Reply.fromJson(reply));
+        final author = users.firstWhere(
+          (user) => user.id == (commentData['uid'] ?? commentData['authorId']),
+          orElse: () {
+            return users.first;
+          },
+        );
+        final repliedUser = users.firstWhere(
+          (user) => user.id == (commentData['repliedUserId']),
+          orElse: () {
+            return users.first;
+          },
+        );
+        commentData['id'] == element.id;
+        commentData['datePublished'] = commentData['datePublished'];
+        commentData['likesCount'] = commentData['likesCount'] ?? 0;
+        commentData['isLiked'] = likedCommentIds.contains(element.id);
+        commentData['authorName'] = author.userName;
+        commentData['avatar'] = author.photo;
+        commentData['authorId'] = author.id;
+        commentData['repliedUserName'] = repliedUser.name;
+        _replies.add(Reply.fromJson(commentData));
       }
 
       // setState(() {

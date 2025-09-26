@@ -128,6 +128,12 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
         RepositoryProvider(
           create: (context) => _commentsPagingRepository,
         ),
+        BlocProvider<CommentInputBloc>(
+          create: (context) => CommentInputBloc(
+            _commentsRepository,
+            RepositoryProvider.of<AuthRepository>(context),
+          ),
+        ),
       ],
       child: ChangeNotifierProvider(
         create: (context) => LocalCommentsNotifier(),
@@ -313,198 +319,191 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
   }
 
   Widget _buildCommnetsInput(BuildContext context) {
-    return BlocProvider<CommentInputBloc>(
-      create: (context) => CommentInputBloc(
-        _commentsRepository,
-        RepositoryProvider.of<AuthRepository>(context),
-      ),
-      child: BlocConsumer<CommentInputBloc, CommentInputState>(
-        listener: _commentInputListener,
-        builder: (context, state) {
-          return Container(
-            padding: EdgeInsets.only(
-                top: Dimens.DIMENS_6, bottom: Dimens.DIMENS_6 + MediaQuery.of(context).viewInsets.bottom),
-            decoration: BoxDecoration(color: Theme.of(context).colorScheme.tertiary),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Padding(
-                  padding: EdgeInsets.only(
-                    left: Dimens.DIMENS_8,
-                  ),
-                  child: Visibility(
-                    visible: state.isReply,
-                    child: Row(
-                      children: [
-                        Text(
-                          '${LocaleKeys.label_reply_to.tr()} ',
+    return BlocConsumer<CommentInputBloc, CommentInputState>(
+      listener: _commentInputListener,
+      builder: (context, state) {
+        return Container(
+          padding: EdgeInsets.only(
+              top: Dimens.DIMENS_6, bottom: Dimens.DIMENS_6 + MediaQuery.of(context).viewInsets.bottom),
+          decoration: BoxDecoration(color: Theme.of(context).colorScheme.tertiary),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: EdgeInsets.only(
+                  left: Dimens.DIMENS_8,
+                ),
+                child: Visibility(
+                  visible: state.isReply,
+                  child: Row(
+                    children: [
+                      Text(
+                        '${LocaleKeys.label_reply_to.tr()} ',
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                          fontWeight: FontWeight.w300,
+                        ),
+                      ),
+                      Text(' $_repliedUserName'),
+                      SizedBox(
+                        width: Dimens.DIMENS_8,
+                      ),
+                      InkWell(
+                        onTap: () {
+                          BlocProvider.of<CommentBloc>(context).add(
+                            UnfocusForm(),
+                          );
+                          _isForReply = false;
+                          _focusNode.unfocus();
+                        },
+                        child: Text(
+                          LocaleKeys.label_cancel.tr(),
                           style: TextStyle(
-                            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-                            fontWeight: FontWeight.w300,
+                            color: Theme.of(context).colorScheme.onSurface.withOpacity(
+                                  0.6,
+                                ),
                           ),
                         ),
-                        Text(' $_repliedUserName'),
-                        SizedBox(
-                          width: Dimens.DIMENS_8,
-                        ),
-                        InkWell(
-                          onTap: () {
-                            BlocProvider.of<CommentBloc>(context).add(
-                              UnfocusForm(),
-                            );
-                            _isForReply = false;
-                            _focusNode.unfocus();
-                          },
-                          child: Text(
-                            LocaleKeys.label_cancel.tr(),
-                            style: TextStyle(
-                              color: Theme.of(context).colorScheme.onSurface.withOpacity(
-                                    0.6,
-                                  ),
-                            ),
-                          ),
-                        )
-                      ],
-                    ),
+                      )
+                    ],
                   ),
                 ),
-                Row(
-                  children: [
-                    SizedBox(
-                      width: Dimens.DIMENS_8,
-                    ),
-                    Expanded(
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(vertical: Dimens.DIMENS_6),
-                        child: Container(
-                          decoration: BoxDecoration(
-                              color: Theme.of(context).colorScheme.surface,
-                              borderRadius: BorderRadius.circular(10)),
-                          child: BlocBuilder<AuthBloc, AuthState>(
-                            builder: (context, state) {
-                              return GestureDetector(
-                                onTap: () {
-                                  final isAuthenticated =
-                                      RepositoryProvider.of<AuthRepository>(context).currentUser != null;
-                                  if (isAuthenticated) {
-                                    BlocProvider.of<CommentBloc>(context).add(TapCommentForm());
-                                  } else {
-                                    showAuthBottomSheetFunc(context);
+              ),
+              Row(
+                children: [
+                  SizedBox(
+                    width: Dimens.DIMENS_8,
+                  ),
+                  Expanded(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(vertical: Dimens.DIMENS_6),
+                      child: Container(
+                        decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.surface, borderRadius: BorderRadius.circular(10)),
+                        child: BlocBuilder<AuthBloc, AuthState>(
+                          builder: (context, state) {
+                            return GestureDetector(
+                              onTap: () {
+                                final isAuthenticated =
+                                    RepositoryProvider.of<AuthRepository>(context).currentUser != null;
+                                if (isAuthenticated) {
+                                  BlocProvider.of<CommentBloc>(context).add(TapCommentForm());
+                                } else {
+                                  showAuthBottomSheetFunc(context);
+                                }
+                              },
+                              child: TextField(
+                                focusNode: _focusNode,
+                                controller: _textEditingController,
+                                decoration: InputDecoration(
+                                    enabled: state.status == AuthStatus.authenticated,
+                                    contentPadding: EdgeInsets.symmetric(horizontal: Dimens.DIMENS_12),
+                                    hintText: '${LocaleKeys.message_add_comments.tr()}...',
+                                    hintStyle: TextStyle(
+                                        fontWeight: FontWeight.normal,
+                                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3)),
+                                    border: OutlineInputBorder(
+                                        borderSide: BorderSide.none, borderRadius: BorderRadius.circular(10))),
+                                textAlignVertical: TextAlignVertical.center,
+                                keyboardType: TextInputType.multiline,
+                                minLines: 1,
+                                maxLines: 3,
+                                maxLength: 600,
+                                buildCounter: (context,
+                                        {required currentLength, required isFocused, required maxLength}) =>
+                                    const SizedBox(width: 0, height: 0),
+                                onChanged: (text) {
+                                  final CommentInputBloc commentsBloc = BlocProvider.of<CommentInputBloc>(context);
+                                  if (text.endsWith('\n')) {
+                                    // Handle the Enter key press
+
+                                    // You can add your custom logic here
                                   }
+
+                                  commentsBloc.add(
+                                    CommentInputEvent.textChanged(
+                                      text: text,
+                                    ),
+                                  );
                                 },
-                                child: TextField(
-                                  focusNode: _focusNode,
-                                  controller: _textEditingController,
-                                  decoration: InputDecoration(
-                                      enabled: state.status == AuthStatus.authenticated,
-                                      contentPadding: EdgeInsets.symmetric(horizontal: Dimens.DIMENS_12),
-                                      hintText: '${LocaleKeys.message_add_comments.tr()}...',
-                                      hintStyle: TextStyle(
-                                          fontWeight: FontWeight.normal,
-                                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3)),
-                                      border: OutlineInputBorder(
-                                          borderSide: BorderSide.none, borderRadius: BorderRadius.circular(10))),
-                                  textAlignVertical: TextAlignVertical.center,
-                                  keyboardType: TextInputType.multiline,
-                                  minLines: 1,
-                                  maxLines: 3,
-                                  maxLength: 600,
-                                  buildCounter: (context,
-                                          {required currentLength, required isFocused, required maxLength}) =>
-                                      const SizedBox(width: 0, height: 0),
-                                  onChanged: (text) {
-                                    final CommentInputBloc commentsBloc =
-                                        BlocProvider.of<CommentInputBloc>(context);
-                                    if (text.endsWith('\n')) {
-                                      // Handle the Enter key press
-
-                                      // You can add your custom logic here
-                                    }
-
-                                    commentsBloc.add(
-                                      CommentInputEvent.textChanged(
-                                        text: text,
-                                      ),
-                                    );
-                                  },
-                                  onSubmitted: (_) {
-                                    debugPrint('Submit');
-                                  },
-                                ),
-                              );
-                            },
-                          ),
+                                onSubmitted: (_) {
+                                  debugPrint('Submit');
+                                },
+                              ),
+                            );
+                          },
                         ),
                       ),
                     ),
-                    SizedBox(
-                      width: Dimens.DIMENS_5,
-                    ),
-                    !state.status.isTyping
-                        ? SizedBox.shrink()
-                        : ClipRRect(
-                            borderRadius: BorderRadius.circular(50),
-                            child: Material(
-                              color: Colors.transparent,
-                              child: IconButton(
-                                style: IconButton.styleFrom(backgroundColor: Colors.transparent),
-                                splashRadius: Dimens.DIMENS_70,
-                                onPressed: () {
-                                  if (_textEditingController.text.isEmpty) return;
+                  ),
+                  SizedBox(
+                    width: Dimens.DIMENS_5,
+                  ),
+                  !state.status.isTyping
+                      ? SizedBox.shrink()
+                      : ClipRRect(
+                          borderRadius: BorderRadius.circular(50),
+                          child: Material(
+                            color: Colors.transparent,
+                            child: IconButton(
+                              style: IconButton.styleFrom(backgroundColor: Colors.transparent),
+                              splashRadius: Dimens.DIMENS_70,
+                              onPressed: () {
+                                if (_textEditingController.text.isEmpty) return;
 
-                                  if (!state.isReply) {
-                                    BlocProvider.of<CommentInputBloc>(context).add(
-                                      CommentInputEvent.submitComment(
-                                        commentMessage: _textEditingController.text,
-                                      ),
-                                    );
-                                  } else {
-                                    BlocProvider.of<CommentInputBloc>(context).add(
-                                      CommentInputEvent.submitReply(
-                                        commentMessage: _textEditingController.text,
-                                      ),
-                                    );
-                                  }
-                                  _textEditingController.clear();
-                                  _focusNode.unfocus();
-                                  debugPrint('plane');
-                                },
-                                icon: const Icon(
-                                  Icons.send,
-                                ),
+                                if (state.isReply) {
+                                  BlocProvider.of<CommentInputBloc>(context).add(
+                                    CommentInputEvent.submitReply(
+                                      commentMessage: _textEditingController.text,
+                                    ),
+                                  );
+                                } else {
+                                  BlocProvider.of<CommentInputBloc>(context).add(
+                                    CommentInputEvent.submitComment(
+                                      commentMessage: _textEditingController.text,
+                                    ),
+                                  );
+                                }
+                                _textEditingController.clear();
+                                _focusNode.unfocus();
+                                debugPrint('plane');
+                              },
+                              icon: const Icon(
+                                Icons.send,
                               ),
                             ),
                           ),
-                    SizedBox(
-                      width: Dimens.DIMENS_8,
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          );
-        },
-      ),
+                        ),
+                  SizedBox(
+                    width: Dimens.DIMENS_8,
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 
   void _commentInputListener(context, state) {
-    if (state.status.isUploading) {
-      !state.isReply
-          ? _commentsPagingBloc.add(
-              CommentsEvent.addComment(
-                comment: state.comment!.copyWith(),
+    final CommentInputStatus status = state.status;
+    if (status.isUploading) {
+      state.isReply
+          ? _selectedRepliesBloc!.add(
+              RepliesEvent.addReply(
+                reply: state.comment!.copyWith(),
+                commentId: state.repliedCommentId!,
               ),
             )
           : _commentsPagingBloc.add(
-              CommentsEvent.addReply(
-                commentId: state.repliedCommentId!,
+              CommentsEvent.addComment(
                 comment: state.comment!.copyWith(),
               ),
             );
     }
-    if (state.status.isSuccess) {
+    if (status.isSuccess) {
       _commentsPagingBloc.add(
         CommentsEvent.updateComment(
           comment: state.comment!.copyWith(
@@ -620,6 +619,15 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                       InkWell(
                         onTap: () {
                           _selectedRepliesBloc = BlocProvider.of<RepliesBloc>(context);
+                          BlocProvider.of<CommentInputBloc>(context).add(
+                            CommentInputEvent.openIput(
+                              postId: postId,
+                              isReply: true,
+                              repliedCommentId: comment.id,
+                              repliedUserId: comment.uid,
+                              repliedUserName: comment.authorUserName,
+                            ),
+                          );
                           _focusNode.requestFocus();
                         },
                         child: Text(
@@ -698,7 +706,7 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
               children: [
                 BlocBuilder<RepliesBloc, RepliesState>(
                   builder: (_, state) {
-                    if (state.status == RepliesStatus.initial) {
+                    if (state.status == RepliesStatus.initial && comment.repliesCount == 0) {
                       return Container();
                     }
                     return ListView.builder(
@@ -706,7 +714,17 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                       physics: const NeverScrollableScrollPhysics(),
                       itemCount: state.replies.length + 1,
                       itemBuilder: (context, index) {
-                        final Reply reply = state.replies[index + 1];
+                        if (state.replies.isNotEmpty) {
+                          int newIndex = index + 1 < state.replies.length - 1 ? index + 1 : 0;
+                          final Reply reply = state.replies[newIndex];
+                          return _replyItem(
+                            context,
+                            postId: widget.postId,
+                            commentId: comment.id!,
+                            reply: reply,
+                          );
+                        }
+
                         if (index == state.replies.length) {
                           if (comment.repliesCount == 0) {
                             return Container();
@@ -751,12 +769,7 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                             ),
                           );
                         }
-                        return _replyItem(
-                          context,
-                          postId: widget.postId,
-                          commentId: comment.id!,
-                          reply: reply,
-                        );
+                        return SizedBox.shrink();
                       },
                     );
                   },

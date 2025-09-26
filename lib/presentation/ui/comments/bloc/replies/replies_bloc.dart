@@ -20,6 +20,7 @@ class RepliesBloc extends Bloc<RepliesEvent, RepliesState> {
       emit(
         state.copyWith(
           status: RepliesStatus.added,
+          replies: replyRepository.replies,
         ),
       );
     });
@@ -32,7 +33,7 @@ class RepliesBloc extends Bloc<RepliesEvent, RepliesState> {
     });
   }
 
-  FutureOr<void> _loadRepliesEvent(event, emit) async {
+  Future<void> _loadRepliesEvent(event, emit) async {
     emit(
       RepliesState(
         status: RepliesStatus.loading,
