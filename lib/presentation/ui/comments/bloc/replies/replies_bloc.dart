@@ -4,6 +4,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:personal_project/data/repository/replies_repository.dart';
 import 'package:personal_project/domain/model/comment_model.dart';
 import 'package:personal_project/domain/model/reply_models.dart';
+import 'package:personal_project/utils/debug_mode_print.dart';
 
 part 'replies_state.dart';
 part 'replies_event.dart';
@@ -35,7 +36,7 @@ class RepliesBloc extends Bloc<RepliesEvent, RepliesState> {
 
   Future<void> _loadRepliesEvent(event, emit) async {
     emit(
-      RepliesState(
+      state.copyWith(
         status: RepliesStatus.loading,
       ),
     );

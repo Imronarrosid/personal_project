@@ -698,88 +698,97 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
   Padding _buildReplies(String postId, Comment comment, BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(left: 63),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SingleChildScrollView(
-            child: Column(
-              children: [
-                BlocBuilder<RepliesBloc, RepliesState>(
-                  builder: (_, state) {
-                    if (state.status == RepliesStatus.initial && comment.repliesCount == 0) {
-                      return Container();
-                    }
-                    return ListView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: state.replies.length + 1,
-                      itemBuilder: (context, index) {
-                        if (state.replies.isNotEmpty) {
-                          int newIndex = index + 1 < state.replies.length - 1 ? index + 1 : 0;
-                          final Reply reply = state.replies[newIndex];
-                          return _replyItem(
-                            context,
-                            postId: widget.postId,
-                            commentId: comment.id!,
-                            reply: reply,
-                          );
-                        }
+      child: BlocBuilder<RepliesBloc, RepliesState>(
+        builder: (context, state) {
+          final List<Reply> replies = RepositoryProvider.of<RepliesRepository>(context).replies;
+          final int repliesLegth = replies.length;
 
-                        if (index == state.replies.length) {
-                          if (comment.repliesCount == 0) {
-                            return Container();
-                          }
-
-                          if (state.status == RepliesStatus.loading) {
-                            return Text(
-                              LocaleKeys.label_loading.tr(),
-                              style: TextStyle(
-                                  fontSize: 11, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
-                            );
-                          }
-                          if (state.isLastReply) {
-                            return InkWell(
-                                onTap: () {
-                                  BlocProvider.of<RepliesBloc>(context).add(RepliesEvent.hideReplies());
-                                },
-                                child: Text(
-                                  LocaleKeys.label_hide_reply.tr(),
-                                  style: TextStyle(
-                                      fontSize: 11,
-                                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
-                                ));
-                          }
-                          return InkWell(
-                            onTap: () {
-                              BlocProvider.of<RepliesBloc>(context).add(
-                                RepliesEvent.loadReplies(
-                                  commentId: comment.id!,
-                                  postId: postId,
-                                ),
-                              );
-                            },
-                            child: Text(
-                              state.replies?.isNotEmpty ?? false
-                                  ? LocaleKeys.label_view_more_reply.tr()
-                                  : '${LocaleKeys.label_view_reply.tr()} ${comment.repliesCount != 0 ? '(${comment.repliesCount.toString()})' : ''}',
-                              style: TextStyle(
-                                fontSize: 11,
-                                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-                              ),
-                            ),
-                          );
-                        }
-                        return SizedBox.shrink();
-                      },
-                    );
-                  },
+          debugModePrint('repliesss ${comment.comment} ${state.toString()}');
+          if (comment.repliesCount == 0) {
+            return Container();
+          }
+          if (state.status == RepliesStatus.loading && replies.isEmpty) {
+            return Text(
+              LocaleKeys.label_loading.tr(),
+              style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
+            );
+          }
+          if (replies.isEmpty) {
+            return InkWell(
+              onTap: () {
+                BlocProvider.of<RepliesBloc>(context).add(
+                  RepliesEvent.loadReplies(
+                    commentId: comment.id!,
+                    postId: postId,
+                  ),
+                );
+              },
+              child: Text(
+                LocaleKeys.label_view_more_reply.tr(),
+                style: TextStyle(
+                  fontSize: 11,
+                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                 ),
-                // _streamReplies(postId, comment),
-                // _repliesFromLocal(comment.id!),
-              ],
-            ),
-          ),
-        ],
+              ),
+            );
+          }
+
+          return ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            addAutomaticKeepAlives: false,
+            itemCount: repliesLegth + 1,
+            itemBuilder: (context, index) {
+              int newIndex = index + 1 < repliesLegth - 1 ? index + 1 : 0;
+              final Reply reply = RepositoryProvider.of<RepliesRepository>(context).replies[newIndex];
+
+              if (index == repliesLegth) {
+                if (state.status == RepliesStatus.loading) {
+                  return Text(
+                    LocaleKeys.label_loading.tr(),
+                    style:
+                        TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
+                  );
+                }
+                if (state.isLastReply) {
+                  return InkWell(
+                      onTap: () {
+                        BlocProvider.of<RepliesBloc>(context).add(RepliesEvent.hideReplies());
+                      },
+                      child: Text(
+                        LocaleKeys.label_hide_reply.tr(),
+                        style: TextStyle(
+                            fontSize: 11, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
+                      ));
+                } else {
+                  return InkWell(
+                    onTap: () {
+                      BlocProvider.of<RepliesBloc>(context).add(
+                        RepliesEvent.loadReplies(
+                          commentId: comment.id!,
+                          postId: postId,
+                        ),
+                      );
+                    },
+                    child: Text(
+                      LocaleKeys.label_view_more_reply.tr(),
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                      ),
+                    ),
+                  );
+                }
+              }
+              return _replyItem(
+                context,
+                postId: widget.postId,
+                commentId: comment.id!,
+                reply: reply,
+              );
+            },
+          );
+        },
       ),
     );
   }
@@ -987,6 +996,7 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
           child: ListView.custom(
             controller: _scrollController,
             childrenDelegate: SliverChildBuilderDelegate(
+                addAutomaticKeepAlives: false,
                 childCount: commentsPagingRepository.currentLoadedComments.length + 1, (context, index) {
               if (state.status.isLoading && index == 0) {
                 return SizedBox(

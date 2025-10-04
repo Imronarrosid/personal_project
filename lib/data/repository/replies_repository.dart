@@ -15,7 +15,7 @@ class RepliesRepository {
   final CommentRepository commentsRepository;
   RepliesRepository({required this.commentsRepository});
 
-  final int limit = 5;
+  final int limit = 1;
   final List<Reply> _replies = [];
 
   List<Reply> get replies => _replies;
@@ -142,7 +142,7 @@ class RepliesRepository {
       for (var element in newItems) {
         Map replyData = element.data() as Map<String, dynamic>;
         uids.add(replyData['uid'] ?? replyData['authorId']);
-        repliedUserId.add(replyData['repliedUserId']);
+        repliedUserId.add(replyData['repliedUserId']?? replyData['repliedUid']);
       }
 
       final List<DocumentSnapshot> nameDocuments =
