@@ -515,7 +515,9 @@ extension RepliesEventPatterns on RepliesEvent {
     TResult Function()? hideReplies,
     TResult Function(String commentId, Reply reply)? addReply,
     TResult Function(String commentId, String replyId)? removeReply,
-    TResult Function(String replyId, bool isLiked)? likeReply,
+    TResult Function(
+            String replyId, String postId, String commentId, bool isLiked)?
+        likeReply,
     TResult Function(Reply reply)? updateReply,
     required TResult orElse(),
   }) {
@@ -530,7 +532,8 @@ extension RepliesEventPatterns on RepliesEvent {
       case _RemoveReplyEvent() when removeReply != null:
         return removeReply(_that.commentId, _that.replyId);
       case _LikeReplyEvent() when likeReply != null:
-        return likeReply(_that.replyId, _that.isLiked);
+        return likeReply(
+            _that.replyId, _that.postId, _that.commentId, _that.isLiked);
       case _UpdateReplyEvent() when updateReply != null:
         return updateReply(_that.reply);
       case _:
@@ -557,7 +560,9 @@ extension RepliesEventPatterns on RepliesEvent {
     required TResult Function() hideReplies,
     required TResult Function(String commentId, Reply reply) addReply,
     required TResult Function(String commentId, String replyId) removeReply,
-    required TResult Function(String replyId, bool isLiked) likeReply,
+    required TResult Function(
+            String replyId, String postId, String commentId, bool isLiked)
+        likeReply,
     required TResult Function(Reply reply) updateReply,
   }) {
     final _that = this;
@@ -571,7 +576,8 @@ extension RepliesEventPatterns on RepliesEvent {
       case _RemoveReplyEvent():
         return removeReply(_that.commentId, _that.replyId);
       case _LikeReplyEvent():
-        return likeReply(_that.replyId, _that.isLiked);
+        return likeReply(
+            _that.replyId, _that.postId, _that.commentId, _that.isLiked);
       case _UpdateReplyEvent():
         return updateReply(_that.reply);
       case _:
@@ -597,7 +603,9 @@ extension RepliesEventPatterns on RepliesEvent {
     TResult? Function()? hideReplies,
     TResult? Function(String commentId, Reply reply)? addReply,
     TResult? Function(String commentId, String replyId)? removeReply,
-    TResult? Function(String replyId, bool isLiked)? likeReply,
+    TResult? Function(
+            String replyId, String postId, String commentId, bool isLiked)?
+        likeReply,
     TResult? Function(Reply reply)? updateReply,
   }) {
     final _that = this;
@@ -611,7 +619,8 @@ extension RepliesEventPatterns on RepliesEvent {
       case _RemoveReplyEvent() when removeReply != null:
         return removeReply(_that.commentId, _that.replyId);
       case _LikeReplyEvent() when likeReply != null:
-        return likeReply(_that.replyId, _that.isLiked);
+        return likeReply(
+            _that.replyId, _that.postId, _that.commentId, _that.isLiked);
       case _UpdateReplyEvent() when updateReply != null:
         return updateReply(_that.reply);
       case _:
@@ -859,9 +868,15 @@ class __$RemoveReplyEventCopyWithImpl<$Res>
 /// @nodoc
 
 class _LikeReplyEvent implements RepliesEvent {
-  const _LikeReplyEvent({required this.replyId, required this.isLiked});
+  const _LikeReplyEvent(
+      {required this.replyId,
+      required this.postId,
+      required this.commentId,
+      required this.isLiked});
 
   final String replyId;
+  final String postId;
+  final String commentId;
   final bool isLiked;
 
   /// Create a copy of RepliesEvent
@@ -877,15 +892,19 @@ class _LikeReplyEvent implements RepliesEvent {
         (other.runtimeType == runtimeType &&
             other is _LikeReplyEvent &&
             (identical(other.replyId, replyId) || other.replyId == replyId) &&
+            (identical(other.postId, postId) || other.postId == postId) &&
+            (identical(other.commentId, commentId) ||
+                other.commentId == commentId) &&
             (identical(other.isLiked, isLiked) || other.isLiked == isLiked));
   }
 
   @override
-  int get hashCode => Object.hash(runtimeType, replyId, isLiked);
+  int get hashCode =>
+      Object.hash(runtimeType, replyId, postId, commentId, isLiked);
 
   @override
   String toString() {
-    return 'RepliesEvent.likeReply(replyId: $replyId, isLiked: $isLiked)';
+    return 'RepliesEvent.likeReply(replyId: $replyId, postId: $postId, commentId: $commentId, isLiked: $isLiked)';
   }
 }
 
@@ -896,7 +915,7 @@ abstract mixin class _$LikeReplyEventCopyWith<$Res>
           _LikeReplyEvent value, $Res Function(_LikeReplyEvent) _then) =
       __$LikeReplyEventCopyWithImpl;
   @useResult
-  $Res call({String replyId, bool isLiked});
+  $Res call({String replyId, String postId, String commentId, bool isLiked});
 }
 
 /// @nodoc
@@ -912,12 +931,22 @@ class __$LikeReplyEventCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   $Res call({
     Object? replyId = null,
+    Object? postId = null,
+    Object? commentId = null,
     Object? isLiked = null,
   }) {
     return _then(_LikeReplyEvent(
       replyId: null == replyId
           ? _self.replyId
           : replyId // ignore: cast_nullable_to_non_nullable
+              as String,
+      postId: null == postId
+          ? _self.postId
+          : postId // ignore: cast_nullable_to_non_nullable
+              as String,
+      commentId: null == commentId
+          ? _self.commentId
+          : commentId // ignore: cast_nullable_to_non_nullable
               as String,
       isLiked: null == isLiked
           ? _self.isLiked

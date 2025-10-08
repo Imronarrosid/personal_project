@@ -14,24 +14,56 @@ class RepliesBloc extends Bloc<RepliesEvent, RepliesState> {
   final RepliesRepository replyRepository;
   RepliesBloc(this.replyRepository) : super(const RepliesState()) {
     on<_LoadRepliesEvent>(_loadRepliesEvent);
-    on<_AddReplyEvent>((event, emit) {
-      replyRepository.addReply(
-        reply: event.reply,
+    on<_AddReplyEvent>(_addReply);
+    on<_HideRepliesEvent>(_hideReply);
+    on<_LikeReplyEvent>(_likeReply);
+  }
+
+  Future<void> _likeReply(_LikeReplyEvent event, emit) async {
+    try {
+      emit(
+        state.copyWith(
+          status: event.isLiked ? RepliesStatus.unliked : RepliesStatus.liked,
+        ),
+      );
+
+      await replyRepository.likeReply(
+        commentId: event.commentId,
+        postId: event.postId,
+        replyId: event.replyId,
+      );
+    } catch (e) {
+      replyRepository.likeReplyReset(
+        postId: event.postId,
+        replyId: event.replyId,
       );
       emit(
         state.copyWith(
-          status: RepliesStatus.added,
-          replies: replyRepository.replies,
+          status: RepliesStatus.error,
         ),
       );
-    });
-    on<_HideRepliesEvent>((event, emit) {
-      emit(
-        state.copyWith(
-          status: RepliesStatus.hidden,
-        ),
-      );
-    });
+      debugModePrint(e.toString());
+    }
+  }
+
+  FutureOr<void> _hideReply(event, emit) {
+    emit(
+      state.copyWith(
+        status: RepliesStatus.hidden,
+      ),
+    );
+  }
+
+  FutureOr<void> _addReply(event, emit) {
+    replyRepository.addReply(
+      reply: event.reply,
+    );
+    emit(
+      state.copyWith(
+        status: RepliesStatus.added,
+        replies: replyRepository.replies,
+      ),
+    );
   }
 
   Future<void> _loadRepliesEvent(event, emit) async {

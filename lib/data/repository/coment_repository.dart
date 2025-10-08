@@ -307,55 +307,51 @@ class CommentRepository {
     });
   }
 
-  Future<void> likeReply({required String id, postId, required String replyId}) async {
-    try {
-      var uid = authRepository.currentUser!.uid;
+  Future<void> likeReply({
+    required String commentId,
+    postId,
+    required String replyId,
+  }) async {
+    var uid = authRepository.currentUser!.uid;
 
-      DocumentReference documentReference = firebaseFirestore
-          .collection('videos')
-          .doc(postId)
-          .collection('comments')
-          .doc(id)
-          .collection('replies')
-          .doc(replyId);
-      firebaseFirestore.runTransaction((transaction) {
-        return transaction.get(documentReference).then((value) {
-          if ((value.data() as Map<String, dynamic>).containsKey('likesCount')) {
-            int currentCount = (value.data() as Map<String, dynamic>)['likesCount'];
-            if ((value.data()! as dynamic)['likes'].contains(uid)) {
-              transaction.update(documentReference, {
-                'likesCount': currentCount - 1,
-                'likes': FieldValue.arrayRemove([uid])
-              });
-            } else {
-              transaction.update(documentReference, {
-                'likesCount': currentCount + 1,
-                'likes': FieldValue.arrayUnion([uid])
-              });
-            }
-          } else {
-            final List<dynamic> likes = (value.data() as Map<String, dynamic>)['likes'];
-            int currentCount = likes.length;
-            Comment comment = Comment.fromSnap(value);
-            if ((value.data()! as dynamic)['likes'].contains(uid)) {
-              transaction.set(documentReference, {
-                ...comment.toJson(),
-                'likesCount': currentCount - 1,
-                'likes': FieldValue.arrayRemove([uid])
-              });
-            } else {
-              transaction.set(documentReference, {
-                ...comment.toJson(),
-                'likesCount': currentCount + 1,
-                'likes': FieldValue.arrayUnion([uid])
-              });
-            }
-          }
-        });
+    DocumentReference documentReference = firebaseFirestore
+        .collection('videos')
+        .doc(postId)
+        .collection('comments')
+        .doc(commentId)
+        .collection('replies')
+        .doc(replyId);
+    DocumentReference likesreff = firebaseFirestore
+        .collection('videos')
+        .doc(postId)
+        .collection('comments')
+        .doc(commentId)
+        .collection('replies')
+        .doc(replyId)
+        .collection('likes')
+        .doc(uid);
+
+    firebaseFirestore.runTransaction((transaction) async {
+      await transaction.get(likesreff).then((value) {
+        if (value.exists) {
+          transaction.delete(likesreff);
+          transaction.update(documentReference, {
+            'likesCount:': FieldValue.increment(-1),
+          });
+        } else {
+          transaction.set(likesreff, {
+            'uid': uid,
+            'postId': postId,
+            'commentId': commentId,
+            'replyId': replyId,
+            'likedAt': FieldValue.serverTimestamp(),
+          });
+          transaction.update(documentReference, {
+            'likesCount:': FieldValue.increment(1),
+          });
+        }
       });
-    } catch (e) {
-      debugPrint('like reply ${e.toString()}');
-    }
+    });
   }
 
   Future<User> getVideoOwnerData(String uid) async {

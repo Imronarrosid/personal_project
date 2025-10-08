@@ -142,7 +142,7 @@ class RepliesRepository {
       for (var element in newItems) {
         Map replyData = element.data() as Map<String, dynamic>;
         uids.add(replyData['uid'] ?? replyData['authorId']);
-        repliedUserId.add(replyData['repliedUserId']?? replyData['repliedUid']);
+        repliedUserId.add(replyData['repliedUserId'] ?? replyData['repliedUid']);
       }
 
       final List<DocumentSnapshot> nameDocuments =
@@ -204,5 +204,37 @@ class RepliesRepository {
     required Reply reply,
   }) {
     _replies.insert(0, reply);
+  }
+
+  Future<void> likeReply({
+    required String replyId,
+    required String postId,
+    required String commentId,
+  }) async {
+    Reply reply = _replies.firstWhere((element) => element.id == replyId);
+    int index = _replies.indexOf(reply);
+    if (reply.isLiked) {
+      _replies[index] = reply.copyWith(isLiked: false, likesCount: reply.likesCount - 1);
+    } else {
+      _replies[index] = reply.copyWith(isLiked: true, likesCount: reply.likesCount + 1);
+    }
+    await commentsRepository.likeReply(
+      commentId: commentId,
+      postId: postId,
+      replyId: replyId,
+    );
+  }
+
+  Future<void> likeReplyReset({
+    required String postId,
+    required String replyId,
+  }) async {
+    Reply reply = _replies.firstWhere((element) => element.id == replyId);
+    int index = _replies.indexOf(reply);
+    if (reply.isLiked) {
+      _replies[index] = reply.copyWith(isLiked: false, likesCount: reply.likesCount - 1);
+    } else {
+      _replies[index] = reply.copyWith(isLiked: true, likesCount: reply.likesCount + 1);
+    }
   }
 }

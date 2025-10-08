@@ -18,6 +18,8 @@ enum RepliesStatus {
   error,
   removed,
   hidden,
+  liked,
+  unliked,
 }
 
 extension RepliesStatusExtension on RepliesStatus {

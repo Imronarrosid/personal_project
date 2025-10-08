@@ -21,6 +21,8 @@ class RepliesEvent with _$RepliesEvent {
 
   const factory RepliesEvent.likeReply({
     required String replyId,
+    required String postId,
+    required String commentId,
     required bool isLiked,
   }) = _LikeReplyEvent;
 

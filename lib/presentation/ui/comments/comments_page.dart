@@ -936,12 +936,13 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                 onTap: () {
                   if (authRepository.currentUser != null) {
                     // TODO: reply like code
-                    // BlocProvider.of<LikeCommentCubit>(context).likeReply(
-                    //     postId: postId,
-                    //     replyid: reply.id!,
-                    //     commentId: commentId,
-                    //     databaseLikeCount: reply.likesCount,
-                    //     stateFromDatabase: reply.likes.contains(userUid));
+                    BlocProvider.of<RepliesBloc>(context).add(RepliesEvent.likeReply(
+                      replyId: reply.id!,
+                      
+                      commentId: commentId,
+                      postId: postId,
+                      isLiked: reply.isLiked,
+                    ));
                   } else {
                     showAuthBottomSheetFunc(context);
                   }
