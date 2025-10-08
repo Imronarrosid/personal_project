@@ -130,5 +130,6 @@ abstract class  LocaleKeys {
   static const message_chat_textfield = 'message_chat_textfield';
   static const message_hold_to_record = 'message_hold_to_record';
   static const message_swipe_left = 'message_swipe_left';
+  static const message_failed_to_like = 'message_failed_to_like';
 
 }

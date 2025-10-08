@@ -6,6 +6,7 @@ abstract class RepliesState with _$RepliesState {
     @Default(RepliesStatus.initial) RepliesStatus status,
     @Default(<Reply>[]) List<Reply> replies,
     @Default(false) bool isLastReply,
+    String? errorMessage,
   }) = _RepliesState;
 }
 

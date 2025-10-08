@@ -1,3 +1,4 @@
+import 'package:personal_project/presentation/shared_components/flutter_toast.dart';
 import 'package:personal_project/presentation/ui/comments/bloc/comment_input/comment_input_bloc.dart';
 import 'package:personal_project/presentation/ui/comments/bloc/comments/comments_bloc.dart';
 import 'package:personal_project/presentation/ui/comments/bloc/replies/replies_bloc.dart';
@@ -698,7 +699,14 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
   Padding _buildReplies(String postId, Comment comment, BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(left: 63),
-      child: BlocBuilder<RepliesBloc, RepliesState>(
+      child: BlocConsumer<RepliesBloc, RepliesState>(
+        listener: (context, state) {
+          if (state.status.isError) {
+            showToast(
+              msg: state.errorMessage!,
+            );
+          }
+        },
         builder: (context, state) {
           final List<Reply> replies = RepositoryProvider.of<RepliesRepository>(context).replies;
           final int repliesLegth = replies.length;
@@ -938,7 +946,6 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                     // TODO: reply like code
                     BlocProvider.of<RepliesBloc>(context).add(RepliesEvent.likeReply(
                       replyId: reply.id!,
-                      
                       commentId: commentId,
                       postId: postId,
                       isLiked: reply.isLiked,

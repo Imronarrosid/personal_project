@@ -331,7 +331,7 @@ class CommentRepository {
         .collection('likes')
         .doc(uid);
 
-    firebaseFirestore.runTransaction((transaction) async {
+    await firebaseFirestore.runTransaction((transaction) async {
       await transaction.get(likesreff).then((value) {
         if (value.exists) {
           transaction.delete(likesreff);

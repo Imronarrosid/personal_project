@@ -127,5 +127,6 @@
     "message_profile_picture_chaged": "Foto profil diganti",
     "message_chat_textfield": "Ketik pesan",
     "message_hold_to_record": "Tahan untuk merekam, lepaskan untuk mengirim",
-    "message_swipe_left": "Geser ke kiri untuk membatalkan"
+    "message_swipe_left": "Geser ke kiri untuk membatalkan",
+    "message_failed_to_like": "Gagal menyukai."
 }

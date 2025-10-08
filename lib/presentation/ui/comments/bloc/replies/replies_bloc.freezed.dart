@@ -17,6 +17,7 @@ mixin _$RepliesState {
   RepliesStatus get status;
   List<Reply> get replies;
   bool get isLastReply;
+  String? get errorMessage;
 
   /// Create a copy of RepliesState
   /// with the given fields replaced by the non-null parameter values.
@@ -34,16 +35,18 @@ mixin _$RepliesState {
             (identical(other.status, status) || other.status == status) &&
             const DeepCollectionEquality().equals(other.replies, replies) &&
             (identical(other.isLastReply, isLastReply) ||
-                other.isLastReply == isLastReply));
+                other.isLastReply == isLastReply) &&
+            (identical(other.errorMessage, errorMessage) ||
+                other.errorMessage == errorMessage));
   }
 
   @override
   int get hashCode => Object.hash(runtimeType, status,
-      const DeepCollectionEquality().hash(replies), isLastReply);
+      const DeepCollectionEquality().hash(replies), isLastReply, errorMessage);
 
   @override
   String toString() {
-    return 'RepliesState(status: $status, replies: $replies, isLastReply: $isLastReply)';
+    return 'RepliesState(status: $status, replies: $replies, isLastReply: $isLastReply, errorMessage: $errorMessage)';
   }
 }
 
@@ -53,7 +56,11 @@ abstract mixin class $RepliesStateCopyWith<$Res> {
           RepliesState value, $Res Function(RepliesState) _then) =
       _$RepliesStateCopyWithImpl;
   @useResult
-  $Res call({RepliesStatus status, List<Reply> replies, bool isLastReply});
+  $Res call(
+      {RepliesStatus status,
+      List<Reply> replies,
+      bool isLastReply,
+      String? errorMessage});
 }
 
 /// @nodoc
@@ -71,6 +78,7 @@ class _$RepliesStateCopyWithImpl<$Res> implements $RepliesStateCopyWith<$Res> {
     Object? status = null,
     Object? replies = null,
     Object? isLastReply = null,
+    Object? errorMessage = freezed,
   }) {
     return _then(_self.copyWith(
       status: null == status
@@ -85,6 +93,10 @@ class _$RepliesStateCopyWithImpl<$Res> implements $RepliesStateCopyWith<$Res> {
           ? _self.isLastReply
           : isLastReply // ignore: cast_nullable_to_non_nullable
               as bool,
+      errorMessage: freezed == errorMessage
+          ? _self.errorMessage
+          : errorMessage // ignore: cast_nullable_to_non_nullable
+              as String?,
     ));
   }
 }
@@ -182,15 +194,16 @@ extension RepliesStatePatterns on RepliesState {
 
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>(
-    TResult Function(
-            RepliesStatus status, List<Reply> replies, bool isLastReply)?
+    TResult Function(RepliesStatus status, List<Reply> replies,
+            bool isLastReply, String? errorMessage)?
         $default, {
     required TResult orElse(),
   }) {
     final _that = this;
     switch (_that) {
       case _RepliesState() when $default != null:
-        return $default(_that.status, _that.replies, _that.isLastReply);
+        return $default(
+            _that.status, _that.replies, _that.isLastReply, _that.errorMessage);
       case _:
         return orElse();
     }
@@ -211,14 +224,15 @@ extension RepliesStatePatterns on RepliesState {
 
   @optionalTypeArgs
   TResult when<TResult extends Object?>(
-    TResult Function(
-            RepliesStatus status, List<Reply> replies, bool isLastReply)
+    TResult Function(RepliesStatus status, List<Reply> replies,
+            bool isLastReply, String? errorMessage)
         $default,
   ) {
     final _that = this;
     switch (_that) {
       case _RepliesState():
-        return $default(_that.status, _that.replies, _that.isLastReply);
+        return $default(
+            _that.status, _that.replies, _that.isLastReply, _that.errorMessage);
       case _:
         throw StateError('Unexpected subclass');
     }
@@ -238,14 +252,15 @@ extension RepliesStatePatterns on RepliesState {
 
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>(
-    TResult? Function(
-            RepliesStatus status, List<Reply> replies, bool isLastReply)?
+    TResult? Function(RepliesStatus status, List<Reply> replies,
+            bool isLastReply, String? errorMessage)?
         $default,
   ) {
     final _that = this;
     switch (_that) {
       case _RepliesState() when $default != null:
-        return $default(_that.status, _that.replies, _that.isLastReply);
+        return $default(
+            _that.status, _that.replies, _that.isLastReply, _that.errorMessage);
       case _:
         return null;
     }
@@ -258,7 +273,8 @@ class _RepliesState implements RepliesState {
   const _RepliesState(
       {this.status = RepliesStatus.initial,
       final List<Reply> replies = const <Reply>[],
-      this.isLastReply = false})
+      this.isLastReply = false,
+      this.errorMessage})
       : _replies = replies;
 
   @override
@@ -276,6 +292,8 @@ class _RepliesState implements RepliesState {
   @override
   @JsonKey()
   final bool isLastReply;
+  @override
+  final String? errorMessage;
 
   /// Create a copy of RepliesState
   /// with the given fields replaced by the non-null parameter values.
@@ -293,16 +311,18 @@ class _RepliesState implements RepliesState {
             (identical(other.status, status) || other.status == status) &&
             const DeepCollectionEquality().equals(other._replies, _replies) &&
             (identical(other.isLastReply, isLastReply) ||
-                other.isLastReply == isLastReply));
+                other.isLastReply == isLastReply) &&
+            (identical(other.errorMessage, errorMessage) ||
+                other.errorMessage == errorMessage));
   }
 
   @override
   int get hashCode => Object.hash(runtimeType, status,
-      const DeepCollectionEquality().hash(_replies), isLastReply);
+      const DeepCollectionEquality().hash(_replies), isLastReply, errorMessage);
 
   @override
   String toString() {
-    return 'RepliesState(status: $status, replies: $replies, isLastReply: $isLastReply)';
+    return 'RepliesState(status: $status, replies: $replies, isLastReply: $isLastReply, errorMessage: $errorMessage)';
   }
 }
 
@@ -314,7 +334,11 @@ abstract mixin class _$RepliesStateCopyWith<$Res>
       __$RepliesStateCopyWithImpl;
   @override
   @useResult
-  $Res call({RepliesStatus status, List<Reply> replies, bool isLastReply});
+  $Res call(
+      {RepliesStatus status,
+      List<Reply> replies,
+      bool isLastReply,
+      String? errorMessage});
 }
 
 /// @nodoc
@@ -333,6 +357,7 @@ class __$RepliesStateCopyWithImpl<$Res>
     Object? status = null,
     Object? replies = null,
     Object? isLastReply = null,
+    Object? errorMessage = freezed,
   }) {
     return _then(_RepliesState(
       status: null == status
@@ -347,6 +372,10 @@ class __$RepliesStateCopyWithImpl<$Res>
           ? _self.isLastReply
           : isLastReply // ignore: cast_nullable_to_non_nullable
               as bool,
+      errorMessage: freezed == errorMessage
+          ? _self.errorMessage
+          : errorMessage // ignore: cast_nullable_to_non_nullable
+              as String?,
     ));
   }
 }

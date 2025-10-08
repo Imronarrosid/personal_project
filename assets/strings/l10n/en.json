@@ -127,5 +127,6 @@
     "message_profile_picture_chaged": "Profile picture changed",
     "message_chat_textfield": "Message",
     "message_hold_to_record": "Hold to record, release to send",
-    "message_swipe_left": "Swipe left to cancel"
+    "message_swipe_left": "Swipe left to cancel",
+    "message_failed_to_like": "Failed to like."
 }

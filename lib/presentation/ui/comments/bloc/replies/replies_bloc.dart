@@ -1,9 +1,11 @@
 import 'dart:async';
 import 'package:bloc/bloc.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:personal_project/data/repository/replies_repository.dart';
 import 'package:personal_project/domain/model/comment_model.dart';
 import 'package:personal_project/domain/model/reply_models.dart';
+import 'package:personal_project/presentation/l10n/stings.g.dart';
 import 'package:personal_project/utils/debug_mode_print.dart';
 
 part 'replies_state.dart';
@@ -40,9 +42,10 @@ class RepliesBloc extends Bloc<RepliesEvent, RepliesState> {
       emit(
         state.copyWith(
           status: RepliesStatus.error,
+          errorMessage: LocaleKeys.message_failed_to_like.tr(),
         ),
       );
-      debugModePrint(e.toString());
+      debugModePrint('like reply error ${e.toString()}');
     }
   }
 
